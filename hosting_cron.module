@@ -1,0 +1,98 @@
+<?php
+
+function hosting_cron_drush_commands() {
+  $items['hosting cron'] = array(
+    'callback' => 'hosting_cron_queue',
+    'description' => 'Process the queue of outstanding sites to be cronned.'
+  );
+  return $items;
+}
+
+function hosting_cron_queue() {
+  $count = drush_get_option(array('i', 'items', 5)); # process a default of 5 items at a time.
+  $view = views_get_view('cron_queue');
+  $view_args = array();
+  $items =  views_build_view('items', $view, $view_args, false, $count);
+
+  foreach ($items['items'] as $item) {
+    $node = node_load($item->nid);
+    extract(hosting_expand_site($node));
+    $cmd = sprintf("cd %s; ./drush.php -l %s cron &", $release->field_path[0]['value'], $node->title);
+    printf("Running cron for %s\n", $node->title);
+    exec($cmd);
+    $node->revision = false;
+    $node->field_last_cron[0]['value'] = date("Y-m-d\TH:i:00", mktime()); # internal format used by date module
+    node_save($node);
+  }
+}
+
+function hosting_cron_views_default_views() {
+  
+   $view = new stdClass();
+    $view->name = 'cron_queue';
+    $view->description = 'the order in which the sites will be cronned';
+    $view->access = array (
+  );
+    $view->view_args_php = '';
+    $view->page = TRUE;
+    $view->page_title = 'Cron queue';
+    $view->page_header = '';
+    $view->page_header_format = '1';
+    $view->page_footer = '';
+    $view->page_footer_format = '1';
+    $view->page_empty = '';
+    $view->page_empty_format = '1';
+    $view->page_type = 'table';
+    $view->url = 'queue/cron';
+    $view->use_pager = TRUE;
+    $view->nodes_per_page = '20';
+    $view->sort = array (
+      array (
+        'tablename' => 'node_data_field_last_cron',
+        'field' => 'field_last_cron_value',
+        'sortorder' => 'ASC',
+        'options' => '',
+      ),
+    );
+    $view->argument = array (
+    );
+    $view->field = array (
+      array (
+        'tablename' => 'node',
+        'field' => 'title',
+        'label' => '',
+        'handler' => 'views_handler_field_nodelink',
+        'options' => 'link',
+      ),
+      array (
+        'tablename' => 'node_data_field_last_cron',
+        'field' => 'field_last_cron_value',
+        'label' => '',
+        'handler' => 'content_views_field_handler_group',
+        'options' => 'default',
+      ),
+    );
+    $view->filter = array (
+      array (
+        'tablename' => 'node',
+        'field' => 'type',
+        'operator' => 'OR',
+        'options' => '',
+        'value' => array (
+    0 => 'site',
+  ),
+      ),
+      array (
+        'tablename' => 'node',
+        'field' => 'status',
+        'operator' => '=',
+        'options' => '',
+        'value' => '1',
+      ),
+    );
+    $view->exposed_filter = array (
+    );
+    $view->requires = array(node_data_field_last_cron, node);
+    $views[$view->name] = $view;
+    return $views;
+}

@@ -1,0 +1,368 @@
+<?php
+/**
+ * Hosting module
+ * Contains small helper functions for hosting infrastructure. It's basically glue.
+ */
+
+define('PROVISION_SUCCESS', -1); # No errors occured
+define('PROVISION_DB_ERROR', 1); # Database could not be accessed, or configured
+define('PROVISION_INSTALL_ERROR', 2); # Drupal was unable to complete it's installation
+define('PROVISION_PERM_ERROR', 4); # Could not create files due to permission error - potentially less severe
+define('PROVISION_WEB_ERROR', 8); # Web server could not be restarted, or other server related issues - less severe
+define('PROVISION_FRAMEWORK_ERROR', 16); #To be used while testing if the provision framework is actually working.
+define('PROVISION_SITE_NOT_FOUND', 32); #When the site is not available on this platform, or has not been installed.
+define('PROVISION_SITE_INSTALLED', 64); #When the site is already installed, ie: there is a conflict.
+
+
+#  List of provisioning errors. This is a global so that other modules can reference it.
+global $provision_errors;
+$provision_errors = array(
+  PROVISION_SUCCESS => T("Successful"),
+  PROVISION_DB_ERROR => t("Database error"),
+  PROVISION_INSTALL_ERROR => t("Drupal installation error"),
+  PROVISION_PERM_ERROR => t("File permission error"),
+  PROVISION_WEB_ERROR => t("Web server error"),
+  PROVISION_FRAMEWORK_ERROR => t("Provision framework error"),
+  PROVISION_SITE_NOT_FOUND => t("Site not found"),
+  PROVISION_SITE_INSTALLED => t("Site has already been installed"),  
+  );
+ 
+
+function hosting_expand_action($action) {
+  # load all it's related items
+  $site = node_load($action->field_site[0]['nid']);
+  extract(hosting_expand_site($site));
+  return compact("site", "client", "type", "db_server", "release", "web_server");
+}
+
+function hosting_expand_site($site) {
+  $client = node_load($site->field_client[0]['nid']);
+  $type = $action->field_action_type[0]['value'];
+  $db_server = node_load($site->field_db_server[0]['nid']);
+  $release = node_load($site->field_release[0]['nid']);
+  $web_server = node_load($release->field_web_server[0]['nid']);
+  return compact("client", "type", "db_server", "release", "web_server");
+}
+
+function hosting_action_log($vid, $type, $message, $severity = 0 ) {
+  db_query("INSERT INTO {action_log} (vid, type, message, severity, timestamp) VALUES (%d, '%s', '%s', %d, %d)", $vid, $type, $message, $severity, mktime());
+}
+
+
+function hosting_form_alter($form_id, &$form) {
+  if ($form_id == 'site_node_form') {
+    $form['title']['#validate']['hosting_validate_site_title'] = array($form['nid']['#value']);
+  }
+  if ($form_id == 'user_register') {
+    $form['destination'] = array('#type' => 'hidden', '#value' => 'node/1');
+    if ($_GET['q'] != 'user/register') {
+      $form['notify'] = array('#type' => 'hidden', '#value' => false);
+      $form['status'] = array('#type' => 'hidden', '#value' => 1);
+      $form['pass'] = array('#type' => 'value', '#value' => user_password());
+    }
+  }
+}
+
+function hosting_drush_command() {
+  $items['hosting process'] = array(
+    'callback' => 'hosting_process_queue',
+    'description' => 'Process the queue of outstanding hosting actions.'
+  );
+
+  $items['hosting import release'] = array(
+    'callback' => 'hosting_import_release',
+    'description' => 'Generate a release node for an already installed release.'
+  );
+
+  $items['hosting import site'] = array(
+    'callback' => 'hosting_import_site',
+    'description' => 'Generate a site node for an already installed site.'
+  );
+  
+  return $items;
+}
+
+
+function hosting_process_queue() {
+  global $provision_errors;
+  
+  $count = drush_get_option(array('i', 'items', 5)); # process a default of 5 items at a time.
+  $sqid = variable_get('hosting_action_subqueue', 1);
+  $actions = nodequeue_nodes($sqid, false, 0, $count);
+  
+  foreach ($actions as $action) {
+    // create a new revision
+    $action->changed = mktime();
+    $action->field_executed[0]['value'] = date("Y-m-d\TH:i:00", mktime()); # internal format used by date module
+    $action->revision = true;
+    node_save($action);
+    
+    hosting_action_log($action->vid, "queue", t("Action starts processing"));
+    $cmd = _hosting_provision_command($action);
+    $return = '';
+    exec($cmd, $return, $code );
+    $data = unserialize(implode("\n", $return));
+    foreach ((array) $data['log'] as $log) {
+      hosting_action_log($action->vid, $log['type'], $log['message'], $log['severity']);
+    }
+    
+    # Drupal message errors.
+    foreach ((array) $data['messages']['error'] as $error) {
+      if (preg_match("/^warning:/", $error)) {
+        hosting_action_log($action->vid, "warning", ereg_replace("/^warning: /", '', $error), 0);  
+      }
+      if (preg_match("/^user warning:/", $error)) {
+        hosting_action_log($action->vid, "warning", ereg_replace("/^user warning: /", '', $error), 0);  
+      }
+    }
+    
+    # TODO: Check return code to decide whether or not install was successful
+
+    if (!$code) {
+      // remove from queue
+      hosting_action_log($action->vid, "queue", t("Removing action from hosting queue"), 0);
+      #nodequeue_subqueue_remove_node($sqid, $action->field_site[0]['nid']);
+      
+      // mark as succesful
+      $action->field_action_status[0]['value'] = PROVISION_SUCCESS;
+      $action->revision = 0;
+      node_save($action);
+    }
+    else {
+      $x = 0;
+      foreach ($provision_errors as $error) {
+        if ($code && ($code & $error)) {
+          $action->field_action_status[$x]['value'] = $error;
+        }
+        $x++;
+      }
+      $action->revision = 0;
+      node_save($action);
+    }
+  }
+}
+
+function _hosting_provision_command($action) {
+  #load node references and place each of the variables into the current namespace
+  extract(hosting_expand_action($action));
+  
+  #todo: complete parameters to be created
+  $options = array(
+    'site-id' => $site->nid,
+    'site-url' => $site->title,
+    'site-owner' => $site->uid
+  );
+  
+  foreach ($options as $key => $value) {
+    $option_str .= " --$key $value";  
+  }
+  $command = sprintf("cd %s;./drush.php provision %s %s -b %s", $release->field_path[0]['value'], $type, $site->title, $option_str);
+  return $command;
+}
+
+function hosting_nodeapi(&$node, $op) {
+
+  switch ($op) {
+    case 'validate' :
+      if ($node->type == 'site') {
+        $node->field_actions[0]['vname'] = 'actions';
+        $node->field_actions[0]['vname'] = '%nid';
+      }
+      break;
+    case 'insert' :
+      if ($node->type == 'site') { # new site being created.
+
+        $action = new stdClass();
+        $action->type = 'action';
+        $action->uid = 1;
+        $action->status = 1;
+        $action->title = t("!type !title", array('!type' => 'install', '!title' => $node->title) );
+        $action->field_action_type[0]['value'] = 'install';
+        $action->field_site[0]['nid'] = $node->nid;
+        node_save($action);
+
+        $queue = nodequeue_load( variable_get('hosting_action_queue', 1));
+        $subqueue = nodequeue_load_subqueue(variable_get('hosting_action_subqueue', 1));
+        nodequeue_subqueue_add($queue, $subqueue, $action->nid);
+      }
+      break;
+    case 'view' :
+      if ($node->type == 'site') {
+        $view = views_get_view('actions_per_site');
+        $node->content['actions_view'] = array(
+          '#type' => 'item',
+          '#title' => t("Actions"),
+          '#value' => views_build_view('embed', $view, array($node->nid)), 
+          '#weight' => 10
+        );
+      }
+      if ($node->type == 'client') {
+        $view = views_get_view('sites');
+        $node->content['sites_view'] = array(
+          '#type' => 'item',
+          '#title' => t("Sites"),
+          '#value' => views_build_view('embed', $view, array($node->nid)), 
+          '#weight' => 10
+        );
+      }
+      if ($node->type == 'action') {
+        # Display table containing the logged information for this action
+        $result = db_query("SELECT * FROM {action_log} WHERE vid=%d", $node->vid);
+        if ($result) {
+          $header = array("type", "message", "date");
+          while ($entry = db_fetch_object($result)) {
+            $rows[] = array($entry->type, $entry->message, format_date("custom", $entry->timestamp, "mm:ss"));
+          }
+
+          $node->content['hosting_log'] = array(
+            '#weight' => 1,
+            '#value' => theme_table($header, (array) $rows)
+          );
+        }
+      }
+      break;
+    
+  }
+}
+
+function hosting_validate_site_title($element, $nid) {
+  if (!preg_match("/^([\w-]+\.)+[a-z]{2,4}$/i", $element['#value'] ) ) {
+    form_set_error('title', t("You have not specified a valid url for this site."));
+  }
+  if (db_result(db_query("SELECT COUNT(nid) FROM {node} WHERE type='site' AND title='%s' AND  nid <> %d", $element['#value'], $nid))) {
+    form_set_error('title', t("The url you specified is not unique."));
+  }
+}
+
+function hosting_views_default_views() {
+   $view = new stdClass();
+  $view->name = 'sites_embed';
+  $view->description = 'A list of sites related to the specified node';
+  $view->access = array (
+);
+  $view->view_args_php = '$args[0] = arg(1);';
+  $view->page = TRUE;
+  $view->page_title = 'sites';
+  $view->page_header = '';
+  $view->page_header_format = '1';
+  $view->page_footer = '';
+  $view->page_footer_format = '1';
+  $view->page_empty = '';
+  $view->page_empty_format = '1';
+  $view->page_type = 'table';
+  $view->url = 'sites';
+  $view->use_pager = TRUE;
+  $view->nodes_per_page = '10';
+  $view->sort = array (
+  );
+  $view->argument = array (
+    array (
+      'type' => 'content: field_client',
+      'argdefault' => '1',
+      'title' => '',
+      'options' => '',
+      'wildcard' => '',
+      'wildcard_substitution' => '',
+    ),
+  );
+  $view->field = array (
+    array (
+      'tablename' => 'node',
+      'field' => 'title',
+      'label' => '',
+      'handler' => 'views_handler_field_nodelink',
+      'options' => 'link',
+    ),
+  );
+  $view->filter = array (
+    array (
+      'tablename' => 'node',
+      'field' => 'type',
+      'operator' => 'OR',
+      'options' => '',
+      'value' => array (
+        0 => 'site',
+       ),
+     ),
+  );
+  $view->exposed_filter = array (
+  );
+  $view->requires = array(node);
+  $views[$view->name] = $view;
+  $view = new stdClass();
+  $view->name = 'actions_per_site';
+  $view->description = 'A list of actions related to the site in question';
+  $view->access = array ();
+  $view->view_args_php = '$args[0] = arg(1);';
+  $view->page = TRUE;
+  $view->page_title = 'action';
+  $view->page_header = '';
+  $view->page_header_format = '1';
+  $view->page_footer = '';
+  $view->page_footer_format = '1';
+  $view->page_empty = '';
+  $view->page_empty_format = '1';
+  $view->page_type = 'table';
+  $view->url = 'actions';
+  $view->use_pager = TRUE;
+  $view->nodes_per_page = '10';
+  $view->sort = array (
+  );
+  $view->argument = array (
+    array (
+      'type' => 'content: field_site',
+      'argdefault' => '1',
+      'title' => '',
+      'options' => '',
+      'wildcard' => '',
+      'wildcard_substitution' => '',
+    ),
+  );
+  $view->field = array (
+    array (
+      'tablename' => 'node',
+      'field' => 'title',
+      'label' => '',
+      'handler' => 'views_handler_field_nodelink',
+      'options' => 'link',
+    ),
+    array (
+      'tablename' => 'node',
+      'field' => 'created',
+      'label' => '',
+      'handler' => 'views_handler_field_since',
+    ),
+    array (
+      'tablename' => 'node_data_field_action_type',
+      'field' => 'field_action_type_value',
+      'label' => '',
+      'handler' => 'content_views_field_handler_group',
+      'options' => 'default',
+    ),
+    array (
+      'tablename' => 'node',
+      'field' => 'changed',
+      'label' => '',
+      'handler' => 'views_handler_field_date_small',
+    ),
+  );
+  $view->filter = array (
+    array (
+      'tablename' => 'node',
+      'field' => 'type',
+      'operator' => 'OR',
+      'options' => '',
+      'value' => array (
+        0 => 'action',
+      ),
+    ),
+  );
+  $view->exposed_filter = array (
+  );
+  $view->requires = array(node, node_data_field_action_type);
+  $views[$view->name] = $view;
+  
+
+  
+  return $views;
+}

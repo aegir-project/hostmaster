@@ -1,0 +1,98 @@
+<?php
+
+function hosting_stats_drush_command() {
+  $items['hosting stats'] = array(
+    'callback' => 'hosting_stats_queue',
+    'description' => 'Fetch and import statistics for hosted sites.'
+  );
+  return $items;
+}
+
+
+function hosting_stats_queue() {
+  $count = drush_get_option(array('i', 'items', 5)); # process a default of 5 items at a time.
+  $view = views_get_view('stats_queue');
+  $view_args = array();
+  $items =  views_build_view('items', $view, $view_args, false, $count);
+
+  foreach ($items['items'] as $item) {
+    $node = node_load($item->nid);
+    extract(hosting_expand_site($node));
+
+    printf("Fetching statistics for %s\n", $node->title);
+    $cmd = sprintf("cd %s; ./drush.php provision stats %s -b", $release->field_path[0]['value'], $node->title);
+    exec($cmd, $code, $return);
+    
+    $data = unserialize(implode("\n", $return));
+    $node->revision = false;
+    $node->field_last_stats[0]['value'] = date("Y-m-d\TH:i:00", mktime()); # internal format used by date module
+    node_save($node);
+    foreach (module_implements("hosting_stats") as $module) {
+      module_invoke("hosting_stats", $node->nid, $data['stats']);
+    }
+  }
+}
+
+function hosting_stats_views_default_views() {
+  $view = new stdClass();
+  $view->name = 'stats_queue';
+  $view->description = 'the order in which the sites will have their statistics updated';
+  $view->access = array (
+);
+  $view->view_args_php = '';
+  $view->page = TRUE;
+  $view->page_title = 'Statistics queue';
+  $view->page_header = '';
+  $view->page_header_format = '1';
+  $view->page_footer = '';
+  $view->page_footer_format = '1';
+  $view->page_empty = '';
+  $view->page_empty_format = '1';
+  $view->page_type = 'table';
+  $view->url = 'queue/stats';
+  $view->use_pager = TRUE;
+  $view->nodes_per_page = '20';
+  $view->sort = array (
+  );
+  $view->argument = array (
+  );
+  $view->field = array (
+    array (
+      'tablename' => 'node',
+      'field' => 'title',
+      'label' => '',
+      'handler' => 'views_handler_field_nodelink',
+      'options' => 'link',
+    ),
+    array (
+      'tablename' => 'node_data_field_last_stats',
+      'field' => 'field_last_stats_value',
+      'label' => '',
+      'handler' => 'content_views_field_handler_group',
+      'options' => 'default',
+    ),
+  );
+  $view->filter = array (
+    array (
+      'tablename' => 'node',
+      'field' => 'type',
+      'operator' => 'OR',
+      'options' => '',
+      'value' => array (
+  0 => 'site',
+),
+    ),
+    array (
+      'tablename' => 'node',
+      'field' => 'status',
+      'operator' => '=',
+      'options' => '',
+      'value' => '1',
+    ),
+  );
+  $view->exposed_filter = array (
+  );
+  $view->requires = array(node, node_data_field_last_stats);
+  $views[$view->name] = $view;
+  return $views;
+}

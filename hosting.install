@@ -1,0 +1,226 @@
+<?php
+
+function hosting_install() {
+  # These are split up for easier code management.
+  _hosting_install_client_type();
+  _hosting_install_site_type();
+  _hosting_install_action_type();
+  _hosting_install_db_server_type();
+  _hosting_install_web_server_type();
+  _hosting_install_release_type();  
+  _hosting_install_cck_shared_fields();
+
+  # Logging table for backend action calls
+  db_query("CREATE TABLE {action_log} (
+    lid int NOT NULL auto_increment,
+    vid int NOT NULL default '0',
+    type varchar(16) NOT NULL default '',
+    message longtext NOT NULL,
+    severity tinyint unsigned NOT NULL default '0',
+    timestamp int NOT NULL default '0',
+    PRIMARY KEY (lid),
+    KEY (type)
+  ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
+  
+}
+
+/**
+ * Install function for the client node type. Additionally creates default client node.
+ */
+function _hosting_install_client_type() {
+  db_query("INSERT INTO {node_type} VALUES ('client', 'Client', 'node', 'This is somebody who owns a site. This is not a user atm. but it might become one later.\r\n\r\nThe idea is that on the hosting system,  multiple users may be associated with a client.\r\n', '', 1, 'Client Name', 0, '', 0, 1, 1, 0, '')");
+
+  db_query("INSERT INTO {node_field} VALUES ('field_name','cck_fullname','a:5:{s:10:\"use_middle\";i:0;s:14:\"middle_initial\";i:1;s:16:\"max_length_first\";s:0:\"\";s:17:\"max_length_middle\";s:1:\"1\";s:15:\"max_length_last\";s:0:\"\";}',1,0,1)");
+  db_query("INSERT INTO {node_field_instance} VALUES ('field_name','client',0,'Name','cck_fullname','N;','a:0:{}','')");
+  		  
+  db_query("INSERT INTO {node_field} VALUES ('field_organization','text','a:4:{s:15:\"text_processing\";s:1:\"0\";s:10:\"max_length\";s:2:\"30\";s:14:\"allowed_values\";s:0:\"\";s:18:\"allowed_values_php\";s:0:\"\";}',0,0,1)");
+  db_query("INSERT INTO {node_field_instance} VALUES ('field_organization','client',0,'Company or Organization','text','a:3:{s:13:\"default_value\";a:1:{i:0;a:1:{s:5:\"value\";s:0:\"\";}}s:17:\"default_value_php\";s:0:\"\";s:4:\"rows\";s:1:\"1\";}','a:0:{}','')");
+  
+  db_query("INSERT INTO {node_field} VALUES ('field_email','email','a:0:{}',1,0,1)");
+  db_query("INSERT INTO {node_field_instance} VALUES ('field_email','client',0,'E-mail','email','a:4:{s:13:\"default_value\";a:1:{i:0;a:1:{s:5:\"email\";s:0:\"\";}}s:17:\"default_value_php\";s:0:\"\";s:4:\"size\";s:2:\"60\";s:9:\"link_type\";s:6:\"mailto\";}','a:0:{}','')");
+
+  db_query("CREATE TABLE {content_type_client} (
+    vid int(10) unsigned NOT NULL default '0',
+    nid int(10) unsigned NOT NULL default '0',
+    field_name_first longtext,
+    field_name_middle char(1) NOT NULL default '',
+    field_name_last longtext,
+    field_organization_value varchar(30) NOT NULL default '',
+    field_email_email varchar(255) NOT NULL default '',
+    PRIMARY KEY  (vid)
+  ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+  
+}
+
+/**
+ * Install function for site node type.
+ */
+function _hosting_install_site_type() { 
+  db_query("INSERT INTO {node_type} VALUES ('site', 'Site', 'node', 'hosted site', '', 1, 'URL', 0, '', 0, 1, 1, 0, '')");
+  
+  db_query("INSERT INTO {node_field} VALUES ('field_client','nodereference','a:3:{s:19:\"referenceable_types\";a:7:{s:6:\"client\";s:6:\"client\";s:6:\"action\";i:0;s:9:\"actionnew\";i:0;s:9:\"db_server\";i:0;s:5:\"panel\";i:0;s:7:\"release\";i:0;s:4:\"site\";i:0;}s:13:\"advanced_view\";s:2:\"--\";s:18:\"advanced_view_args\";s:0:\"\";}',1,0,1)");
+  db_query("INSERT INTO {node_field_instance} VALUES ('field_client','site',0,'Client','nodereference_autocomplete','a:2:{s:13:\"default_value\";a:0:{}s:17:\"default_value_php\";s:84:\"return array(\r\n  0 => array(\'nid\' => variable_get(\'hosting_default_client\', 1)),\r\n);\";}','a:0:{}','Person or organization who owns this site.')");
+  		
+  db_query("INSERT INTO {node_field} VALUES  ('field_db_server','nodereference','a:3:{s:19:\"referenceable_types\";a:7:{s:9:\"db_server\";s:9:\"db_server\";s:6:\"action\";i:0;s:9:\"actionnew\";i:0;s:6:\"client\";i:0;s:5:\"panel\";i:0;s:7:\"release\";i:0;s:4:\"site\";i:0;}s:13:\"advanced_view\";s:2:\"--\";s:18:\"advanced_view_args\";s:0:\"\";}',1,0,1)");
+  db_query("INSERT INTO {node_field_instance} VALUES ('field_db_server','site',0,'Database server','nodereference_select','a:2:{s:13:\"default_value\";a:1:{i:0;a:2:{s:3:\"nid\";s:1:\"0\";s:11:\"error_field\";s:21:\"field_db_server][nids\";}}s:17:\"default_value_php\";s:0:\"\";}','a:0:{}','return array(\r\n  0 => array(\'nid\' => variable_get(\'hosting_default_client\', 1)),\r\n);')");
+  		  
+  db_query("INSERT INTO {node_field} VALUES ('field_release','nodereference','a:3:{s:19:\"referenceable_types\";a:8:{s:7:\"release\";s:7:\"release\";s:6:\"action\";i:0;s:9:\"actionnew\";i:0;s:6:\"client\";i:0;s:9:\"db_server\";i:0;s:5:\"panel\";i:0;s:4:\"site\";i:0;s:10:\"web_server\";i:0;}s:13:\"advanced_view\";s:2:\"--\";s:18:\"advanced_view_args\";s:0:\"\";}',1,0,1)");
+  db_query("INSERT INTO {node_field_instance} VALUES ('field_release','site',0,'Release','nodereference_autocomplete','a:2:{s:13:\"default_value\";a:0:{}s:17:\"default_value_php\";s:85:\"return array( \r\n  0 => array(\'nid\'=> variable_get(\'hosting_default_release\', 1)),\r\n);\";}','a:0:{}','')");
+  		  
+  db_query("INSERT INTO {node_field} VALUES ('field_last_cron','date','a:13:{s:11:\"granularity\";a:6:{s:1:\"Y\";s:1:\"Y\";s:1:\"M\";s:1:\"M\";s:1:\"D\";s:1:\"D\";s:1:\"H\";s:1:\"H\";s:1:\"N\";s:1:\"N\";s:1:\"S\";s:1:\"S\";}s:14:\"field_timezone\";s:18:\"Africa/Addis_Ababa\";s:11:\"timezone_db\";s:3:\"UTC\";s:11:\"tz_handling\";s:4:\"none\";s:6:\"todate\";s:0:\"\";s:18:\"output_format_date\";s:11:\"m/d/Y - H:i\";s:20:\"output_format_custom\";s:9:\"Y-m-d H:i\";s:23:\"output_format_date_long\";s:15:\"l, F j, Y - H:i\";s:25:\"output_format_custom_long\";s:0:\"\";s:25:\"output_format_date_medium\";s:14:\"D, m/d/Y - H:i\";s:27:\"output_format_custom_medium\";s:0:\"\";s:24:\"output_format_date_short\";s:11:\"m/d/Y - H:i\";s:26:\"output_format_custom_short\";s:0:\"\";}',0,0,1)");
+  db_query("INSERT INTO {node_field_instance} VALUES ('field_last_cron','site',0,'Last cron','date_text','a:9:{s:13:\"default_value\";s:5:\"blank\";s:20:\"default_value_custom\";s:0:\"\";s:14:\"default_value2\";s:5:\"blank\";s:21:\"default_value_custom2\";s:0:\"\";s:12:\"input_format\";s:9:\"site-wide\";s:19:\"input_format_custom\";s:9:\"Y-m-d H:i\";s:9:\"increment\";N;s:10:\"text_parts\";N;s:10:\"year_range\";N;}','a:0:{}','')");
+
+  db_query("CREATE TABLE {content_type_site} (
+    vid int(10) unsigned NOT NULL default '0',
+    nid int(10) unsigned NOT NULL default '0',
+    field_client_nid int(11) NOT NULL default '0',
+    field_db_server_nid int(11) NOT NULL default '0',
+    field_release_nid int(11) NOT NULL default '0',
+    field_last_cron_value varchar(20) default NULL,    
+    PRIMARY KEY  (vid)
+  ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+
+  
+}
+
+
+/**
+ * Install function for action node type.
+ */
+function _hosting_install_action_type() { 
+  db_query("INSERT INTO {node_type} VALUES ('action', 'Action', 'node', 'This is an action that will be executed on a specific site record. \r\nThis will maintain the record of whenever any changes were made to the site from the front end.', '', 1, 'Title', 0, '', 0, 1, 1, 0, '')");
+
+  db_query("INSERT INTO {node_field} VALUES ('field_action_type','text','a:4:{s:15:\"text_processing\";s:1:\"0\";s:10:\"max_length\";s:0:\"\";s:14:\"allowed_values\";s:92:\"install|install\r\nenable|enable\r\ndisable|disable\r\nsynch|synch\r\ndelete|delete\r\nbackup|backup\r\n\";s:18:\"allowed_values_php\";s:0:\"\";}',1,0,1)");
+  db_query("INSERT INTO {node_field_instance} VALUES ('field_action_type','action',0,'Action type','options_buttons','a:2:{s:13:\"default_value\";a:1:{i:0;a:1:{s:5:\"value\";s:0:\"\";}}s:17:\"default_value_php\";s:0:\"\";}','a:0:{}','')");
+  
+  db_query("INSERT INTO {node_field} VALUES ('field_site','nodereference','a:3:{s:19:\"referenceable_types\";a:6:{s:4:\"site\";s:4:\"site\";i:0;i:1;s:6:\"action\";i:0;s:6:\"client\";i:0;s:5:\"panel\";i:0;s:9:\"actionnew\";b:0;}s:13:\"advanced_view\";s:2:\"--\";s:18:\"advanced_view_args\";s:0:\"\";}',1,0,1)");
+  db_query("INSERT INTO {node_field_instance} VALUES ('field_site','action',0,'Site','nodereference_nid','a:2:{s:13:\"default_value\";a:0:{}s:17:\"default_value_php\";s:0:\"\";}','a:0:{}','')");
+  
+  db_query("INSERT INTO {node_field} VALUES  ('field_executed','datestamp','a:13:{s:11:\"granularity\";a:7:{s:1:\"Y\";s:1:\"Y\";s:1:\"M\";s:1:\"M\";s:1:\"D\";s:1:\"D\";s:1:\"H\";s:1:\"H\";s:1:\"N\";s:1:\"N\";i:0;i:1;s:1:\"S\";i:0;}s:14:\"field_timezone\";s:18:\"Africa/Addis_Ababa\";s:11:\"timezone_db\";s:3:\"UTC\";s:11:\"tz_handling\";s:4:\"none\";s:6:\"todate\";s:0:\"\";s:18:\"output_format_date\";s:13:\"m/d/Y - H:i P\";s:20:\"output_format_custom\";s:0:\"\";s:23:\"output_format_date_long\";s:15:\"l, F j, Y - H:i\";s:25:\"output_format_custom_long\";s:0:\"\";s:25:\"output_format_date_medium\";s:14:\"D, m/d/Y - H:i\";s:27:\"output_format_custom_medium\";s:0:\"\";s:24:\"output_format_date_short\";s:11:\"m/d/Y - H:i\";s:26:\"output_format_custom_short\";s:0:\"\";}',0,0,1)");  
+  db_query("INSERT INTO {node_field_instance} VALUES ('field_field_executed','action',0,'Executed','date_text','a:9:{s:13:\"default_value\";s:5:\"blank\";s:20:\"default_value_custom\";s:0:\"\";s:14:\"default_value2\";s:5:\"blank\";s:21:\"default_value_custom2\";s:0:\"\";s:12:\"input_format\";s:9:\"site-wide\";s:19:\"input_format_custom\";s:2:\"%U\";s:9:\"increment\";N;s:10:\"text_parts\";N;s:10:\"year_range\";N;}','a:0:{}','')");
+  
+  db_query("CREATE TABLE {content_type_action} (
+    vid int(10) unsigned NOT NULL default '0',
+    nid int(10) unsigned NOT NULL default '0',
+    field_action_type_value longtext,
+    field_executed_value int(11) default NULL,
+    field_site_nid int(11) NOT NULL default '0',    
+    PRIMARY KEY  (vid)
+  ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+
+
+  #this needs to be expanded for string escaping reasons
+  db_query("INSERT INTO node_field VALUES ('field_action_status','number_integer','%s',0,1,0)",serialize(array (
+    'prefix' => '',
+    'suffix' => '',
+    'append_position' => NULL,
+    'min' => '',
+    'max' => '',
+    'allowed_values' => '',
+    'allowed_values_php' => 'return $GLOBALS[\'provision_errors\'];',
+  )));
+  db_query("INSERT INTO {node_field_instance} VALUES ('field_action_status','action',0,'Status','options_buttons','a:2:{s:13:\"default_value\";a:1:{i:0;a:1:{s:5:\"value\";s:0:\"\";}}s:17:\"default_value_php\";s:0:\"\";}','a:0:{}','Whether or not the action was sucessful')");  
+  
+  db_query("CREATE TABLE {content_field_action_status} (
+    vid int(10) unsigned NOT NULL default '0',
+    delta int(10) unsigned NOT NULL default '0',
+    nid int(10) unsigned NOT NULL default '0',
+    field_action_status_value int(11) default NULL,
+    PRIMARY KEY  (vid,delta)
+  ) ENGINE=MyISAM DEFAULT CHARSET=utf8;");
+}
+
+
+/**
+ * Install function for database server node type. Additionally creates the default database server.
+ */
+function _hosting_install_db_server_type() { 
+  db_query("INSERT INTO {node_type} VALUES ('db_server', 'Database server', 'node', 'The database server to which the site will connect.', '', 1, 'Hostname', 0, '', 0, 1, 1, 0, '')");
+
+  db_query("INSERT INTO {node_field} VALUES ('field_db_type','text','a:4:{s:15:\"text_processing\";s:1:\"0\";s:10:\"max_length\";s:0:\"\";s:14:\"allowed_values\";s:12:\"mysql\r\npgsql\";s:18:\"allowed_values_php\";s:0:\"\";}',1,0,1)");
+  db_query("INSERT INTO {node_field_instance} VALUES ('field_db_type','db_server',0,'Database type','options_select','a:2:{s:13:\"default_value\";a:1:{i:0;a:1:{s:5:\"value\";s:5:\"mysql\";}}s:17:\"default_value_php\";s:0:\"\";}','a:0:{}','')");  
+
+  db_query("INSERT INTO {node_field} VALUES ('field_master_username','text','a:4:{s:15:\"text_processing\";s:1:\"0\";s:10:\"max_length\";s:0:\"\";s:14:\"allowed_values\";s:0:\"\";s:18:\"allowed_values_php\";s:0:\"\";}',1,0,1)");
+  db_query("INSERT INTO {node_field_instance} VALUES ('field_master_username','db_server',9,'Username','text','a:3:{s:13:\"default_value\";a:1:{i:0;a:1:{s:5:\"value\";s:4:\"root\";}}s:17:\"default_value_php\";s:0:\"\";s:4:\"rows\";s:1:\"1\";}','a:0:{}','Username with the permissions to create new databases and user accounts.')");
+    
+  db_query("INSERT INTO {node_field} VALUES ('field_master_password','text','a:4:{s:15:\"text_processing\";s:1:\"0\";s:10:\"max_length\";s:0:\"\";s:14:\"allowed_values\";s:0:\"\";s:18:\"allowed_values_php\";s:0:\"\";}',1,0,1)");  
+  db_query("INSERT INTO {node_field_instance} VALUES ('field_master_password','db_server',10,'Password','text','a:3:{s:13:\"default_value\";a:1:{i:0;a:1:{s:5:\"value\";s:0:\"\";}}s:17:\"default_value_php\";s:0:\"\";s:4:\"rows\";s:1:\"1\";}','a:0:{}','Password for the database account used to create new databases and user accounts.')");
+  
+  db_query("CREATE TABLE {content_type_db_server} (
+    vid int(10) unsigned NOT NULL default '0',
+    nid int(10) unsigned NOT NULL default '0',
+    field_db_type_value longtext,  
+    field_master_username_value longtext,
+    field_master_password_value longtext,    
+    PRIMARY KEY  (vid)
+  ) ENGINE=MyISAM DEFAULT CHARSET=utf8");  
+
+
+}
+
+
+/**
+ * Install function for the release node type. Additionally creates a default release for the current tree.
+ */
+function _hosting_install_release_type() { 
+  db_query("INSERT INTO {node_type} VALUES ('release', 'Release', 'node', 'Point where the data is published.', '', 1, 'Release name', 0, '', 0, 1, 1, 0, '')");
+
+  db_query("INSERT INTO {node_field} VALUES ('field_path','text','a:4:{s:15:\"text_processing\";s:1:\"0\";s:10:\"max_length\";s:0:\"\";s:14:\"allowed_values\";s:0:\"\";s:18:\"allowed_values_php\";s:0:\"\";}',1,0,1)");  
+  db_query("INSERT INTO {node_field_instance} VALUES ('field_path','release',0,'Path','text','%s','a:0:{}','')", serialize(array(
+    'default_value' => array (),
+    'default_value_php' => 'return array(0 => array(\'nid\' => ereg_replace("/webroot$", "", $_SERVER[\'DOCUMENT_ROOT\'])),);',
+    'rows' => '1',)));  
+
+  db_query("INSERT INTO {node_field} VALUES ('field_web_server','nodereference','a:3:{s:19:\"referenceable_types\";a:8:{s:10:\"web_server\";s:10:\"web_server\";s:6:\"action\";i:0;s:9:\"actionnew\";i:0;s:6:\"client\";i:0;s:9:\"db_server\";i:0;s:5:\"panel\";i:0;s:7:\"release\";i:0;s:4:\"site\";i:0;}s:13:\"advanced_view\";s:2:\"--\";s:18:\"advanced_view_args\";s:0:\"\";}',0,0,1)");
+  db_query("INSERT INTO {node_field_instance} VALUES ('field_web_server','release',0,'Web server','nodereference_autocomplete','a:2:{s:13:\"default_value\";a:0:{}s:17:\"default_value_php\";s:88:\"return array(\r\n  0 => array(\'nid\' => variable_get(\'hosting_default_web_server\', 1)),\r\n);\";}','a:0:{}','')");
+
+  db_query("CREATE TABLE {content_type_release} (
+    vid int(10) unsigned NOT NULL default '0',
+    nid int(10) unsigned NOT NULL default '0',
+    field_path_value longtext,
+    field_web_server_nid int(11) NOT NULL default '0',
+    PRIMARY KEY  (vid)
+  ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+  
+  node_types_rebuild();
+
+}
+
+
+/**
+ * Install function for web server node type. Additionally creates the default web server node.
+ */
+function _hosting_install_web_server_type() { 
+  db_query("INSERT INTO {node_type} VALUES ('web_server', 'Web server', 'node', 'The server that will be hosting the files.', '', 1, 'hostname', 0, '', 0, 1, 1, 0, '')");
+
+  db_query("INSERT INTO {node_field} VALUES ('field_web_user','text','a:4:{s:15:\"text_processing\";s:1:\"0\";s:10:\"max_length\";s:0:\"\";s:14:\"allowed_values\";s:0:\"\";s:18:\"allowed_values_php\";s:0:\"\";}',1,0,1)");
+  db_query("INSERT INTO {node_field_instance} VALUES ('field_web_user','web_server',0,'User','text','a:3:{s:13:\"default_value\";a:1:{i:0;a:1:{s:5:\"value\";s:0:\"\";}}s:17:\"default_value_php\";s:0:\"\";s:4:\"rows\";s:1:\"1\";}','a:0:{}','')");
+    
+  db_query("INSERT INTO {node_field} VALUES ('field_group','text','a:4:{s:15:\"text_processing\";s:1:\"0\";s:10:\"max_length\";s:0:\"\";s:14:\"allowed_values\";s:0:\"\";s:18:\"allowed_values_php\";s:0:\"\";}',1,0,1)");  
+  db_query("INSERT INTO {node_field_instance} VALUES ('field_group','web_server',0,'Group','text','a:3:{s:13:\"default_value\";a:1:{i:0;a:1:{s:5:\"value\";s:0:\"\";}}s:17:\"default_value_php\";s:0:\"\";s:4:\"rows\";s:1:\"1\";}','a:0:{}','')");
+
+  
+  db_query("CREATE TABLE {content_type_web_server} (
+    vid int(10) unsigned NOT NULL default '0',
+    nid int(10) unsigned NOT NULL default '0',
+    field_web_user_value longtext,
+    field_group_value longtext,
+    PRIMARY KEY  (vid)
+  ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+
+}
+
+function _hosting_install_cck_shared_fields() {
+  # Shared by the db server and web server types
+  db_query("INSERT INTO {node_field} VALUES ('field_ip','text','a:4:{s:15:\"text_processing\";s:1:\"0\";s:10:\"max_length\";s:0:\"\";s:14:\"allowed_values\";s:0:\"\";s:18:\"allowed_values_php\";s:0:\"\";}',0,0,0)");
+  db_query("INSERT INTO {node_field_instance} VALUES ('field_ip','db_server',0,'IP address','text','a:3:{s:13:\"default_value\";a:1:{i:0;a:1:{s:5:\"value\";s:1:\".\";}}s:17:\"default_value_php\";s:0:\"\";s:4:\"rows\";s:1:\"1\";}','a:0:{}','The IP address the database server is hosted on. The host name is used if the ip is not specified')");
+  db_query("INSERT INTO {node_field_instance} VALUES ('field_ip','web_server',-1,'IP address','text','a:3:{s:13:\"default_value\";a:1:{i:0;a:1:{s:5:\"value\";s:1:\".\";}}s:17:\"default_value_php\";s:0:\"\";s:4:\"rows\";s:1:\"1\";}','a:0:{}','The IP address the database server is hosted on. The host name is used if the ip is not specified')");
+  
+  db_query("CREATE TABLE {content_field_ip} (
+    vid int(10) unsigned NOT NULL default '0',
+    nid int(10) unsigned NOT NULL default '0',
+    field_ip_value longtext,
+    PRIMARY KEY  (vid)
+  ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+
+}

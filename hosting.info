@@ -1,0 +1,4 @@
+name = Hosting
+description = Allow this Drupal site to deploy hosted sites.
+package = Hosting
+dependencies = content text number email nodereference optionwidgets cck_fullname views views_ui nodequeue
