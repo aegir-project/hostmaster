@@ -4,29 +4,9 @@
  * Contains small helper functions for hosting infrastructure. It's basically glue.
  */
 
-define('PROVISION_SUCCESS', -1); # No errors occured
-define('PROVISION_DB_ERROR', 1); # Database could not be accessed, or configured
-define('PROVISION_INSTALL_ERROR', 2); # Drupal was unable to complete it's installation
-define('PROVISION_PERM_ERROR', 4); # Could not create files due to permission error - potentially less severe
-define('PROVISION_WEB_ERROR', 8); # Web server could not be restarted, or other server related issues - less severe
-define('PROVISION_FRAMEWORK_ERROR', 16); #To be used while testing if the provision framework is actually working.
-define('PROVISION_SITE_NOT_FOUND', 32); #When the site is not available on this platform, or has not been installed.
-define('PROVISION_SITE_INSTALLED', 64); #When the site is already installed, ie: there is a conflict.
-
-
-#  List of provisioning errors. This is a global so that other modules can reference it.
-global $provision_errors;
-$provision_errors = array(
-  PROVISION_SUCCESS => T("Successful"),
-  PROVISION_DB_ERROR => t("Database error"),
-  PROVISION_INSTALL_ERROR => t("Drupal installation error"),
-  PROVISION_PERM_ERROR => t("File permission error"),
-  PROVISION_WEB_ERROR => t("Web server error"),
-  PROVISION_FRAMEWORK_ERROR => t("Provision framework error"),
-  PROVISION_SITE_NOT_FOUND => t("Site not found"),
-  PROVISION_SITE_INSTALLED => t("Site has already been installed"),  
-  );
- 
+if (PROVISION_SUCCESS != -1) {
+  include_once('provision_errors.inc');
+}
 
 function hosting_expand_action($action) {
   # load all it's related items
@@ -197,7 +177,7 @@ function hosting_nodeapi(&$node, $op) {
         );
       }
       if ($node->type == 'client') {
-        $view = views_get_view('sites');
+        $view = views_get_view('sites_embed');
         $node->content['sites_view'] = array(
           '#type' => 'item',
           '#title' => t("Sites"),
@@ -247,7 +227,7 @@ function hosting_views_default_views() {
   $view->page_header_format = '1';
   $view->page_footer = '';
   $view->page_footer_format = '1';
-  $view->page_empty = '';
+  $view->page_empty = t('No sites available.');
   $view->page_empty_format = '1';
   $view->page_type = 'table';
   $view->url = 'sites';
@@ -365,4 +345,27 @@ function hosting_views_default_views() {
 
   
   return $views;
+}
+
+/**
+ * Moved from inline in the field settings, to allow for simpler maintenance
+ */
+function _hosting_default_path() {
+  return array(0 => array('nid' => ereg_replace("/webroot$", "", $_SERVER['DOCUMENT_ROOT'])));
+}
+
+function _hosting_default_client() {
+  return array( 0 => array('nid' => variable_get('hosting_default_client', 1)),);
+}
+
+function _hosting_default_db_server() {
+  return array( 0 => array( 'nid' => variable_get('hosting_default_db_server', 2)),);
+}
+
+function _hosting_default_web_server() {
+  return array( 0 => array( 'nid' => variable_get('hosting_default_web_server', 3) ),);
+}
+
+function _hosting_default_release() {
+  return array( 0 => array( 'nid' => variable_get('hosting_default_release', 4) ),);
 }
