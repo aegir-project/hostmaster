@@ -1,0 +1,41 @@
+<?php
+
+function hosting_stats_install() {
+  #add additional field to site node type
+  _hosting_node_field_add('field_last_stats','date',
+        array (
+  'granularity' => 
+  array (
+    'Y' => 'Y',
+    'M' => 'M',
+    'D' => 'D',
+    'H' => 'H',
+    'N' => 'N',
+    'S' => 'S',
+  ),
+  'field_timezone' => 'Africa/Addis_Ababa',
+  'timezone_db' => 'UTC',
+  'tz_handling' => 'none',
+  'todate' => '',
+  'output_format_date' => 'm/d/Y - H:i',
+  'output_format_custom' => '',
+  'output_format_date_long' => 'l, F j, Y - H:i',
+  'output_format_custom_long' => '',
+  'output_format_date_medium' => 'D, m/d/Y - H:i',
+  'output_format_custom_medium' => '',
+  'output_format_date_short' => 'm/d/Y - H:i',
+  'output_format_custom_short' => '',
+),0,0,0);
+  _hosting_node_field_instance_add('field_last_stats','site',0,'Last statistics update','date_text',
+  array (  'default_value' => 'blank',  'default_value_custom' => '',  'default_value2' => 'blank',  'default_value_custom2' => '',  'input_format' => 'site-wide',  'input_format_custom' => '',  'increment' => NULL,  'text_parts' => NULL,  'year_range' => NULL,),
+  array (),'');
+ 		
+ db_query("CREATE TABLE {content_field_last_stats} (
+   vid int(10) unsigned NOT NULL default '0',
+   nid int(10) unsigned NOT NULL default '0',
+   field_last_stats_value varchar(20) default NULL,       
+   PRIMARY KEY  (vid)
+ ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+ 
+   
+}
