@@ -123,7 +123,6 @@ function hostmaster_profile_final() {
   
   # Action queue
   $queue = (object) array(
-     'qid' => '1',
      'title' => 'Hosting queue',
      'size' => '0',
      'link' => '',
@@ -141,8 +140,10 @@ function hostmaster_profile_final() {
           0 => 'action',
         ),
     );
+
    $queue->add_subqueue = array($queue->title);
    nodequeue_save($queue);
+   
    variable_set('hosting_action_queue', $queue->qid);
    $subqueue = nodequeue_load_subqueues_by_queue($queue->qid);
    variable_set('hosting_action_subqueue', $subqueue->qid);
