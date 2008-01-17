@@ -36,6 +36,7 @@ function hostmaster_profile_modules() {
     'provision',
     'provision_apache',
     'provision_mysql',
+    'provision_drupal',
     'system',
     'taxonomy',
     'text',
@@ -146,6 +147,8 @@ function hostmaster_profile_final() {
    $subqueue = nodequeue_load_subqueues_by_queue($queue->qid);
    variable_set('hosting_action_subqueue', $subqueue->qid);
    
+   
+   views_invalidate_cache();
    #initial configuration of hostmaster - todo
 
 }
