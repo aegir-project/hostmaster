@@ -8,9 +8,31 @@ if (PROVISION_SUCCESS != -1) {
   include_once('provision_errors.inc');
 }
 
+
+
+function hosting_menu($may_cache = true) {
+  if ($may_cache) {
+    $items[] = array(
+      'path' => 'hosting/introduction',
+      'title' => t('Introduction'),
+      'description' => t("In depth documentation on how to manage hosted sites."),
+      'callback' => 'hosting_Introduction',
+      'access' => user_access('administer provisioning') || variable_set('hosting_help_acknowledged', 0),
+      'type' => MENU_CALLBACK
+    );
+  }
+  return $items;
+}
+
+
+
+
+
+
 function hosting_expand_action($action) {
   # load all it's related items
   $site = node_load($action->field_site[0]['nid']);
+  $type = $actions->field_action_type[0]['value'];
   extract(hosting_expand_site($site));
   return compact("site", "client", "type", "db_server", "release", "web_server");
 }
@@ -80,7 +102,7 @@ function hosting_process_queue() {
     hosting_action_log($action->vid, "queue", t("Action starts processing"));
     $cmd = _hosting_provision_command($action);
     $return = '';
-    exec($cmd, $return, $code );
+    exec(escapeshellcmd($cmd), $return, $code );
     $data = unserialize(implode("\n", $return));
     foreach ((array) $data['log'] as $log) {
       hosting_action_log($action->vid, $log['type'], $log['message'], $log['severity']);
@@ -106,7 +128,7 @@ function hosting_process_queue() {
       // mark as succesful
       $action->field_action_status[0]['value'] = PROVISION_SUCCESS;
       $action->revision = 0;
-      node_save($action);
+      #node_save($action);
     }
     else {
       $x = 0;
@@ -125,18 +147,19 @@ function hosting_process_queue() {
 function _hosting_provision_command($action) {
   #load node references and place each of the variables into the current namespace
   extract(hosting_expand_action($action));
-  
+
   #todo: complete parameters to be created
   $options = array(
     'site-id' => $site->nid,
     'site-url' => $site->title,
-    'site-owner' => $site->uid
+    'site-owner' => $site->uid,
+    'site-master' => variable_get('hosting_master', 'hosting')
   );
   
   foreach ($options as $key => $value) {
     $option_str .= " --$key $value";  
   }
-  $command = sprintf("cd %s;./drush.php provision %s %s -b %s", $release->field_path[0]['value'], $type, $site->title, $option_str);
+  $command = sprintf("%s/drush.php provision %s %s -b %s", $release->field_path[0]['value'], $action->field_action_type[0]['value'], $site->title, $option_str);
   return $command;
 }
 
@@ -267,8 +290,10 @@ function hosting_views_default_views() {
   );
   $view->exposed_filter = array (
   );
-  $view->requires = array(node);
+  $view->requires = array('node');
   $views[$view->name] = $view;
+  
+  
   $view = new stdClass();
   $view->name = 'actions_per_site';
   $view->description = 'A list of actions related to the site in question';
@@ -339,10 +364,8 @@ function hosting_views_default_views() {
   );
   $view->exposed_filter = array (
   );
-  $view->requires = array(node, node_data_field_action_type);
+  $view->requires = array('node', 'node_data_field_action_type');
   $views[$view->name] = $view;
-  
-
   
   return $views;
 }
@@ -359,7 +382,7 @@ function _hosting_default_client() {
 }
 
 function _hosting_default_db_server() {
-  return array( 0 => array( 'nid' => variable_get('hosting_default_db_server', 2)),);
+  return array( 0 => array( 'nid' => variable_get('hosting_default_db_server', 2) ),);
 }
 
 function _hosting_default_web_server() {

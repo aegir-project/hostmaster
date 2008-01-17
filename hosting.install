@@ -115,7 +115,7 @@ function _hosting_install_action_type() {
   db_query("INSERT INTO {node_type} VALUES ('action', 'Action', 'node', 'This is an action that will be executed on a specific site record. \r\nThis will maintain the record of whenever any changes were made to the site from the front end.', '', 1, 'Title', 0, '', 0, 1, 1, 0, '')");
 
   _hosting_node_field_add('field_action_type','text', array('text_processing' => '0', 'max_length' => '', 
-  'allowed_values' => 'install|installrnenable|enablerndisable|disablernsynch|synchrndelete|deleternbackup|backup',
+  'allowed_values' => "install|install\r\nenable|enable\r\ndisable|disable\r\nsynch|synch\r\ndelete|delete\r\nbackup|backup",
   'allowed_values_php' => '',),1,0,1);
   _hosting_node_field_instance_add('field_action_type','action',0,'Action type','options_buttons',
   array('default_value' => array(0 => array('value' => '', ), ), 'default_value_php' => '',),
