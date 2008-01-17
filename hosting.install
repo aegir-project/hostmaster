@@ -50,6 +50,13 @@ function _hosting_install_client_type() {
     field_name_first longtext,
     field_name_middle char(1) NOT NULL default '',
     field_name_last longtext,
+    field_name_prefix longtext,
+    field_name_suffix longtext,
+    field_name_first_preferred longtext,
+    field_name_middle_preferred char(1) NOT NULL default '',
+    field_name_last_preferred longtext,
+    field_name_prefix_preferred longtext,
+    field_name_suffix_preferred longtext,
     field_organization_value varchar(30) NOT NULL default '',
     field_email_email varchar(255) NOT NULL default '',
     PRIMARY KEY  (vid)

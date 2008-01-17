@@ -21,13 +21,69 @@ function hosting_menu($may_cache = true) {
       'type' => MENU_CALLBACK
     );
   }
+  else {
+    if ((arg(0) == 'node') && (is_numeric(arg(1)))) {
+      $node = node_load(arg(1));
+      if ($node->type == 'site') {
+        $items[] = array(
+          'path' => 'node/' . arg(1) . '/actions',
+          'title' => t('Hosting Actions'),
+          'description' => t("Request a specific action to be taken on this site."),
+          'callback' => 'drupal_get_form',
+          'callback arguments' => array('hosting_action_request', $node),
+          'access' => user_access('administer provisioning'),
+          'type' => MENU_LOCAL_TASK,
+          'weight' => 2
+        );
+      }
+    }
+  }
   return $items;
 }
 
+function hosting_action_request($node) {
+  $options['backup'] = t('Backup site');
+  $options['synch'] = t('Regenerate configuration files');
 
+  $form['nid'] = array('#type' => 'value', '#value' => $node->nid);
+  
+  $form['action'] = array(
+    '#type' => 'radios',
+    '#title' => t('Action requested'),
+    '#options' => $options
+  );
+  
+  $form['submit'] = array(
+    '#type' => 'submit', 
+    '#value' => t('Request'),
+  );
+  
+  return $form;
+}
 
+function hosting_action_request_submit($form_id, $values) {
+  hosting_add_site_action($values['nid'], $values['action']);
 
+  return 'node/' . $node->nid;
+}
 
+function hosting_add_site_action($nid, $type, $args = null) {
+  global $user;
+  
+  $node = node_load($values['nid']);
+  $action = new stdClass();
+  $action->type = 'action';
+  $action->uid = $user->uid;
+  $action->status = 1;
+  $action->title = t("!type !title", array('!type' => $type, '!title' => $node->title) );
+  $action->field_action_type[0]['value'] = $type;
+  $action->field_site[0]['nid'] = $node->nid;
+  node_save($action);
+  
+  $queue = nodequeue_load( variable_get('hosting_action_queue', 1));
+  $subqueue = nodequeue_load_subqueue(variable_get('hosting_action_subqueue', 1));
+  nodequeue_subqueue_add($queue, $subqueue, $action->nid);
+}
 
 function hosting_expand_action($action) {
   # load all it's related items
@@ -123,12 +179,12 @@ function hosting_process_queue() {
     if (!$code) {
       // remove from queue
       hosting_action_log($action->vid, "queue", t("Removing action from hosting queue"), 0);
-      #nodequeue_subqueue_remove_node($sqid, $action->field_site[0]['nid']);
+      nodequeue_subqueue_remove_node($sqid, $action->field_site[0]['nid']);
       
       // mark as succesful
       $action->field_action_status[0]['value'] = PROVISION_SUCCESS;
       $action->revision = 0;
-      #node_save($action);
+      node_save($action);
     }
     else {
       $x = 0;
@@ -174,21 +230,13 @@ function hosting_nodeapi(&$node, $op) {
       break;
     case 'insert' :
       if ($node->type == 'site') { # new site being created.
-
-        $action = new stdClass();
-        $action->type = 'action';
-        $action->uid = 1;
-        $action->status = 1;
-        $action->title = t("!type !title", array('!type' => 'install', '!title' => $node->title) );
-        $action->field_action_type[0]['value'] = 'install';
-        $action->field_site[0]['nid'] = $node->nid;
-        node_save($action);
-
-        $queue = nodequeue_load( variable_get('hosting_action_queue', 1));
-        $subqueue = nodequeue_load_subqueue(variable_get('hosting_action_subqueue', 1));
-        nodequeue_subqueue_add($queue, $subqueue, $action->nid);
+        hosting_add_site_action($node->nid, 'install');
       }
       break;
+    case 'update' : 
+      if ($node->type == 'site') {
+        hosting_add_site_action($node->nid, 'synch');
+      }
     case 'view' :
       if ($node->type == 'site') {
         $view = views_get_view('actions_per_site');
