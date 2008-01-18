@@ -70,7 +70,7 @@ function hosting_action_request_submit($form_id, $values) {
 function hosting_add_site_action($nid, $type, $args = null) {
   global $user;
   
-  $node = node_load($values['nid']);
+  $node = node_load($nid);
   $action = new stdClass();
   $action->type = 'action';
   $action->uid = $user->uid;
