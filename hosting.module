@@ -4,9 +4,8 @@
  * Contains small helper functions for hosting infrastructure. It's basically glue.
  */
 
-if (PROVISION_SUCCESS != -1) {
-  include_once('provision_errors.inc');
-}
+include_once('provision_errors.inc');
+
 
 
 
@@ -80,8 +79,8 @@ function hosting_add_site_action($nid, $type, $args = null) {
   $action->field_site[0]['nid'] = $node->nid;
   node_save($action);
   
-  $queue = nodequeue_load( variable_get('hosting_action_queue', 1));
-  $subqueue = nodequeue_load_subqueue(variable_get('hosting_action_subqueue', 1));
+  $queue = _hosting_get_queue();
+  $subqueue = _hosting_get_subqueue();
   nodequeue_subqueue_add($queue, $subqueue, $action->nid);
 }
 
@@ -141,6 +140,14 @@ function hosting_drush_command() {
 }
 
 
+function _hosting_get_queue() {
+  return nodequeue_load( variable_get('hosting_action_queue', 1));
+}
+
+function _hosting_get_subqueue() {
+  return nodequeue_load_subqueue(variable_get('hosting_action_subqueue', 1));
+}
+
 function hosting_process_queue() {
   global $provision_errors;
   
@@ -178,8 +185,9 @@ function hosting_process_queue() {
 
     if (!$code) {
       // remove from queue
+      $subqueue = _hosting_get_subqueue();
       hosting_action_log($action->vid, "queue", t("Removing action from hosting queue"), 0);
-      nodequeue_subqueue_remove_node($sqid, $action->field_site[0]['nid']);
+      nodequeue_subqueue_remove_node($subqueue->sqid, $action->field_site[0]['nid']);
       
       // mark as succesful
       $action->field_action_status[0]['value'] = PROVISION_SUCCESS;
@@ -215,6 +223,7 @@ function _hosting_provision_command($action) {
   foreach ($options as $key => $value) {
     $option_str .= " --$key $value";  
   }
+  printf("Executing: %s/drush.php provision %s %s -b %s", $release->field_path[0]['value'], $action->field_action_type[0]['value'], $site->title, $option_str);
   $command = sprintf("%s/drush.php provision %s %s -b %s", $release->field_path[0]['value'], $action->field_action_type[0]['value'], $site->title, $option_str);
   return $command;
 }
