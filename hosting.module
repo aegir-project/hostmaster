@@ -164,9 +164,9 @@ function hosting_process_queue() {
     
     hosting_action_log($action->vid, "queue", t("Action starts processing"));
     $cmd = _hosting_provision_command($action);
-    $return = '';
-    exec(escapeshellcmd($cmd), $return, $code );
-    $data = unserialize(implode("\n", $return));
+    exec(escapeshellcmd($cmd), $return, $code);
+    $data = unserialize(trim(implode("\n", $return)));
+
     foreach ((array) $data['log'] as $log) {
       hosting_action_log($action->vid, $log['type'], $log['message'], $log['severity']);
     }
@@ -181,13 +181,11 @@ function hosting_process_queue() {
       }
     }
     
-    # TODO: Check return code to decide whether or not install was successful
-
     if (!$code) {
       // remove from queue
       $subqueue = _hosting_get_subqueue();
       hosting_action_log($action->vid, "queue", t("Removing action from hosting queue"), 0);
-      nodequeue_subqueue_remove_node($subqueue->sqid, $action->field_site[0]['nid']);
+      nodequeue_subqueue_remove_node($subqueue->sqid, $action->nid);
       
       // mark as succesful
       $action->field_action_status[0]['value'] = PROVISION_SUCCESS;
@@ -350,11 +348,12 @@ function hosting_views_default_views() {
   $view->requires = array('node');
   $views[$view->name] = $view;
   
-  
+
   $view = new stdClass();
   $view->name = 'actions_per_site';
   $view->description = 'A list of actions related to the site in question';
-  $view->access = array ();
+  $view->access = array (
+);
   $view->view_args_php = '$args[0] = arg(1);';
   $view->page = TRUE;
   $view->page_title = 'action';
@@ -369,6 +368,12 @@ function hosting_views_default_views() {
   $view->use_pager = TRUE;
   $view->nodes_per_page = '10';
   $view->sort = array (
+    array (
+      'tablename' => 'node',
+      'field' => 'nid',
+      'sortorder' => 'DESC',
+      'options' => '',
+    ),
   );
   $view->argument = array (
     array (
@@ -407,6 +412,13 @@ function hosting_views_default_views() {
       'label' => '',
       'handler' => 'views_handler_field_date_small',
     ),
+    array (
+      'tablename' => 'node_data_field_action_status',
+      'field' => 'field_action_status_value',
+      'label' => '',
+      'handler' => 'content_views_field_handler_group',
+      'options' => 'default',
+    ),
   );
   $view->filter = array (
     array (
@@ -415,14 +427,15 @@ function hosting_views_default_views() {
       'operator' => 'OR',
       'options' => '',
       'value' => array (
-        0 => 'action',
-      ),
+  0 => 'action',
+),
     ),
   );
   $view->exposed_filter = array (
   );
-  $view->requires = array('node', 'node_data_field_action_type');
+  $view->requires = array(node, node_data_field_action_type, node_data_field_action_status);
   $views[$view->name] = $view;
+
   
   return $views;
 }
