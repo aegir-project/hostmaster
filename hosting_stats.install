@@ -1,5 +1,5 @@
 <?php
-
+require_once "hosting_crud.inc";
 function hosting_stats_install() {
   #add additional field to site node type
   _hosting_node_field_add('field_last_stats','date',

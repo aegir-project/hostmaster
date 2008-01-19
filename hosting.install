@@ -1,5 +1,5 @@
 <?php
-
+require_once "hosting_crud.inc";
 function hosting_install() {
   # These are split up for easier code management.
   _hosting_install_client_type();
@@ -87,7 +87,7 @@ function _hosting_install_site_type() {
     array('release' => 'release', 'action' => 0, 'actionnew' => 0, 'client' => 0, 'db_server' => 0, 'panel' => 0, 'site' => 0, 'web_server' => 0,),
     'advanced_view' => '--', 'advanced_view_args' => '',),1,0,1);
   _hosting_node_field_instance_add('field_release','site',0,'Release','nodereference_autocomplete',
-  array('default_value' => array(  ), 'default_value_php' => 'return _hosting_default_release()',),
+  array('default_value' => array(  ), 'default_value_php' => 'return _hosting_default_release();',),
   array(),'');
   		  
   _hosting_node_field_add('field_last_cron','date', array('granularity' => 
@@ -192,7 +192,7 @@ function _hosting_install_db_server_type() {
   array(),'Username with the permissions to create new databases and user accounts.');
     
   _hosting_node_field_add('field_master_password','text', array('text_processing' => '0', 'max_length' => '', 'allowed_values' => '','allowed_values_php' => '',),1,0,1);  
-  _hosting_node_field_instance_add('field_master_password','db_server',10,'Password','text',
+  _hosting_node_field_instance_add('field_master_password','db_server',10,'Password','password',
   array('default_value' => array(0 => array('value' => '', ), ), 'default_value_php' => '', 'rows' => '1',),
   array(),'Password for the database account used to create new databases and user accounts.');
   
@@ -284,10 +284,3 @@ function _hosting_install_cck_shared_fields() {
 
 }
 
-function _hosting_node_field_add($field_name, $type, $global_settings = array(), $required = 0, $multiple = 0, $db_storage = 0) {
-  db_query("INSERT INTO {node_field} VALUES ('%s','%s','%s', %d, %d, %d)", $field_name, $type, serialize($global_settings), $required, $multiple, $db_storage);
-}
-
-function _hosting_node_field_instance_add($field_name, $type_name, $weight, $label, $widget_type, $widget_settings = array(), $display_settings = array(), $description = null) {
-  db_query("INSERT INTO {node_field_instance} VALUES ('%s','%s', %d,'%s','%s','%s','%s','%s')", $field_name, $type_name, $weight, $label, $widget_type, serialize($widget_settings), serialize($display_settings), $description);
-}

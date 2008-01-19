@@ -6,9 +6,6 @@
 
 include_once('provision_errors.inc');
 
-
-
-
 function hosting_menu($may_cache = true) {
   if ($may_cache) {
     $items[] = array(
@@ -62,8 +59,7 @@ function hosting_action_request($node) {
 
 function hosting_action_request_submit($form_id, $values) {
   hosting_add_site_action($values['nid'], $values['action']);
-
-  return 'node/' . $node->nid;
+  return 'node/' . $values['nid'];
 }
 
 function hosting_add_site_action($nid, $type, $args = null) {
@@ -101,8 +97,9 @@ function hosting_expand_site($site) {
   return compact("client", "type", "db_server", "release", "web_server");
 }
 
-function hosting_action_log($vid, $type, $message, $severity = 0 ) {
-  db_query("INSERT INTO {action_log} (vid, type, message, severity, timestamp) VALUES (%d, '%s', '%s', %d, %d)", $vid, $type, $message, $severity, mktime());
+function hosting_action_log($vid, $type, $message, $severity = 0, $timestamp = null ) {
+  $timestamp = ($timestamp) ? $timestamp : mktime();
+  db_query("INSERT INTO {action_log} (vid, type, message, severity, timestamp) VALUES (%d, '%s', '%s', %d, %d)", $vid, $type, $message, $severity, $timestamp);
 }
 
 
@@ -140,13 +137,6 @@ function hosting_drush_command() {
 }
 
 
-function _hosting_get_queue() {
-  return nodequeue_load( variable_get('hosting_action_queue', 1));
-}
-
-function _hosting_get_subqueue() {
-  return nodequeue_load_subqueue(variable_get('hosting_action_subqueue', 1));
-}
 
 function hosting_process_queue() {
   global $provision_errors;
@@ -158,27 +148,30 @@ function hosting_process_queue() {
   foreach ($actions as $action) {
     // create a new revision
     $action->changed = mktime();
-    $action->field_executed[0]['value'] = date("Y-m-d\TH:i:00", mktime()); # internal format used by date module
+    $action->field_executed[0]['value'] =  mktime(); # internal format used by date module
     $action->revision = true;
     node_save($action);
-    
+
     hosting_action_log($action->vid, "queue", t("Action starts processing"));
     $cmd = _hosting_provision_command($action);
+    
+    hosting_action_log($action->vid, 'command', "Executing: $cmd");
     exec(escapeshellcmd($cmd), $return, $code);
     $data = unserialize(trim(implode("\n", $return)));
 
     foreach ((array) $data['log'] as $log) {
-      hosting_action_log($action->vid, $log['type'], $log['message'], $log['severity']);
+      hosting_action_log($action->vid, $log['type'], $log['message'], $log['severity'], $log['timestamp']);
     }
     
     # Drupal message errors.
     foreach ((array) $data['messages']['error'] as $error) {
       if (preg_match("/^warning:/", $error)) {
-        hosting_action_log($action->vid, "warning", ereg_replace("/^warning: /", '', $error), 0);  
+        hosting_action_log($action->vid, "warning", ereg_replace("/^warning: /", '', $error), 0, $log['timestamp']);  
       }
-      if (preg_match("/^user warning:/", $error)) {
-        hosting_action_log($action->vid, "warning", ereg_replace("/^user warning: /", '', $error), 0);  
+      elseif (preg_match("/^user warning:/", $error)) {
+        hosting_action_log($action->vid, "warning", ereg_replace("/^user warning: /", '', $error), 0, $log['timestamp']);  
       }
+
     }
     
     if (!$code) {
@@ -221,7 +214,7 @@ function _hosting_provision_command($action) {
   foreach ($options as $key => $value) {
     $option_str .= " --$key $value";  
   }
-  printf("Executing: %s/drush.php provision %s %s -b %s", $release->field_path[0]['value'], $action->field_action_type[0]['value'], $site->title, $option_str);
+
   $command = sprintf("%s/drush.php provision %s %s -b %s", $release->field_path[0]['value'], $action->field_action_type[0]['value'], $site->title, $option_str);
   return $command;
 }
@@ -269,7 +262,7 @@ function hosting_nodeapi(&$node, $op) {
         if ($result) {
           $header = array("type", "message", "date");
           while ($entry = db_fetch_object($result)) {
-            $rows[] = array($entry->type, $entry->message, format_date("custom", $entry->timestamp, "mm:ss"));
+            $rows[] = array($entry->type, $entry->message, format_date($entry->timestamp, "custom", "Y-m-d m:s"));
           }
 
           $node->content['hosting_log'] = array(
@@ -461,4 +454,12 @@ function _hosting_default_web_server() {
 
 function _hosting_default_release() {
   return array( 0 => array( 'nid' => variable_get('hosting_default_release', 4) ),);
+}
+
+function _hosting_get_queue() {
+  return nodequeue_load( variable_get('hosting_action_queue', 1));
+}
+
+function _hosting_get_subqueue() {
+  return nodequeue_load_subqueue(variable_get('hosting_action_subqueue', 1));
 }
