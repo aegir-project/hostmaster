@@ -1,6 +1,8 @@
 <?php
 // $Id$
 
+include_once('profiles/hostmaster/modules/install_profile_api/crud.inc');
+
 /**
  * Return an array of the modules to be enabled when this profile is installed.
  *
@@ -9,47 +11,10 @@
  */
 function hostmaster_profile_modules() {
   return array(
-    'auto_nodetitle',
-    'block',
-    'cck_extras',
-    'cck_field_perms',
-    'cck_fullname',
-    'color',
-    'comment',
-    'content', 
-    'content_copy',
-    'cvs_deploy',
-    'date',
-    'date_api',
-    'drush',
-    'drush_pm', 
-    'drush_tools',
-    'email', 
-    'filter',
-    'help', 
-    'menu',
-    'node',
-    'nodequeue',
-    'nodereference',
-    'number', 
-    'optionwidgets',
-    'provision',
-    'provision_apache',
-    'provision_mysql',
-    'provision_drupal',
-    'system',
-    'taxonomy',
-    'text',
-    'token',
-    'update_status',
-    'user',
-    'userreference', 
-    'views',
-    'views_ui',
-    'watchdog', 
-    'hosting',
-    );
-
+    /* core */ 'block', 'color', 'filter', 'help', 'menu', 'node', 'system', 'user', 'watchdog',
+    /* contrib */ 'auto_nodetitle', 'drush', 'nodequeue', 'token', 'update_status', 'views', 'views_ui',
+    /* cck */ 'content', 'cck_fullname', 'date', 'date_api', 'email', 'nodereference', 'number', 'optionwidgets', 'password', 'text',
+    /* custom */ 'provision', 'provision_apache', 'provision_mysql', 'provision_drupal', 'hosting');
 }
 
 /**
@@ -149,7 +114,18 @@ function hostmaster_profile_final() {
    variable_set('hosting_action_subqueue', $subqueue->qid);
    
    
+   install_add_block("views", "releases", "garland", 1, 0, "right");
+   install_add_block("views", "servers", "garland", 1, 0, "right");
+   
    views_invalidate_cache();
    #initial configuration of hostmaster - todo
+   
+   variable_set('site_frontpage', 'sites');
+   
+   // @todo create proper roles, and set up views to be role based
+   install_set_permissions(install_get_rid('anonymous user'), array('access content', 'access all views'));
+   install_set_permissions(install_get_rid('authenticated user'), array('access content', 'access all views'));
+ 
+   
 
 }
