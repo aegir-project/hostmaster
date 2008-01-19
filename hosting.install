@@ -30,8 +30,54 @@ function hosting_install() {
 function _hosting_install_client_type() {
   db_query("INSERT INTO {node_type} VALUES ('client', 'Client', 'node', 'This is somebody who owns a site. This is not a user atm. but it might become one later.\r\n\r\nThe idea is that on the hosting system, multiple users may be associated with a client.\r\n', '', 1, 'Client Name', 0, '', 0, 1, 1, 0, '')");
 
-  _hosting_node_field_add('field_name','cck_fullname', array( 'use_middle' => 0, 'middle_initial' => 1, 
-    'max_length_first' => '', 'max_length_middle' => '1', 'max_length_last' => '',) ,1,0,1);
+  _hosting_node_field_add('field_name','cck_fullname', 
+  array (
+    'required_parts' => 
+    array (
+      'legal_first' => 'legal_first',
+      'legal_last' => 'legal_last',
+      'legal_prefix' => 0,
+      'legal_middle' => 0,
+      'legal_suffix' => 0,
+      'preferred_prefix' => 0,
+      'preferred_first' => 0,
+      'preferred_middle' => 0,
+      'preferred_last' => 0,
+      'preferred_suffix' => 0,
+    ),
+    'use_legalname' => 'legal_require',
+    'legalname' => 
+    array (
+      'legal_first' => 'legal_first',
+      'legal_middle' => 'legal_middle',
+      'legal_last' => 'legal_last',
+      'legal_prefix' => 0,
+      'legal_suffix' => 0,
+    ),
+    'use_preferredname' => 'preferred_hide',
+    'preferredname' => 
+    array (
+      'preferred_first' => 'preferred_first',
+      'preferred_middle' => 'preferred_middle',
+      'preferred_last' => 'preferred_last',
+      'preferred_prefix' => 0,
+      'preferred_suffix' => 0,
+    ),
+    'middle_initial' => 1,
+    'max_length_prefix_legal' => '',
+    'max_length_first_legal' => '',
+    'max_length_middle_legal' => '1',
+    'max_length_last_legal' => '',
+    'max_length_suffix_legal' => '',
+    'max_length_prefix_preferred' => '',
+    'max_length_first_preferred' => '',
+    'max_length_middle_preferred' => '1',
+    'max_length_last_preferred' => '',
+    'max_length_suffix_preferred' => '',
+  )
+  
+  
+   ,1,0,1);
   _hosting_node_field_instance_add('field_name','client',0,'Name','cck_fullname', null, array(),'');
   		  
   _hosting_node_field_add('field_organization','text', array( 'text_processing' => '0', 'max_length' => '30',
@@ -192,7 +238,7 @@ function _hosting_install_db_server_type() {
   array(),'Username with the permissions to create new databases and user accounts.');
     
   _hosting_node_field_add('field_master_password','text', array('text_processing' => '0', 'max_length' => '', 'allowed_values' => '','allowed_values_php' => '',),1,0,1);  
-  _hosting_node_field_instance_add('field_master_password','db_server',10,'Password','password',
+  _hosting_node_field_instance_add('field_master_password','db_server',10,'Password','text',
   array('default_value' => array(0 => array('value' => '', ), ), 'default_value_php' => '', 'rows' => '1',),
   array(),'Password for the database account used to create new databases and user accounts.');
   

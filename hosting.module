@@ -6,36 +6,25 @@
 
 include_once('provision_errors.inc');
 
-function hosting_menu($may_cache = true) {
-  if ($may_cache) {
-    $items[] = array(
-      'path' => 'hosting/introduction',
-      'title' => t('Introduction'),
-      'description' => t("In depth documentation on how to manage hosted sites."),
-      'callback' => 'hosting_Introduction',
-      'access' => user_access('administer provisioning') || variable_set('hosting_help_acknowledged', 0),
-      'type' => MENU_CALLBACK
-    );
+function _hosting_introduction() {
+  $create_site_link = l(t('Create a site now?'), 'node/add/site');
+  if ($_GET['q'] != variable_get('site_frontpage', 'node')) {
+    return t("No sites have been created yet. !link", array(
+      '!link' => $create_site_link));
   }
   else {
-    if ((arg(0) == 'node') && (is_numeric(arg(1)))) {
-      $node = node_load(arg(1));
-      if ($node->type == 'site') {
-        $items[] = array(
-          'path' => 'node/' . arg(1) . '/actions',
-          'title' => t('Hosting Actions'),
-          'description' => t("Request a specific action to be taken on this site."),
-          'callback' => 'drupal_get_form',
-          'callback arguments' => array('hosting_action_request', $node),
-          'access' => user_access('administer provisioning'),
-          'type' => MENU_LOCAL_TASK,
-          'weight' => 2
-        );
-      }
-    }
+    drupal_set_title('Welcome to your Hosting site.');
+    $docs = <<<EOF
+    Useful help text goes here, and will disappear when the first site is created. $create_site_link
+EOF;
+
+    return $docs;
+
   }
-  return $items;
+  
 }
+
+
 
 function hosting_action_request($node) {
   $options['backup'] = t('Backup site');
@@ -219,7 +208,7 @@ function _hosting_provision_command($action) {
   return $command;
 }
 
-function hosting_nodeapi(&$node, $op) {
+function hosting_nodeapi(&$node, $op, $teaser) {
 
   switch ($op) {
     case 'validate' :
@@ -238,38 +227,41 @@ function hosting_nodeapi(&$node, $op) {
         hosting_add_site_action($node->nid, 'synch');
       }
     case 'view' :
-      if ($node->type == 'site') {
-        $view = views_get_view('actions_per_site');
-        $node->content['actions_view'] = array(
-          '#type' => 'item',
-          '#title' => t("Actions"),
-          '#value' => views_build_view('embed', $view, array($node->nid)), 
-          '#weight' => 10
-        );
-      }
-      if ($node->type == 'client') {
-        $view = views_get_view('sites_embed');
-        $node->content['sites_view'] = array(
-          '#type' => 'item',
-          '#title' => t("Sites"),
-          '#value' => views_build_view('embed', $view, array($node->nid)), 
-          '#weight' => 10
-        );
-      }
-      if ($node->type == 'action') {
-        # Display table containing the logged information for this action
-        $result = db_query("SELECT * FROM {action_log} WHERE vid=%d", $node->vid);
-        if ($result) {
-          $header = array("type", "message", "date");
-          while ($entry = db_fetch_object($result)) {
-            $rows[] = array($entry->type, $entry->message, format_date($entry->timestamp, "custom", "Y-m-d m:s"));
-          }
-
-          $node->content['hosting_log'] = array(
-            '#weight' => 1,
-            '#value' => theme_table($header, (array) $rows)
+      if (!$teaser) {
+        if ($node->type == 'site') {
+          $view = views_get_view('actions_per_site');
+          $node->content['actions_view'] = array(
+            '#type' => 'item',
+            '#title' => t("Actions"),
+            '#value' => views_build_view('embed', $view, array($node->nid)), 
+            '#weight' => 10
           );
         }
+        if ($node->type == 'client') {
+          $view = views_get_view('sites_embed');
+          $node->content['sites_view'] = array(
+            '#type' => 'item',
+            '#title' => t("Sites"),
+            '#value' => views_build_view('embed', $view, array($node->nid)), 
+            '#weight' => 10
+          );
+        }
+        if ($node->type == 'action') {
+          # Display table containing the logged information for this action
+          $result = db_query("SELECT * FROM {action_log} WHERE vid=%d", $node->vid);
+          if ($result) {
+            $header = array("type", "message", "date");
+            while ($entry = db_fetch_object($result)) {
+              $rows[] = array($entry->type, $entry->message, format_date($entry->timestamp, "custom", "Y-m-d m:s"));
+            }
+
+            $node->content['hosting_log'] = array(
+              '#weight' => 1,
+              '#value' => theme_table($header, (array) $rows)
+            );
+          }
+        }
+        
       }
       break;
     
@@ -301,7 +293,7 @@ function hosting_views_default_views() {
   $view->page_empty = t('No sites available.');
   $view->page_empty_format = '1';
   $view->page_type = 'table';
-  $view->url = 'sites';
+  $view->url = 'sites_embed';
   $view->use_pager = TRUE;
   $view->nodes_per_page = '10';
   $view->sort = array (
@@ -427,6 +419,227 @@ function hosting_views_default_views() {
   $view->exposed_filter = array (
   );
   $view->requires = array(node, node_data_field_action_type, node_data_field_action_status);
+  $views[$view->name] = $view;
+
+
+  $view = new stdClass();
+  $view->name = 'sites';
+  $view->description = 'List of sites on the system';
+  $view->access = array (
+);
+  $view->view_args_php = '';
+  $view->page = TRUE;
+  $view->page_title = 'Hosted sites';
+    $view->access = array (
+    0 => '1',
+    1 => '2',
+  );  
+  $view->page_header = '';
+  $view->page_header_format = '1';
+  $view->page_footer = '';
+  $view->page_footer_format = '1';
+  $view->page_empty = '<?php return _hosting_introduction(); ?>';
+  $view->page_empty_format = '2';
+  $view->page_type = 'table';
+  $view->url = 'sites';
+  $view->use_pager = TRUE;
+  $view->nodes_per_page = '20';
+  $view->sort = array (
+    array (
+      'tablename' => 'node',
+      'field' => 'nid',
+      'sortorder' => 'ASC',
+      'options' => '',
+    ),
+  );
+  $view->argument = array (
+  );
+  $view->field = array (
+    array (
+      'tablename' => 'node',
+      'field' => 'title',
+      'label' => 'Domain',
+      'handler' => 'views_handler_field_nodelink',
+      'options' => 'link',
+    ),
+    array (
+      'tablename' => 'node_data_field_client',
+      'field' => 'field_client_nid',
+      'label' => 'Owner',
+      'handler' => 'content_views_field_handler_group',
+      'options' => 'default',
+    ),
+    array (
+      'tablename' => 'node',
+      'field' => 'created',
+      'label' => 'Created',
+      'handler' => 'views_handler_field_date',
+    ),
+    array (
+      'tablename' => 'node_data_field_release',
+      'field' => 'field_release_nid',
+      'label' => 'Release',
+      'handler' => 'content_views_field_handler_group',
+      'options' => 'default',
+    ),
+    array (
+      'tablename' => 'node_data_field_db_server',
+      'field' => 'field_db_server_nid',
+      'label' => 'Database Server',
+      'handler' => 'content_views_field_handler_group',
+      'options' => 'default',
+    ),
+  );
+  $view->filter = array (
+    array (
+      'tablename' => 'node',
+      'field' => 'type',
+      'operator' => 'OR',
+      'options' => '',
+      'value' => array (
+  0 => 'site',
+),
+    ),
+  );
+  $view->exposed_filter = array (
+  );
+  $view->requires = array(node, node_data_field_client, node_data_field_release, node_data_field_db_server);
+  $views[$view->name] = $view;
+
+
+  $view = new stdClass();
+  $view->name = 'servers';
+  $view->description = 'List of available servers which sites can be hosted on.';
+  $view->access = array (
+);
+  $view->view_args_php = '';
+  $view->page = TRUE;
+  $view->page_title = 'Servers available';
+  $view->page_header = '';
+  $view->page_header_format = '1';
+  $view->page_footer = '';
+  $view->page_footer_format = '1';
+  $view->page_empty = '';
+  $view->page_empty_format = '1';
+  $view->page_type = 'table';
+  $view->url = 'servers';
+  $view->use_pager = TRUE;
+  $view->nodes_per_page = '10';
+  $view->block = TRUE;
+  $view->block_title = 'Servers';
+  $view->block_header = '';
+  $view->block_header_format = '1';
+  $view->block_footer = '';
+  $view->block_footer_format = '1';
+  $view->block_empty = '';
+  $view->block_empty_format = '1';
+  $view->block_type = 'table';
+  $view->nodes_per_block = '5';
+  $view->block_more = TRUE;
+  $view->block_use_page_header = FALSE;
+  $view->block_use_page_footer = FALSE;
+  $view->block_use_page_empty = FALSE;
+  $view->sort = array (
+  );
+  $view->argument = array (
+  );
+  $view->field = array (
+    array (
+      'tablename' => 'node',
+      'field' => 'type',
+      'label' => 'Type',
+    ),
+    array (
+      'tablename' => 'node',
+      'field' => 'title',
+      'label' => 'Hostname',
+      'handler' => 'views_handler_field_nodelink',
+      'options' => 'link',
+    ),
+  );
+  $view->filter = array (
+    array (
+      'tablename' => 'node',
+      'field' => 'type',
+      'operator' => 'OR',
+      'options' => '',
+      'value' => array (
+  0 => 'db_server',
+  1 => 'web_server',
+),
+    ),
+  );
+  $view->exposed_filter = array (
+  );
+  $view->requires = array(node);
+  $views[$view->name] = $view;
+
+  $view = new stdClass();
+  $view->name = 'releases';
+  $view->description = 'List of available releases which sites can be hosted on.';
+  $view->access = array (
+);
+  $view->view_args_php = '';
+  $view->page = TRUE;
+  $view->page_title = 'Releases available';
+  $view->page_header = '';
+  $view->page_header_format = '1';
+  $view->page_footer = '';
+  $view->page_footer_format = '1';
+  $view->page_empty = '';
+  $view->page_empty_format = '1';
+  $view->page_type = 'table';
+  $view->url = 'releases';
+  $view->use_pager = TRUE;
+  $view->nodes_per_page = '10';
+  $view->block = TRUE;
+  $view->block_title = 'Releases';
+  $view->block_header = '';
+  $view->block_header_format = '1';
+  $view->block_footer = '';
+  $view->block_footer_format = '1';
+  $view->block_empty = '';
+  $view->block_empty_format = '1';
+  $view->block_type = 'table';
+  $view->nodes_per_block = '5';
+  $view->block_more = TRUE;
+  $view->block_use_page_header = FALSE;
+  $view->block_use_page_footer = FALSE;
+  $view->block_use_page_empty = FALSE;
+  $view->sort = array (
+  );
+  $view->argument = array (
+  );
+  $view->field = array (
+    array (
+      'tablename' => 'node',
+      'field' => 'title',
+      'label' => 'Release',
+      'handler' => 'views_handler_field_nodelink',
+      'options' => 'link',
+    ),
+    array (
+      'tablename' => 'node_data_field_web_server',
+      'field' => 'field_web_server_nid',
+      'label' => 'Server',
+      'handler' => 'content_views_field_handler_group',
+      'options' => 'default',
+    ),
+  );
+  $view->filter = array (
+    array (
+      'tablename' => 'node',
+      'field' => 'type',
+      'operator' => 'OR',
+      'options' => '',
+      'value' => array (
+  0 => 'release',
+),
+    ),
+  );
+  $view->exposed_filter = array (
+  );
+  $view->requires = array(node, node_data_field_web_server);
   $views[$view->name] = $view;
 
   
