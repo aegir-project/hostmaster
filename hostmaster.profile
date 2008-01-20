@@ -117,7 +117,7 @@ function hostmaster_profile_final() {
    install_add_block("views", "releases", "garland", 1, 0, "right");
    install_add_block("views", "servers", "garland", 1, 0, "right");
    
-   views_invalidate_cache();
+   
    #initial configuration of hostmaster - todo
    
    variable_set('site_frontpage', 'sites');
@@ -125,7 +125,6 @@ function hostmaster_profile_final() {
    // @todo create proper roles, and set up views to be role based
    install_set_permissions(install_get_rid('anonymous user'), array('access content', 'access all views'));
    install_set_permissions(install_get_rid('authenticated user'), array('access content', 'access all views'));
- 
-   
-
+   views_invalidate_cache();
+   menu_rebuild();
 }
