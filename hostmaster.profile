@@ -68,23 +68,22 @@ function hostmaster_profile_final() {
 
   $node = array('type' => 'web_server');
   $values = array();
-  $values['title'] = 'localhost';
-  $values['field_user'][0]['value'] = 'hosting';
-  $values['field_group'][0]['value'] = 'apache';
+  $values['title'] = $_SERVER['HTTP_HOST'];
+  $values['field_user'][0]['value'] = provision_get_script_owner();
+  $values['field_group'][0]['value'] = provision_get_group_name();
   $values['status'] = 1;
   drupal_execute('web_server_node_form', $values, $node);
   variable_set('hosting_default_web_server', 3);
 
-  /* Default release */
-  $node = array('type' => 'release');
+  /* Default platform */
+  $node = array('type' => 'platform');
   $values = array();
-  $values['title'] = 'Default release';
-  $docroot = ($_SERVER['DOCUMENT_ROOT']) ? $_SERVER['DOCUMENT_ROOT'] : $_SERVER['PWD'];
-  $values['field_path'][0]['value'] = ereg_replace("/webroot$", "", $docroot);
+  $values['title'] = "Drupal " . VERSION . ' on '. $_SERVER['HTTP_HOST'];
+  $values['field_publish_path'][0]['value'] = $_SERVER['DOCUMENT_ROOT'];
   $values['field_web_server'][0]['nid'] = variable_get('hosting_default_web_server', 3);
   $values['status'] = 1;
-  drupal_execute('release_node_form', $values, $node);
-  variable_set('hosting_default_release', 4);  
+  drupal_execute('platform_node_form', $values, $node);
+  variable_set('hosting_default_platform', 4);  
   
   # Action queue
   $queue = (object) array(
@@ -114,7 +113,7 @@ function hostmaster_profile_final() {
    variable_set('hosting_action_subqueue', $subqueue->qid);
    
    
-   install_add_block("views", "releases", "garland", 1, 0, "right");
+   install_add_block("views", "platforms", "garland", 1, 0, "right");
    install_add_block("views", "servers", "garland", 1, 0, "right");
    
    
