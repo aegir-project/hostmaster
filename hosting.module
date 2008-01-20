@@ -35,6 +35,43 @@ function _hosting_introduction() {
   
 }
 
+/**
+ * Implementation of hook_help()
+ */
+function hosting_help($section) {
+  switch ($section) {
+    case 'admin/help#hosting':
+      $output .= t('<p>The Hosting framework is a set of modules that provide an interface to the <a href="@provision_help">Provisioning framework</a>.</p>', array('@provision_help' => url('admin/help/provision')));
+
+      $output .= '<a name=\'requirements\'><h3>' . t('Requirements') . '</h3></a>';
+      $output .= '<ul>';
+      $output .= '<li>' . t('<strong>Correctly configured provisioning framework.</strong> This system requires the <a href="@provision_help">Provisioning framework</a> to be configured and working for changes to have any effect. The framework can be configured in the <a href="@provision_section">Provisioning section</a>', array('@provision_help' => url('admin/help/provision'), '@provision_section' => url('admin/settings/provision'))) . '</li>';
+      $output .= '<li>' . t('<strong>A cron entry for the back end scripts.</strong> Changes to this system are executed via a back end script which needs to be called by a user other than the web server user (for security reasons) at regular intervals (every 2-3 minutes)') . '</li>';
+      $output .= '</ul>';
+      
+      $output .= '<a name=\'commands\'><h3>' . t('Commands') . '</h3></a>';
+      $commands = module_invoke_all('drush_command');
+      $output .= "<dl>";
+      foreach ($commands as $command => $info) {
+        if (preg_match('/^hosting/', $command)) {
+          if (sizeof($info['arguments'])) {
+            $command .= ' ' . implode(' ', (array) key($info['arguments']));  
+          }
+          
+          if (sizeof($info['optional arguments'])) {
+            $command .= ' [' . implode('] [', (array) key($info['optional arguments'])) . ']';  
+          }
+          $output .= '<dt>' . "<code>drush.php $command</code>" . '</dt>';
+          $output .= '<dd>' .  $info["description"] . '</dd>';
+        }
+      }
+      $output .= "</dl>";
+
+  
+      return $output;
+
+  }
+}
 
 
 function hosting_action_request($node) {
@@ -72,7 +109,7 @@ function hosting_add_site_action($nid, $type, $args = null) {
   $action->status = 1;
   $action->title = t("!type !title", array('!type' => $type, '!title' => $node->title) );
   $action->field_action_type[0]['value'] = $type;
-  $action->field_site[0]['nid'] = $node->nid;
+  $action->field_reference[0]['nid'] = $node->nid;
   node_save($action);
   
   $queue = _hosting_get_queue();
@@ -82,19 +119,19 @@ function hosting_add_site_action($nid, $type, $args = null) {
 
 function hosting_expand_action($action) {
   # load all it's related items
-  $site = node_load($action->field_site[0]['nid']);
+  $site = node_load($action->field_reference[0]['nid']);
   $type = $actions->field_action_type[0]['value'];
   extract(hosting_expand_site($site));
-  return compact("site", "client", "type", "db_server", "release", "web_server");
+  return compact("site", "client", "type", "db_server", "platform", "web_server");
 }
 
 function hosting_expand_site($site) {
   $client = node_load($site->field_client[0]['nid']);
   $type = $action->field_action_type[0]['value'];
   $db_server = node_load($site->field_db_server[0]['nid']);
-  $release = node_load($site->field_release[0]['nid']);
-  $web_server = node_load($release->field_web_server[0]['nid']);
-  return compact("client", "type", "db_server", "release", "web_server");
+  $platform = node_load($site->field_platform[0]['nid']);
+  $web_server = node_load($platform->field_web_server[0]['nid']);
+  return compact("client", "type", "db_server", "platform", "web_server");
 }
 
 function hosting_action_log($vid, $type, $message, $severity = 0, $timestamp = null ) {
@@ -123,9 +160,9 @@ function hosting_drush_command() {
     'description' => 'Process the queue of outstanding hosting actions.'
   );
 
-  $items['hosting import release'] = array(
-    'callback' => 'hosting_import_release',
-    'description' => 'Generate a release node for an already installed release.'
+  $items['hosting import platform'] = array(
+    'callback' => 'hosting_import_platform',
+    'description' => 'Generate a platform node for an already installed platform.'
   );
 
   $items['hosting import site'] = array(
@@ -158,7 +195,10 @@ function hosting_process_queue() {
     hosting_action_log($action->vid, 'command', "Executing: $cmd");
     exec(escapeshellcmd($cmd), $return, $code);
     $data = unserialize(trim(implode("\n", $return)));
-
+    if (!is_array($data)) {
+      hosting_action_log($action->vid, 'error', t("The command could not be executed succesfully."));
+      $code = PROVISION_FRAMEWORK_ERROR;
+    }
     foreach ((array) $data['log'] as $log) {
       hosting_action_log($action->vid, $log['type'], $log['message'], $log['severity'], $log['timestamp']);
     }
@@ -215,7 +255,7 @@ function _hosting_provision_command($action) {
     $option_str .= " --$key $value";  
   }
 
-  $command = sprintf("%s/drush.php provision %s %s -b %s", $release->field_path[0]['value'], $action->field_action_type[0]['value'], $site->title, $option_str);
+  $command = sprintf("%s/drush.php provision %s %s -b %s", $platform->field_publish_path[0]['value'], $action->field_action_type[0]['value'], $site->title, $option_str);
   return $command;
 }
 
@@ -373,7 +413,7 @@ function hosting_views_default_views() {
   );
   $view->argument = array (
     array (
-      'type' => 'content: field_site',
+      'type' => 'content: field_reference',
       'argdefault' => '1',
       'title' => '',
       'options' => '',
@@ -487,9 +527,9 @@ function hosting_views_default_views() {
       'handler' => 'views_handler_field_date',
     ),
     array (
-      'tablename' => 'node_data_field_release',
-      'field' => 'field_release_nid',
-      'label' => 'Release',
+      'tablename' => 'node_data_field_platform',
+      'field' => 'field_platform_nid',
+      'label' => 'Platform',
       'handler' => 'content_views_field_handler_group',
       'options' => 'default',
     ),
@@ -514,7 +554,7 @@ function hosting_views_default_views() {
   );
   $view->exposed_filter = array (
   );
-  $view->requires = array(node, node_data_field_client, node_data_field_release, node_data_field_db_server);
+  $view->requires = array(node, node_data_field_client, node_data_field_platform, node_data_field_db_server);
   $views[$view->name] = $view;
 
 
@@ -586,13 +626,13 @@ function hosting_views_default_views() {
   $views[$view->name] = $view;
 
   $view = new stdClass();
-  $view->name = 'releases';
-  $view->description = 'List of available releases which sites can be hosted on.';
+  $view->name = 'platforms';
+  $view->description = 'List of available platforms which sites can be hosted on.';
   $view->access = array (
 );
   $view->view_args_php = '';
   $view->page = TRUE;
-  $view->page_title = 'Releases available';
+  $view->page_title = 'Platforms available';
   $view->page_header = '';
   $view->page_header_format = '1';
   $view->page_footer = '';
@@ -600,11 +640,11 @@ function hosting_views_default_views() {
   $view->page_empty = '';
   $view->page_empty_format = '1';
   $view->page_type = 'table';
-  $view->url = 'releases';
+  $view->url = 'platforms';
   $view->use_pager = TRUE;
   $view->nodes_per_page = '10';
   $view->block = TRUE;
-  $view->block_title = 'Releases';
+  $view->block_title = 'Platforms';
   $view->block_header = '';
   $view->block_header_format = '1';
   $view->block_footer = '';
@@ -625,17 +665,11 @@ function hosting_views_default_views() {
     array (
       'tablename' => 'node',
       'field' => 'title',
-      'label' => 'Release',
+      'label' => 'Platform',
       'handler' => 'views_handler_field_nodelink',
       'options' => 'link',
     ),
-    array (
-      'tablename' => 'node_data_field_web_server',
-      'field' => 'field_web_server_nid',
-      'label' => 'Server',
-      'handler' => 'content_views_field_handler_group',
-      'options' => 'default',
-    ),
+
   );
   $view->filter = array (
     array (
@@ -644,13 +678,13 @@ function hosting_views_default_views() {
       'operator' => 'OR',
       'options' => '',
       'value' => array (
-  0 => 'release',
+  0 => 'platform',
 ),
     ),
   );
   $view->exposed_filter = array (
   );
-  $view->requires = array(node, node_data_field_web_server);
+  $view->requires = array(node);
   $views[$view->name] = $view;
 
   
@@ -676,8 +710,8 @@ function _hosting_default_web_server() {
   return array( 0 => array( 'nid' => variable_get('hosting_default_web_server', 3) ),);
 }
 
-function _hosting_default_release() {
-  return array( 0 => array( 'nid' => variable_get('hosting_default_release', 4) ),);
+function _hosting_default_platform() {
+  return array( 0 => array( 'nid' => variable_get('hosting_default_platform', 4) ),);
 }
 
 function _hosting_get_queue() {

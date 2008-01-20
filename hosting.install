@@ -7,7 +7,7 @@ function hosting_install() {
   _hosting_install_action_type();
   _hosting_install_db_server_type();
   _hosting_install_web_server_type();
-  _hosting_install_release_type();  
+  _hosting_install_platform_type();  
   _hosting_install_cck_shared_fields();
 
   # Logging table for backend action calls
@@ -117,23 +117,23 @@ function _hosting_install_site_type() {
   db_query("INSERT INTO {node_type} VALUES ('site', 'Site', 'node', 'hosted site', '', 1, 'URL', 0, '', 0, 1, 1, 0, '')");
   
   _hosting_node_field_add('field_client','nodereference', array('referenceable_types' => 
-    array('client' => 'client', 'action' => 0, 'db_server' => 0, 'release' => 0, 'site' => 0, 'web_server' => 0,),
+    array('client' => 'client', 'action' => 0, 'db_server' => 0, 'platform' => 0, 'site' => 0, 'web_server' => 0,),
     'advanced_view' => '--','advanced_view_args' => '',),1,0,1);
   _hosting_node_field_instance_add('field_client','site',0,'Client','nodereference_autocomplete',
     array('default_value' => array(  ), 'default_value_php' => 'return _hosting_default_client();',),
     array(),'Person or organization who owns this site.');
   		
   _hosting_node_field_add('field_db_server','nodereference', array('referenceable_types' => 
-    array( 'db_server' => 'db_server', 'action' => 0, 'client' => 0, 'release' => 0, 'site' => 0, 'web_server' => 0, ),
+    array( 'db_server' => 'db_server', 'action' => 0, 'client' => 0, 'platform' => 0, 'site' => 0, 'web_server' => 0, ),
     'advanced_view' => '--', 'advanced_view_args' => '',),1,0,1);
   _hosting_node_field_instance_add('field_db_server','site',0,'Database server','nodereference_select',
     array('default_value' => array(0 => array('nid' => '0',   'error_field' => 'field_db_server][nids', ), ), 'default_value_php' => 'return _hosting_default_db_server();',),  array(),'');
   		  
-  _hosting_node_field_add('field_release','nodereference', array('referenceable_types' => 
-    array('release' => 'release', 'action' => 0, 'actionnew' => 0, 'client' => 0, 'db_server' => 0, 'panel' => 0, 'site' => 0, 'web_server' => 0,),
+  _hosting_node_field_add('field_platform','nodereference', array('referenceable_types' => 
+    array('platform' => 'platform', 'action' => 0, 'actionnew' => 0, 'client' => 0, 'db_server' => 0, 'panel' => 0, 'site' => 0, 'web_server' => 0,),
     'advanced_view' => '--', 'advanced_view_args' => '',),1,0,1);
-  _hosting_node_field_instance_add('field_release','site',0,'Release','nodereference_autocomplete',
-  array('default_value' => array(  ), 'default_value_php' => 'return _hosting_default_release();',),
+  _hosting_node_field_instance_add('field_platform','site',0,'platform','nodereference_autocomplete',
+  array('default_value' => array(  ), 'default_value_php' => 'return _hosting_default_platform();',),
   array(),'');
   		  
   _hosting_node_field_add('field_last_cron','date', array('granularity' => 
@@ -152,7 +152,7 @@ function _hosting_install_site_type() {
     nid int(10) unsigned NOT NULL default '0',
     field_client_nid int(11) NOT NULL default '0',
     field_db_server_nid int(11) NOT NULL default '0',
-    field_release_nid int(11) NOT NULL default '0',
+    field_platform_nid int(11) NOT NULL default '0',
     field_last_cron_value varchar(20) default NULL, 
     PRIMARY KEY  (vid)
   ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
@@ -174,10 +174,10 @@ function _hosting_install_action_type() {
   array('default_value' => array(0 => array('value' => '', ), ), 'default_value_php' => '',),
   array(),'');
   
-  _hosting_node_field_add('field_site','nodereference', array('referenceable_types' => 
-    array('site' => 'site', 0 => 1, 'action' => 0, 'client' => 0, 'panel' => 0,'actionnew' => false,),
+  _hosting_node_field_add('field_reference','nodereference', array('referenceable_types' => 
+    array('site' => 'site', 'platform' => 'platform',  'action' => 0, 'client' => 0, ),
     'advanced_view' => '--', 'advanced_view_args' => '',),1,0,1);
-  _hosting_node_field_instance_add('field_site','action',0,'Site','nodereference_nid',
+  _hosting_node_field_instance_add('field_reference','action',0,'Reference','nodereference_nid',
   array('default_value' => array(  ), 'default_value_php' => '',),
   array(),'');
   
@@ -196,7 +196,7 @@ function _hosting_install_action_type() {
     nid int(10) unsigned NOT NULL default '0',
     field_action_type_value longtext,
     field_executed_value int(11) default NULL,
-    field_site_nid int(11) NOT NULL default '0', 
+    field_reference_nid int(11) NOT NULL default '0', 
     PRIMARY KEY  (vid)
   ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
 
@@ -256,27 +256,27 @@ function _hosting_install_db_server_type() {
 
 
 /**
- * Install function for the release node type. Additionally creates a default release for the current tree.
+ * Install function for the platform node type. Additionally creates a default platform for the current tree.
  */
-function _hosting_install_release_type() { 
-  db_query("INSERT INTO {node_type} VALUES ('release', 'Release', 'node', 'Point where the data is published.', '', 1, 'Release name', 0, '', 0, 1, 1, 0, '')");
+function _hosting_install_platform_type() {
+  db_query("INSERT INTO {node_type} VALUES ('platform', 'Platform', 'node', 'Point where the data is published.', '', 1, 'Platform', 0, '', 0, 1, 1, 0, '')");
 
-  _hosting_node_field_add('field_path','text', array('text_processing' => '0', 'max_length' => '', 'allowed_values' => '', 'allowed_values_php' => '',
+  _hosting_node_field_add('field_publish_path','text', array('text_processing' => '0', 'max_length' => '', 'allowed_values' => '', 'allowed_values_php' => '',
 ),1,0,1);
-  _hosting_node_field_instance_add('field_path','release',0,'Path','text',
+  _hosting_node_field_instance_add('field_publish_path','platform',0,'Path','text',
       array('default_value' => array(),'default_value_php' => 'return _hosting_default_path();', 'rows' => '1',),array(),'');  
 
   _hosting_node_field_add('field_web_server','nodereference', array('referenceable_types' => 
-    array('web_server' => 'web_server', 'action' => 0, 'actionnew' => 0, 'client' => 0, 'db_server' => 0, 'panel' => 0, 'release' => 0, 'site' => 0,),
+    array('web_server' => 'web_server', 'action' => 0, 'actionnew' => 0, 'client' => 0, 'db_server' => 0, 'panel' => 0, 'platform' => 0, 'site' => 0,),
     'advanced_view' => '--', 'advanced_view_args' => '',),0,0,1);
-  _hosting_node_field_instance_add('field_web_server','release',0,'Web server','nodereference_autocomplete',
+  _hosting_node_field_instance_add('field_web_server','platform',0,'Web server','nodereference_autocomplete',
   array('default_value' => array(  ), 'default_value_php' => 'return _hosting_default_web_server();',),
   array(),'');
 
-  db_query("CREATE TABLE {content_type_release} (
+  db_query("CREATE TABLE {content_type_platform} (
     vid int(10) unsigned NOT NULL default '0',
     nid int(10) unsigned NOT NULL default '0',
-    field_path_value longtext,
+    field_publish_path_value longtext,
     field_web_server_nid int(11) NOT NULL default '0',
     PRIMARY KEY  (vid)
   ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
@@ -300,12 +300,25 @@ function _hosting_install_web_server_type() {
   _hosting_node_field_instance_add('field_group','web_server',0,'Group','text',
   array('default_value' => array(0 => array('value' => '', ), ), 'default_value_php' => '', 'rows' => '1',),
   array(),'');
-  
+
+  _hosting_node_field_add('field_vhost_path','text', array('text_processing' => '0', 'max_length' => '', 'allowed_values' => '', 'allowed_values_php' => '',
+),1,0,1);
+  _hosting_node_field_instance_add('field_vhost_path','web_server',0,'Virtual host configuration path','text',
+      array('default_value' => array(),'default_value_php' => '', 'rows' => '1',),array(), 'The path where all the webserver\'s Virtual Host configuration files will be stored. This path should not be web-accessible.');  
+
+  _hosting_node_field_add('field_backup_path','text', array('text_processing' => '0', 'max_length' => '', 'allowed_values' => '', 'allowed_values_php' => '',
+),1,0,1);
+  _hosting_node_field_instance_add('field_backup_path','web_server',0,'Site backup path','text',
+      array('default_value' => array(),'default_value_php' => '', 'rows' => '1',),array(), 'The path where all the backups will be stored. This path should not be web-accessible.');  
+
   db_query("CREATE TABLE {content_type_web_server} (
     vid int(10) unsigned NOT NULL default '0',
     nid int(10) unsigned NOT NULL default '0',
     field_web_user_value longtext,
     field_group_value longtext,
+    field_vhost_path_value longtext,
+    field_backup_path_value longtext,
+           
     PRIMARY KEY  (vid)
   ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
 
