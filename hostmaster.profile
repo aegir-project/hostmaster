@@ -65,7 +65,8 @@ function hostmaster_profile_final() {
   $values['status'] = 1;
   $messages = drupal_execute('db_server_node_form', $values, $node);
   variable_set('hosting_default_db_server', 2);
-
+  variable_set('hosting_own_db_server', 2);
+  
   $node = array('type' => 'web_server');
   $values = array();
   $values['title'] = $_SERVER['HTTP_HOST'];
@@ -83,7 +84,8 @@ function hostmaster_profile_final() {
   $values['field_web_server'][0]['nid'] = variable_get('hosting_default_web_server', 3);
   $values['status'] = 1;
   drupal_execute('platform_node_form', $values, $node);
-  variable_set('hosting_default_platform', 4);  
+  variable_set('hosting_default_platform', 4);
+  variable_set('hosting_own_platform', 4);
   
   # Action queue
   $queue = (object) array(
