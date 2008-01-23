@@ -4,36 +4,7 @@
  * Contains small helper functions for hosting infrastructure. It's basically glue.
  */
 
-include_once('provision_errors.inc');
-
-function _hosting_introduction() {
-  $create_site_link = l(t('Create a site now?'), 'node/add/site');
-  if ($_GET['q'] != variable_get('site_frontpage', 'node')) {
-    return t("No sites have been created yet. !link", array(
-      '!link' => $create_site_link));
-  }
-  else {
-    drupal_set_title('Welcome to your new Hosting website!');
-    $default_message = t('<p>Please follow these steps to set up and start using your website:</p>');
-    $default_message .= '<ol>';
-
-    if (!$admin) {
-      $default_message .= '<li>'. t('<strong>Create your administrator account</strong> To begin, <a href="@register">create the first account</a>. This account will have full administration rights and will allow you to configure your website.', array('@register' => url('user/register'))) .'</li>';
-    }
-    $default_message .= '<li>'. t('<strong>Configure your website</strong> Once logged in, visit the <a href="@admin">administration section</a>, where you can <a href="@config">customize and configure</a> all aspects of your website.', array('@admin' => url('admin'), '@config' => url('admin/settings'))) .'</li>';
-    $default_message .= '<li>'. t('<strong>Configure the provisioning framework.</strong> To be able to create new drupal sites, you will need to complete the <a href="@provision">provisioning section</a>. You will be required to fill in information regarding your server, find out more about the <a href="@requirements">requirements for the provisioning framework</a>.', array('@provision' => url('admin/settings/provision'), '@requirements' => 'admin/help/provision#requirements')) .'</li>';
-    $default_message .= '<li>'. t('<strong>Set up a cron entry to generate your sites.</strong> The Hosting system uses a command line component (called Drush) to accomplish it\'s back end functionality. For any changes made to this site to have any effect, you will need to set up the "!command" command to run on a regular schedule.', array('!command' => '<code>drush.php hosting process</code>')) .'</li>';
-    $default_message .= '<li>'. t('<strong>Create your first hosted site.</strong> This system uses special site posts to store information about your sites, so you can simple <a href="@create_site">create a site post</a> to get your first hosted site running.', array('@create_site' => url('node/add/site'))) .'</li>';
-    $default_message .= '</ol>';
-    $default_message .= '<p>'. t('For more information, please refer to the <a href="@help">help section</a>, or the <a href="@handbook">online Drupal handbooks</a>. You may also post at the <a href="@forum">Drupal forum</a>, or view the wide range of <a href="@support">other support options</a> available.', array('@help' => url('admin/help'), '@handbook' => 'http://drupal.org/handbooks', '@forum' => 'http://drupal.org/forum', '@support' => 'http://drupal.org/support')) .'</p>';
-
-    $output = '<div id="first-time">'. $default_message .'</div>';
-
-    return $output;
-
-  }
-  
-}
+include_once('hosting.inc');
 
 /**
  * Implementation of hook_help()
@@ -73,85 +44,41 @@ function hosting_help($section) {
   }
 }
 
-
-function hosting_action_request($node) {
-  $options['backup'] = t('Backup site');
-  $options['synch'] = t('Regenerate configuration files');
-
-  $form['nid'] = array('#type' => 'value', '#value' => $node->nid);
-  
-  $form['action'] = array(
-    '#type' => 'radios',
-    '#title' => t('Action requested'),
-    '#options' => $options
-  );
-  
-  $form['submit'] = array(
-    '#type' => 'submit', 
-    '#value' => t('Request'),
-  );
-  
-  return $form;
-}
-
-function hosting_action_request_submit($form_id, $values) {
-  hosting_add_site_action($values['nid'], $values['action']);
-  return 'node/' . $values['nid'];
-}
-
-function hosting_add_site_action($nid, $type, $args = null) {
-  global $user;
-  
-  $node = node_load($nid);
-  $action = new stdClass();
-  $action->type = 'action';
-  $action->uid = $user->uid;
-  $action->status = 1;
-  $action->title = t("!type !title", array('!type' => $type, '!title' => $node->title) );
-  $action->field_action_type[0]['value'] = $type;
-  $action->field_reference[0]['nid'] = $node->nid;
-  node_save($action);
-  
-  $queue = _hosting_get_queue();
-  $subqueue = _hosting_get_subqueue();
-  nodequeue_subqueue_add($queue, $subqueue, $action->nid);
-}
-
-function hosting_expand_action($action) {
-  # load all it's related items
-  $site = node_load($action->field_reference[0]['nid']);
-  $type = $actions->field_action_type[0]['value'];
-  extract(hosting_expand_site($site));
-  return compact("site", "client", "type", "db_server", "platform", "web_server");
-}
-
-function hosting_expand_site($site) {
-  $client = node_load($site->field_client[0]['nid']);
-  $type = $action->field_action_type[0]['value'];
-  $db_server = node_load($site->field_db_server[0]['nid']);
-  $platform = node_load($site->field_platform[0]['nid']);
-  $web_server = node_load($platform->field_web_server[0]['nid']);
-  return compact("client", "type", "db_server", "platform", "web_server");
-}
-
-function hosting_action_log($vid, $type, $message, $severity = 0, $timestamp = null ) {
-  $timestamp = ($timestamp) ? $timestamp : mktime();
-  db_query("INSERT INTO {action_log} (vid, type, message, severity, timestamp) VALUES (%d, '%s', '%s', %d, %d)", $vid, $type, $message, $severity, $timestamp);
-}
-
-
-function hosting_form_alter($form_id, &$form) {
-  if ($form_id == 'site_node_form') {
-    $form['title']['#validate']['hosting_validate_site_title'] = array($form['nid']['#value']);
+function _hosting_introduction() {
+  $create_site_link = l(t('Create a site now?'), 'node/add/site');
+  if ($_GET['q'] != variable_get('site_frontpage', 'node')) {
+    return t("No sites have been created yet. !link", array(
+      '!link' => $create_site_link));
   }
-  if ($form_id == 'user_register') {
-    $form['destination'] = array('#type' => 'hidden', '#value' => 'node/1');
-    if ($_GET['q'] != 'user/register') {
-      $form['notify'] = array('#type' => 'hidden', '#value' => false);
-      $form['status'] = array('#type' => 'hidden', '#value' => 1);
-      $form['pass'] = array('#type' => 'value', '#value' => user_password());
+  else {
+    drupal_set_title('Welcome to your new Hosting website!');
+    $default_message = t('<p>Please follow these steps to set up and start using your website:</p>');
+    $default_message .= '<ol>';
+
+    if (!$admin) {
+      $default_message .= '<li>'. t('<strong>Create your administrator account</strong> To begin, <a href="@register">create the first account</a>. This account will have full administration rights and will allow you to configure your website.', array('@register' => url('user/register'))) .'</li>';
     }
+    $default_message .= '<li>'. t('<strong>Configure your website</strong>
+                    Once logged in, visit the <a href="@admin">administration section</a>,
+                    where you can <a href="@config">customize and configure</a> all aspects of your website.', 
+                    array('@admin' => url('admin'), '@config' => url('admin/settings'))) .'</li>';
+    $default_message .= '<li>'. t('<p><strong>Configure the provisioning framework.</strong>
+                    Before you configure the Provisioning framework, it is highly recommended that you first read the <a href="@requirements">Provision Requirement documentation</a>.
+                    It provides a step by step guide for configuring your server to use the framework.</p>
+                    <p>You will then need to complete the <a href="@provision">provisioning section</a> to configure the framework.</p>', 
+                    array('@provision' => url('admin/settings/provision'), 
+                    '@requirements' => url('admin/help/provision/requirements'))) .'</li>';
+    $default_message .= '<li>'. t('<strong>Set up a cron entry to generate your sites.</strong> The Hosting system uses a command line component (called Drush) to accomplish it\'s back end functionality. For any changes made to this site to have any effect, you will need to set up the "!command" command to run on a regular schedule.', array('!command' => '<code>drush.php hosting process</code>')) .'</li>';
+    $default_message .= '<li>'. t('<strong>Create your first hosted site.</strong> This system uses special site posts to store information about your sites, so you can simple <a href="@create_site">create a site post</a> to get your first hosted site running.', array('@create_site' => url('node/add/site'))) .'</li>';
+    $default_message .= '</ol>';
+    $default_message .= '<p>'. t('For more information, please refer to the <a href="@help">help section</a>, or the <a href="@handbook">online Drupal handbooks</a>. You may also post at the <a href="@forum">Drupal forum</a>, or view the wide range of <a href="@support">other support options</a> available.', array('@help' => url('admin/help'), '@handbook' => 'http://drupal.org/handbooks', '@forum' => 'http://drupal.org/forum', '@support' => 'http://drupal.org/support')) .'</p>';
+
+    $output = '<div id="first-time">'. $default_message .'</div>';
+
+    return $output;
+
   }
+  
 }
 
 function hosting_drush_command() {
@@ -172,8 +99,6 @@ function hosting_drush_command() {
   
   return $items;
 }
-
-
 
 function hosting_process_queue() {
   global $provision_errors;
@@ -259,6 +184,93 @@ function _hosting_provision_command($action) {
   return $command;
 }
 
+function hosting_action_request($node) {
+  $options['backup'] = t('Backup site');
+  $options['synch'] = t('Regenerate configuration files');
+
+  $form['nid'] = array('#type' => 'value', '#value' => $node->nid);
+  
+  $form['action'] = array(
+    '#type' => 'radios',
+    '#title' => t('Action requested'),
+    '#options' => $options
+  );
+  
+  $form['submit'] = array(
+    '#type' => 'submit', 
+    '#value' => t('Request'),
+  );
+  
+  return $form;
+}
+
+function hosting_action_request_submit($form_id, $values) {
+  hosting_add_site_action($values['nid'], $values['action']);
+  return 'node/' . $values['nid'];
+}
+
+
+function hosting_form_alter($form_id, &$form) {
+  if ($form_id == 'site_node_form') {
+    $form['title']['#validate']['hosting_validate_site_title'] = array($form['nid']['#value']);
+  }
+  if ($form_id == 'user_register') {
+    $form['destination'] = array('#type' => 'hidden', '#value' => 'node/1');
+    if ($_GET['q'] != 'user/register') {
+      $form['notify'] = array('#type' => 'hidden', '#value' => false);
+      $form['status'] = array('#type' => 'hidden', '#value' => 1);
+      $form['pass'] = array('#type' => 'value', '#value' => user_password());
+    }
+  }
+  if ($form_id == 'provision_configure') {
+    $form['#submit']['hosting_configure_provision'] = array();
+  }
+}
+
+function hosting_configure_provision($form_id, &$values) {
+  /**
+  * @todo Hosting site should have it's own site record.
+  */
+
+  $platform = node_load(variable_get('hosting_own_platform', 4));
+  $platform->revision = true;
+  $platform->field_platform_path[0]['value'] = $_SERVER['DOCUMENT_ROOT'];
+  node_save($platform);
+
+  $db_server = node_load(variable_get('hosting_own_db_server', 2));
+  $db_server->revision = true;
+  $db_server->title = $values['provision_mysql_host'];
+  $db_server->field_master_username[0]['value'] = $values['provision_mysql_user'];
+  $db_server->field_master_password[0]['value'] = $values['provision_mysql_password'];
+  node_save($db_server);
+  
+  $web_server = node_load($platform->field_web_server[0]['nid']);
+  $web_server->revision = true;
+ 
+  node_save($web_server);  
+}
+
+function hosting_configure_hosting($node) {
+  if ($node->nid == variable_get('hosting_own_' . $node->type, null)) {
+    switch ($node->type) {
+      case 'platform' :
+        variable_set('hosting_platform_path', $node->field_platform_path[0]['value']);
+        break;
+      case 'db_server' :
+       variable_set('provision_mysql_host', $node->title);
+       variable_set('provision_mysql_user', $node->field_master_username[0]['value']);
+       variable_set('provision_mysql_password', $node->field_master_password[0]['value']);
+        break;
+      case 'db_server' :
+        variable_set('provision_user', $node->field_user[0]['nid'] );
+        variable_set('provision_group', $node->field_group[0]['nid']);
+        variable_set('provision_vhost_path', $node->field_vhost_path[0]['nid']);
+        variable_set('provision_backup_path', $node->field_backup_path[0]['nid']);
+        break;                  
+    }
+  }
+}
+
 function hosting_nodeapi(&$node, $op, $teaser) {
 
   switch ($op) {
@@ -273,7 +285,8 @@ function hosting_nodeapi(&$node, $op, $teaser) {
         hosting_add_site_action($node->nid, 'install');
       }
       break;
-    case 'update' : 
+    case 'update' :
+      hosting_configure_hosting($node);
       if ($node->type == 'site') {
         hosting_add_site_action($node->nid, 'synch');
       }
