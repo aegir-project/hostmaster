@@ -13,7 +13,7 @@ function hostmaster_profile_modules() {
   return array(
     /* core */ 'block', 'color', 'filter', 'help', 'menu', 'node', 'system', 'user', 'watchdog',
     /* contrib */ 'auto_nodetitle', 'drush', 'nodequeue', 'token', 'update_status', 'views', 'views_ui',
-    /* cck */ 'content', 'cck_fullname', 'date', 'date_api', 'email', 'nodereference', 'number', 'optionwidgets', 'password', 'text',
+    /* cck */ 'content', 'cck_fullname', 'email', 'nodereference', 'number', 'optionwidgets', 'password', 'text',
     /* custom */ 'provision', 'provision_apache', 'provision_mysql', 'provision_drupal', 'hosting');
 }
 
@@ -79,13 +79,17 @@ function hostmaster_profile_final() {
   /* Default platform */
   $node = array('type' => 'platform');
   $values = array();
-  $values['title'] = "Drupal " . VERSION . ' on '. $_SERVER['HTTP_HOST'];
+  $values['title'] = "Drupal " . VERSION;
   $values['field_publish_path'][0]['value'] = $_SERVER['DOCUMENT_ROOT'];
   $values['field_web_server'][0]['nid'] = variable_get('hosting_default_web_server', 3);
   $values['status'] = 1;
   drupal_execute('platform_node_form', $values, $node);
   variable_set('hosting_default_platform', 4);
   variable_set('hosting_own_platform', 4);
+
+  
+  
+  hosting_update_node_help(array('action', 'platform', 'client', 'site', 'db_server', 'web_server'));
   
   # Action queue
   $queue = (object) array(
@@ -113,11 +117,13 @@ function hostmaster_profile_final() {
    variable_set('hosting_action_queue', $queue->qid);
    $subqueue = nodequeue_load_subqueues_by_queue($queue->qid);
    variable_set('hosting_action_subqueue', $subqueue->qid);
-   
+
+   #verify platform
+   hosting_add_action(4, "verify");
    
    install_add_block("views", "platforms", "garland", 1, 0, "right");
    install_add_block("views", "servers", "garland", 1, 0, "right");
-   
+   install_add_block("views", "nodequeue_1", "garland", 1, -1, "right");
    
    #initial configuration of hostmaster - todo
    
