@@ -5,80 +5,117 @@
  */
 
 include_once('hosting.inc');
+include_once('hosting_help.inc');
+include_once('hosting_views.inc');
 
 /**
- * Implementation of hook_help()
+ * Implementation of hook_menu().
  */
-function hosting_help($section) {
-  switch ($section) {
-    case 'admin/help#hosting':
-      $output .= t('<p>The Hosting framework is a set of modules that provide an interface to the <a href="@provision_help">Provisioning framework</a>.</p>', array('@provision_help' => url('admin/help/provision')));
+function hosting_menu($may_cache) {
+  $items = array();
 
-      $output .= '<a name=\'requirements\'><h3>' . t('Requirements') . '</h3></a>';
-      $output .= '<ul>';
-      $output .= '<li>' . t('<strong>Correctly configured provisioning framework.</strong> This system requires the <a href="@provision_help">Provisioning framework</a> to be configured and working for changes to have any effect. The framework can be configured in the <a href="@provision_section">Provisioning section</a>', array('@provision_help' => url('admin/help/provision'), '@provision_section' => url('admin/settings/provision'))) . '</li>';
-      $output .= '<li>' . t('<strong>A cron entry for the back end scripts.</strong> Changes to this system are executed via a back end script which needs to be called by a user other than the web server user (for security reasons) at regular intervals (every 2-3 minutes)') . '</li>';
-      $output .= '</ul>';
-      
-      $output .= '<a name=\'commands\'><h3>' . t('Commands') . '</h3></a>';
-      $commands = module_invoke_all('drush_command');
-      $output .= "<dl>";
-      foreach ($commands as $command => $info) {
-        if (preg_match('/^hosting/', $command)) {
-          if (sizeof($info['arguments'])) {
-            $command .= ' ' . implode(' ', (array) key($info['arguments']));  
-          }
-          
-          if (sizeof($info['optional arguments'])) {
-            $command .= ' [' . implode('] [', (array) key($info['optional arguments'])) . ']';  
-          }
-          $output .= '<dt>' . "<code>drush.php $command</code>" . '</dt>';
-          $output .= '<dd>' .  $info["description"] . '</dd>';
-        }
+  if (!$may_cache) {
+    if ( arg(0) == 'node' && is_numeric(arg(1))) {
+      $node = node_load(arg(1));
+      if ($node->type == 'platform') {
+        $items[] = array(
+          'path' => 'node/' . arg(1) . '/configs',
+          'title' => t('Configuration files'),
+          'description' => t('The configuration files for this platform'),
+          'callback' => 'drupal_get_form',
+          'callback arguments' => array('hosting_config_templates', $node),
+          'access' => user_access('administer provisioning'),
+          'type' => MENU_LOCAL_TASK,
+          'weight' => 10
+        );
       }
-      $output .= "</dl>";
-
-  
-      return $output;
-
+      if (in_array($node->type, array('platform', 'site'))) {
+        $items[] = array(
+          'path' => 'node/' . arg(1) . '/request',
+          'title' => t('Request action'),
+          'description' => t('Request that the hosting system generates an action for the framework.'),
+          'callback' => 'drupal_get_form',
+          'callback arguments' => array('hosting_action_request', $node),
+          'type' => MENU_LOCAL_TASK,
+          'weight' => 9
+        );
+        
+      }
+    }
   }
+  return $items;
 }
 
-function _hosting_introduction() {
-  $create_site_link = l(t('Create a site now?'), 'node/add/site');
-  if ($_GET['q'] != variable_get('site_frontpage', 'node')) {
-    return t("No sites have been created yet. !link", array(
-      '!link' => $create_site_link));
+function hosting_config_templates($node) {
+
+  
+  $result = db_query("SELECT * FROM {config_template} WHERE vid=%d AND type='drupal_settings' limit 1", $node->vid);
+
+  if (db_num_rows($result)) {
+    $drupal_settings = db_fetch_array($result);
   }
   else {
-    drupal_set_title('Welcome to your new Hosting website!');
-    $default_message = t('<p>Please follow these steps to set up and start using your website:</p>');
-    $default_message .= '<ol>';
-
-    if (!$admin) {
-      $default_message .= '<li>'. t('<strong>Create your administrator account</strong> To begin, <a href="@register">create the first account</a>. This account will have full administration rights and will allow you to configure your website.', array('@register' => url('user/register'))) .'</li>';
-    }
-    $default_message .= '<li>'. t('<strong>Configure your website</strong>
-                    Once logged in, visit the <a href="@admin">administration section</a>,
-                    where you can <a href="@config">customize and configure</a> all aspects of your website.', 
-                    array('@admin' => url('admin'), '@config' => url('admin/settings'))) .'</li>';
-    $default_message .= '<li>'. t('<p><strong>Configure the provisioning framework.</strong>
-                    Before you configure the Provisioning framework, it is highly recommended that you first read the <a href="@requirements">Provision Requirement documentation</a>.
-                    It provides a step by step guide for configuring your server to use the framework.</p>
-                    <p>You will then need to complete the <a href="@provision">provisioning section</a> to configure the framework.</p>', 
-                    array('@provision' => url('admin/settings/provision'), 
-                    '@requirements' => url('admin/help/provision/requirements'))) .'</li>';
-    $default_message .= '<li>'. t('<strong>Set up a cron entry to generate your sites.</strong> The Hosting system uses a command line component (called Drush) to accomplish it\'s back end functionality. For any changes made to this site to have any effect, you will need to set up the "!command" command to run on a regular schedule.', array('!command' => '<code>drush.php hosting process</code>')) .'</li>';
-    $default_message .= '<li>'. t('<strong>Create your first hosted site.</strong> This system uses special site posts to store information about your sites, so you can simple <a href="@create_site">create a site post</a> to get your first hosted site running.', array('@create_site' => url('node/add/site'))) .'</li>';
-    $default_message .= '</ol>';
-    $default_message .= '<p>'. t('For more information, please refer to the <a href="@help">help section</a>, or the <a href="@handbook">online Drupal handbooks</a>. You may also post at the <a href="@forum">Drupal forum</a>, or view the wide range of <a href="@support">other support options</a> available.', array('@help' => url('admin/help'), '@handbook' => 'http://drupal.org/handbooks', '@forum' => 'http://drupal.org/forum', '@support' => 'http://drupal.org/support')) .'</p>';
-
-    $output = '<div id="first-time">'. $default_message .'</div>';
-
-    return $output;
-
+    $drupal_settings = array(
+      'template' => variable_get('provision_drupal_settings_template', _provision_drupal_default_template()),
+      'status' => 0
+    );
   }
+
+  $form['#tree'] = true;
+  $form['drupal_settings'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Drupal configuration files'),
+    '#description' => t('These settings control the generation of the Drupal settings.php file for this host.'),
+    '#collapsible' => FALSE,
+    '#collapsed' => FALSE,
+  );
+  $form['drupal_settings']['template'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Drupal settings file template'),
+    '#description' => t('The text you enter here will be used by the Provisioning framework to generate your Drupal settings.php file. This field contains php, and should start with &lt;?php.'),
+    '#default_value' => $drupal_settings['template'],
+    '#cols' => 60,
+    '#rows' => 5,
+  );
+  $form['drupal_settings']['status'] = array(
+    '#type' => 'checkbox',
+    '#default_value' => $drupal_settings['status'],
+    '#title' => t('Use this configuration file for this platform.'),
+  );
   
+  $result = db_query("SELECT * FROM {config_template} WHERE vid=%d AND type='apache_vhost' limit 1", $node->vid);
+  if (db_num_rows($result)) {
+    $apache_vhost = db_fetch_array($result);
+  }
+  else {
+    $apache_vhost = array(
+      'template' => variable_get('provision_apache_vhost_template', _provision_apache_default_template()),
+      'status' => 0
+    );
+  }
+
+  $form['#tree'] = true;
+  $form['apache_vhost'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Apache Virtual Host configuration files'),
+    '#description' => t('These settings control the generation of the Virtual Host directives for this platform.'),
+    '#collapsible' => FALSE,
+    '#collapsed' => FALSE,
+  );
+  $form['apache_vhost']['template'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Drupal settings file template'),
+    '#description' => t('The text you enter here will be used by the Provisioning framework to generate your Apache Virtual Host file. This field contains php, and should start with &lt;?php.'),
+    '#default_value' => $apache_vhost['template'],
+    '#cols' => 60,
+    '#rows' => 5,
+  );
+  $form['apache_vhost']['status'] = array(
+    '#type' => 'checkbox',
+    '#default_value' => $apache_vhost['status'],
+    '#title' => t('Use this configuration file for this platform.'),
+  );
+  return $form;
 }
 
 function hosting_drush_command() {
@@ -87,7 +124,7 @@ function hosting_drush_command() {
     'description' => 'Process the queue of outstanding hosting actions.'
   );
 
-  $items['hosting import platform'] = array(
+    $items['hosting import platform'] = array(
     'callback' => 'hosting_import_platform',
     'description' => 'Generate a platform node for an already installed platform.'
   );
@@ -106,19 +143,21 @@ function hosting_process_queue() {
   $count = drush_get_option(array('i', 'items', 5)); # process a default of 5 items at a time.
   $sqid = variable_get('hosting_action_subqueue', 1);
   $actions = nodequeue_nodes($sqid, false, 0, $count);
-  
+
   foreach ($actions as $action) {
     // create a new revision
     $action->changed = mktime();
-    $action->field_executed[0]['value'] =  mktime(); # internal format used by date module
+    $action->executed =  mktime();
     $action->revision = true;
     node_save($action);
 
     hosting_action_log($action->vid, "queue", t("Action starts processing"));
-    $cmd = _hosting_provision_command($action);
+    $data = hosting_map_values($action);
+    $cmd = _hosting_provision_command($data);
     
     hosting_action_log($action->vid, 'command', "Executing: $cmd");
     exec(escapeshellcmd($cmd), $return, $code);
+
     $data = unserialize(trim(implode("\n", $return)));
     if (!is_array($data)) {
       hosting_action_log($action->vid, 'error', t("The command could not be executed succesfully."));
@@ -138,7 +177,7 @@ function hosting_process_queue() {
       }
 
     }
-    
+
     if (!$code) {
       // remove from queue
       $subqueue = _hosting_get_subqueue();
@@ -146,47 +185,33 @@ function hosting_process_queue() {
       nodequeue_subqueue_remove_node($subqueue->sqid, $action->nid);
       
       // mark as succesful
-      $action->field_action_status[0]['value'] = PROVISION_SUCCESS;
+      $action->action_status = PROVISION_SUCCESS;
       $action->revision = 0;
       node_save($action);
     }
     else {
-      $x = 0;
-      foreach ($provision_errors as $error) {
-        if ($code && ($code & $error)) {
-          $action->field_action_status[$x]['value'] = $error;
-        }
-        $x++;
-      }
+      $action->action_status = $code;
       $action->revision = 0;
       node_save($action);
     }
   }
 }
 
-function _hosting_provision_command($action) {
-  #load node references and place each of the variables into the current namespace
-  extract(hosting_expand_action($action));
-
-  #todo: complete parameters to be created
-  $options = array(
-    'site-id' => $site->nid,
-    'site-url' => $site->title,
-    'site-owner' => $site->uid,
-    'site-master' => variable_get('hosting_master', 'hosting')
-  );
-  
-  foreach ($options as $key => $value) {
-    $option_str .= " --$key $value";  
+function _hosting_provision_command($data) {
+  foreach ($data as $key => $value) {
+    if (preg_match("/^site_/", $key) && $key != 'site_url') {
+      $option_str .= " --$key=$value";
+    }
+    if (preg_match("/^site-/", $key)) {
+      $option_str .= " --" . str_replace("-", "_", $key) . "=$value";
+    }
   }
-
-  $command = sprintf("%s/drush.php provision %s %s -b %s", $platform->field_publish_path[0]['value'], $action->field_action_type[0]['value'], $site->title, $option_str);
+  $command = sprintf("%s/drush.php provision %s %s -b %s", $data['publish_path'] . '/' . drupal_get_path("module", "drush"), $data['action_type'], $data['site_url'], $option_str);
   return $command;
 }
 
 function hosting_action_request($node) {
-  $options['backup'] = t('Backup site');
-  $options['synch'] = t('Regenerate configuration files');
+  $options = hosting_available_actions(false, $node->type);
 
   $form['nid'] = array('#type' => 'value', '#value' => $node->nid);
   
@@ -205,10 +230,9 @@ function hosting_action_request($node) {
 }
 
 function hosting_action_request_submit($form_id, $values) {
-  hosting_add_site_action($values['nid'], $values['action']);
+  hosting_add_action($values['nid'], $values['action']);
   return 'node/' . $values['nid'];
 }
-
 
 function hosting_form_alter($form_id, &$form) {
   if ($form_id == 'site_node_form') {
@@ -239,12 +263,13 @@ function hosting_configure_provision($form_id, &$values) {
 
   $db_server = node_load(variable_get('hosting_own_db_server', 2));
   $db_server->revision = true;
-  $db_server->title = $values['provision_mysql_host'];
-  $db_server->field_master_username[0]['value'] = $values['provision_mysql_user'];
-  $db_server->field_master_password[0]['value'] = $values['provision_mysql_password'];
+  $db_server->title = $values['provision_db_host'];
+  $db_server->field_master_username[0]['value'] = $values['provision_db_user'];
+  $db_server->field_master_password[0]['value'] = $values['provision_db_password'];
   node_save($db_server);
   
   $web_server = node_load($platform->field_web_server[0]['nid']);
+  $web_server->field_config_path[0]['value'] = $values['provision_config_path'];
   $web_server->revision = true;
  
   node_save($web_server);  
@@ -257,14 +282,14 @@ function hosting_configure_hosting($node) {
         variable_set('hosting_platform_path', $node->field_platform_path[0]['value']);
         break;
       case 'db_server' :
-       variable_set('provision_mysql_host', $node->title);
-       variable_set('provision_mysql_user', $node->field_master_username[0]['value']);
-       variable_set('provision_mysql_password', $node->field_master_password[0]['value']);
+       variable_set('provision_db_host', $node->title);
+       variable_set('provision_db_user', $node->field_master_username[0]['value']);
+       variable_set('provision_db_password', $node->field_master_password[0]['value']);
         break;
       case 'db_server' :
         variable_set('provision_user', $node->field_user[0]['nid'] );
         variable_set('provision_group', $node->field_group[0]['nid']);
-        variable_set('provision_vhost_path', $node->field_vhost_path[0]['nid']);
+        variable_set('provision_config_path', $node->field_config_path[0]['nid']);
         variable_set('provision_backup_path', $node->field_backup_path[0]['nid']);
         break;                  
     }
@@ -272,64 +297,106 @@ function hosting_configure_hosting($node) {
 }
 
 function hosting_nodeapi(&$node, $op, $teaser) {
+  $func = "hosting_nodeapi_" . $node->type . "_" . $op;
+  if (function_exists($func)) {
+    $func($node, $op, $teaser);
+  }
+  # Keep own provisioning system up to date.
+  if ($op == 'update') {
+    hosting_configure_hosting($node);
+  }
+}
 
-  switch ($op) {
-    case 'validate' :
-      if ($node->type == 'site') {
-        $node->field_actions[0]['vname'] = 'actions';
-        $node->field_actions[0]['vname'] = '%nid';
-      }
-      break;
-    case 'insert' :
-      if ($node->type == 'site') { # new site being created.
-        hosting_add_site_action($node->nid, 'install');
-      }
-      break;
-    case 'update' :
-      hosting_configure_hosting($node);
-      if ($node->type == 'site') {
-        hosting_add_site_action($node->nid, 'synch');
-      }
-    case 'view' :
-      if (!$teaser) {
-        if ($node->type == 'site') {
-          $view = views_get_view('actions_per_site');
-          $node->content['actions_view'] = array(
-            '#type' => 'item',
-            '#title' => t("Actions"),
-            '#value' => views_build_view('embed', $view, array($node->nid)), 
-            '#weight' => 10
-          );
-        }
-        if ($node->type == 'client') {
-          $view = views_get_view('sites_embed');
-          $node->content['sites_view'] = array(
-            '#type' => 'item',
-            '#title' => t("Sites"),
-            '#value' => views_build_view('embed', $view, array($node->nid)), 
-            '#weight' => 10
-          );
-        }
-        if ($node->type == 'action') {
-          # Display table containing the logged information for this action
-          $result = db_query("SELECT * FROM {action_log} WHERE vid=%d", $node->vid);
-          if ($result) {
-            $header = array("type", "message", "date");
-            while ($entry = db_fetch_object($result)) {
-              $rows[] = array($entry->type, $entry->message, format_date($entry->timestamp, "custom", "Y-m-d m:s"));
-            }
+function hosting_nodeapi_site_validate(&$node, $op, $teaser) {
+  $node->field_actions[0]['vname'] = 'actions';
+  $node->field_actions[0]['vname'] = '%nid';
+}
 
-            $node->content['hosting_log'] = array(
-              '#weight' => 1,
-              '#value' => theme_table($header, (array) $rows)
-            );
-          }
-        }
-        
-      }
-      break;
+function hosting_nodeapi_site_insert(&$node, $op, $teaser) {
+  hosting_add_action($node->nid, 'install');
+}
+
+function hosting_nodeapi_site_update(&$node, $op, $teaser) {
+  hosting_add_action($node->nid, 'synch');
+}
+
+
+function hosting_nodeapi_site_view(&$node, $op, $teaser) {
+  $view = views_get_view('actions_embed');
+  $node->content['actions_view'] = array(
+    '#type' => 'item',
+    '#title' => t("Actions"),
+    '#value' => views_build_view('embed', $view, array($node->nid)), 
+    '#weight' => 10
+  );
+}
+
+function hosting_nodeapi_platform_view(&$node, $op, $teaser) {
+  $view = views_get_view('actions_embed');
+  $node->content['actions_view'] = array(
+    '#type' => 'item',
+    '#title' => t("Actions"),
+    '#value' => views_build_view('embed', $view, array($node->nid)), 
+    '#weight' => 10
+  );
+}
+
+function hosting_nodeapi_action_update(&$node, $op, $teaser) {
+  if ($node->executed || $node->action_status) {
+    db_query("INSERT INTO {action_data} (vid, nid, executed, action_status) VALUES (%d, %d, %d, %d)",
+      $node->vid, $node->nid, $node->executed, $node->status);
+  }
+}
+
+function hosting_nodeapi_action_load(&$node, $op, $teaser) {
+  $result = db_query("SELECT executed, action_status FROM {action_data} WHERE vid=%d", $node->vid);
+  if ($data = db_fetch_object($result)) {
+    $node->executed = $data->executed;
+    $node->action_status = $data->action_status;
+  }
+}
+
+function hosting_nodeapi_action_view(&$node, $op, $teaser) {
+  if ($node->executed) {
+    $node->content['executed'] = array(
+      '#type' => 'item',
+      '#title' => t('Executed'),
+      '#value' => format_date($node->executed),
+    );
+  }
+  if ($node->action_status) {
+    $node->content['status'] = array(
+      '#type' => 'item',
+      '#title' => t('Status'),
+      '#value' => implode(", ", _hosting_parse_error_codes($node->action_status)),
+    );
+  }
+    
+  # Display table containing the logged information for this action
+  $result = db_query("SELECT * FROM {action_log} WHERE vid=%d", $node->vid);
+  if ($result) {
+    $header = array("type", "message", "date");
+    while ($entry = db_fetch_object($result)) {
+      $rows[] = array($entry->type, $entry->message, format_date($entry->timestamp, "custom", "Y-m-d m:s"));
+    }
+
+    
+    $node->content['hosting_log'] = array(
+      '#weight' => 1,
+      '#value' => theme_table($header, (array) $rows)
+    );
     
   }
+}
+
+function hosting_nodeapi_client_view(&$node, $op, $teaser) {
+  $view = views_get_view('sites_embed');
+  $node->content['sites_view'] = array(
+    '#type' => 'item',
+    '#title' => t("Sites"),
+    '#value' => views_build_view('embed', $view, array($node->nid)), 
+    '#weight' => 10
+  );  
 }
 
 function hosting_validate_site_title($element, $nid) {
@@ -341,396 +408,35 @@ function hosting_validate_site_title($element, $nid) {
   }
 }
 
-function hosting_views_default_views() {
-   $view = new stdClass();
-  $view->name = 'sites_embed';
-  $view->description = 'A list of sites related to the specified node';
-  $view->access = array (
-);
-  $view->view_args_php = '$args[0] = arg(1);';
-  $view->page = TRUE;
-  $view->page_title = 'sites';
-  $view->page_header = '';
-  $view->page_header_format = '1';
-  $view->page_footer = '';
-  $view->page_footer_format = '1';
-  $view->page_empty = t('No sites available.');
-  $view->page_empty_format = '1';
-  $view->page_type = 'table';
-  $view->url = 'sites_embed';
-  $view->use_pager = TRUE;
-  $view->nodes_per_page = '10';
-  $view->sort = array (
-  );
-  $view->argument = array (
-    array (
-      'type' => 'content: field_client',
-      'argdefault' => '1',
-      'title' => '',
-      'options' => '',
-      'wildcard' => '',
-      'wildcard_substitution' => '',
-    ),
-  );
-  $view->field = array (
-    array (
-      'tablename' => 'node',
-      'field' => 'title',
-      'label' => '',
-      'handler' => 'views_handler_field_nodelink',
-      'options' => 'link',
-    ),
-  );
-  $view->filter = array (
-    array (
-      'tablename' => 'node',
-      'field' => 'type',
-      'operator' => 'OR',
-      'options' => '',
-      'value' => array (
-        0 => 'site',
-       ),
-     ),
-  );
-  $view->exposed_filter = array (
-  );
-  $view->requires = array('node');
-  $views[$view->name] = $view;
-  
-
-  $view = new stdClass();
-  $view->name = 'actions_per_site';
-  $view->description = 'A list of actions related to the site in question';
-  $view->access = array (
-);
-  $view->view_args_php = '$args[0] = arg(1);';
-  $view->page = TRUE;
-  $view->page_title = 'action';
-  $view->page_header = '';
-  $view->page_header_format = '1';
-  $view->page_footer = '';
-  $view->page_footer_format = '1';
-  $view->page_empty = '';
-  $view->page_empty_format = '1';
-  $view->page_type = 'table';
-  $view->url = 'actions';
-  $view->use_pager = TRUE;
-  $view->nodes_per_page = '10';
-  $view->sort = array (
-    array (
-      'tablename' => 'node',
-      'field' => 'nid',
-      'sortorder' => 'DESC',
-      'options' => '',
-    ),
-  );
-  $view->argument = array (
-    array (
-      'type' => 'content: field_reference',
-      'argdefault' => '1',
-      'title' => '',
-      'options' => '',
-      'wildcard' => '',
-      'wildcard_substitution' => '',
-    ),
-  );
-  $view->field = array (
-    array (
-      'tablename' => 'node',
-      'field' => 'title',
-      'label' => '',
-      'handler' => 'views_handler_field_nodelink',
-      'options' => 'link',
-    ),
-    array (
-      'tablename' => 'node',
-      'field' => 'created',
-      'label' => '',
-      'handler' => 'views_handler_field_since',
-    ),
-    array (
-      'tablename' => 'node_data_field_action_type',
-      'field' => 'field_action_type_value',
-      'label' => '',
-      'handler' => 'content_views_field_handler_group',
-      'options' => 'default',
-    ),
-    array (
-      'tablename' => 'node',
-      'field' => 'changed',
-      'label' => '',
-      'handler' => 'views_handler_field_date_small',
-    ),
-    array (
-      'tablename' => 'node_data_field_action_status',
-      'field' => 'field_action_status_value',
-      'label' => '',
-      'handler' => 'content_views_field_handler_group',
-      'options' => 'default',
-    ),
-  );
-  $view->filter = array (
-    array (
-      'tablename' => 'node',
-      'field' => 'type',
-      'operator' => 'OR',
-      'options' => '',
-      'value' => array (
-  0 => 'action',
-),
-    ),
-  );
-  $view->exposed_filter = array (
-  );
-  $view->requires = array(node, node_data_field_action_type, node_data_field_action_status);
-  $views[$view->name] = $view;
 
 
-  $view = new stdClass();
-  $view->name = 'sites';
-  $view->description = 'List of sites on the system';
-  $view->access = array (
-);
-  $view->view_args_php = '';
-  $view->page = TRUE;
-  $view->page_title = 'Hosted sites';
-    $view->access = array (
-    0 => '1',
-    1 => '2',
-  );  
-  $view->page_header = '';
-  $view->page_header_format = '1';
-  $view->page_footer = '';
-  $view->page_footer_format = '1';
-  $view->page_empty = '<?php return _hosting_introduction(); ?>';
-  $view->page_empty_format = '2';
-  $view->page_type = 'table';
-  $view->url = 'sites';
-  $view->use_pager = TRUE;
-  $view->nodes_per_page = '20';
-  $view->sort = array (
-    array (
-      'tablename' => 'node',
-      'field' => 'nid',
-      'sortorder' => 'ASC',
-      'options' => '',
-    ),
-  );
-  $view->argument = array (
-  );
-  $view->field = array (
-    array (
-      'tablename' => 'node',
-      'field' => 'title',
-      'label' => 'Domain',
-      'handler' => 'views_handler_field_nodelink',
-      'options' => 'link',
-    ),
-    array (
-      'tablename' => 'node_data_field_client',
-      'field' => 'field_client_nid',
-      'label' => 'Owner',
-      'handler' => 'content_views_field_handler_group',
-      'options' => 'default',
-    ),
-    array (
-      'tablename' => 'node',
-      'field' => 'created',
-      'label' => 'Created',
-      'handler' => 'views_handler_field_date',
-    ),
-    array (
-      'tablename' => 'node_data_field_platform',
-      'field' => 'field_platform_nid',
-      'label' => 'Platform',
-      'handler' => 'content_views_field_handler_group',
-      'options' => 'default',
-    ),
-    array (
-      'tablename' => 'node_data_field_db_server',
-      'field' => 'field_db_server_nid',
-      'label' => 'Database Server',
-      'handler' => 'content_views_field_handler_group',
-      'options' => 'default',
-    ),
-  );
-  $view->filter = array (
-    array (
-      'tablename' => 'node',
-      'field' => 'type',
-      'operator' => 'OR',
-      'options' => '',
-      'value' => array (
-  0 => 'site',
-),
-    ),
-  );
-  $view->exposed_filter = array (
-  );
-  $view->requires = array(node, node_data_field_client, node_data_field_platform, node_data_field_db_server);
-  $views[$view->name] = $view;
+function hosting_available_actions($auto_detect = false, $type = null) {
+  if ($auto_detect && !$type) {
+    if (arg(0) == 'node') {
+      if (is_numeric(arg(1))) {
+        $node = node_load(arg(1));
+        $type = $node->type;
+      }
+      elseif (arg(1) == 'add') {
+        $type = arg(2);
+      }
+    }
+  }
+  if ($type == 'site') {
+    $options['backup'] = t('Backup site');
+    $options['synch'] = t('Regenerate configuration files');
 
-
-  $view = new stdClass();
-  $view->name = 'servers';
-  $view->description = 'List of available servers which sites can be hosted on.';
-  $view->access = array (
-);
-  $view->view_args_php = '';
-  $view->page = TRUE;
-  $view->page_title = 'Servers available';
-  $view->page_header = '';
-  $view->page_header_format = '1';
-  $view->page_footer = '';
-  $view->page_footer_format = '1';
-  $view->page_empty = '';
-  $view->page_empty_format = '1';
-  $view->page_type = 'table';
-  $view->url = 'servers';
-  $view->use_pager = TRUE;
-  $view->nodes_per_page = '10';
-  $view->block = TRUE;
-  $view->block_title = 'Servers';
-  $view->block_header = '';
-  $view->block_header_format = '1';
-  $view->block_footer = '';
-  $view->block_footer_format = '1';
-  $view->block_empty = '';
-  $view->block_empty_format = '1';
-  $view->block_type = 'table';
-  $view->nodes_per_block = '5';
-  $view->block_more = TRUE;
-  $view->block_use_page_header = FALSE;
-  $view->block_use_page_footer = FALSE;
-  $view->block_use_page_empty = FALSE;
-  $view->sort = array (
-  );
-  $view->argument = array (
-  );
-  $view->field = array (
-    array (
-      'tablename' => 'node',
-      'field' => 'type',
-      'label' => 'Type',
-    ),
-    array (
-      'tablename' => 'node',
-      'field' => 'title',
-      'label' => 'Hostname',
-      'handler' => 'views_handler_field_nodelink',
-      'options' => 'link',
-    ),
-  );
-  $view->filter = array (
-    array (
-      'tablename' => 'node',
-      'field' => 'type',
-      'operator' => 'OR',
-      'options' => '',
-      'value' => array (
-  0 => 'db_server',
-  1 => 'web_server',
-),
-    ),
-  );
-  $view->exposed_filter = array (
-  );
-  $view->requires = array(node);
-  $views[$view->name] = $view;
-
-  $view = new stdClass();
-  $view->name = 'platforms';
-  $view->description = 'List of available platforms which sites can be hosted on.';
-  $view->access = array (
-);
-  $view->view_args_php = '';
-  $view->page = TRUE;
-  $view->page_title = 'Platforms available';
-  $view->page_header = '';
-  $view->page_header_format = '1';
-  $view->page_footer = '';
-  $view->page_footer_format = '1';
-  $view->page_empty = '';
-  $view->page_empty_format = '1';
-  $view->page_type = 'table';
-  $view->url = 'platforms';
-  $view->use_pager = TRUE;
-  $view->nodes_per_page = '10';
-  $view->block = TRUE;
-  $view->block_title = 'Platforms';
-  $view->block_header = '';
-  $view->block_header_format = '1';
-  $view->block_footer = '';
-  $view->block_footer_format = '1';
-  $view->block_empty = '';
-  $view->block_empty_format = '1';
-  $view->block_type = 'table';
-  $view->nodes_per_block = '5';
-  $view->block_more = TRUE;
-  $view->block_use_page_header = FALSE;
-  $view->block_use_page_footer = FALSE;
-  $view->block_use_page_empty = FALSE;
-  $view->sort = array (
-  );
-  $view->argument = array (
-  );
-  $view->field = array (
-    array (
-      'tablename' => 'node',
-      'field' => 'title',
-      'label' => 'Platform',
-      'handler' => 'views_handler_field_nodelink',
-      'options' => 'link',
-    ),
-
-  );
-  $view->filter = array (
-    array (
-      'tablename' => 'node',
-      'field' => 'type',
-      'operator' => 'OR',
-      'options' => '',
-      'value' => array (
-  0 => 'platform',
-),
-    ),
-  );
-  $view->exposed_filter = array (
-  );
-  $view->requires = array(node);
-  $views[$view->name] = $view;
-
-  
-  return $views;
-}
-
-/**
- * Moved from inline in the field settings, to allow for simpler maintenance
- */
-function _hosting_default_path() {
-  return array(0 => array('nid' => ereg_replace("/webroot$", "", $_SERVER['DOCUMENT_ROOT'])));
-}
-
-function _hosting_default_client() {
-  return array( 0 => array('nid' => variable_get('hosting_default_client', 1)),);
-}
-
-function _hosting_default_db_server() {
-  return array( 0 => array( 'nid' => variable_get('hosting_default_db_server', 2) ),);
-}
-
-function _hosting_default_web_server() {
-  return array( 0 => array( 'nid' => variable_get('hosting_default_web_server', 3) ),);
-}
-
-function _hosting_default_platform() {
-  return array( 0 => array( 'nid' => variable_get('hosting_default_platform', 4) ),);
-}
-
-function _hosting_get_queue() {
-  return nodequeue_load( variable_get('hosting_action_queue', 1));
-}
-
-function _hosting_get_subqueue() {
-  return nodequeue_load_subqueue(variable_get('hosting_action_subqueue', 1));
+    if ($node) {
+      if ($node->field_status[0]["value"] == "Enabled") {
+        $options['disable'] =  t('Disable an enabled site.');      
+      }
+      elseif ($node->field_status[0]["value"] == "Disabled") {
+        $options['enable'] = t('Enable a disabled site.');      
+      }
+    }
+  }
+  elseif ($type == 'platform') {
+    $options['verify'] = t('Verify that a platform is correctly installed.');
+  }
+  return $options;
 }

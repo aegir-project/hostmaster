@@ -22,6 +22,18 @@ function hosting_install() {
     KEY (type)
   ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
   
+  # Configuration template table
+  db_query("CREATE TABLE {config_template} (
+    tid int NOT NULL auto_increment,
+    vid int NOT NULL default '0',
+    type varchar(16) NOT NULL default '',
+    template longtext NOT NULL,
+    status tinyint unsigned NOT NULL default '0',
+    timestamp int NOT NULL default '0',
+    PRIMARY KEY (tid),
+    KEY (type)
+  ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
+
 }
 
 /**
@@ -135,17 +147,6 @@ function _hosting_install_site_type() {
   _hosting_node_field_instance_add('field_platform','site',0,'platform','nodereference_autocomplete',
   array('default_value' => array(  ), 'default_value_php' => 'return _hosting_default_platform();',),
   array(),'');
-  		  
-  _hosting_node_field_add('field_last_cron','date', array('granularity' => 
-    array('Y' => 'Y', 'M' => 'M', 'D' => 'D', 'H' => 'H', 'N' => 'N', 'S' => 'S',),
-    'field_timezone' => 'Africa/Addis_Ababa', 'timezone_db' => 'UTC', 'tz_handling' => 'none',
-    'todate' => '', 'output_format_date' => 'm/d/Y - H:i', 'output_format_custom' => 'Y-m-d H:i',
-    'output_format_date_long' => 'l, F j, Y - H:i', 'output_format_custom_long' => '', 'output_format_date_medium' => 'D, m/d/Y - H:i',
-    'output_format_custom_medium' => '', 'output_format_date_short' => 'm/d/Y - H:i', 'output_format_custom_short' => '',),0,0,1);
-  _hosting_node_field_instance_add('field_last_cron','site',0,'Last cron','date_text',
-  array('default_value' => 'blank', 'default_value_custom' => '', 'default_value2' => 'blank', 'default_value_custom2' => '', 'input_format' => 'site-wide', 'input_format_custom' => 'Y-m-d H:i', 'increment' => NULL, 'text_parts' => NULL, 'year_range' => NULL,),
-  array(),'');
-
 
   db_query("CREATE TABLE {content_type_site} (
     vid int(10) unsigned NOT NULL default '0',
@@ -153,11 +154,17 @@ function _hosting_install_site_type() {
     field_client_nid int(11) NOT NULL default '0',
     field_db_server_nid int(11) NOT NULL default '0',
     field_platform_nid int(11) NOT NULL default '0',
-    field_last_cron_value varchar(20) default NULL, 
+    
     PRIMARY KEY  (vid)
   ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
 
-  
+  db_query("CREATE TABLE {site_data} (
+    vid int(10) unsigned NOT NULL default '0',
+    nid int(10) unsigned NOT NULL default '0',
+    last_cron int(10) default NULL, 
+    last_stats int(10) default NULL,
+    PRIMARY KEY  (vid)    
+    ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
 }
 
 
@@ -168,7 +175,7 @@ function _hosting_install_action_type() {
   db_query("INSERT INTO {node_type} VALUES ('action', 'Action', 'node', 'This is an action that will be executed on a specific site record. \r\nThis will maintain the record of whenever any changes were made to the site from the front end.', '', 1, 'Title', 0, '', 0, 1, 1, 0, '')");
 
   _hosting_node_field_add('field_action_type','text', array('text_processing' => '0', 'max_length' => '', 
-  'allowed_values' => "install|install\r\nenable|enable\r\ndisable|disable\r\nsynch|synch\r\ndelete|delete\r\nbackup|backup",
+  'allowed_values' => "install|install\r\nenable|enable\r\ndisable|disable\r\nsynch|synch\r\ndelete|delete\r\nbackup|backup\r\nverify|verify",
   'allowed_values_php' => '',),1,0,1);
   _hosting_node_field_instance_add('field_action_type','action',0,'Action type','options_buttons',
   array('default_value' => array(0 => array('value' => '', ), ), 'default_value_php' => '',),
@@ -181,41 +188,22 @@ function _hosting_install_action_type() {
   array('default_value' => array(  ), 'default_value_php' => '',),
   array(),'');
   
-  _hosting_node_field_add('field_executed','datestamp', array( 'granularity' => 
-    array('Y' => 'Y', 'M' => 'M', 'D' => 'D', 'H' => 'H', 'N' => 'N', 0 => 1, 'S' => 0,),
-    'field_timezone' => 'Africa/Addis_Ababa', 'timezone_db' => 'UTC', 'tz_handling' => 'none',
-    'todate' => '', 'output_format_date' => 'm/d/Y - H:i P', 'output_format_custom' => '',
-    'output_format_date_long' => 'l, F j, Y - H:i', 'output_format_custom_long' => '','output_format_date_medium' => 'D, m/d/Y - H:i',
-    'output_format_custom_medium' => '', 'output_format_date_short' => 'm/d/Y - H:i', 'output_format_custom_short' => '',),0,0,1);  
-  _hosting_node_field_instance_add('field_executed','action',0,'Executed','date_text',
-  array('default_value' => 'blank', 'default_value_custom' => '', 'default_value2' => 'blank', 'default_value_custom2' => '', 'input_format' => 'site-wide', 'input_format_custom' => '%U', 'increment' => NULL, 'text_parts' => NULL, 'year_range' => NULL,),
-  array(),'');
-  
   db_query("CREATE TABLE {content_type_action} (
     vid int(10) unsigned NOT NULL default '0',
     nid int(10) unsigned NOT NULL default '0',
     field_action_type_value longtext,
-    field_executed_value int(11) default NULL,
     field_reference_nid int(11) NOT NULL default '0', 
     PRIMARY KEY  (vid)
   ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
 
-
-  #this needs to be expanded for string escaping reasons
-  _hosting_node_field_add('field_action_status','number_integer',array(
-    'prefix' => '', 'suffix' => '', 'append_position' => NULL, 'min' => '', 'max' => '',
-    'allowed_values' => '', 'allowed_values_php' => 'return $GLOBALS["provision_errors"];',),0,1,0);
-  _hosting_node_field_instance_add('field_action_status','action',0,'Status','options_buttons',
-  array('default_value' => array(0 => array('value' => '', ), ), 'default_value_php' => '',),
-  array(),'Whether or not the action was sucessful');  
-  
-  db_query("CREATE TABLE {content_field_action_status} (
+  db_query("CREATE TABLE {action_record} (
     vid int(10) unsigned NOT NULL default '0',
-    delta int(10) unsigned NOT NULL default '0',
     nid int(10) unsigned NOT NULL default '0',
-    field_action_status_value int(11) default NULL,
-    PRIMARY KEY  (vid,delta)
-  ) ENGINE=MyISAM DEFAULT CHARSET=utf8;");
+    executed int(11) default NULL,
+    action_status int(11) default NULL,
+  PRIMARY KEY  (vid)    
+  ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+    
 }
 
 
@@ -303,8 +291,8 @@ function _hosting_install_web_server_type() {
 
   _hosting_node_field_add('field_vhost_path','text', array('text_processing' => '0', 'max_length' => '', 'allowed_values' => '', 'allowed_values_php' => '',
 ),1,0,1);
-  _hosting_node_field_instance_add('field_vhost_path','web_server',0,'Virtual host configuration path','text',
-      array('default_value' => array(),'default_value_php' => '', 'rows' => '1',),array(), 'The path where all the webserver\'s Virtual Host configuration files will be stored. This path should not be web-accessible.');  
+  _hosting_node_field_instance_add('field_config_path','web_server',0,'Configuration storage path','text',
+      array('default_value' => array(),'default_value_php' => '', 'rows' => '1',),array(), 'The path where all the webserver\'s configuration files will be stored. This path should not be web-accessible. More directories will be created as needed.');  
 
   _hosting_node_field_add('field_backup_path','text', array('text_processing' => '0', 'max_length' => '', 'allowed_values' => '', 'allowed_values_php' => '',
 ),1,0,1);
