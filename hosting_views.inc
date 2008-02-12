@@ -1,7 +1,8 @@
 <?php
 function hosting_views_tables() {
-  $tables["action_data"] = array(
-    'name' => 'action_data',
+  
+  $tables["hosting_web_server"] = array(
+    'name' => 'hosting_web_server',
     'join' => array(
       'left' => array(
         'table' => 'node',
@@ -12,7 +13,41 @@ function hosting_views_tables() {
       ),
     ),
     'fields' => array(
-        'executed' => array(
+      'ip_address' => array(
+          'name' => t('Server: IP address'),
+          'sortable' => TRUE,
+          'option' => 'string',
+          'help' => t('Display the ip address of the server.'),
+        ),
+      ),
+    );
+  
+  $tables["hosting_action"] = array(
+    'name' => 'hosting_action',
+    'join' => array(
+      'left' => array(
+        'table' => 'node',
+        'field' => 'vid',
+      ),
+      'right' => array(
+        'field' => 'vid',
+      ),
+    ),
+    'fields' => array(
+      'executed' => array(
+        'name' => t('Action: Executed Time'),
+        'sortable' => TRUE,
+        'handler' => views_handler_field_dates(),
+        'option' => 'string',
+        'help' => t('Display the time the action was executed.'),
+      ),
+      'action_type' => array(
+        'name' => t('Action: Action Type'),
+        'sortable' => TRUE,
+        'option' => 'string',
+        'help' => t('Display the type of action.'),
+      ),
+      'executed' => array(
           'name' => t('Action: Executed Time'),
           'sortable' => TRUE,
           'handler' => views_handler_field_dates(),
@@ -449,13 +484,6 @@ function hosting_views_default_views() {
       'handler' => 'content_views_field_handler_group',
       'options' => 'default',
     ),
-    array (
-      'tablename' => 'node_data_field_action_status',
-      'field' => 'field_action_status_value',
-      'label' => 'status',
-      'handler' => 'content_views_field_handler_group',
-      'options' => 'default',
-    ),
   );
   $view->filter = array (
     array (
@@ -470,7 +498,7 @@ function hosting_views_default_views() {
   );
   $view->exposed_filter = array (
   );
-  $view->requires = array(nodequeue_nodes, node_data_field_action_type, node_data_field_reference, node_data_field_action_status);
+  $view->requires = array(nodequeue_nodes, node_data_field_action_type, node_data_field_reference);
   $views[$view->name] = $view;
 
 

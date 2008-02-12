@@ -174,13 +174,3 @@ function hosting_node_help($type) {
   }
 }
 
-/**
- * Update the description text for the specified node types.
- *
- * Uses the information from hosting_node_help
- */
-function hosting_update_node_help($types = array()) {
-  foreach ((array) $types as $type) {
-    db_query("UPDATE {node_type} SET description = '%s' WHERE type ='%s'", module_invoke('hosting', 'node_help', $type), $type);
-  }
-}

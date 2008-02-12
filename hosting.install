@@ -1,26 +1,64 @@
 <?php
 require_once "hosting_crud.inc";
 function hosting_install() {
-  # These are split up for easier code management.
-  _hosting_install_client_type();
-  _hosting_install_site_type();
-  _hosting_install_action_type();
-  _hosting_install_db_server_type();
-  _hosting_install_web_server_type();
-  _hosting_install_platform_type();  
-  _hosting_install_cck_shared_fields();
+  db_query("CREATE TABLE {hosting_client} (
+    vid int(10) unsigned NOT NULL default '0',
+    nid int(10) unsigned NOT NULL default '0',
+    name longtext,
+    organization longtext,
+    email varchar(255) NOT NULL default '',
+    PRIMARY KEY  (vid)
+  ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
 
-  # Logging table for backend action calls
-  db_query("CREATE TABLE {action_log} (
-    lid int NOT NULL auto_increment,
-    vid int NOT NULL default '0',
-    type varchar(16) NOT NULL default '',
-    message longtext NOT NULL,
-    severity tinyint unsigned NOT NULL default '0',
-    timestamp int NOT NULL default '0',
-    PRIMARY KEY (lid),
-    KEY (type)
-  ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
+  db_query("CREATE TABLE {hosting_site} (
+    vid int(10) unsigned NOT NULL default '0',
+    nid int(10) unsigned NOT NULL default '0',
+    client int(11) NOT NULL default '0',
+    db_server int(11) NOT NULL default '0',
+    platform int(11) NOT NULL default '0',
+    last_cron int(10) default NULL, 
+    PRIMARY KEY  (vid)    
+    ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+
+  db_query("CREATE TABLE {hosting_action} (
+    vid int(10) unsigned NOT NULL default '0',
+    nid int(10) unsigned NOT NULL default '0',
+    action_type longtext,
+    rid int(11) NOT NULL default '0',
+    action_status int(11) default NULL,
+    executed int(11) default NULL,
+  PRIMARY KEY  (vid)
+  ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+  
+  db_query("CREATE TABLE {hosting_platform} (
+    vid int(10) unsigned NOT NULL default '0',
+    nid int(10) unsigned NOT NULL default '0',
+    publish_path longtext,
+    web_server int(11) NOT NULL default '0',
+    PRIMARY KEY  (vid)
+  ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+  
+  db_query("CREATE TABLE {hosting_db_server} (
+    vid int(10) unsigned NOT NULL default '0',
+    nid int(10) unsigned NOT NULL default '0',
+    ip_address longtext,
+    db_type longtext NOT NULL, 
+    db_user longtext NOT NULL,
+    db_passwd longtext NOT NULL,
+    PRIMARY KEY  (vid)
+  ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+  
+  db_query("CREATE TABLE {hosting_web_server} (
+    vid int(10) unsigned NOT NULL default '0',
+    nid int(10) unsigned NOT NULL default '0',
+    ip_address longtext,
+    script_user longtext,
+    web_group longtext,
+    config_path longtext,
+    backup_path longtext,
+    PRIMARY KEY  (vid)
+  ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+
   
   # Configuration template table
   db_query("CREATE TABLE {config_template} (
@@ -34,300 +72,19 @@ function hosting_install() {
     KEY (type)
   ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
 
-}
 
-/**
- * Install function for the client node type. Additionally creates default client node.
- */
-function _hosting_install_client_type() {
-  db_query("INSERT INTO {node_type} VALUES ('client', 'Client', 'node', 'This is somebody who owns a site. This is not a user atm. but it might become one later.\r\n\r\nThe idea is that on the hosting system, multiple users may be associated with a client.\r\n', '', 1, 'Client Name', 0, '', 0, 1, 1, 0, '')");
-
-  _hosting_node_field_add('field_name','cck_fullname', 
-  array (
-    'required_parts' => 
-    array (
-      'legal_first' => 'legal_first',
-      'legal_last' => 'legal_last',
-      'legal_prefix' => 0,
-      'legal_middle' => 0,
-      'legal_suffix' => 0,
-      'preferred_prefix' => 0,
-      'preferred_first' => 0,
-      'preferred_middle' => 0,
-      'preferred_last' => 0,
-      'preferred_suffix' => 0,
-    ),
-    'use_legalname' => 'legal_require',
-    'legalname' => 
-    array (
-      'legal_first' => 'legal_first',
-      'legal_middle' => 'legal_middle',
-      'legal_last' => 'legal_last',
-      'legal_prefix' => 0,
-      'legal_suffix' => 0,
-    ),
-    'use_preferredname' => 'preferred_hide',
-    'preferredname' => 
-    array (
-      'preferred_first' => 'preferred_first',
-      'preferred_middle' => 'preferred_middle',
-      'preferred_last' => 'preferred_last',
-      'preferred_prefix' => 0,
-      'preferred_suffix' => 0,
-    ),
-    'middle_initial' => 1,
-    'max_length_prefix_legal' => '',
-    'max_length_first_legal' => '',
-    'max_length_middle_legal' => '1',
-    'max_length_last_legal' => '',
-    'max_length_suffix_legal' => '',
-    'max_length_prefix_preferred' => '',
-    'max_length_first_preferred' => '',
-    'max_length_middle_preferred' => '1',
-    'max_length_last_preferred' => '',
-    'max_length_suffix_preferred' => '',
-  )
-  
-  
-   ,1,0,1);
-  _hosting_node_field_instance_add('field_name','client',0,'Name','cck_fullname', null, array(),'');
-  		  
-  _hosting_node_field_add('field_organization','text', array( 'text_processing' => '0', 'max_length' => '30',
-    'allowed_values' => '', 'allowed_values_php' => '',),0,0,1);
-  _hosting_node_field_instance_add('field_organization','client',0,'Company or Organization','text',
-    array('default_value' => array(0 => array('value' => '', ), ), 'default_value_php' => '', 'rows' => '1',), array(),'');
-  
-  _hosting_node_field_add('field_email','email', array(),1,0,1);
-  _hosting_node_field_instance_add('field_email','client',0,'E-mail','email',
-    array('default_value' => array(0 => array('email' => '', ), ), 'default_value_php' => '', 'size' => '60', 'link_type' => 'mailto',),
-    array(),'');
-
-  db_query("CREATE TABLE {content_type_client} (
-    vid int(10) unsigned NOT NULL default '0',
-    nid int(10) unsigned NOT NULL default '0',
-    field_name_first longtext,
-    field_name_middle char(1) NOT NULL default '',
-    field_name_last longtext,
-    field_name_prefix longtext,
-    field_name_suffix longtext,
-    field_name_first_preferred longtext,
-    field_name_middle_preferred char(1) NOT NULL default '',
-    field_name_last_preferred longtext,
-    field_name_prefix_preferred longtext,
-    field_name_suffix_preferred longtext,
-    field_organization_value varchar(30) NOT NULL default '',
-    field_email_email varchar(255) NOT NULL default '',
-    PRIMARY KEY  (vid)
-  ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
-  
-}
-
-/**
- * Install function for site node type.
- */
-function _hosting_install_site_type() { 
-  db_query("INSERT INTO {node_type} VALUES ('site', 'Site', 'node', 'hosted site', '', 1, 'URL', 0, '', 0, 1, 1, 0, '')");
-  
-  _hosting_node_field_add('field_client','nodereference', array('referenceable_types' => 
-    array('client' => 'client', 'action' => 0, 'db_server' => 0, 'platform' => 0, 'site' => 0, 'web_server' => 0,),
-    'advanced_view' => '--','advanced_view_args' => '',),1,0,1);
-  _hosting_node_field_instance_add('field_client','site',0,'Client','nodereference_autocomplete',
-    array('default_value' => array(  ), 'default_value_php' => 'return _hosting_default_client();',),
-    array(),'Person or organization who owns this site.');
-  		
-  _hosting_node_field_add('field_db_server','nodereference', array('referenceable_types' => 
-    array( 'db_server' => 'db_server', 'action' => 0, 'client' => 0, 'platform' => 0, 'site' => 0, 'web_server' => 0, ),
-    'advanced_view' => '--', 'advanced_view_args' => '',),1,0,1);
-  _hosting_node_field_instance_add('field_db_server','site',0,'Database server','nodereference_select',
-    array('default_value' => array(0 => array('nid' => '0',   'error_field' => 'field_db_server][nids', ), ), 'default_value_php' => 'return _hosting_default_db_server();',),  array(),'');
-  		  
-  _hosting_node_field_add('field_platform','nodereference', array('referenceable_types' => 
-    array('platform' => 'platform', 'action' => 0, 'actionnew' => 0, 'client' => 0, 'db_server' => 0, 'panel' => 0, 'site' => 0, 'web_server' => 0,),
-    'advanced_view' => '--', 'advanced_view_args' => '',),1,0,1);
-  _hosting_node_field_instance_add('field_platform','site',0,'platform','nodereference_autocomplete',
-  array('default_value' => array(  ), 'default_value_php' => 'return _hosting_default_platform();',),
-  array(),'');
-
-  db_query("CREATE TABLE {content_type_site} (
-    vid int(10) unsigned NOT NULL default '0',
-    nid int(10) unsigned NOT NULL default '0',
-    field_client_nid int(11) NOT NULL default '0',
-    field_db_server_nid int(11) NOT NULL default '0',
-    field_platform_nid int(11) NOT NULL default '0',
-    
-    PRIMARY KEY  (vid)
-  ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
-
-  db_query("CREATE TABLE {site_data} (
-    vid int(10) unsigned NOT NULL default '0',
-    nid int(10) unsigned NOT NULL default '0',
-    last_cron int(10) default NULL, 
-    last_stats int(10) default NULL,
-    PRIMARY KEY  (vid)    
-    ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
-}
-
-
-/**
- * Install function for action node type.
- */
-function _hosting_install_action_type() { 
-  db_query("INSERT INTO {node_type} VALUES ('action', 'Action', 'node', 'This is an action that will be executed on a specific site record. \r\nThis will maintain the record of whenever any changes were made to the site from the front end.', '', 1, 'Title', 0, '', 0, 1, 1, 0, '')");
-
-  _hosting_node_field_add('field_action_type','text', array('text_processing' => '0', 'max_length' => '', 
-  'allowed_values' => "install|install\r\nenable|enable\r\ndisable|disable\r\nsynch|synch\r\ndelete|delete\r\nbackup|backup\r\nverify|verify",
-  'allowed_values_php' => '',),1,0,1);
-  _hosting_node_field_instance_add('field_action_type','action',0,'Action type','options_buttons',
-  array('default_value' => array(0 => array('value' => '', ), ), 'default_value_php' => '',),
-  array(),'');
-  
-  _hosting_node_field_add('field_reference','nodereference', array('referenceable_types' => 
-    array('site' => 'site', 'platform' => 'platform',  'action' => 0, 'client' => 0, ),
-    'advanced_view' => '--', 'advanced_view_args' => '',),1,0,1);
-  _hosting_node_field_instance_add('field_reference','action',0,'Reference','nodereference_nid',
-  array('default_value' => array(  ), 'default_value_php' => '',),
-  array(),'');
-  
-  db_query("CREATE TABLE {content_type_action} (
-    vid int(10) unsigned NOT NULL default '0',
-    nid int(10) unsigned NOT NULL default '0',
-    field_action_type_value longtext,
-    field_reference_nid int(11) NOT NULL default '0', 
-    PRIMARY KEY  (vid)
-  ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
-
-  db_query("CREATE TABLE {action_record} (
-    vid int(10) unsigned NOT NULL default '0',
-    nid int(10) unsigned NOT NULL default '0',
-    executed int(11) default NULL,
-    action_status int(11) default NULL,
-  PRIMARY KEY  (vid)    
-  ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
-    
-}
-
-
-/**
- * Install function for database server node type. Additionally creates the default database server.
- */
-function _hosting_install_db_server_type() { 
-  db_query("INSERT INTO {node_type} VALUES ('db_server', 'Database server', 'node', 'The database server to which the site will connect.', '', 1, 'Hostname', 0, '', 0, 1, 1, 0, '')");
-
-  _hosting_node_field_add('field_db_type','text', array('text_processing' => '0', 'max_length' => '',
-    'allowed_values' => "mysql\r\npgsql", 'allowed_values_php' => '',),1,0,1);
-  _hosting_node_field_instance_add('field_db_type','db_server',0,'Database type','options_select',
-  array('default_value' => array(0 => array('value' => 'mysql', ), ), 'default_value_php' => '',),
-  array(),'');  
-
-  _hosting_node_field_add('field_master_username','text', array('text_processing' => '0', 'max_length' => '', 
-    'allowed_values' => '', 'allowed_values_php' => '',),1,0,1);
-  _hosting_node_field_instance_add('field_master_username','db_server',9,'Username','text',
-  array('default_value' => array(0 => array('value' => 'root', ), ), 'default_value_php' => '', 'rows' => '1',),
-  array(),'Username with the permissions to create new databases and user accounts.');
-    
-  _hosting_node_field_add('field_master_password','text', array('text_processing' => '0', 'max_length' => '', 'allowed_values' => '','allowed_values_php' => '',),1,0,1);  
-  _hosting_node_field_instance_add('field_master_password','db_server',10,'Password','text',
-  array('default_value' => array(0 => array('value' => '', ), ), 'default_value_php' => '', 'rows' => '1',),
-  array(),'Password for the database account used to create new databases and user accounts.');
-  
-  db_query("CREATE TABLE {content_type_db_server} (
-    vid int(10) unsigned NOT NULL default '0',
-    nid int(10) unsigned NOT NULL default '0',
-    field_db_type_value longtext, 
-    field_master_username_value longtext,
-    field_master_password_value longtext, 
-    PRIMARY KEY  (vid)
-  ) ENGINE=MyISAM DEFAULT CHARSET=utf8");  
-
+  # Logging table for backend action calls
+  db_query("CREATE TABLE {action_log} (
+    lid int NOT NULL auto_increment,
+    vid int NOT NULL default '0',
+    type varchar(16) NOT NULL default '',
+    message longtext NOT NULL,
+    severity tinyint unsigned NOT NULL default '0',
+    timestamp int NOT NULL default '0',
+    PRIMARY KEY (lid),
+    KEY (type)
+  ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
 
 }
 
-
-/**
- * Install function for the platform node type. Additionally creates a default platform for the current tree.
- */
-function _hosting_install_platform_type() {
-  db_query("INSERT INTO {node_type} VALUES ('platform', 'Platform', 'node', 'Point where the data is published.', '', 1, 'Platform', 0, '', 0, 1, 1, 0, '')");
-
-  _hosting_node_field_add('field_publish_path','text', array('text_processing' => '0', 'max_length' => '', 'allowed_values' => '', 'allowed_values_php' => '',
-),1,0,1);
-  _hosting_node_field_instance_add('field_publish_path','platform',0,'Path','text',
-      array('default_value' => array(),'default_value_php' => 'return _hosting_default_path();', 'rows' => '1',),array(),'');  
-
-  _hosting_node_field_add('field_web_server','nodereference', array('referenceable_types' => 
-    array('web_server' => 'web_server', 'action' => 0, 'actionnew' => 0, 'client' => 0, 'db_server' => 0, 'panel' => 0, 'platform' => 0, 'site' => 0,),
-    'advanced_view' => '--', 'advanced_view_args' => '',),0,0,1);
-  _hosting_node_field_instance_add('field_web_server','platform',0,'Web server','nodereference_autocomplete',
-  array('default_value' => array(  ), 'default_value_php' => 'return _hosting_default_web_server();',),
-  array(),'');
-
-  db_query("CREATE TABLE {content_type_platform} (
-    vid int(10) unsigned NOT NULL default '0',
-    nid int(10) unsigned NOT NULL default '0',
-    field_publish_path_value longtext,
-    field_web_server_nid int(11) NOT NULL default '0',
-    PRIMARY KEY  (vid)
-  ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
-  
-
-}
-
-
-/**
- * Install function for web server node type. Additionally creates the default web server node.
- */
-function _hosting_install_web_server_type() { 
-  db_query("INSERT INTO {node_type} VALUES ('web_server', 'Web server', 'node', 'The server that will be hosting the files.', '', 1, 'hostname', 0, '', 0, 1, 1, 0, '')");
-
-  _hosting_node_field_add('field_web_user','text', array( 'text_processing' => '0', 'max_length' => '', 'allowed_values' => '', 'allowed_values_php' => '',),1,0,1);
-  _hosting_node_field_instance_add('field_web_user','web_server',0,'User','text',
-  array('default_value' => array(0 => array('value' => '', ), ), 'default_value_php' => '', 'rows' => '1',),
-  array(),'');
-    
-  _hosting_node_field_add('field_group','text', array('text_processing' => '0', 'max_length' => '', 'allowed_values' => '', 'allowed_values_php' => '',),1,0,1);
-  _hosting_node_field_instance_add('field_group','web_server',0,'Group','text',
-  array('default_value' => array(0 => array('value' => '', ), ), 'default_value_php' => '', 'rows' => '1',),
-  array(),'');
-
-  _hosting_node_field_add('field_vhost_path','text', array('text_processing' => '0', 'max_length' => '', 'allowed_values' => '', 'allowed_values_php' => '',
-),1,0,1);
-  _hosting_node_field_instance_add('field_config_path','web_server',0,'Configuration storage path','text',
-      array('default_value' => array(),'default_value_php' => '', 'rows' => '1',),array(), 'The path where all the webserver\'s configuration files will be stored. This path should not be web-accessible. More directories will be created as needed.');  
-
-  _hosting_node_field_add('field_backup_path','text', array('text_processing' => '0', 'max_length' => '', 'allowed_values' => '', 'allowed_values_php' => '',
-),1,0,1);
-  _hosting_node_field_instance_add('field_backup_path','web_server',0,'Site backup path','text',
-      array('default_value' => array(),'default_value_php' => '', 'rows' => '1',),array(), 'The path where all the backups will be stored. This path should not be web-accessible.');  
-
-  db_query("CREATE TABLE {content_type_web_server} (
-    vid int(10) unsigned NOT NULL default '0',
-    nid int(10) unsigned NOT NULL default '0',
-    field_web_user_value longtext,
-    field_group_value longtext,
-    field_vhost_path_value longtext,
-    field_backup_path_value longtext,
-           
-    PRIMARY KEY  (vid)
-  ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
-
-}
-
-function _hosting_install_cck_shared_fields() {
-  # Shared by the db server and web server types
-  _hosting_node_field_add('field_ip','text', array('text_processing' => '0','max_length' => '','allowed_values' => '', 'allowed_values_php' => '',),0,0,0);
-  _hosting_node_field_instance_add('field_ip','db_server',0,'IP address','text',
-  array('default_value' => array(0 => array('value' => '.', ), ), 'default_value_php' => '', 'rows' => '1',),
-  array(),'The IP address the database server is hosted on. The host name is used if the ip is not specified');
-  _hosting_node_field_instance_add('field_ip','web_server',-1,'IP address','text',
-  array('default_value' => array(0 => array('value' => '.', ), ), 'default_value_php' => '', 'rows' => '1',),
-  array(),'The IP address the database server is hosted on. The host name is used if the ip is not specified');
-  
-  db_query("CREATE TABLE {content_field_ip} (
-    vid int(10) unsigned NOT NULL default '0',
-    nid int(10) unsigned NOT NULL default '0',
-    field_ip_value longtext,
-    PRIMARY KEY  (vid)
-  ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
-
-}
 

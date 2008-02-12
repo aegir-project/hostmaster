@@ -1,12 +1,90 @@
 <?php
 /**
- * Hosting module
- * Contains small helper functions for hosting infrastructure. It's basically glue.
+ * @file Hosting module
+ *
+ * Contains just about all the interface magic of hostmaster.
+ */
+ 
+
+/**
+ * Not split for performance reasons. Just to keep code together.
  */
 
-include_once('hosting.inc');
+#Node type includes
+include_once('hosting_client.inc');
+include_once('hosting_site.inc');
+include_once('hosting_action.inc');
+include_once('hosting_platform.inc');
+include_once('hosting_web_server.inc');
+include_once('hosting_db_server.inc');
+
+
 include_once('hosting_help.inc');
 include_once('hosting_views.inc');
+
+
+function hosting_node_info() {
+  #content
+  $types["client"] =  array(
+    "type" => 'client', "name" => 'Client',
+    "module" => 'hosting_client',
+    "has_title" => FALSE, "title_label" => '', 
+    "description" => hosting_node_help("client"),
+    "has_body" => 0, "body_label" => '', "min_word_count" => 0);
+  $types["site"] =  array(
+    "type" => 'site', "name" => 'Site',
+    "module" => 'hosting_site',
+    "has_title" => TRUE, "title_label" => 'Domain name', 
+    "description" => hosting_node_help("site"),
+    "has_body" => 0, "body_label" => '', "min_word_count" => 0);
+
+  #management
+  $types["action"] =  array(
+    "type" => 'action', "name" => 'Action',
+    "module" => 'hosting_action',
+    "has_title" => FALSE, "title_label" => '', 
+    "description" => hosting_node_help("action"),
+    "has_body" => 0, "body_label" => '', "min_word_count" => 0);
+  
+  #configuration
+  $types["platform"] =  array(
+    "type" => 'platform', "name" => 'Platform',
+    "module" => 'hosting_platform',
+    "has_title" => TRUE, "title_label" => 'Platform', 
+    "description" => hosting_node_help("platform"),
+    "has_body" => 0, "body_label" => '', "min_word_count" => 0);    
+  $types["web_server"] =  array(
+    "type" => 'web_server', "name" => 'Web server',
+    "module" => 'hosting_web_server',
+    "has_title" => true, "title_label" => t('hostname'), 
+    "description" => hosting_node_help("web_server"),
+    "has_body" => 0, "body_label" => '', "min_word_count" => 0);
+  $types["db_server"] =  array(
+    "type" => 'db_server', "name" => 'Database server',
+    "module" => 'hosting_db_server',
+    "has_title" => TRUE, "title_label" => 'Host name', 
+    "description" => hosting_node_help("db_server"),
+    "has_body" => 0, "body_label" => '', "min_word_count" => 0);    
+  return $types;
+}
+
+
+/**
+ * Implementation of hook_nodeapi
+ *
+ * This function redirects to hosting_nodeapi_$nodetype_$op calls, to save ourselves
+ * from an incessant amount of intricately nested code, and allow easier extension / maintenance.
+ */
+function hosting_nodeapi(&$node, $op, $teaser) {
+  $func = "hosting_nodeapi_" . $node->type . "_" . str_replace(" ", "_", $op);
+  if (function_exists($func)) {
+    $func($node, $op, $teaser);
+  }
+  # Keep own provisioning system up to date.
+  if ($op == 'update') {
+    hosting_configure_hosting($node);
+  }
+}
 
 /**
  * Implementation of hook_menu().
@@ -30,12 +108,15 @@ function hosting_menu($may_cache) {
         );
       }
       if (in_array($node->type, array('platform', 'site'))) {
+        $action = new stdClass();
+        $action->type = "action";
         $items[] = array(
-          'path' => 'node/' . arg(1) . '/request',
-          'title' => t('Request action'),
-          'description' => t('Request that the hosting system generates an action for the framework.'),
+          'path' => 'node/' . arg(1) . '/add_action',
+          'title' => t('Actions'),
+          'description' => t('Request that the hosting system runs a command on this %type.', array("%type" => $node->type)),
           'callback' => 'drupal_get_form',
-          'callback arguments' => array('hosting_action_request', $node),
+          'callback arguments' => array('action_node_form', $action, $node->nid),
+          'access' => user_access('create action nodes'),
           'type' => MENU_LOCAL_TASK,
           'weight' => 9
         );
@@ -46,9 +127,13 @@ function hosting_menu($may_cache) {
   return $items;
 }
 
-function hosting_config_templates($node) {
 
-  
+
+/**
+ * Page callback
+ * Configure the templates used to generate config files for the framework.
+ */
+function hosting_config_templates($node) {
   $result = db_query("SELECT * FROM {config_template} WHERE vid=%d AND type='drupal_settings' limit 1", $node->vid);
 
   if (db_num_rows($result)) {
@@ -251,6 +336,16 @@ function hosting_form_alter($form_id, &$form) {
   }
 }
 
+
+function hosting_validate_site_title($element, $nid) {
+  if (!preg_match("/^([\w-]+\.)+[a-z]{2,4}$/i", $element['#value'] ) ) {
+    form_set_error('title', t("You have not specified a valid url for this site."));
+  }
+  if (db_result(db_query("SELECT COUNT(nid) FROM {node} WHERE type='site' AND title='%s' AND  nid <> %d", $element['#value'], $nid))) {
+    form_set_error('title', t("The url you specified is not unique."));
+  }
+}
+
 function hosting_configure_provision($form_id, &$values) {
   /**
   * @todo Hosting site should have it's own site record.
@@ -296,147 +391,46 @@ function hosting_configure_hosting($node) {
   }
 }
 
-function hosting_nodeapi(&$node, $op, $teaser) {
-  $func = "hosting_nodeapi_" . $node->type . "_" . $op;
+function hosting_map_values($node) {
+  if (is_numeric($node)) {
+    $node = node_load($node);
+  }
+  
+  $values = array();
+
+  $func = 'hosting_map_values_' . $node->type;
   if (function_exists($func)) {
-    $func($node, $op, $teaser);
+    $values = $func($node);      
   }
-  # Keep own provisioning system up to date.
-  if ($op == 'update') {
-    hosting_configure_hosting($node);
-  }
+
+  return $values;
 }
 
-function hosting_nodeapi_site_validate(&$node, $op, $teaser) {
-  $node->field_actions[0]['vname'] = 'actions';
-  $node->field_actions[0]['vname'] = '%nid';
+#todo: get rid of these. asap.
+function _hosting_default_path() {
+ return array(0 => array('nid' => ereg_replace("/webroot$", "", $_SERVER['DOCUMENT_ROOT'])));
 }
 
-function hosting_nodeapi_site_insert(&$node, $op, $teaser) {
-  hosting_add_action($node->nid, 'install');
+function _hosting_default_client() {
+ return array( 0 => array('nid' => variable_get('hosting_default_client', 1)),);
 }
 
-function hosting_nodeapi_site_update(&$node, $op, $teaser) {
-  hosting_add_action($node->nid, 'synch');
+function _hosting_default_db_server() {
+ return array( 0 => array( 'nid' => variable_get('hosting_default_db_server', 2) ),);
 }
 
-
-function hosting_nodeapi_site_view(&$node, $op, $teaser) {
-  $view = views_get_view('actions_embed');
-  $node->content['actions_view'] = array(
-    '#type' => 'item',
-    '#title' => t("Actions"),
-    '#value' => views_build_view('embed', $view, array($node->nid)), 
-    '#weight' => 10
-  );
+function _hosting_default_web_server() {
+ return array( 0 => array( 'nid' => variable_get('hosting_default_web_server', 3) ),);
 }
 
-function hosting_nodeapi_platform_view(&$node, $op, $teaser) {
-  $view = views_get_view('actions_embed');
-  $node->content['actions_view'] = array(
-    '#type' => 'item',
-    '#title' => t("Actions"),
-    '#value' => views_build_view('embed', $view, array($node->nid)), 
-    '#weight' => 10
-  );
+function _hosting_default_platform() {
+ return array( 0 => array( 'nid' => variable_get('hosting_default_platform', 4) ),);
 }
 
-function hosting_nodeapi_action_update(&$node, $op, $teaser) {
-  if ($node->executed || $node->action_status) {
-    db_query("INSERT INTO {action_data} (vid, nid, executed, action_status) VALUES (%d, %d, %d, %d)",
-      $node->vid, $node->nid, $node->executed, $node->status);
-  }
+function _hosting_get_queue() {
+ return nodequeue_load( variable_get('hosting_action_queue', 1));
 }
 
-function hosting_nodeapi_action_load(&$node, $op, $teaser) {
-  $result = db_query("SELECT executed, action_status FROM {action_data} WHERE vid=%d", $node->vid);
-  if ($data = db_fetch_object($result)) {
-    $node->executed = $data->executed;
-    $node->action_status = $data->action_status;
-  }
-}
-
-function hosting_nodeapi_action_view(&$node, $op, $teaser) {
-  if ($node->executed) {
-    $node->content['executed'] = array(
-      '#type' => 'item',
-      '#title' => t('Executed'),
-      '#value' => format_date($node->executed),
-    );
-  }
-  if ($node->action_status) {
-    $node->content['status'] = array(
-      '#type' => 'item',
-      '#title' => t('Status'),
-      '#value' => implode(", ", _hosting_parse_error_codes($node->action_status)),
-    );
-  }
-    
-  # Display table containing the logged information for this action
-  $result = db_query("SELECT * FROM {action_log} WHERE vid=%d", $node->vid);
-  if ($result) {
-    $header = array("type", "message", "date");
-    while ($entry = db_fetch_object($result)) {
-      $rows[] = array($entry->type, $entry->message, format_date($entry->timestamp, "custom", "Y-m-d m:s"));
-    }
-
-    
-    $node->content['hosting_log'] = array(
-      '#weight' => 1,
-      '#value' => theme_table($header, (array) $rows)
-    );
-    
-  }
-}
-
-function hosting_nodeapi_client_view(&$node, $op, $teaser) {
-  $view = views_get_view('sites_embed');
-  $node->content['sites_view'] = array(
-    '#type' => 'item',
-    '#title' => t("Sites"),
-    '#value' => views_build_view('embed', $view, array($node->nid)), 
-    '#weight' => 10
-  );  
-}
-
-function hosting_validate_site_title($element, $nid) {
-  if (!preg_match("/^([\w-]+\.)+[a-z]{2,4}$/i", $element['#value'] ) ) {
-    form_set_error('title', t("You have not specified a valid url for this site."));
-  }
-  if (db_result(db_query("SELECT COUNT(nid) FROM {node} WHERE type='site' AND title='%s' AND  nid <> %d", $element['#value'], $nid))) {
-    form_set_error('title', t("The url you specified is not unique."));
-  }
-}
-
-
-
-function hosting_available_actions($auto_detect = false, $type = null) {
-  if ($auto_detect && !$type) {
-    if (arg(0) == 'node') {
-      if (is_numeric(arg(1))) {
-        $node = node_load(arg(1));
-        $type = $node->type;
-      }
-      elseif (arg(1) == 'add') {
-        $type = arg(2);
-      }
-    }
-  }
-  if ($type == 'site') {
-    $options['backup'] = t('Backup site');
-    $options['synch'] = t('Regenerate configuration files');
-
-    if ($node) {
-      if ($node->field_status[0]["value"] == "Enabled") {
-        $options['disable'] =  t('Disable an enabled site.');      
-      }
-      elseif ($node->field_status[0]["value"] == "Disabled") {
-        $options['enable'] = t('Enable a disabled site.');      
-      }
-    }
-  }
-  elseif ($type == 'platform') {
-    $options['verify'] = t('Verify that a platform is correctly installed.');
-  }
-  return $options;
+function _hosting_get_subqueue() {
+ return nodequeue_load_subqueue(variable_get('hosting_action_subqueue', 1));
 }
