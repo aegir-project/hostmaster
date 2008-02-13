@@ -2,12 +2,17 @@
 /**
  * @file Web server node type is defined here.
  */
- 
+
 /**
- * Implementation of hook_access().
- */
-function hosting_web_server_access($op, $node) {
-  return true;
+ * Small helper function to get web servers.
+*/ 
+function _hosting_get_web_servers() {
+  $return = array();
+  $result = db_query("SELECT nid, title FROM {node} WHERE type='web_server' AND status=1");
+  while($server = db_fetch_object($result)) {
+    $return[$server->nid] = $server->title;
+  }
+  return $return;
 }
 
 /**
@@ -121,4 +126,27 @@ function hosting_web_server_view($node, $teaser = FALSE, $page = FALSE) {
   );
   
   return $node;
+}
+
+function hosting_web_server_views_tables() {
+  return array(
+    'name' => 'hosting_web_server',
+    'join' => array(
+      'left' => array(
+        'table' => 'node',
+        'field' => 'vid',
+      ),
+      'right' => array(
+        'field' => 'vid',
+      ),
+    ),
+    'fields' => array(
+      'ip_address' => array(
+          'name' => t('Server: IP address'),
+          'sortable' => TRUE,
+          'option' => 'string',
+          'help' => t('Display the ip address of the server.'),
+        ),
+      ),
+    );
 }

@@ -1,6 +1,6 @@
 <?php
 /**
- * @file Web server node type is defined here.
+ * @file Client node type is defined here.
  */
 
 /**
@@ -23,10 +23,10 @@ function hosting_client_form(&$node) {
     '#maxlength' => 255,
   );
 
-
   $form['email'] = array(
     '#type' => 'textfield',
     '#title' => t('Email address'),
+    '#required' => TRUE,
     '#size' => 40,
     '#maxlength' => 255,
   );
@@ -65,7 +65,7 @@ function hosting_client_update($node) {
   }
 }
 
-function hosting_nodeapi_web_server_delete_revision(&$node) {
+function hosting_nodeapi_client_delete_revision(&$node) {
   db_query('DELETE FROM {hosting_client} WHERE vid = %d', $node->vid);
 }
 
@@ -80,7 +80,7 @@ function hosting_client_delete($node) {
  * Implementation of hook_load().
  */
 function hosting_client_load($node) {
-  $additions = db_fetch_object(db_query('SELECT ip_address, script_user, web_group, config_path, backup_path FROM {hosting_client} WHERE vid = %d', $node->vid));
+  $additions = db_fetch_object(db_query('SELECT action_type, rid, executed, action_status FROM {hosting_client} WHERE vid = %d', $node->vid));
   return $additions;
 }
 

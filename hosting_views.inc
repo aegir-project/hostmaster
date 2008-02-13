@@ -1,73 +1,9 @@
 <?php
 function hosting_views_tables() {
-  
-  $tables["hosting_web_server"] = array(
-    'name' => 'hosting_web_server',
-    'join' => array(
-      'left' => array(
-        'table' => 'node',
-        'field' => 'vid',
-      ),
-      'right' => array(
-        'field' => 'vid',
-      ),
-    ),
-    'fields' => array(
-      'ip_address' => array(
-          'name' => t('Server: IP address'),
-          'sortable' => TRUE,
-          'option' => 'string',
-          'help' => t('Display the ip address of the server.'),
-        ),
-      ),
-    );
-  
-  $tables["hosting_action"] = array(
-    'name' => 'hosting_action',
-    'join' => array(
-      'left' => array(
-        'table' => 'node',
-        'field' => 'vid',
-      ),
-      'right' => array(
-        'field' => 'vid',
-      ),
-    ),
-    'fields' => array(
-      'executed' => array(
-        'name' => t('Action: Executed Time'),
-        'sortable' => TRUE,
-        'handler' => views_handler_field_dates(),
-        'option' => 'string',
-        'help' => t('Display the time the action was executed.'),
-      ),
-      'action_type' => array(
-        'name' => t('Action: Action Type'),
-        'sortable' => TRUE,
-        'option' => 'string',
-        'help' => t('Display the type of action.'),
-      ),
-      'executed' => array(
-          'name' => t('Action: Executed Time'),
-          'sortable' => TRUE,
-          'handler' => views_handler_field_dates(),
-          'option' => 'string',
-          'help' => t('Display the time the action was executed.'),
-        ),
-      'action_status' => array(
-        'name' => t('Action: Action Status'),
-        'sortable' => TRUE,
-        'handler' => "hosting_action_status_handler",
-        'option' => 'string',
-        'help' => t('Whether or not the action was succesful.'),
-      ),        
-      ),
-    );
-    return $tables;
-}
+  $tables["hosting_web_server"] = hosting_web_server_views_tables();
+  $tables["hosting_action"] = hosting_action_views_tables();
 
-function hosting_action_status_handler($fieldinfo, $fielddata, $value, $data) {
-  return 'yes';
+  return $tables;
 }
 
 function hosting_views_default_views() {

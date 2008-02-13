@@ -40,12 +40,6 @@ function hosting_add_action($nid, $type, $args = null) {
  node_save($action);
 }
 
-/**
- * Implementation of hook_access().
- */
-function hosting_action_access($op, $node) {
-  return true;
-}
 
 /**
  * Implementation of hook_form().
@@ -184,7 +178,6 @@ function hosting_action_view($node, $teaser = FALSE, $page = FALSE) {
   return $node;
 }
 
-
 /**
  * Turn bitmask integer error code into associative array
  */
@@ -203,4 +196,52 @@ function _hosting_parse_error_code($code) {
     $return[PROVISION_SUCCESS] = $provision_errors[PROVISION_SUCCESS];
   }
   return $return;
+}
+
+function hosting_action_views_tables() {
+  return array(
+    'name' => 'hosting_action',
+    'join' => array(
+      'left' => array(
+        'table' => 'node',
+        'field' => 'vid',
+      ),
+      'right' => array(
+        'field' => 'vid',
+      ),
+    ),
+    'fields' => array(
+      'executed' => array(
+        'name' => t('Action: Executed Time'),
+        'sortable' => TRUE,
+        'handler' => views_handler_field_dates(),
+        'option' => 'string',
+        'help' => t('Display the time the action was executed.'),
+      ),
+      'action_type' => array(
+        'name' => t('Action: Action Type'),
+        'sortable' => TRUE,
+        'option' => 'string',
+        'help' => t('Display the type of action.'),
+      ),
+      'executed' => array(
+          'name' => t('Action: Executed Time'),
+          'sortable' => TRUE,
+          'handler' => views_handler_field_dates(),
+          'option' => 'string',
+          'help' => t('Display the time the action was executed.'),
+        ),
+      'action_status' => array(
+        'name' => t('Action: Action Status'),
+        'sortable' => TRUE,
+        'handler' => "hosting_action_status_handler",
+        'option' => 'string',
+        'help' => t('Whether or not the action was succesful.'),
+      ),        
+      ),
+    );
+}
+
+function hosting_action_status_handler($fieldinfo, $fielddata, $value, $data) {
+  return 'yes';
 }

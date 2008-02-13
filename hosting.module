@@ -295,30 +295,6 @@ function _hosting_provision_command($data) {
   return $command;
 }
 
-function hosting_action_request($node) {
-  $options = hosting_available_actions(false, $node->type);
-
-  $form['nid'] = array('#type' => 'value', '#value' => $node->nid);
-  
-  $form['action'] = array(
-    '#type' => 'radios',
-    '#title' => t('Action requested'),
-    '#options' => $options
-  );
-  
-  $form['submit'] = array(
-    '#type' => 'submit', 
-    '#value' => t('Request'),
-  );
-  
-  return $form;
-}
-
-function hosting_action_request_submit($form_id, $values) {
-  hosting_add_action($values['nid'], $values['action']);
-  return 'node/' . $values['nid'];
-}
-
 function hosting_form_alter($form_id, &$form) {
   if ($form_id == 'site_node_form') {
     $form['title']['#validate']['hosting_validate_site_title'] = array($form['nid']['#value']);
