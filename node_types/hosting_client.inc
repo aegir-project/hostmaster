@@ -93,9 +93,6 @@ function hosting_client_insert($node) {
   db_query("INSERT INTO {hosting_client} (vid, nid, name, organization, email) VALUES (%d, %d, '%s', '%s', '%s' )",
     $node->vid, $node->nid, $node->name, $node->organization, $node->email);
   hosting_client_set_title($node);
-  $queue = _hosting_get_queue();
-  $subqueue = _hosting_get_subqueue();
-  nodequeue_subqueue_add($queue, $subqueue, $node->nid);    
 }
 
 /**

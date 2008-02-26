@@ -234,7 +234,8 @@ function _hosting_get_new_actions($limit = 5) {
 function hosting_process_queue() {
   global $provision_errors;
   
-  $count = drush_get_option(array('i', 'items', 5)); # process a default of 5 items at a time.
+  $count = drush_get_option(array('i', 'items'), 5); # process a default of 5 items at a time.
+
   $actions = _hosting_get_new_actions($count);
 
   foreach ($actions as $action) {
@@ -471,3 +472,15 @@ function _hosting_node_link($nid) {
   }
 }
 
+/**
+ * Creates a new block.
+ */
+function _hosting_add_block($module, $delta, $theme, $status, $weight, $region, $visibility = 0, $pages = '', $custom = 0, $throttle = 0, $title = '') {
+  db_query("INSERT INTO {blocks} (module, delta, theme, status, weight, region, visibility, pages, custom, throttle, title) 
+     VALUES ('%s', '%s', '%s', %d, %d, '%s', %d, '%s', %d, %d, '%s')", 
+     $module, $delta, $theme, $status, $weight, $region, $visibility, $pages, $custom, $throttle, $title);
+  if ($module == 'block') {
+    $box = db_fetch_object(db_query('SELECT * FROM {boxes} WHERE bid=%d', $delta));
+    db_query("INSERT INTO {boxes} (bid, body, info, format) VALUES (%d, '%s', '%s', '%s')", $box->bid, $box->body, $box->info, $box->format);
+  }
+}
