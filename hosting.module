@@ -224,7 +224,7 @@ function hosting_drush_command() {
 
 function _hosting_get_new_actions($limit = 5) {
   $return = array();
-  $result = db_query("SELECT nid FROM {hosting_action_queue} WHERE status=0 LIMIT %d", $limit);
+  $result = db_query("SELECT nid FROM {hosting_action_queue} WHERE status=0 ORDER BY timestamp ASC LIMIT %d", $limit);
   while ($node = db_fetch_object($result)) {
     $return[$node->nid] =  node_load($node->nid);
   }
