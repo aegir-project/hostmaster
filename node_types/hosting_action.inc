@@ -41,7 +41,6 @@ function hosting_add_action($nid, $type, $args = null) {
  node_save($action);
 }
 
-
 /**
  * Implementation of hook_form().
  */
@@ -94,9 +93,7 @@ function hosting_action_insert($node) {
   db_query("INSERT INTO {hosting_action} (vid, nid, action_type, rid, executed, action_status) VALUES (%d, %d, '%s', %d, %d, %d)",
     $node->vid, $node->nid, $node->action_type, $node->rid, $node->executed, $node->action_status);
   
-  $queue = _hosting_get_queue();
-  $subqueue = _hosting_get_subqueue();
-  nodequeue_subqueue_add($queue, $subqueue, $node->nid);    
+  db_query("INSERT INTO {hosting_action_queue} (nid, timestamp, status) VALUES (%d, %d, 0)", $node->nid, mktime());
 }
 
 /**

@@ -222,12 +222,20 @@ function hosting_drush_command() {
   return $items;
 }
 
+function _hosting_get_new_actions($limit = 5) {
+  $return = array();
+  $result = db_query("SELECT nid FROM {hosting_action_queue} WHERE status=0 LIMIT %d", $limit);
+  while ($node = db_fetch_object($result)) {
+    $return[$node->nid] =  node_load($node->nid);
+  }
+  return $return;
+}
+
 function hosting_process_queue() {
   global $provision_errors;
   
   $count = drush_get_option(array('i', 'items', 5)); # process a default of 5 items at a time.
-  $sqid = variable_get('hosting_action_subqueue', 1);
-  $actions = nodequeue_nodes($sqid, false, 0, $count);
+  $actions = _hosting_get_new_actions($count);
 
   foreach ($actions as $action) {
     // create a new revision
@@ -265,9 +273,8 @@ function hosting_process_queue() {
 
     if (!$code) {
       // remove from queue
-      $subqueue = _hosting_get_subqueue();
       hosting_action_log($action->vid, "queue", t("Removing action from hosting queue"), 0);
-      nodequeue_subqueue_remove_node($subqueue->sqid, $action->nid);
+      db_query("UPDATE {hosting_action_queue} SET status=1 WHERE nid=%d", $action->nid);
       
       // mark as succesful
       $action->action_status = PROVISION_SUCCESS;
@@ -464,10 +471,3 @@ function _hosting_node_link($nid) {
   }
 }
 
-function _hosting_get_queue() {
- return nodequeue_load( variable_get('hosting_action_queue', 1));
-}
-
-function _hosting_get_subqueue() {
- return nodequeue_load_subqueue(variable_get('hosting_action_subqueue', 1));
-}
