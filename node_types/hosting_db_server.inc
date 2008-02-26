@@ -15,6 +15,7 @@ function _hosting_get_db_servers() {
 
 
 function hosting_map_values_db_server($node) {
+  $values['db_id'] = $node->nid;
   $values['site_db_host'] = $node->title;
   if (isset($node->ip_address)) {
     $values['site_db_ip_address'] = $node->ip_address;

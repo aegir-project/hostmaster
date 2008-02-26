@@ -322,11 +322,14 @@ function hosting_form_alter($form_id, &$form) {
  */
 function hosting_wizard_continue_submit() {
   if ($step = hosting_wizard_current_step(TRUE)) {
-    #redirect to next page
-    return $step['path'];
-  }
-  else {
-    return variable_get('site_frontpage', 'node');
+    if ($step) {
+      #redirect to next page
+      return $step['path'];      
+    }
+    else {
+      return variable_get('site_frontpage', 'node');      
+    }
+
   }
 }
 
@@ -344,6 +347,7 @@ function hosting_wizard_current_step($next = false) {
   if ($step == $steps['#steps'][sizeof($steps['#steps']) - 1] && $next) {
     variable_set('hosting_wizard_completed', true);
     variable_del('hosting_wizard_current_step');
+    return false;
   }
   if ($next) {
     $key = array_search($step, $steps['#steps']);
@@ -391,45 +395,43 @@ function hosting_validate_site_title($element, $nid) {
 
 
 function hosting_configure_provision($form_id, &$values) {
-  /**
-  * @todo Hosting site should have it's own site record.
-  */
-
   $platform = node_load(variable_get('hosting_own_platform', 4));
   $platform->revision = true;
-  $platform->field_platform_path[0]['value'] = $_SERVER['DOCUMENT_ROOT'];
+  $platform->publish_path = $_SERVER['DOCUMENT_ROOT'];
   node_save($platform);
 
   $db_server = node_load(variable_get('hosting_own_db_server', 2));
   $db_server->revision = true;
   $db_server->title = $values['provision_db_host'];
-  $db_server->field_master_username[0]['value'] = $values['provision_db_user'];
-  $db_server->field_master_password[0]['value'] = $values['provision_db_password'];
+  $db_server->db_user = $values['provision_db_user'];
+  $db_server->db_passwd = $values['provision_db_password'];
   node_save($db_server);
   
-  $web_server = node_load($platform->field_web_server[0]['nid']);
-  $web_server->field_config_path[0]['value'] = $values['provision_config_path'];
+  $web_server = node_load($platform->web_server);
+  $web_server->config_path = $values['provision_config_path'];
+  $web_server->backup_path = $values['provision_backup_path'];
   $web_server->revision = true;
- 
-  node_save($web_server);  
+  node_save($web_server);
+  
 }
 
 function hosting_configure_hosting($node) {
   if ($node->nid == variable_get('hosting_own_' . $node->type, null)) {
     switch ($node->type) {
       case 'platform' :
-        variable_set('hosting_platform_path', $node->field_platform_path[0]['value']);
+        variable_set('hosting_platform_path', $node->publish_path);
         break;
       case 'db_server' :
        variable_set('provision_db_host', $node->title);
-       variable_set('provision_db_user', $node->field_master_username[0]['value']);
-       variable_set('provision_db_password', $node->field_master_password[0]['value']);
+       variable_set('provision_db_user', $node->db_user);
+       variable_set('provision_db_ip_address', $node->db_ip_address);
+       variable_set('provision_db_password', $node->db_passwd);
         break;
       case 'db_server' :
-        variable_set('provision_user', $node->field_user[0]['nid'] );
-        variable_set('provision_group', $node->field_group[0]['nid']);
-        variable_set('provision_config_path', $node->field_config_path[0]['nid']);
-        variable_set('provision_backup_path', $node->field_backup_path[0]['nid']);
+        variable_set('provision_script_user', $node->script_user);
+        variable_set('provision_web_group', $node->web_group);
+        variable_set('provision_config_path', $node->config_path);
+        variable_set('provision_backup_path', $node->backup_path);
         break;                  
     }
   }
@@ -446,7 +448,7 @@ function hosting_map_values($node) {
   }
   
   $values = array();
-
+  
   $func = 'hosting_map_values_' . $node->type;
   if (function_exists($func)) {
     $values = $func($node);      
@@ -460,27 +462,6 @@ function _hosting_node_link($nid) {
   if ($node->nid) {
     return l($node->title, "node/" . $node->nid);
   }
-}
-
-#todo: get rid of these. asap.
-function _hosting_default_path() {
- return array(0 => array('nid' => ereg_replace("/webroot$", "", $_SERVER['DOCUMENT_ROOT'])));
-}
-
-function _hosting_default_client() {
- return array( 0 => array('nid' => variable_get('hosting_default_client', 1)),);
-}
-
-function _hosting_default_db_server() {
- return array( 0 => array( 'nid' => variable_get('hosting_default_db_server', 2) ),);
-}
-
-function _hosting_default_web_server() {
- return array( 0 => array( 'nid' => variable_get('hosting_default_web_server', 3) ),);
-}
-
-function _hosting_default_platform() {
- return array( 0 => array( 'nid' => variable_get('hosting_default_platform', 4) ),);
 }
 
 function _hosting_get_queue() {

@@ -3,6 +3,18 @@
  * @file Web server node type is defined here.
  */
 
+
+function hosting_map_values_web_server($node) {
+  $values['web_id'] = $node->nid;
+  $values['web_host'] = $node->title;
+  $values['web_ip'] = $node->ip_address;  
+  $values['web_script_user'] = $node->script_user;
+  $values['web_group'] = $node->web_group;
+  $values['web_config_path'] = $node->config_path;
+  $values['web_backup_path'] = $node->backup_path;
+  return $values;
+}
+
 /**
  * Small helper function to get web servers.
 */ 

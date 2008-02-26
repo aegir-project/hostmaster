@@ -17,6 +17,7 @@ function hosting_map_values_action($node) {
   $reference = node_load($node->rid);
   $values['action_reference_type'] = $reference->type;
   $values['action_reference'] = $reference->nid;
+  
   $values = array_merge($values, hosting_map_values($reference));    
 
   return $values;
@@ -130,7 +131,7 @@ function hosting_action_delete($node) {
  * Implementation of hook_load().
  */
 function hosting_action_load($node) {
-  $additions = db_fetch_object(db_query('SELECT action_type, executed, action_status FROM {hosting_action} WHERE vid = %d', $node->vid));
+  $additions = db_fetch_object(db_query('SELECT action_type, executed, action_status, rid FROM {hosting_action} WHERE vid = %d', $node->vid));
   return $additions;
 }
 
@@ -229,13 +230,13 @@ function hosting_action_views_tables() {
       'rid' => array(
           'name' => t('Action: Reference'),
           'sortable' => TRUE,
-          'handler' => 'hosting_action_reference_handler',
+          'handler' => 'hosting_relation_link_handler',
           'help' => t('The object this action is referring to.'),
         ),
       'action_status' => array(
         'name' => t('Action: Action Status'),
         'sortable' => TRUE,
-        'handler' => "hosting_relation_link_handler",
+        'handler' => "hosting_action_status_handler",
         'option' => 'string',
         'help' => t('Whether or not the action was succesful.'),
       ),        

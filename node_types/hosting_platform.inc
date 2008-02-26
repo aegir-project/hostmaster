@@ -17,9 +17,11 @@ function _hosting_get_platforms() {
 
 
 function hosting_map_values_platform($node) {
-  $values['publish_path'] = $node->field_publish_path[0]['value'];
+  $values['publish_path'] = $node->publish_path;
 
-  # @TODO: get web server details. for distributed operation.
+  $reference = node_load($node->web_server);
+  $values = array_merge($values, hosting_map_values($reference));
+
   return $values;
 }
 
