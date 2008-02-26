@@ -12,7 +12,7 @@ include_once('profiles/hostmaster/modules/install_profile_api/crud.inc');
 function hostmaster_profile_modules() {
   return array(
     /* core */ 'block', 'color', 'filter', 'help', 'menu', 'node', 'system', 'user', 'watchdog',
-    /* contrib */ 'drush', 'nodequeue', 'token', 'views', 'views_ui',
+    /* contrib */ 'drush', 'views', 'views_ui',
     /* custom */ 'provision', 'provision_apache', 'provision_mysql', 'provision_drupal', 'hosting');
 }
 
@@ -66,6 +66,7 @@ function hostmaster_profile_final() {
     $node->db_passwd = 'password';    
   }
   $node->status = 1;
+
   node_save($node);
   variable_set('hosting_default_db_server', $node->nid);
   variable_set('hosting_own_db_server', $node->nid);
@@ -84,50 +85,22 @@ function hostmaster_profile_final() {
   $node->publish_path = $_SERVER['DOCUMENT_ROOT'];
   $node->web_server = variable_get('hosting_default_web_server', 3);
   $node->status = 1;
+  node_save($node);
   variable_set('hosting_default_platform', $node->nid);
   variable_set('hosting_own_platform', $node->nid);
   
-  # Action queue
-  $queue = (object) array(
-     'title' => 'Hosting queue',
-     'size' => '0',
-     'link' => '',
-     'link_remove' => '',
-     'owner' => 'nodequeue',
-     'show_in_ui' => '1',
-     'show_in_tab' => '1',
-     'show_in_links' => '0',
-     'reference' => '0',
-     'subqueue_title' => '',
-     'reverse' => '0',
-     'subqueues' => '1',
-     'types' => 
-        array (
-          0 => 'action',
-        ),
-    );
-
-   $queue->add_subqueue = array($queue->title);
-   nodequeue_save($queue);
-   
-   variable_set('hosting_action_queue', $queue->qid);
-   $subqueue = nodequeue_load_subqueues_by_queue($queue->qid);
-   variable_set('hosting_action_subqueue', $subqueue->qid);
-
    #verify platform
    hosting_add_action(4, "verify");
    
-   install_add_block("views", "platforms", "garland", 1, 0, "right");
-   install_add_block("views", "servers", "garland", 1, 0, "right");
-   install_add_block("views", "nodequeue_1", "garland", 1, -1, "right");
+   _hosting_add_block("views", "platforms", "garland", 1, 0, "right");
+   _hosting_add_block("views", "servers", "garland", 1, 0, "right");
    
    #initial configuration of hostmaster - todo
-   
    variable_set('site_frontpage', 'sites');
    
    // @todo create proper roles, and set up views to be role based
-   install_set_permissions(install_get_rid('anonymous user'), array('access content', 'access all views'));
-   install_set_permissions(install_get_rid('authenticated user'), array('access content', 'access all views'));
+   hostmaster_install_set_permissions(install_get_rid('anonymous user'), array('access content', 'access all views'));
+   hostmaster_install_set_permissions(install_get_rid('authenticated user'), array('access content', 'access all views'));
    views_invalidate_cache();
    menu_rebuild();
    
@@ -144,4 +117,12 @@ function hostmaster_profile_final() {
    
    drupal_get_messages();
    drupal_goto('sites');
+}
+
+/**
+ * Set the permission for a certain role
+ */
+function hostmaster_install_set_permissions($rid, $perms) {
+  db_query('DELETE FROM {permission} WHERE rid = %d', $rid);
+  db_query("INSERT INTO {permission} (rid, perm) VALUES (%d, '%s')", $rid, implode(', ', $perms));
 }
