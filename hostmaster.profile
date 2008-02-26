@@ -12,8 +12,7 @@ include_once('profiles/hostmaster/modules/install_profile_api/crud.inc');
 function hostmaster_profile_modules() {
   return array(
     /* core */ 'block', 'color', 'filter', 'help', 'menu', 'node', 'system', 'user', 'watchdog',
-    /* contrib */ 'auto_nodetitle', 'drush', 'nodequeue', 'token', 'update_status', 'views', 'views_ui',
-    /* cck */ 'content', 'cck_fullname', 'email', 'nodereference', 'number', 'optionwidgets', 'password', 'text',
+    /* contrib */ 'drush', 'nodequeue', 'token', 'views', 'views_ui',
     /* custom */ 'provision', 'provision_apache', 'provision_mysql', 'provision_drupal', 'hosting');
 }
 
@@ -25,7 +24,7 @@ function hostmaster_profile_modules() {
  */
 function hostmaster_profile_details() {
   return array(
-    'name' => 'Hosting',
+    'name' => 'Hostmaster',
     'description' => 'Select this profile to manage the installation and maintenance of hosted Drupal sites.'
   );
 }
@@ -38,58 +37,55 @@ function hostmaster_profile_details() {
  *   screen.
  */
 function hostmaster_profile_final() {
-
   /* Default node types and default node */
   node_types_rebuild();
-
+  
   /* Default client */
-  $node = array('type' => 'client');
-  $values = array();
-  $values['title'] = 'Default client';
-  $values['field_organization'][0]['value'] = 'Default';
-  $values['field_email'][0]['value'] = 'changeme@example.com';
-  $values['field_name'][0]['first'] = 'Default';
-  $values['field_name'][0]['last'] = 'Client';
-  $values['status'] = 1;
-  $messages = drupal_execute('client_node_form', $values, $node);
-  variable_set('hosting_default_client', 1);  
+  $node = new stdClass();
+  $node->type = 'client';
+  $node->email = ($_SERVER['SERVER_ADMIN']) ? $_SERVER['SERVER_ADMIN'] : 'changeme@example.com';
+  $node->name = 'Administrator';
+  $node->status = 1;
+  node_save($node);
+  variable_set('hosting_default_client', $node->nid);  
 
   /* Default database server */
-  $node = array('type' => 'db_server');
-  $values = array();
-  $values['title'] = 'localhost';
-  $values['field_ip'][0]['value'] = '127.0.0.1';
-#  $values['field_db_type']['key'] = 'mysql';
-  $values['field_master_username'][0]['value'] = 'root';
-  $values['field_master_password'][0]['value'] = 'password';
-  $values['status'] = 1;
-  $messages = drupal_execute('db_server_node_form', $values, $node);
-  variable_set('hosting_default_db_server', 2);
-  variable_set('hosting_own_db_server', 2);
-  
-  $node = array('type' => 'web_server');
-  $values = array();
-  $values['title'] = $_SERVER['HTTP_HOST'];
-  $values['field_user'][0]['value'] = provision_get_script_owner();
-  $values['field_group'][0]['value'] = provision_get_group_name();
-  $values['status'] = 1;
-  drupal_execute('web_server_node_form', $values, $node);
-  variable_set('hosting_default_web_server', 3);
+  global $db_url;
+  $url = parse_url($db_url);
 
-  /* Default platform */
-  $node = array('type' => 'platform');
-  $values = array();
-  $values['title'] = "Drupal " . VERSION;
-  $values['field_publish_path'][0]['value'] = $_SERVER['DOCUMENT_ROOT'];
-  $values['field_web_server'][0]['nid'] = variable_get('hosting_default_web_server', 3);
-  $values['status'] = 1;
-  drupal_execute('platform_node_form', $values, $node);
-  variable_set('hosting_default_platform', 4);
-  variable_set('hosting_own_platform', 4);
+  $node = new stdClass();
+  $node->type = 'db_server';
+  $node->title = $url['host'];
+  $node->db_type = $url['scheme'];
+  if (_provision_mysql_can_create_database()) {
+    $node->db_user = $url['user'];
+    $node->db_passwd = $url['pass'];
+  }
+  else {
+    $node->db_user = 'root';
+    $node->db_passwd = 'password';    
+  }
+  $node->status = 1;
+  node_save($node);
+  variable_set('hosting_default_db_server', $node->nid);
+  variable_set('hosting_own_db_server', $node->nid);
+  
+  $node = new stdClass();
+  $node->type = 'web_server';
+  $node->title = $_SERVER['HTTP_HOST'];
+  $node->script_user = provision_get_script_owner();
+  $node->web_group = provision_get_group_name();
+  $node->status = 1;
+  node_save($node);
 
-  
-  
-  hosting_update_node_help(array('action', 'platform', 'client', 'site', 'db_server', 'web_server'));
+  $node = new stdClass();
+  $node->type = 'platform';
+  $node->title = "Drupal " . VERSION;
+  $node->publish_path = $_SERVER['DOCUMENT_ROOT'];
+  $node->web_server = variable_get('hosting_default_web_server', 3);
+  $node->status = 1;
+  variable_set('hosting_default_platform', $node->nid);
+  variable_set('hosting_own_platform', $node->nid);
   
   # Action queue
   $queue = (object) array(
@@ -134,4 +130,18 @@ function hostmaster_profile_final() {
    install_set_permissions(install_get_rid('authenticated user'), array('access content', 'access all views'));
    views_invalidate_cache();
    menu_rebuild();
+   
+   /**
+    * Generate administrator account
+    */
+   $user = new stdClass();
+   $edit['name'] = 'Administrator';
+   $edit['pass'] = user_password();
+   $edit['mail'] = ($_SERVER['SERVER_ADMIN']) ? $_SERVER['SERVER_ADMIN'] : 'changeme@example.com';
+   $edit['status'] = 1;
+   $user = user_save($user,  $edit);
+   $GLOBALS['user'] = $user;
+   
+   drupal_get_messages();
+   drupal_goto('sites');
 }
