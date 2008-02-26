@@ -3,6 +3,19 @@
  * @file Platform node type definition
  */
 
+/**
+ * Small helper function to get platforms.
+*/ 
+function _hosting_get_platforms() {
+  $return = array();
+  $result = db_query("SELECT nid, title FROM {node} WHERE type='platform' AND status=1");
+  while($server = db_fetch_object($result)) {
+    $return[$server->nid] = $server->title;
+  }
+  return $return;
+}
+
+
 function hosting_map_values_platform($node) {
   $values['publish_path'] = $node->field_publish_path[0]['value'];
 
@@ -29,7 +42,7 @@ function hosting_platform_form(&$node) {
     '#type' => 'radios',
     '#title' => t('Web server'),
     '#description' => t('The web server the sites will be hosted on.'),
-    '#options' => 
+    '#options' => _hosting_get_web_servers(),
     '#default_value' => ($node->web_server) ? $node->web_server : HOSTING_DEFAULT_WEB_SERVER,
   );
   

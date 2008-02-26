@@ -7,7 +7,17 @@
  * Implementation of hook_help()
  */
 function hosting_help($section) {
+  $step = hosting_wizard_current_step();
+
   switch ($section) {
+    case $step['path'] :
+      if (isset($step['message'])) {
+        $return = $step['message'] . '<br />';
+      }
+      $return .= t("If you do not want help configuring Hostmaster, just <a href='@link'>click this link</a>",
+        array('@link' => url(variable_get('site_frontpage', 'node'), 'skip_wizard=TRUE')));
+      return $return;
+      
     case 'admin/help#hosting':
       $username = provision_get_script_owner();
 

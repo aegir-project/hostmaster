@@ -42,7 +42,8 @@ function hosting_db_server_form(&$node) {
     '#weight' => -5
   );
   // merge the web server configuration.
-  $form += provision_apache_provision_configure($node);
+  $form += provision_mysql_provision_configure($node);
+  unset($form['db_host']);
   return $form;
 }
 
@@ -57,9 +58,9 @@ function hosting_db_server_validate(&$node) {
  * Implementation of hook_insert().
  */
 function hosting_db_server_insert($node) {
-  db_query("INSERT INTO {db_server} (vid, nid, ip_address, script_user, web_group, config_path, backup_path) 
-      VALUES (%d, %d, '%s', '%s', '%s', '%s', '%s')", 
-        $node->vid, $node->nid, $node->ip_address, $node->script_user, $node->web_group, $node->config_path, $node->backup_path);
+  db_query("INSERT INTO {hosting_db_server} (vid, nid, ip_address, db_type, db_user, db_passwd) 
+      VALUES (%d, %d, '%s', '%s', '%s', '%s')", 
+        $node->vid, $node->nid, $node->ip_address, $node->db_type, $node->db_user, $node->db_passwd);
 }
 
 /**
@@ -75,13 +76,12 @@ function hosting_db_server_update($node) {
   }
   else {
     db_query("UPDATE {hosting_db_server} SET 
-                  ip_address = '%s', script_user = '%s', web_group = '%s', 
-                  config_path = '%s', backup_path = '%s' 
+                  ip_address = '%s', db_type = '%s', db_user = '%s', 
+                  db_passwd = '%s' 
               WHERE 
                   vid = %d", 
-                  $node->ip_address, $node->script_user, $node->web_group,
-                  $node->config_path, $node->backup_path, 
-                  $node->vid);
+                  $node->ip_address, $node->db_type, $node->db_user,
+                  $node->db_passwd, $node->vid);
   }
 }
 
@@ -100,7 +100,7 @@ function hosting_db_server_delete($node) {
  * Implementation of hook_load().
  */
 function hosting_db_server_load($node) {
-  $additions = db_fetch_object(db_query('SELECT ip_address, script_user, web_group, config_path, backup_path FROM {hosting_db_server} WHERE vid = %d', $node->vid));
+  $additions = db_fetch_object(db_query('SELECT ip_address, db_type, db_user, db_passwd FROM {hosting_db_server} WHERE vid = %d', $node->vid));
   return $additions;
 }
 
@@ -116,25 +116,16 @@ function hosting_db_server_view($node, $teaser = FALSE, $page = FALSE) {
       '#value' => $node->ip_address,
     );    
   }
-  $node->content['script_user'] = array(
+  $node->content['db_type'] = array(
     '#type' => 'item',
-    '#title' => t('Script user'),
-    '#value' => $node->script_user,
+    '#title' => t('Database type'),
+    '#value' => $node->db_type,
   );
-  $node->content['web_group'] = array(
+  
+  $node->content['db_user'] = array(
     '#type' => 'item',
-    '#title' => t('Web server group'),
-    '#value' => $node->web_group,
-  );
-  $node->content['config_path'] = array(
-    '#type' => 'item',
-    '#title' => t('Configuration path'),
-    '#value' => $node->config_path,
-  );
-  $node->content['backup_path'] = array(
-    '#type' => 'item',
-    '#title' => t('Backup path'),
-    '#value' => $node->backup_path,
+    '#title' => t('Database user'),
+    '#value' => $node->db_user,
   );
   
   return $node;

@@ -44,9 +44,12 @@ function hosting_add_action($nid, $type, $args = null) {
 /**
  * Implementation of hook_form().
  */
-function hosting_action_form(&$node, $rid) {
+function hosting_action_form(&$node, $rid = null) {
   $type = node_get_types('type', $node);
-
+  $rid = ($node->rid) ? $node->rid : $rid;
+  if (!is_numeric($rid)) {
+    drupal_goto('node/add');
+  }
   # This node can _only_ be created on another object. hook_menu manages the permissions for this.
   $ref = node_load($rid);
   $form['rid'] = array('#type' => 'value', '#value' => $rid);
@@ -70,14 +73,14 @@ function hosting_available_actions($ref = null) {
     $options['synch'] = t('Regenerate configuration files');
 
     if ($node->site_status) {
-        $options['disable'] =  t('Disable an enabled site.');      
+        $options['disable'] =  t('Disable the enabled site.');      
     }
     else {
-        $options['enable'] = t('Enable a disabled site.');      
+        $options['enable'] = t('Enable the disabled site.');      
     }
   }
-  elseif ($type == 'platform') {
-    $options['verify'] = t('Verify that a platform is correctly installed.');
+  elseif ($ref->type == 'platform') {
+    $options['verify'] = t('Verify that this platform is correctly installed.');
   }
   return $options;
 }
@@ -112,7 +115,7 @@ function hosting_action_update($node) {
   }
 }
 
-function hosting_nodeapi_web_server_delete_revision(&$node) {
+function hosting_nodeapi_action_delete_revision(&$node) {
   db_query('DELETE FROM {hosting_action} WHERE vid = %d', $node->vid);
 }
 
@@ -127,7 +130,7 @@ function hosting_action_delete($node) {
  * Implementation of hook_load().
  */
 function hosting_action_load($node) {
-  $additions = db_fetch_object(db_query('SELECT ip_address, script_user, web_group, config_path, backup_path FROM {hosting_action} WHERE vid = %d', $node->vid));
+  $additions = db_fetch_object(db_query('SELECT action_type, executed, action_status FROM {hosting_action} WHERE vid = %d', $node->vid));
   return $additions;
 }
 
@@ -221,20 +224,18 @@ function hosting_action_views_tables() {
       'action_type' => array(
         'name' => t('Action: Action Type'),
         'sortable' => TRUE,
-        'option' => 'string',
         'help' => t('Display the type of action.'),
       ),
-      'executed' => array(
-          'name' => t('Action: Executed Time'),
+      'rid' => array(
+          'name' => t('Action: Reference'),
           'sortable' => TRUE,
-          'handler' => views_handler_field_dates(),
-          'option' => 'string',
-          'help' => t('Display the time the action was executed.'),
+          'handler' => 'hosting_action_reference_handler',
+          'help' => t('The object this action is referring to.'),
         ),
       'action_status' => array(
         'name' => t('Action: Action Status'),
         'sortable' => TRUE,
-        'handler' => "hosting_action_status_handler",
+        'handler' => "hosting_relation_link_handler",
         'option' => 'string',
         'help' => t('Whether or not the action was succesful.'),
       ),        
@@ -243,5 +244,5 @@ function hosting_action_views_tables() {
 }
 
 function hosting_action_status_handler($fieldinfo, $fielddata, $value, $data) {
-  return 'yes';
+  return ($data->hosting_action_action_status) ? implode(", ", _hosting_parse_error_code($data->hosting_action_action_status)) : t('In progress');
 }

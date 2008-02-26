@@ -1,8 +1,9 @@
 <?php
 function hosting_views_tables() {
-  $tables["hosting_web_server"] = hosting_web_server_views_tables();
-  $tables["hosting_action"] = hosting_action_views_tables();
 
+  $tables["hosting_action"] = hosting_action_views_tables();
+  $tables["hosting_site"] = hosting_site_views_tables();
+  $tables["hosting_web_server"] = hosting_web_server_views_tables();
   return $tables;
 }
 
@@ -62,91 +63,77 @@ function hosting_views_default_views() {
   $view->requires = array('node');
   $views[$view->name] = $view;
   
-
-  $view = new stdClass();
-  $view->name = 'actions_embed';
-  $view->description = 'A list of related actions';
-  $view->access = array (
-);
-  $view->view_args_php = '$args[0] = arg(1);';
-  $view->page = TRUE;
-  $view->page_title = 'action';
-  $view->page_header = '';
-  $view->page_header_format = '1';
-  $view->page_footer = '';
-  $view->page_footer_format = '1';
-  $view->page_empty = '';
-  $view->page_empty_format = '1';
-  $view->page_type = 'table';
-  $view->url = 'actions';
-  $view->use_pager = TRUE;
-  $view->nodes_per_page = '10';
-  $view->sort = array (
-    array (
-      'tablename' => 'node',
-      'field' => 'nid',
-      'sortorder' => 'DESC',
-      'options' => '',
-    ),
+    $view = new stdClass();
+    $view->name = 'actions_embed';
+    $view->description = 'A list of actions related to the item in question';
+    $view->access = array (
   );
-  $view->argument = array (
-    array (
-      'type' => 'content: field_reference',
-      'argdefault' => '1',
-      'title' => '',
-      'options' => '',
-      'wildcard' => '',
-      'wildcard_substitution' => '',
-    ),
-  );
-  $view->field = array (
-    array (
-      'tablename' => 'node',
-      'field' => 'title',
-      'label' => '',
-      'handler' => 'views_handler_field_nodelink',
-      'options' => 'link',
-    ),
-    array (
-      'tablename' => 'node',
-      'field' => 'created',
-      'label' => '',
-      'handler' => 'views_handler_field_since',
-    ),
-    array (
-      'tablename' => 'node_data_field_action_type',
-      'field' => 'field_action_type_value',
-      'label' => '',
-      'handler' => 'content_views_field_handler_group',
-      'options' => 'default',
-    ),
-    array (
-      'tablename' => 'action_data',
-      'field' => 'executed',
-      'label' => '',
-      'handler' => 'views_handler_field_date_small',
-    ),
-    array (
-      'tablename' => 'action_data',
-      'field' => 'action_status',
-      'label' => '',
-    ),
-  );
-  $view->filter = array (
-    array (
-      'tablename' => 'node',
-      'field' => 'type',
-      'operator' => 'OR',
-      'options' => '',
-      'value' => array (
-  0 => 'action',
-),
-    ),
-  );
-  $view->exposed_filter = array (
-  );
-  $view->requires = array(node, node_data_field_action_type, action_data);
-  $views[$view->name] = $view;
+    $view->view_args_php = '';
+    $view->page = TRUE;
+    $view->page_title = 'action';
+    $view->page_header = '';
+    $view->page_header_format = '1';
+    $view->page_footer = '';
+    $view->page_footer_format = '1';
+    $view->page_empty = '';
+    $view->page_empty_format = '1';
+    $view->page_type = 'table';
+    $view->url = '';
+    $view->use_pager = FALSE;
+    $view->nodes_per_page = '10';
+    $view->sort = array (
+    );
+    $view->argument = array (
+    );
+    $view->field = array (
+      array (
+        'tablename' => 'node',
+        'field' => 'nid',
+        'label' => 'ID',
+      ),
+      array (
+        'tablename' => 'hosting_action',
+        'field' => 'rid',
+        'label' => 'Reference',
+      ),
+      array (
+        'tablename' => 'hosting_action',
+        'field' => 'action_type',
+        'label' => 'Type',
+      ),
+      array (
+        'tablename' => 'hosting_action',
+        'field' => 'action_status',
+        'label' => 'Status',
+      ),
+      array (
+        'tablename' => 'node',
+        'field' => 'created',
+        'label' => 'Created',
+        'handler' => 'views_handler_field_date_small',
+      ),
+      array (
+        'tablename' => 'hosting_action',
+        'field' => 'executed',
+        'label' => 'Executed',
+        'handler' => 'views_handler_field_date_small',
+      ),
+    );
+    $view->filter = array (
+      array (
+        'tablename' => 'node',
+        'field' => 'type',
+        'operator' => 'OR',
+        'options' => '',
+        'value' => array (
+    0 => 'action',
+  ),
+      ),
+    );
+    $view->exposed_filter = array (
+    );
+    $view->requires = array(node, hosting_action);
+    $views[$view->name] = $view;
 
 
   $view = new stdClass();
@@ -189,13 +176,7 @@ function hosting_views_default_views() {
       'handler' => 'views_handler_field_nodelink',
       'options' => 'link',
     ),
-    array (
-      'tablename' => 'node_data_field_client',
-      'field' => 'field_client_nid',
-      'label' => 'Owner',
-      'handler' => 'content_views_field_handler_group',
-      'options' => 'default',
-    ),
+ 
     array (
       'tablename' => 'node',
       'field' => 'created',
@@ -203,18 +184,14 @@ function hosting_views_default_views() {
       'handler' => 'views_handler_field_date',
     ),
     array (
-      'tablename' => 'node_data_field_platform',
-      'field' => 'field_platform_nid',
+      'tablename' => 'hosting_site',
+      'field' => 'platform',
       'label' => 'Platform',
-      'handler' => 'content_views_field_handler_group',
-      'options' => 'default',
     ),
     array (
-      'tablename' => 'node_data_field_db_server',
-      'field' => 'field_db_server_nid',
+      'tablename' => 'hosting_site',
+      'field' => 'db_server',
       'label' => 'Database Server',
-      'handler' => 'content_views_field_handler_group',
-      'options' => 'default',
     ),
   );
   $view->filter = array (
@@ -230,7 +207,7 @@ function hosting_views_default_views() {
   );
   $view->exposed_filter = array (
   );
-  $view->requires = array(node, node_data_field_client, node_data_field_platform, node_data_field_db_server);
+  $view->requires = array(node, hosting_site);
   $views[$view->name] = $view;
 
 

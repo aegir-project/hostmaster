@@ -21,16 +21,27 @@ function _hosting_get_web_servers() {
 function hosting_web_server_form(&$node) {
   $type = node_get_types('type', $node);
 
-  // We need to define form elements for the node's title and body.
   $form['title'] = array(
     '#type' => 'textfield',
-    '#title' => check_plain($type->title_label),
+    '#title' => t('Web server hostname'),
     '#required' => TRUE,
     '#default_value' => $node->title,
+    '#description' => t('The host name of the server. This is the address that will be used by Hostmaster to connect to the web server to issue commands.'),
     '#weight' => -5
   );
+  #TODO : rename to db_ip_address, to avoid confusion
+  $form['ip_address'] = array(
+    '#type' => 'textfield',
+    '#title' => t('IP address'),
+    '#default_value' => $node->ip_address,
+    '#size' => 15,
+    '#maxlength' => 15,
+    '#description' => t("The IP address the server can be accessed by.<br />If this is empty, the hostname will be used instead.")
+  );
+
   // merge the web server configuration.
   $form += provision_apache_provision_configure($node);
+
   return $form;
 }
 
@@ -45,7 +56,7 @@ function hosting_web_server_validate(&$node) {
  * Implementation of hook_insert().
  */
 function hosting_web_server_insert($node) {
-  db_query("INSERT INTO {web_server} (vid, nid, ip_address, script_user, web_group, config_path, backup_path) 
+  db_query("INSERT INTO {hosting_web_server} (vid, nid, ip_address, script_user, web_group, config_path, backup_path) 
       VALUES (%d, %d, '%s', '%s', '%s', '%s', '%s')", 
         $node->vid, $node->nid, $node->ip_address, $node->script_user, $node->web_group, $node->config_path, $node->backup_path);
 }

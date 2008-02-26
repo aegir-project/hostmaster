@@ -11,12 +11,12 @@
  */
 
 #Node type includes
-include_once('hosting_client.inc');
-include_once('hosting_site.inc');
-include_once('hosting_action.inc');
-include_once('hosting_platform.inc');
-include_once('hosting_web_server.inc');
-include_once('hosting_db_server.inc');
+include_once('node_types/hosting_action.inc');
+include_once('node_types/hosting_client.inc');
+include_once('node_types/hosting_db_server.inc');
+include_once('node_types/hosting_platform.inc');
+include_once('node_types/hosting_site.inc');
+include_once('node_types/hosting_web_server.inc');
 
 
 include_once('hosting_help.inc');
@@ -28,7 +28,7 @@ function hosting_node_info() {
   $types["client"] =  array(
     "type" => 'client', "name" => 'Client',
     "module" => 'hosting_client',
-    "has_title" => FALSE, "title_label" => '', 
+    "has_title" => TRUE, "title_label" => 'Client', 
     "description" => hosting_node_help("client"),
     "has_body" => 0, "body_label" => '', "min_word_count" => 0);
   $types["site"] =  array(
@@ -56,13 +56,13 @@ function hosting_node_info() {
   $types["web_server"] =  array(
     "type" => 'web_server', "name" => 'Web server',
     "module" => 'hosting_web_server',
-    "has_title" => true, "title_label" => t('hostname'), 
+    "has_title" => true, "title_label" => t('Host name'), 
     "description" => hosting_node_help("web_server"),
     "has_body" => 0, "body_label" => '', "min_word_count" => 0);
   $types["db_server"] =  array(
     "type" => 'db_server', "name" => 'Database server',
     "module" => 'hosting_db_server',
-    "has_title" => TRUE, "title_label" => 'Host name', 
+    "has_title" => TRUE, "title_label" => t('Host name'), 
     "description" => hosting_node_help("db_server"),
     "has_body" => 0, "body_label" => '', "min_word_count" => 0);    
   return $types;
@@ -82,7 +82,7 @@ function hosting_nodeapi(&$node, $op, $teaser) {
   }
   # Keep own provisioning system up to date.
   if ($op == 'update') {
-    hosting_configure_hosting($node);
+#    hosting_configure_hosting($node);
   }
 }
 
@@ -296,6 +296,11 @@ function _hosting_provision_command($data) {
 }
 
 function hosting_form_alter($form_id, &$form) {
+  if ($step = hosting_wizard_current_step()) {
+    if ($step['form_id'] == $form_id) {
+      $form['#submit']['hosting_wizard_continue_submit'] = array();
+    }
+  }
   if ($form_id == 'site_node_form') {
     $form['title']['#validate']['hosting_validate_site_title'] = array($form['nid']['#value']);
   }
@@ -308,9 +313,69 @@ function hosting_form_alter($form_id, &$form) {
     }
   }
   if ($form_id == 'provision_configure') {
-    $form['#submit']['hosting_configure_provision'] = array();
+#    $form['#submit']['hosting_configure_provision'] = array();
   }
 }
+
+/**
+ * Progress to the next part of the installation wizard
+ */
+function hosting_wizard_continue_submit() {
+  if ($step = hosting_wizard_current_step(TRUE)) {
+    #redirect to next page
+    return $step['path'];
+  }
+  else {
+    return variable_get('site_frontpage', 'node');
+  }
+}
+
+/**
+ * Return information about the current step of the installation wizard
+ */
+function hosting_wizard_current_step($next = false) {
+  if (variable_get('hosting_wizard_completed', false)) {
+    return false;
+  }
+  $steps = hosting_wizard_steps();
+  
+  // set step, initializaing to first element of #steps
+  $step = variable_get('hosting_wizard_current_step', $steps['#steps'][0]);
+  if ($step == $steps['#steps'][sizeof($steps['#steps']) - 1] && $next) {
+    variable_set('hosting_wizard_completed', true);
+    variable_del('hosting_wizard_current_step');
+  }
+  if ($next) {
+    $key = array_search($step, $steps['#steps']);
+    variable_set('hosting_wizard_current_step', $steps['#steps'][$key + 1]);
+  }
+
+  return $steps[$step];
+}
+
+function hosting_init() {
+  if ($step = hosting_wizard_current_step()) {
+    if ($_GET['skip_wizard']) {
+      variable_set('hosting_wizard_completed', TRUE);
+    }
+    elseif ($step['path'] != $_GET['q']) {
+      #todo: check for the help paths
+      drupal_goto($step['path']);
+    }
+  }
+}
+
+function hosting_wizard_steps() {
+  return array(
+    '#steps' => array('user_edit', 'provision_configure'),
+    'user_edit' => array("path" => "user/1/edit", 'title' => t("Change your account password."), "form_id" => "user_edit", 
+        'message' => t('An administrator account has been registered for you. 
+          Please change your password to continue with the configuration process.')),
+    'provision_configure' => array("path" => "admin/settings/provision", 'title' => t("Configure the provisioning framework."), "form_id" => "provision_configure",
+      'message' => t('To be able to create sites using Hostmaster, we need some information about your server. Please complete this configuration form.')),
+  );
+}
+
 
 
 function hosting_validate_site_title($element, $nid) {
@@ -321,6 +386,9 @@ function hosting_validate_site_title($element, $nid) {
     form_set_error('title', t("The url you specified is not unique."));
   }
 }
+
+
+
 
 function hosting_configure_provision($form_id, &$values) {
   /**
@@ -367,6 +435,11 @@ function hosting_configure_hosting($node) {
   }
 }
 
+function hosting_relation_link_handler($fieldinfo, $fielddata, $value, $data) {
+  return _hosting_node_link($data->hosting_action_rid);
+}
+
+
 function hosting_map_values($node) {
   if (is_numeric($node)) {
     $node = node_load($node);
@@ -380,6 +453,13 @@ function hosting_map_values($node) {
   }
 
   return $values;
+}
+
+function _hosting_node_link($nid) {
+  $node = node_load($nid);
+  if ($node->nid) {
+    return l($node->title, "node/" . $node->nid);
+  }
 }
 
 #todo: get rid of these. asap.
