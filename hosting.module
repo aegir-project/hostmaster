@@ -248,10 +248,13 @@ function hosting_process_queue() {
     hosting_action_log($action->vid, "queue", t("Action starts processing"));
     $data = hosting_map_values($action);
     $cmd = _hosting_provision_command($data);
-    
-    hosting_action_log($action->vid, 'command', "Executing: $cmd");
-    exec(escapeshellcmd($cmd), $return, $code);
+    module_invoke_all("hosting_pre_" . $action->action_type, $action, $data, $cmd);
 
+    hosting_action_log($action->vid, 'command', "Executing: $cmd");
+    $old_dir = getcwd();
+    chdir($data['publish_path']);
+    exec(escapeshellcmd($cmd), $return, $code);
+    chdir($old_dir);
     $data = unserialize(trim(implode("\n", $return)));
     if (!is_array($data)) {
       hosting_action_log($action->vid, 'error', t("The command could not be executed succesfully."));
@@ -290,6 +293,12 @@ function hosting_process_queue() {
   }
 }
 
+function hosting_hosting_pre_verify($action, $data, $cmd) {
+  if ($data['action_reference_type'] == 'platform') {
+    #_hosting_generate_platform_config_file(node_load($data['action_reference']));  
+  }
+}
+
 function _hosting_provision_command($data) {
   foreach ($data as $key => $value) {
     if (preg_match("/^site_/", $key) && $key != 'site_url') {
@@ -299,7 +308,7 @@ function _hosting_provision_command($data) {
       $option_str .= " --" . str_replace("-", "_", $key) . "=$value";
     }
   }
-  $command = sprintf("%s/drush.php provision %s %s -b %s", $data['publish_path'] . '/' . drupal_get_path("module", "drush"), $data['action_type'], $data['site_url'], $option_str);
+  $command = sprintf("%s/drush.php provision %s %s --root=%s --uri=%s -b %s", $data['publish_path'] . '/' . drupal_get_path("module", "drush"), $data['action_type'], $data['site_url'], $data['publish_path'], $data['web_host'], $option_str);
   return $command;
 }
 
@@ -332,7 +341,7 @@ function hosting_wizard_continue_submit() {
   if ($step = hosting_wizard_current_step(TRUE)) {
     if ($step) {
       #redirect to next page
-      return $step['path'];      
+      return $step['path'];
     }
     else {
       return variable_get('site_frontpage', 'node');      
@@ -484,3 +493,4 @@ function _hosting_add_block($module, $delta, $theme, $status, $weight, $region, 
     db_query("INSERT INTO {boxes} (bid, body, info, format) VALUES (%d, '%s', '%s', '%s')", $box->bid, $box->body, $box->info, $box->format);
   }
 }
+

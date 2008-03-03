@@ -17,6 +17,7 @@ function _hosting_get_platforms() {
 
 
 function hosting_map_values_platform($node) {
+  $values['platform'] = $node->nid;
   $values['publish_path'] = $node->publish_path;
 
   $reference = node_load($node->web_server);
@@ -33,10 +34,11 @@ function hosting_platform_form(&$node) {
 
   $form['publish_path'] = array(
     '#type' => 'textfield',
-    '#title' => t('publish_path'),
+    '#title' => t('Publish path'),
     '#required' => TRUE,
     '#description' => t('The path on the filesystem where the sites will be hosted.'),
     '#size' => 40,
+    '#default_value' => $node->publish_path,
     '#maxlength' => 255,
   );
 
@@ -73,8 +75,8 @@ function hosting_platform_update($node) {
     hosting_platform_insert($node);
   }
   else {
-    db_query("UPDATE {hosting_platform} SET nid=%d, publish_path = '%s', web_server = %d)",
-              $node->nid, $node->publish_path, $node->web_server, $node->vid);
+    db_query("UPDATE {hosting_platform} SET publish_path = '%s', web_server = %d WHERE nid=%d",
+              $node->publish_path, $node->web_server, $node->vid, $node->nid);
   }
 }
 
@@ -121,4 +123,45 @@ function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
     '#weight' => 10
   );
   return $node;
+}
+
+
+/**
+ * Create the configuration file containing the drush details.
+ *
+ * Outside of web root. not readable by web server. _important_
+ */
+function _hosting_generate_platform_config_file($node) {
+  if ($node->type != "platform") {
+    return null;
+  }
+  $path = _provision_config_path();
+  $web_server = node_load($node->web_server);
+
+  if (!provision_check_path($path . '/drush', "is_dir")) {
+    provision_check_path($path, "chmod", "770");
+    if (!provision_check_path($path . '/drush', "mkdir")) {
+      #TODO Add error message.
+      return false;
+    }
+  }
+  if (provision_check_path($path, 'writeable')) {
+    $file = fopen($path . '/drush/platform_' . $node->nid . '.php', 'w');
+    fwrite($file, "<?php\n");
+    $options['root'] = $node->publish_path;
+    #todo - this needs to be unique...
+    $options['uri'] = $web_server->title;
+  
+    fwrite($file, '$options = ' . var_export($options, true) . ";\n");
+    fwrite($file, "if (file_exists('db_server.php')) { include_once('db_server.php'); }\n");
+    fclose($file);
+  }
+  else {
+    #TODO add error message
+    return false;
+  }
+  
+  
+
+  
 }
