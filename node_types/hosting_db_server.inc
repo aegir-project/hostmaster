@@ -110,13 +110,7 @@ function hosting_db_server_load($node) {
  */
 function hosting_db_server_view($node, $teaser = FALSE, $page = FALSE) {
   $node = node_prepare($node, $teaser);
-  if ($node->ip_address) {
-    $node->content['ip_address'] = array(
-      '#type' => 'item',
-      '#title' => t('IP address'),
-      '#value' => $node->ip_address,
-    );    
-  }
+
   $node->content['db_type'] = array(
     '#type' => 'item',
     '#title' => t('Database type'),
@@ -144,15 +138,7 @@ function hosting_db_server_views_tables() {
         'field' => 'vid',
       ),
     ),
-    'fields' => array(
-      'ip_address' => array(
-          'name' => t('Server: IP address'),
-          'sortable' => TRUE,
-          'option' => 'string',
-          'help' => t('Display the ip address of the server.'),
-        ),
-      ),
-    );
+  );
 }
 
 

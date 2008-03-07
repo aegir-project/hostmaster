@@ -41,7 +41,6 @@ function hosting_install() {
   db_query("CREATE TABLE {hosting_db_server} (
     vid int(10) unsigned NOT NULL default '0',
     nid int(10) unsigned NOT NULL default '0',
-    ip_address longtext,
     db_type longtext NOT NULL, 
     db_user longtext NOT NULL,
     db_passwd longtext NOT NULL,
