@@ -8,7 +8,7 @@ function hosting_install() {
     organization longtext,
     email varchar(255) NOT NULL default '',
     PRIMARY KEY  (vid)
-  ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+  ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
 
   db_query("CREATE TABLE {hosting_site} (
     vid int(10) unsigned NOT NULL default '0',
@@ -18,7 +18,7 @@ function hosting_install() {
     platform int(11) NOT NULL default '0',
     last_cron int(10) default NULL, 
     PRIMARY KEY  (vid)    
-    ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+    ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
 
   db_query("CREATE TABLE {hosting_action} (
     vid int(10) unsigned NOT NULL default '0',
@@ -28,7 +28,7 @@ function hosting_install() {
     action_status int(11) default NULL,
     executed int(11) default NULL,
   PRIMARY KEY  (vid)
-  ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+  ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
   
   db_query("CREATE TABLE {hosting_platform} (
     vid int(10) unsigned NOT NULL default '0',
@@ -36,7 +36,7 @@ function hosting_install() {
     publish_path longtext,
     web_server int(11) NOT NULL default '0',
     PRIMARY KEY  (vid)
-  ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+  ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
   
   db_query("CREATE TABLE {hosting_db_server} (
     vid int(10) unsigned NOT NULL default '0',
@@ -46,7 +46,7 @@ function hosting_install() {
     db_user longtext NOT NULL,
     db_passwd longtext NOT NULL,
     PRIMARY KEY  (vid)
-  ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+  ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
   
   db_query("CREATE TABLE {hosting_web_server} (
     vid int(10) unsigned NOT NULL default '0',
@@ -57,7 +57,7 @@ function hosting_install() {
     config_path longtext,
     backup_path longtext,
     PRIMARY KEY  (vid)
-  ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+  ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
 
   
   # Configuration template table
