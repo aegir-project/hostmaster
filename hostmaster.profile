@@ -1,8 +1,6 @@
 <?php
 // $Id$
 
-include_once('profiles/hostmaster/modules/install_profile_api/crud.inc');
-
 /**
  * Return an array of the modules to be enabled when this profile is installed.
  *
@@ -99,8 +97,8 @@ function hostmaster_profile_final() {
    variable_set('site_frontpage', 'sites');
    
    // @todo create proper roles, and set up views to be role based
-   hostmaster_install_set_permissions(install_get_rid('anonymous user'), array('access content', 'access all views'));
-   hostmaster_install_set_permissions(install_get_rid('authenticated user'), array('access content', 'access all views'));
+   hostmaster_install_set_permissions(hostmaster_install_get_rid('anonymous user'), array('access content', 'access all views'));
+   hostmaster_install_set_permissions(hostmaster_install_get_rid('authenticated user'), array('access content', 'access all views'));
    views_invalidate_cache();
    menu_rebuild();
    
@@ -125,4 +123,11 @@ function hostmaster_profile_final() {
 function hostmaster_install_set_permissions($rid, $perms) {
   db_query('DELETE FROM {permission} WHERE rid = %d', $rid);
   db_query("INSERT INTO {permission} (rid, perm) VALUES (%d, '%s')", $rid, implode(', ', $perms));
+}
+
+/**
+ * Get the role id for the role name
+ */
+function hostmaster_install_get_rid($name) {
+  return db_result(db_query("SELECT rid FROM {role} WHERE name ='%s' LIMIT 1", $name));
 }
