@@ -17,9 +17,6 @@ function _hosting_get_db_servers() {
 function hosting_map_values_db_server($node) {
   $values['db_id'] = $node->nid;
   $values['site_db_host'] = $node->title;
-  if (isset($node->ip_address)) {
-    $values['site_db_ip_address'] = $node->ip_address;
-  }
   
   $values['provision_db_username'] = $node->db_user;
   $values['provision_db_password'] = $node->db_passwd;
@@ -59,9 +56,9 @@ function hosting_db_server_validate(&$node) {
  * Implementation of hook_insert().
  */
 function hosting_db_server_insert($node) {
-  db_query("INSERT INTO {hosting_db_server} (vid, nid, ip_address, db_type, db_user, db_passwd) 
+  db_query("INSERT INTO {hosting_db_server} (vid, nid, db_type, db_user, db_passwd) 
       VALUES (%d, %d, '%s', '%s', '%s', '%s')", 
-        $node->vid, $node->nid, $node->ip_address, $node->db_type, $node->db_user, $node->db_passwd);
+        $node->vid, $node->nid, $node->db_type, $node->db_user, $node->db_passwd);
 }
 
 /**
@@ -77,11 +74,11 @@ function hosting_db_server_update($node) {
   }
   else {
     db_query("UPDATE {hosting_db_server} SET 
-                  ip_address = '%s', db_type = '%s', db_user = '%s', 
+                  db_type = '%s', db_user = '%s', 
                   db_passwd = '%s' 
               WHERE 
                   vid = %d", 
-                  $node->ip_address, $node->db_type, $node->db_user,
+                  $node->db_type, $node->db_user,
                   $node->db_passwd, $node->vid);
   }
 }
@@ -101,7 +98,7 @@ function hosting_db_server_delete($node) {
  * Implementation of hook_load().
  */
 function hosting_db_server_load($node) {
-  $additions = db_fetch_object(db_query('SELECT ip_address, db_type, db_user, db_passwd FROM {hosting_db_server} WHERE vid = %d', $node->vid));
+  $additions = db_fetch_object(db_query('SELECT db_type, db_user, db_passwd FROM {hosting_db_server} WHERE vid = %d', $node->vid));
   return $additions;
 }
 

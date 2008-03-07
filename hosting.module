@@ -441,7 +441,6 @@ function hosting_configure_hosting($node) {
       case 'db_server' :
        variable_set('provision_db_host', $node->title);
        variable_set('provision_db_user', $node->db_user);
-       variable_set('provision_db_ip_address', $node->db_ip_address);
        variable_set('provision_db_password', $node->db_passwd);
         break;
       case 'db_server' :
