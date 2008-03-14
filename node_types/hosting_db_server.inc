@@ -57,7 +57,7 @@ function hosting_db_server_validate(&$node) {
  */
 function hosting_db_server_insert($node) {
   db_query("INSERT INTO {hosting_db_server} (vid, nid, db_type, db_user, db_passwd) 
-      VALUES (%d, %d, '%s', '%s', '%s', '%s')", 
+      VALUES (%d, %d, '%s', '%s', '%s')", 
         $node->vid, $node->nid, $node->db_type, $node->db_user, $node->db_passwd);
 }
 
