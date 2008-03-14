@@ -77,7 +77,7 @@ function hosting_site_update(&$node) {
     hosting_site_insert($node);
   }
   else {
-    db_query("UPDATE {hosting_platform} SET client = %d, db_server = %d, platform = %d, last_cron =%d WHERE vid=%d",
+    db_query("UPDATE {hosting_site} SET client = %d, db_server = %d, platform = %d, last_cron =%d WHERE vid=%d",
               $node->publish_path, $node->web_server, $node->vid, $node->vid);
   }
   hosting_add_action($node->nid, 'synch');
