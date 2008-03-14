@@ -454,7 +454,7 @@ function hosting_configure_hosting($node) {
 }
 
 function hosting_relation_link_handler($fieldinfo, $fielddata, $value, $data) {
-  return _hosting_node_link($data->hosting_action_rid);
+  return _hosting_node_link($value);
 }
 
 
