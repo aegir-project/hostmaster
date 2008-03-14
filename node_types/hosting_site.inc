@@ -64,13 +64,24 @@ function hosting_site_validate(&$node) {
 }
 
 function hosting_site_insert(&$node) {
-  hosting_add_action($node->nid, 'install');
+  db_query("INSERT INTO {hosting_site} (vid, nid, client, db_server, platform, last_cron) VALUES (%d, %d, %d, %d, %d, %d)",
+    $node->vid, $node->nid, $node->client, $node->db_server, $node->platform, $node->last_cron);
+  if (!$node->nid) {
+    hosting_add_action($node->nid, 'install');    
+  }
 }
-
+ 
 function hosting_site_update(&$node) {
+  // if this is a new node or we're adding a new revision,
+  if ($node->revision) {
+    hosting_site_insert($node);
+  }
+  else {
+    db_query("UPDATE {hosting_platform} SET client = %d, db_server = %d, platform = %d, last_cron =%d WHERE vid=%d",
+              $node->publish_path, $node->web_server, $node->vid, $node->vid);
+  }
   hosting_add_action($node->nid, 'synch');
 }
-
 
 function hosting_site_view(&$node, $teaser = false) {
   
