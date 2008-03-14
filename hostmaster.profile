@@ -113,7 +113,6 @@ function hostmaster_profile_final() {
    $user = user_save($user,  $edit);
    $GLOBALS['user'] = $user;
    
-   drupal_get_messages();
    drupal_goto('sites');
 }
 
