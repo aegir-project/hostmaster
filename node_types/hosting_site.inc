@@ -83,8 +83,12 @@ function hosting_site_update(&$node) {
   hosting_add_action($node->nid, 'synch');
 }
 
+function hosting_site_load($node) {
+  $additions = db_fetch_object(db_query('SELECT  client, db_server, platform, last_cron FROM {hosting_site} WHERE vid = %d', $node->vid));
+  return $additions;
+}
+
 function hosting_site_view(&$node, $teaser = false) {
-  
   $node->content['client'] = array(
     '#type' => 'item',
     '#title' => t('Client'),
@@ -109,6 +113,7 @@ function hosting_site_view(&$node, $teaser = false) {
     '#value' => views_build_view('embed', $view, array($node->nid)), 
     '#weight' => 10
   );
+  return $node;
 }
 
 
