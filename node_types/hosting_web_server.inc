@@ -80,6 +80,14 @@ function hosting_web_server_insert($node) {
  * database updates.
  */
 function hosting_web_server_update($node) {
+  $platform = node_load(variable_get('hosting_own_platform', 4));
+  if ($node->nid == $platform->web_server) {
+    variable_set('provision_script_user', $node->script_user);
+    variable_set('provision_web_group', $node->web_group);
+    variable_set('provision_config_path', $node->config_path);
+    variable_set('provision_backup_path', $node->backup_path);
+  }
+
   // if this is a new node or we're adding a new revision,
   if ($node->revision) {
     hosting_web_server_insert($node);

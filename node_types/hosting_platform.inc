@@ -70,6 +70,10 @@ function hosting_platform_insert($node) {
  * database updates.
  */
 function hosting_platform_update($node) {
+  if ($node->nid == variable_get('hosting_own_platform', 4)) {
+    variable_set('hosting_platform_path', $node->publish_path);
+    #Switching web server here should change the web server.
+  }
   // if this is a new node or we're adding a new revision,
   if ($node->revision) {
     hosting_platform_insert($node);

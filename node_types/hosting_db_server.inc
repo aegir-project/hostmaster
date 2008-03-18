@@ -49,6 +49,10 @@ function hosting_db_server_form(&$node) {
  * Implementation of hook_validate().
   */
 function hosting_db_server_validate(&$node) {
+  if (!$node->db_passwd && $node->nid) {
+    $old = node_load($node->nid);
+    $node->db_passwd = $old->db_passwd;
+  }
   # TODO : check paths. kind of tricky actually, due to multiple servers etc.
 }
 
@@ -68,18 +72,22 @@ function hosting_db_server_insert($node) {
  * database updates.
  */
 function hosting_db_server_update($node) {
+  if ($node->nid == variable_get('hosting_own_db_server', 1)) {
+    variable_set('provision_db_host', $node->title);
+    variable_set('provision_db_user', $node->db_user);
+    variable_set('provision_db_passwd', $node->db_passwd);
+  }
+
   // if this is a new node or we're adding a new revision,
   if ($node->revision) {
     hosting_db_server_insert($node);
   }
   else {
     db_query("UPDATE {hosting_db_server} SET 
-                  db_type = '%s', db_user = '%s', 
-                  db_passwd = '%s' 
+                  db_type = '%s', db_user = '%s'
               WHERE 
                   vid = %d", 
-                  $node->db_type, $node->db_user,
-                  $node->db_passwd, $node->vid);
+                  $node->db_type, $node->db_user, $node->vid);
   }
 }
 

@@ -80,10 +80,6 @@ function hosting_nodeapi(&$node, $op, $teaser) {
   if (function_exists($func)) {
     $func($node, $op, $teaser);
   }
-  # Keep own provisioning system up to date.
-  if ($op == 'update') {
-#    hosting_configure_hosting($node);
-  }
 }
 
 /**
@@ -287,7 +283,7 @@ function hosting_process_queue() {
     }
     else {
       $action->action_status = $code;
-      $action->revision = 0;
+      $action->revision = false;
       node_save($action);
     }
   }
@@ -330,7 +326,7 @@ function hosting_form_alter($form_id, &$form) {
     }
   }
   if ($form_id == 'provision_configure') {
-#    $form['#submit']['hosting_configure_provision'] = array();
+    $form['#submit'] = array('hosting_configure_provision' => array());
   }
 }
 
@@ -404,9 +400,6 @@ function hosting_validate_site_title($element, $nid) {
   }
 }
 
-
-
-
 function hosting_configure_provision($form_id, &$values) {
   $platform = node_load(variable_get('hosting_own_platform', 4));
   $platform->revision = true;
@@ -415,38 +408,20 @@ function hosting_configure_provision($form_id, &$values) {
 
   $db_server = node_load(variable_get('hosting_own_db_server', 2));
   $db_server->revision = true;
-  $db_server->title = $values['provision_db_host'];
-  $db_server->db_user = $values['provision_db_user'];
-  $db_server->db_passwd = $values['provision_db_password'];
+  $db_server->title = $values['db_server']['db_host'];
+  $db_server->db_user = $values['db_server']['db_user'];
+  if ($values['db_server']['db_passwd']) {
+    $db_server->db_passwd = $values['db_server']['db_passwd'];
+  }
   node_save($db_server);
   
   $web_server = node_load($platform->web_server);
-  $web_server->config_path = $values['provision_config_path'];
-  $web_server->backup_path = $values['provision_backup_path'];
   $web_server->revision = true;
+  $web_server->config_path = $values['web_server']['config_path'];
+  $web_server->backup_path = $values['web_server']['backup_path'];
+  $web_server->script_user = $values['web_server']['script_user'];
+  $web_server->web_group = $values['web_server']['web_group'];
   node_save($web_server);
-  
-}
-
-function hosting_configure_hosting($node) {
-  if ($node->nid == variable_get('hosting_own_' . $node->type, null)) {
-    switch ($node->type) {
-      case 'platform' :
-        variable_set('hosting_platform_path', $node->publish_path);
-        break;
-      case 'db_server' :
-       variable_set('provision_db_host', $node->title);
-       variable_set('provision_db_user', $node->db_user);
-       variable_set('provision_db_password', $node->db_passwd);
-        break;
-      case 'db_server' :
-        variable_set('provision_script_user', $node->script_user);
-        variable_set('provision_web_group', $node->web_group);
-        variable_set('provision_config_path', $node->config_path);
-        variable_set('provision_backup_path', $node->backup_path);
-        break;                  
-    }
-  }
 }
 
 function hosting_relation_link_handler($fieldinfo, $fielddata, $value, $data) {

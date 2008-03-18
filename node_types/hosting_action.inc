@@ -108,7 +108,7 @@ function hosting_action_update($node) {
     hosting_action_insert($node);
   }
   else {
-    db_query("UPDATE {hosting_action} SET nid=%d, action_type = '%s', rid = %d, executed=%d, action_status=%d)",
+    db_query("UPDATE {hosting_action} SET nid=%d, action_type = '%s', rid = %d, executed=%d, action_status=%d WHERE vid=%d",
               $node->nid, $node->action_type, $node->rid, $node->executed, $node->action_status, $node->vid);
   }
 }
@@ -141,8 +141,8 @@ function hosting_action_view($node, $teaser = FALSE, $page = FALSE) {
   $ref = node_load($node->rid);
   $node->content['reference'] = array(
     '#type' => 'item',
-    '#title' => $ref->type,
-    '#value' => 'value',
+    '#title' => drupal_ucfirst($ref->type),
+    '#value' => _hosting_node_link($node->rid),
   );
   
   if ($node->executed) {
