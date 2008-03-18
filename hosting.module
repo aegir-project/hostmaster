@@ -250,9 +250,9 @@ function hosting_process_queue() {
     $cmd = _hosting_provision_command($data);
     module_invoke_all("hosting_pre_" . $action->action_type, $action, $data, $cmd);
 
-    hosting_action_log($action->vid, 'command', "Executing: $cmd");
+    hosting_action_log($action->vid, 'command', "Executing: " . escapeshellcmd("$cmd"));
     $old_dir = getcwd();
-    chdir($data['publish_path']);
+    chdir($data['publish_path'] . drupal_get_path('module', 'drush'));
     exec(escapeshellcmd($cmd), $return, $code);
     chdir($old_dir);
     $data = unserialize(trim(implode("\n", $return)));
@@ -339,14 +339,10 @@ function hosting_form_alter($form_id, &$form) {
  */
 function hosting_wizard_continue_submit() {
   if ($step = hosting_wizard_current_step(TRUE)) {
-    if ($step) {
-      #redirect to next page
       return $step['path'];
-    }
-    else {
+  }
+  else {
       return variable_get('site_frontpage', 'node');      
-    }
-
   }
 }
 
