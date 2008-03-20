@@ -54,7 +54,7 @@ function hosting_action_form(&$node, $rid = null) {
   $ref = node_load($rid);
   $form['rid'] = array('#type' => 'value', '#value' => $rid);
   $form['action_type'] = array(
-    '#type' => 'checkboxes',
+    '#type' => 'radios',
     '#title' => t('Type of action'),
     '#description' => t('The type of action you want to perform on this %type', array('%type' => $ref->type)),
     '#options' => hosting_available_actions($ref),
@@ -66,6 +66,13 @@ function hosting_action_form(&$node, $rid = null) {
   return $form;
 }
 
+function hosting_action_set_title(&$node) {
+  $ref = node_load($node->rid);
+  $node->title = drupal_ucfirst($node->action_type) . ' ' . $ref->title;
+  db_query("UPDATE {node} SET title='%s' WHERE nid=%d", $node->title, $node->nid);
+  db_query("UPDATE {node_revisions} SET title='%s' WHERE vid=%d", $node->title, $node->vid);
+
+}
 
 function hosting_available_actions($ref = null) {
   if ($ref->type == 'site') {
@@ -92,8 +99,11 @@ function hosting_available_actions($ref = null) {
 function hosting_action_insert($node) {
   db_query("INSERT INTO {hosting_action} (vid, nid, action_type, rid, executed, action_status) VALUES (%d, %d, '%s', %d, %d, %d)",
     $node->vid, $node->nid, $node->action_type, $node->rid, $node->executed, $node->action_status);
-  
-  db_query("INSERT INTO {hosting_action_queue} (nid, timestamp, status) VALUES (%d, %d, 0)", $node->nid, mktime());
+
+  hosting_action_set_title($node); 
+  if (!$node->old_vid) {
+    db_query("INSERT INTO {hosting_action_queue} (nid, timestamp, status) VALUES (%d, %d, 0)", $node->nid, mktime());
+  }
 }
 
 /**
@@ -162,7 +172,7 @@ function hosting_action_view($node, $teaser = FALSE, $page = FALSE) {
     
   # Display table containing the logged information for this action
   $result = db_query("SELECT * FROM {action_log} WHERE vid=%d", $node->vid);
-  if ($result) {
+  if (db_num_rows($result)) {
     $header = array("type", "message", "date");
     while ($entry = db_fetch_object($result)) {
       $rows[] = array($entry->type, $entry->message, format_date($entry->timestamp, "custom", "Y-m-d m:s"));
@@ -184,7 +194,7 @@ function hosting_action_view($node, $teaser = FALSE, $page = FALSE) {
  */
 function _hosting_parse_error_code($code) {
   global $provision_errors;
-  if ($code) {
+  if ($code > 0) {
     foreach ($provision_errors as $error => $message) {
       if ($error != PROVISION_SUCCESS) {
         if ($code & $error) {

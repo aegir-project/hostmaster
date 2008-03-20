@@ -229,7 +229,8 @@ function _hosting_get_new_actions($limit = 5) {
 
 function hosting_process_queue() {
   global $provision_errors;
-  
+  variable_set("hosting_queue_last_run", mktime());
+
   $count = drush_get_option(array('i', 'items'), 5); # process a default of 5 items at a time.
 
   $actions = _hosting_get_new_actions($count);
@@ -247,10 +248,7 @@ function hosting_process_queue() {
     module_invoke_all("hosting_pre_" . $action->action_type, $action, $data, $cmd);
 
     hosting_action_log($action->vid, 'command', "Executing: " . escapeshellcmd("$cmd"));
-    $old_dir = getcwd();
-    chdir($data['publish_path'] . drupal_get_path('module', 'drush'));
     exec(escapeshellcmd($cmd), $return, $code);
-    chdir($old_dir);
     $data = unserialize(trim(implode("\n", $return)));
     if (!is_array($data)) {
       hosting_action_log($action->vid, 'error', t("The command could not be executed succesfully."));

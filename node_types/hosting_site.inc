@@ -66,7 +66,7 @@ function hosting_site_validate(&$node) {
 function hosting_site_insert(&$node) {
   db_query("INSERT INTO {hosting_site} (vid, nid, client, db_server, platform, last_cron) VALUES (%d, %d, %d, %d, %d, %d)",
     $node->vid, $node->nid, $node->client, $node->db_server, $node->platform, $node->last_cron);
-  if (!$node->nid) {
+  if (!$node->old_vid) {
     hosting_add_action($node->nid, 'install');    
   }
 }

@@ -29,7 +29,9 @@ function hosting_help($section) {
 EOF;
 
       $cron_cmd['@cron_line'] = <<<EOF
-5 * * * * (php "$drush_path" hosting process)
+5 * * * * (php "$drush_path" \
+            -r $_SERVER[DOCUMENT_ROOT] \
+            -l $_SERVER[HTTP_HOST] hosting process)
 EOF;
 
       $output .= t('<p>The Hostmaster system is a set of modules that provide an interface to the <a href="@provision_help">Provisioning framework</a>.</p>', 
