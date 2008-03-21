@@ -21,11 +21,12 @@ function hosting_install() {
     ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
 
   db_query("CREATE TABLE {hosting_site_backups} (
+    bid int(10) unsigned NOT NULL,
     site int(10) NOT NULL default '0',
     web_server int(10) NOT NULL default '0',
     filename longtext,
     timestamp int(11) default NULL,
-    PRIMARY KEY  (site)    
+    PRIMARY KEY  (bid)    
     ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
 
   db_query("CREATE TABLE {hosting_action} (
@@ -37,6 +38,7 @@ function hosting_install() {
     executed int(11) default NULL,
   PRIMARY KEY  (vid)
   ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
+
   
   db_query("CREATE TABLE {hosting_platform} (
     vid int(10) unsigned NOT NULL default '0',

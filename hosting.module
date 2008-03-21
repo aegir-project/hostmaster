@@ -87,17 +87,17 @@ function hosting_nodeapi(&$node, $op, $teaser) {
  */
 function hosting_menu($may_cache) {
   $items = array();
-
+  
   if (!$may_cache) {
     if ( arg(0) == 'node' && is_numeric(arg(1))) {
       $node = node_load(arg(1));
-      if ($node->type == 'platform') {
+      if ($node->type == 'site') {
         $items[] = array(
-          'path' => 'node/' . arg(1) . '/configs',
-          'title' => t('Configuration files'),
-          'description' => t('The configuration files for this platform'),
+          'path' => 'node/' . arg(1) . '/backups',
+          'title' => t('Backups'),
+          'description' => t('Select a previous version to restore the site to.'),
           'callback' => 'drupal_get_form',
-          'callback arguments' => array('hosting_config_templates', $node),
+          'callback arguments' => array('hosting_site_backups', $node),
           'access' => user_access('administer provisioning'),
           'type' => MENU_LOCAL_TASK,
           'weight' => 10
@@ -200,11 +200,18 @@ function hosting_config_templates($node) {
 }
 
 function hosting_drush_command() {
-  $items['hosting process'] = array(
-    'callback' => 'hosting_process_queue',
+  $items['hosting dispatch'] = array(
+    'callback' => 'hosting_dispatch',
+    'description' => 'Centralized command for dispatching the various queue processors (hosting, cron, backup etc.)'
+  );
+  $items['hosting actions'] = array(
+    'callback' => 'hosting_queue_actions',
     'description' => 'Process the queue of outstanding hosting actions.'
   );
-
+  $items['hosting backups'] = array(
+    'callback' => 'hosting_queue_backups',
+    'description' => 'Process the site backup queue.'
+  );
   $items['hosting import platform'] = array(
     'callback' => 'hosting_import_platform',
     'description' => 'Generate a platform node for an already installed platform.'
@@ -216,6 +223,18 @@ function hosting_drush_command() {
   );
   
   return $items;
+}
+
+/**
+ * Main queue processing command for hostmaster.
+ *
+ * This is a single command, which will (based on configuration) run all the other
+ * queue commands (cron, backup, hosting queue, stats). This is done so that there
+ * is only one cron job to configure, and allow the frequency of calls to be configured
+ * from the interface.
+ */
+function hosting_dispatch() {
+  // @todo All of it. =)
 }
 
 /**
@@ -240,7 +259,7 @@ function _hosting_get_new_actions($limit = 5) {
  *
  * Iterates through the list of outstanding actions, and execute the commands on the back end.
  */
-function hosting_process_queue() {
+function hosting_queue_actions() {
   global $provision_errors;
   variable_set("hosting_queue_last_run", mktime());
 
@@ -257,19 +276,16 @@ function hosting_process_queue() {
 
     hosting_action_log($action->vid, "queue", t("Action starts processing"));
 
-    // retrieve data map from action.
-    $data = hosting_map_values($action);
-
     // execute the hosting_pre_${action_type} hook.
     module_invoke_all("hosting_pre_" . $action->action_type, $action, $data);
 
     // @todo Allow multiple commands to be run. 
     // For now actions just map to one backend command, but that might need to change with additional complexity.
-    $cmd = hosting_provision_cmd($data);
-
+    $cmd = hosting_provision_cmd($action->action_type, $action);
     hosting_action_log($action->vid, 'command', "Executing: " . escapeshellcmd("$cmd"));
     exec(escapeshellcmd($cmd), $return, $code);
     $data = unserialize(trim(implode("\n", $return)));
+
     if (!is_array($data)) {
       hosting_action_log($action->vid, 'error', t("The command could not be executed succesfully."));
       $code = PROVISION_FRAMEWORK_ERROR;
@@ -290,6 +306,9 @@ function hosting_process_queue() {
     }
 
     if (!$code) {
+      # The action has been successful. Run the post hook.
+      module_invoke_all("hosting_post_" . $action->action_type, $action, $data);
+
       // remove from queue
       hosting_action_log($action->vid, "queue", t("Removing action from hosting queue"), 0);
       db_query("UPDATE {hosting_action_queue} SET status=1 WHERE nid=%d", $action->nid);
@@ -308,11 +327,16 @@ function hosting_process_queue() {
 }
 
 /**
- * Implementation of the hook_hosting_pre_verify
+ * Implementation of hook_hosting_post_backup
+ *
+ * Adds the data file that was saved to the site backup history.
+ * This is needed to be able to restore.
  */
-function hosting_hosting_pre_verify($action, $data) {
-  if ($data['action_reference_type'] == 'platform') {
-    #_hosting_generate_platform_config_file(node_load($data['action_reference']));  
+function hosting_hosting_post_backup($action, $data) {
+  $ref = node_load($action->rid);
+  if ($data['site']['backup_file'] && $ref->type == 'site') {
+    $platform = node_load($ref->platform);
+    hosting_site_add_backup($ref->nid, $platform->web_server, $data['site']['backup_file']);
   }
 }
 
@@ -323,9 +347,12 @@ function hosting_hosting_pre_verify($action, $data) {
  * calls using hook_provision_${action_type}_command.
  * @todo get rid of the special handling for site-* arguments.
  */
-function hosting_provision_cmd($data) {
+function hosting_provision_cmd($cmd_type, $node) {
+  // retrieve data map from action.
+  $data = hosting_map_values($node);
   $option_str = _hosting_option_map($data);
-  $command = sprintf("%s/drush.php provision %s %s --root=%s --uri=%s -b %s", $data['publish_path'] . '/' . drupal_get_path("module", "drush"), $data['action_type'], $data['site_url'], $data['publish_path'], $data['web_host'], $option_str);
+
+  $command = sprintf("%s/drush.php provision %s %s --root=%s --uri=%s -b %s", $data['publish_path'] . '/' . drupal_get_path("module", "drush"), $cmd_type, $data['site_url'], $data['publish_path'], $data['web_host'], $option_str);
   return $command;
 }
 

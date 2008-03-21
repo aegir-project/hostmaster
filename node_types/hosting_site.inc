@@ -24,39 +24,56 @@ function hosting_site_form($node) {
     '#default_value' => $node->title,
     '#weight' => -5
   );
-  #TODO : only ask when there are multiple clients/dbservers/platforms
-  $form['client'] = array(
-    '#type' => 'radios',
-    '#title' => t('Client'),
-    '#description' => t('The client who this site belongs to.'),
-    '#options' => _hosting_get_clients(),
-    '#default_value' => $node->client,
-  );
-  
-  $form['platform'] = array(
-    '#type' => 'radios',
-    '#title' => t('Platform'),
-    '#description' => t('The platform you want the site to be hosted on.'),
-    '#options' => _hosting_get_platforms(),
-    '#default_value' => $node->platform,
-  );
-  $form['db_server'] = array(
-    '#type' => 'radios',
-    '#title' => t('Database server'),
-    '#description' => t('The database server the site will use to host it\'s content.'),
-    '#options' => _hosting_get_db_servers(),
-    '#default_value' => $node->db_server,
-  );
-  
+  $clients = _hosting_get_clients();
+  if (sizeof($clients) > 1) {
+    $form['client'] = array(
+      '#type' => 'radios',
+      '#title' => t('Client'),
+      '#description' => t('The client who this site belongs to.'),
+      '#options' => $clients,
+      '#default_value' => $node->client,
+    );
+  }
+  else {
+    $form['client'] = array('#type' => 'value', '#value' => key($clients));
+  }
+
+  $platforms = _hosting_get_platforms();
+  if (sizeof($platforms) > 1) {
+    $form['platform'] = array(
+      '#type' => 'radios',
+      '#title' => t('Platform'),
+      '#description' => t('The platform you want the site to be hosted on.'),
+      '#options' => $platforms,
+      '#default_value' => $node->platform,
+    );
+  }
+  else {
+    $form['platform'] = array('#type' => 'value', '#value' => key($platforms));
+  }
+
+  $db_servers = _hosting_get_db_servers();
+  if (sizeof($db_servers) > 1) {
+    $form['db_server'] = array(
+      '#type' => 'radios',
+      '#title' => t('Database server'),
+      '#description' => t('The database server the site will use to host it\'s content.'),
+      '#options' => $db_servers,
+      '#default_value' => $node->db_server,
+    );
+  }
+  else {
+    $form['db_server'] = array('#type' => 'value', '#value' => key($db_servers));
+  } 
   
   return $form;
 }
 
 function hosting_site_validate(&$node) {
-  if (!preg_match("/^([\w-]+\.)+[a-z]{2,4}$/i", $element['#value'] ) ) {
+  if (!preg_match("/^([\w-]+\.)+[a-z]{2,4}$/i", $node->title ) ) {
     form_set_error('title', t("You have not specified a valid url for this site."));
   }
-  if (db_result(db_query("SELECT COUNT(nid) FROM {node} WHERE type='site' AND title='%s' AND  nid <> %d", $element['#value'], $nid))) {
+  if (db_result(db_query("SELECT COUNT(nid) FROM {node} WHERE type='site' AND title='%s' AND  nid <> %d", $node->title, $node->nid))) {
     form_set_error('title', t("The url you specified is not unique."));
   }
 }
@@ -147,4 +164,70 @@ function hosting_site_views_tables() {
         ),
       ),
     );
+}
+
+/**
+ * Add a site backup record.
+ *
+ * Builds a list of backups of the site that have been generated.
+ */
+function hosting_site_add_backup($site, $web_server, $filename) {
+  $bid = db_next_id("{hosting_site_backups}_bid");
+  db_query("INSERT INTO {hosting_site_backups} (bid, site, web_server, filename, timestamp) VALUES (%d, %d, %d, '%s', %d)",
+    $bid, $site, $web_server, $filename, mktime());
+  return $bid;
+}
+
+/**
+ * Delete a site backup record
+ */
+function hosting_site_delete_backup($bid) {
+  db_query("DELETE FROM {hosting_site_backups} WHERE bid=%d", $bid);
+}
+
+/**
+ * Get a site backup record
+ */
+function hosting_site_get_backup($bid) {
+  return db_fetch_array(db_query("SELECT bid, site, web_server, filename, timestamp FROM {hosting_site_backups} WHERE bid = %d", $bid));
+}
+
+/**
+ * Retrieve a list of backup generated for a site.
+ *
+ * @param site
+ *   The node if of the site backups are being retrieved for
+ * @return
+ *   An associative array of backups existing for the site, indexed by bid and sorted reverse chronologically.
+ */
+function hosting_site_backup_list($site) {
+  $result = db_query("SELECT bid, timestamp FROM {hosting_site_backups} WHERE site=%d ORDER BY timestamp DESC", $site);
+  while ($object = db_fetch_object($result)) {
+    $backups[$object->bid] = format_date($object->timestamp);
+  }
+  return $backups;
+}
+
+/**
+ * Views handler to display links instead of node id's
+ */
+function hosting_relation_link_handler($fieldinfo, $fielddata, $value, $data) {
+  return _hosting_node_link($value);
+}
+
+function hosting_site_backups($node) {
+  # ADD CONFIRM TO THIS.
+  $form['bid'] = array(
+    '#type' => 'radios',
+    '#title' => t('Backups'),
+    '#options' => hosting_site_backup_list($node->nid),
+    '#required' => TRUE
+  );
+
+  $form['submit'] = array('#type' => 'submit', '#value' => "Restore this version");
+  return $form;
+}
+
+function hosting_site_backups_submit($form_id, $values) {
+  # this is where i need to have arguments for actions
 }
