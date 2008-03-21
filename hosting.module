@@ -205,7 +205,7 @@ function hosting_drush_command() {
     'description' => 'Process the queue of outstanding hosting actions.'
   );
 
-    $items['hosting import platform'] = array(
+  $items['hosting import platform'] = array(
     'callback' => 'hosting_import_platform',
     'description' => 'Generate a platform node for an already installed platform.'
   );
@@ -218,6 +218,14 @@ function hosting_drush_command() {
   return $items;
 }
 
+/**
+ * Retrieve a list of outstanding actions.
+ *
+ * @param limit
+ *   The amount of items to return.
+ * @return
+ *   An associative array containing action nodes, indexed by node id.
+ */
 function _hosting_get_new_actions($limit = 5) {
   $return = array();
   $result = db_query("SELECT nid FROM {hosting_action_queue} WHERE status=0 ORDER BY timestamp ASC LIMIT %d", $limit);
@@ -227,6 +235,11 @@ function _hosting_get_new_actions($limit = 5) {
   return $return;
 }
 
+/**
+ * Process the hosting action queue.
+ *
+ * Iterates through the list of outstanding actions, and execute the commands on the back end.
+ */
 function hosting_process_queue() {
   global $provision_errors;
   variable_set("hosting_queue_last_run", mktime());
@@ -243,9 +256,16 @@ function hosting_process_queue() {
     node_save($action);
 
     hosting_action_log($action->vid, "queue", t("Action starts processing"));
+
+    // retrieve data map from action.
     $data = hosting_map_values($action);
-    $cmd = _hosting_provision_command($data);
-    module_invoke_all("hosting_pre_" . $action->action_type, $action, $data, $cmd);
+
+    // execute the hosting_pre_${action_type} hook.
+    module_invoke_all("hosting_pre_" . $action->action_type, $action, $data);
+
+    // @todo Allow multiple commands to be run. 
+    // For now actions just map to one backend command, but that might need to change with additional complexity.
+    $cmd = hosting_provision_cmd($data);
 
     hosting_action_log($action->vid, 'command', "Executing: " . escapeshellcmd("$cmd"));
     exec(escapeshellcmd($cmd), $return, $code);
@@ -287,46 +307,56 @@ function hosting_process_queue() {
   }
 }
 
-function hosting_hosting_pre_verify($action, $data, $cmd) {
+/**
+ * Implementation of the hook_hosting_pre_verify
+ */
+function hosting_hosting_pre_verify($action, $data) {
   if ($data['action_reference_type'] == 'platform') {
     #_hosting_generate_platform_config_file(node_load($data['action_reference']));  
   }
 }
 
-function _hosting_provision_command($data) {
-  foreach ($data as $key => $value) {
-    if (preg_match("/^site_/", $key) && $key != 'site_url') {
-      $option_str .= " --$key=$value";
-    }
-    if (preg_match("/^site-/", $key)) {
-      $option_str .= " --" . str_replace("-", "_", $key) . "=$value";
-    }
-  }
+/**
+ * Generate a command line call to Drush, based on the available data for the action.
+ *
+ * This acts as the default command for all back end calls. Actions can provide their own
+ * calls using hook_provision_${action_type}_command.
+ * @todo get rid of the special handling for site-* arguments.
+ */
+function hosting_provision_cmd($data) {
+  $option_str = _hosting_option_map($data);
   $command = sprintf("%s/drush.php provision %s %s --root=%s --uri=%s -b %s", $data['publish_path'] . '/' . drupal_get_path("module", "drush"), $data['action_type'], $data['site_url'], $data['publish_path'], $data['web_host'], $option_str);
   return $command;
 }
 
-function hosting_form_alter($form_id, &$form) {
-  if ($form_id == 'site_node_form') {
-    $form['title']['#validate']['hosting_validate_site_title'] = array($form['nid']['#value']);
-  }
-  if ($form_id == 'user_register') {
-    $form['destination'] = array('#type' => 'hidden', '#value' => 'node/1');
-    if ($_GET['q'] != 'user/register') {
-      $form['notify'] = array('#type' => 'hidden', '#value' => false);
-      $form['status'] = array('#type' => 'hidden', '#value' => 1);
-      $form['pass'] = array('#type' => 'value', '#value' => user_password());
+/**
+ * Maps associative array to option string passed to command line script.
+ */
+function _hosting_option_map($data) {
+  foreach ($data as $key => $value) {
+    if (preg_match("/^site_/", $key) && $key != 'site_url') {
+      $option_str .= " --$key=$value";
     }
   }
+  return $option_str;
+}
+
+/**
+ * Implementation of hook_form_alter
+ */
+function hosting_form_alter($form_id, &$form) {
+  
+  // Replace configuration form submit handler
   if ($form_id == 'provision_configure') {
     $form['#submit'] = array('hosting_configure_provision' => array());
   }
+
+  // Add redirection to next step in wizard
   if ($step = hosting_wizard_current_step()) {
     if ($step['form_id'] == $form_id) {
       $form['#submit']['hosting_wizard_continue_submit'] = array();
     }
   }
-  
 }
 
 /**
@@ -365,6 +395,13 @@ function hosting_wizard_current_step($next = false) {
   return $steps[$step];
 }
 
+/**
+ * Implementation of hook_init
+ *
+ * Used by hosting to drive the installation wizard, by redirecting to the right page
+ * in the wizard.
+ * @todo Allow the user to go to help paths.
+ */
 function hosting_init() {
   if ($step = hosting_wizard_current_step()) {
     if ($_GET['skip_wizard']) {
@@ -377,6 +414,9 @@ function hosting_init() {
   }
 }
 
+/**
+ * Control structure for stepping through the installation wizard.
+ */
 function hosting_wizard_steps() {
   return array(
     '#steps' => array('user_edit', 'provision_configure'),
@@ -389,15 +429,13 @@ function hosting_wizard_steps() {
 }
 
 
-
-function hosting_validate_site_title($element, $nid) {
-  if (!preg_match("/^([\w-]+\.)+[a-z]{2,4}$/i", $element['#value'] ) ) {
-    form_set_error('title', t("You have not specified a valid url for this site."));
-  }
-  if (db_result(db_query("SELECT COUNT(nid) FROM {node} WHERE type='site' AND title='%s' AND  nid <> %d", $element['#value'], $nid))) {
-    form_set_error('title', t("The url you specified is not unique."));
-  }
-}
+/**
+ * Replacement submit handler for the admin/settings/provision page
+ *
+ * This submit handler saves the settings to the current provision environments'
+ * individual nodes. These nodes intelligently save the settings provision uses
+ * in it's environment.
+ */
 
 function hosting_configure_provision($form_id, &$values) {
   $platform = node_load(variable_get('hosting_own_platform', 4));
@@ -423,16 +461,26 @@ function hosting_configure_provision($form_id, &$values) {
   node_save($web_server);
 }
 
-function hosting_relation_link_handler($fieldinfo, $fielddata, $value, $data) {
-  return _hosting_node_link($value);
-}
-
-
+/**
+ * Maps the properties of a node object to an associative array, based on node type, incrementally.
+ *
+ * The back end provisioning system accepts communication via a set of pre-defined arguments.
+ * This function will generate whatever information can be extracted from a specific action, 
+ * regardless what node type it is related to, and use this for generating the command to be executed.
+ *
+ * This functionality is similar in scope to the token module, but the token module contains much additional
+ * complexity that was not necessary for us, and provided a lot of information that we did not need.
+ *
+ * @param node
+ *    A node id, or node of any type defined by the hosting system.
+ *    Will call hook_hosting_map_values_$node->type to provide actual mappings.
+ * @return
+ *    An associative array of terms to be used on the command line, or in templates.
+ */
 function hosting_map_values($node) {
   if (is_numeric($node)) {
     $node = node_load($node);
   }
-  
   $values = array();
   
   $func = 'hosting_map_values_' . $node->type;

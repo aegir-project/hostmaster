@@ -20,6 +20,14 @@ function hosting_install() {
     PRIMARY KEY  (vid)    
     ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
 
+  db_query("CREATE TABLE {hosting_site_backups} (
+    site int(10) NOT NULL default '0',
+    web_server int(10) NOT NULL default '0',
+    filename longtext,
+    timestamp int(11) default NULL,
+    PRIMARY KEY  (site)    
+    ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
+
   db_query("CREATE TABLE {hosting_action} (
     vid int(10) unsigned NOT NULL default '0',
     nid int(10) unsigned NOT NULL default '0',

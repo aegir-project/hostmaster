@@ -53,15 +53,14 @@ function hosting_site_form($node) {
 }
 
 function hosting_site_validate(&$node) {
-  if ($node->title) {
-    $existing = db_result(db_query("SELECT nid FROM {node} WHERE title='%s' LIMIT 1", $node->title));
-    if ($existing && $existing != $node->nid) {
-      form_set_error('title', t('This domain has already been taken'));
-    }
+  if (!preg_match("/^([\w-]+\.)+[a-z]{2,4}$/i", $element['#value'] ) ) {
+    form_set_error('title', t("You have not specified a valid url for this site."));
   }
-  
-  
+  if (db_result(db_query("SELECT COUNT(nid) FROM {node} WHERE type='site' AND title='%s' AND  nid <> %d", $element['#value'], $nid))) {
+    form_set_error('title', t("The url you specified is not unique."));
+  }
 }
+
 
 function hosting_site_insert(&$node) {
   db_query("INSERT INTO {hosting_site} (vid, nid, client, db_server, platform, last_cron) VALUES (%d, %d, %d, %d, %d, %d)",
