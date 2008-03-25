@@ -31,7 +31,6 @@ function hosting_map_values_platform($node) {
  */
 function hosting_platform_form(&$node) {
   $type = node_get_types('type', $node);
-
   $form['publish_path'] = array(
     '#type' => 'textfield',
     '#title' => t('Publish path'),
@@ -59,8 +58,8 @@ function hosting_platform_form(&$node) {
  * Implementation of hook_insert().
  */
 function hosting_platform_insert($node) {
-  db_query("INSERT INTO {hosting_platform} (vid, nid, publish_path, web_server) VALUES (%d, %d, '%s', %d)",
-    $node->vid, $node->nid, $node->publish_path, $node->web_server);
+  db_query("INSERT INTO {hosting_platform} (vid, nid, publish_path, release_id, verified, web_server) VALUES (%d, %d, '%s', %d, %d, %d)",
+    $node->vid, $node->nid, $node->publish_path, $node->release_id, $node->verified, $node->web_server);
 }
 
 /**
@@ -79,8 +78,8 @@ function hosting_platform_update($node) {
     hosting_platform_insert($node);
   }
   else {
-    db_query("UPDATE {hosting_platform} SET publish_path = '%s', web_server = %d WHERE nid=%d",
-              $node->publish_path, $node->web_server, $node->vid, $node->nid);
+    db_query("UPDATE {hosting_platform} SET publish_path = '%s', web_server = %d, release_id = %d, verified = %d, WHERE nid=%d",
+              $node->publish_path, $node->web_server, $node->release_id, $node->verified, $node->nid);
   }
 }
 
@@ -99,7 +98,7 @@ function hosting_platform_delete($node) {
  * Implementation of hook_load().
  */
 function hosting_platform_load($node) {
-  $additions = db_fetch_object(db_query('SELECT publish_path, web_server FROM {hosting_platform} WHERE vid = %d', $node->vid));
+  $additions = db_fetch_object(db_query('SELECT publish_path, release_id, verified, web_server FROM {hosting_platform} WHERE vid = %d', $node->vid));
   return $additions;
 }
 
@@ -107,18 +106,31 @@ function hosting_platform_load($node) {
  * Implementation of hook_view().
  */
 function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
-  $web_server = node_load($node->web_server);
+  $node->content['release'] = array(
+    '#type' => 'item',
+    '#title' => t('Release'),
+    '#value' => _hosting_node_link($node->release_id),
+  );
+ 
   $node->content['web_server'] = array(
     '#type' => 'item',
     '#title' => t('Web server'),
-    '#value' => l($web_server->title, "node/" . $node->web_server),
+    '#value' => _hosting_node_link($node->web_server),
   );
+
   $node->content['publish_path'] = array(
     '#type' => 'item',
     '#title' => t('Publish path'),
     '#value' => $node->publish_path,
   );
   
+  if ($node->verified) {
+    $node->content['verified'] = array(
+      '#type' => 'item',
+      '#title' => t('Verified on'),
+      '#value' => format_date($node->verified),
+    );
+  }
   $view = views_get_view('actions_embed');
   $node->content['actions_view'] = array(
     '#type' => 'item',

@@ -17,6 +17,7 @@ include_once('node_types/hosting_db_server.inc');
 include_once('node_types/hosting_platform.inc');
 include_once('node_types/hosting_site.inc');
 include_once('node_types/hosting_web_server.inc');
+include_once('node_types/hosting_package.inc');
 
 
 include_once('hosting_help.inc');
@@ -31,6 +32,7 @@ function hosting_node_info() {
     "has_title" => TRUE, "title_label" => 'Client', 
     "description" => hosting_node_help("client"),
     "has_body" => 0, "body_label" => '', "min_word_count" => 0);
+
   $types["site"] =  array(
     "type" => 'site', "name" => 'Site',
     "module" => 'hosting_site',
@@ -45,7 +47,22 @@ function hosting_node_info() {
     "has_title" => FALSE, "title_label" => '', 
     "description" => hosting_node_help("action"),
     "has_body" => 0, "body_label" => '', "min_word_count" => 0);
-  
+
+  #package management
+  $types["package"] =  array(
+    "type" => 'package', "name" => 'Package',
+    "module" => 'hosting_package',
+    "has_title" => FALSE, "title_label" => '', 
+#    "description" => hosting_node_help("package"),
+    "has_body" => 0, "body_label" => '', "min_word_count" => 0);
+
+  $types["package_release"] =  array(
+    "type" => 'package_release', "name" => 'Package release',
+    "module" => 'hosting_package_release',
+    "has_title" => FALSE, "title_label" => '', 
+ #   "description" => hosting_node_help("package_release"),
+    "has_body" => 0, "body_label" => '', "min_word_count" => 0);
+
   #configuration
   $types["platform"] =  array(
     "type" => 'platform', "name" => 'Platform',
@@ -53,6 +70,7 @@ function hosting_node_info() {
     "has_title" => TRUE, "title_label" => 'Platform', 
     "description" => hosting_node_help("platform"),
     "has_body" => 0, "body_label" => '', "min_word_count" => 0);    
+
   $types["web_server"] =  array(
     "type" => 'web_server', "name" => 'Web server',
     "module" => 'hosting_web_server',
@@ -277,14 +295,15 @@ function hosting_queue_actions() {
     hosting_action_log($action->vid, "queue", t("Action starts processing"));
 
     // execute the hosting_pre_${action_type} hook.
-    module_invoke_all("hosting_pre_" . $action->action_type, $action, $data);
+    module_invoke_all("hosting_pre_" . $action->action_type, $action);
 
     // @todo Allow multiple commands to be run. 
     // For now actions just map to one backend command, but that might need to change with additional complexity.
     $cmd = hosting_provision_cmd($action->action_type, $action);
-    hosting_action_log($action->vid, 'command', "Executing: " . escapeshellcmd("$cmd"));
     exec(escapeshellcmd($cmd), $return, $code);
     $data = unserialize(trim(implode("\n", $return)));
+
+    hosting_action_log($action->vid, 'command', "Executed: " . escapeshellcmd("$cmd"));
 
     if (!is_array($data)) {
       hosting_action_log($action->vid, 'error', t("The command could not be executed succesfully."));
@@ -302,7 +321,6 @@ function hosting_queue_actions() {
       elseif (preg_match("/^user warning:/", $error)) {
         hosting_action_log($action->vid, "warning", ereg_replace("/^user warning: /", '', $error), 0, $log['timestamp']);  
       }
-
     }
 
     if (!$code) {
@@ -311,12 +329,12 @@ function hosting_queue_actions() {
 
       // remove from queue
       hosting_action_log($action->vid, "queue", t("Removing action from hosting queue"), 0);
-      db_query("UPDATE {hosting_action_queue} SET status=1 WHERE nid=%d", $action->nid);
+      #db_query("UPDATE {hosting_action_queue} SET status=1 WHERE nid=%d", $action->nid);
       
       // mark as succesful
       $action->action_status = PROVISION_SUCCESS;
       $action->revision = 0;
-      node_save($action);
+      #node_save($action);
     }
     else {
       $action->action_status = $code;
@@ -336,24 +354,102 @@ function hosting_hosting_post_backup($action, $data) {
   $ref = node_load($action->rid);
   if ($data['site']['backup_file'] && $ref->type == 'site') {
     $platform = node_load($ref->platform);
-    hosting_site_add_backup($ref->nid, $platform->web_server, $data['site']['backup_file']);
+    hosting_site_add_backup($ref->nid, $platform->web_server, $data['site']['backup_file'], t('Generated on request'));
   }
+}
+
+function hosting_hosting_post_verify($action, $data) {
+  $platform = node_load($action->rid);
+  $platform->verified = mktime(); // set verified flag on platform, to let it know it has been checked.
+  node_save($platform);
+  $platform_release = node_load($platform->release_id);
+  // Import install profiles as package and release nodes
+  foreach ($data['site']['profiles'] as $short_name => $info) {
+    if (!$package = hosting_get_package($short_name)) {
+      $node = new stdClass();
+      $node->uid = 1;
+      $node->title = drupal_ucfirst($short_name);
+      $node->type = 'package';
+      $node->package_type = 'profile';
+      $node->short_name = $short_name;
+      $node->status = 1;
+      node_save($node);
+      $package = $node;
+    }
+    if (!$release = hosting_get_package_release($short_name, $platform_release->version)) {
+      $node = new stdClass();
+      $node->uid = 1;
+      $node->type = 'package_release';
+      $node->package = $package->nid;
+      $node->version = $platform_release->version;
+      $node->status = 1;
+      node_save($node);
+    }
+  }
+
+  // Delete the package links, to make place for the new ones.
+  hosting_delete_package_instances($platform->nid);
+
+  
+  // Import install profiles as package and release nodes
+  foreach ($data['site']['modules'] as $short_name => $info) {
+    if (!$package = hosting_get_package($short_name)) {
+      $node = new stdClass();
+      $node->type = 'package';
+      $node->uid = 1;
+      $node->title = $info->info['name'];
+      $node->package_type = 'module';
+      $node->short_name = $short_name;
+      $node->status = 1;
+      node_save($node);
+      $package = $node;
+    }
+    if (!$release = hosting_get_package_release($short_name, $platform_release->version)) {
+      $node = new stdClass();
+      $node->uid = 1;
+      $node->type = 'package_release';
+      $node->package = $package->nid;
+      $version = ($info->info['version']) ? $info->info['version'] : $platform_release->version . '-head'; // dirty hack. but ugh.
+      $node->version = $version;
+      $node->status = 1;
+      node_save($node);
+      $release = $node;
+    }
+    hosting_add_package_instance($release->nid, $platform->nid, $info->filename); 
+  }
+
+
 }
 
 /**
  * Generate a command line call to Drush, based on the available data for the action.
  *
  * This acts as the default command for all back end calls. Actions can provide their own
- * calls using hook_provision_${action_type}_command.
+ * calls using hook_provision_${action_type}_cmd.
  * @todo get rid of the special handling for site-* arguments.
  */
 function hosting_provision_cmd($cmd_type, $node) {
   // retrieve data map from action.
   $data = hosting_map_values($node);
-  $option_str = _hosting_option_map($data);
 
-  $command = sprintf("%s/drush.php provision %s %s --root=%s --uri=%s -b %s", $data['publish_path'] . '/' . drupal_get_path("module", "drush"), $cmd_type, $data['site_url'], $data['publish_path'], $data['web_host'], $option_str);
+  $func = "hosting_provision_". $cmd_type . "_cmd";
+  # Only one implementation of the cmd_type is possible. This might lead to conflicts with additional complexity.
+  if (function_exists($func)) {
+    $command =  $func($data);
+  }
+  else {
+    $option_str = _hosting_option_map($data);
+
+    $command = sprintf("%s/drush.php provision %s %s --root=%s --uri=%s -b %s", $data['publish_path'] . '/' . drupal_get_path("module", "drush"), $cmd_type, $data['site_url'], $data['publish_path'], $data['web_host'], $option_str);
+  }
   return $command;
+}
+
+function hosting_provision_restore_cmd($data) {
+  $backup = hosting_site_get_backup($data['action_args']['backup']);
+  $option_str = _hosting_option_map($data);
+  $command = sprintf("%s/drush.php provision restore %s %s --root=%s --uri=%s -b %s", $data['publish_path'] . '/' . drupal_get_path("module", "drush"), $data['site_url'], $backup['filename'], $data['publish_path'], $data['web_host'], $option_str);
+  return $cmd;
 }
 
 /**

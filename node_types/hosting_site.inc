@@ -171,10 +171,10 @@ function hosting_site_views_tables() {
  *
  * Builds a list of backups of the site that have been generated.
  */
-function hosting_site_add_backup($site, $web_server, $filename) {
+function hosting_site_add_backup($site, $web_server, $filename, $description = '') {
   $bid = db_next_id("{hosting_site_backups}_bid");
-  db_query("INSERT INTO {hosting_site_backups} (bid, site, web_server, filename, timestamp) VALUES (%d, %d, %d, '%s', %d)",
-    $bid, $site, $web_server, $filename, mktime());
+  db_query("INSERT INTO {hosting_site_backups} (bid, site, web_server, filename, description, timestamp) VALUES (%d, %d, %d, '%s', '%s', %d)",
+    $bid, $site, $web_server, $filename, $description, mktime());
   return $bid;
 }
 
@@ -189,7 +189,7 @@ function hosting_site_delete_backup($bid) {
  * Get a site backup record
  */
 function hosting_site_get_backup($bid) {
-  return db_fetch_array(db_query("SELECT bid, site, web_server, filename, timestamp FROM {hosting_site_backups} WHERE bid = %d", $bid));
+  return db_fetch_array(db_query("SELECT bid, site, web_server, filename, description, timestamp FROM {hosting_site_backups} WHERE bid = %d", $bid));
 }
 
 /**
@@ -201,9 +201,10 @@ function hosting_site_get_backup($bid) {
  *   An associative array of backups existing for the site, indexed by bid and sorted reverse chronologically.
  */
 function hosting_site_backup_list($site) {
-  $result = db_query("SELECT bid, timestamp FROM {hosting_site_backups} WHERE site=%d ORDER BY timestamp DESC", $site);
+  $result = db_query("SELECT bid, description, timestamp FROM {hosting_site_backups} WHERE site=%d ORDER BY timestamp DESC", $site);
   while ($object = db_fetch_object($result)) {
-    $backups[$object->bid] = format_date($object->timestamp);
+    #needs to be cleaned up. but i am NOT generating a theme func for this right now.
+    $backups[$object->bid] = '<strong>' . format_date($object->timestamp) . '</strong> - ' . $object->description;
   }
   return $backups;
 }
@@ -216,7 +217,9 @@ function hosting_relation_link_handler($fieldinfo, $fielddata, $value, $data) {
 }
 
 function hosting_site_backups($node) {
+  drupal_set_title($node->title);
   # ADD CONFIRM TO THIS.
+  $form['site'] = array('#type' => 'value', '#value' => $node->nid);
   $form['bid'] = array(
     '#type' => 'radios',
     '#title' => t('Backups'),
@@ -229,5 +232,6 @@ function hosting_site_backups($node) {
 }
 
 function hosting_site_backups_submit($form_id, $values) {
-  # this is where i need to have arguments for actions
+  hosting_add_action($values['site'], 'restore', array('backup' => $values['bid']));
+  return 'node/' . $values['site'];
 }

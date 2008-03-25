@@ -13,7 +13,9 @@ function hosting_action_log($vid, $type, $message, $severity = 0, $timestamp = n
 function hosting_map_values_action($node) {
   $values['action_id'] = $node->nid;
   $values['action_type'] = $node->action_type;
-
+  if (is_array($node->action_args)) {
+    $values['action_args'] = $node->action_args;
+  }
   $reference = node_load($node->rid);
   $values['action_reference_type'] = $reference->type;
   $values['action_reference'] = $reference->nid;
@@ -38,6 +40,11 @@ function hosting_add_action($nid, $type, $args = null) {
  $action->title = t("!type !title", array('!type' => $type, '!title' => $node->title) );
  $action->action_type = $type;
  $action->rid = $node->nid;
+
+ #arguments, such as which backup to restore.
+ if (is_array($args)) {
+   $action->action_args = $args;
+ }
  node_save($action);
 }
 
@@ -50,8 +57,10 @@ function hosting_action_form(&$node, $rid = null) {
   if (!is_numeric($rid)) {
     drupal_goto('node/add');
   }
+
   # This node can _only_ be created on another object. hook_menu manages the permissions for this.
   $ref = node_load($rid);
+  drupal_set_title($ref->title);
   $form['rid'] = array('#type' => 'value', '#value' => $rid);
   $form['action_type'] = array(
     '#type' => 'radios',
@@ -100,6 +109,12 @@ function hosting_action_insert($node) {
   db_query("INSERT INTO {hosting_action} (vid, nid, action_type, rid, executed, action_status) VALUES (%d, %d, '%s', %d, %d, %d)",
     $node->vid, $node->nid, $node->action_type, $node->rid, $node->executed, $node->action_status);
 
+  if (is_array($node->action_args)) {
+    foreach ($node->action_args as $key => $value) {
+      db_query("INSERT INTO {hosting_action_arguments} (vid, nid, name, value) VALUES (%d, %d, '%s', '%s')",
+           $node->vid, $node->nid, $key, $value);
+    }
+  }
   hosting_action_set_title($node); 
   if (!$node->old_vid) {
     db_query("INSERT INTO {hosting_action_queue} (nid, timestamp, status) VALUES (%d, %d, 0)", $node->nid, mktime());
@@ -118,13 +133,24 @@ function hosting_action_update($node) {
     hosting_action_insert($node);
   }
   else {
+    hosting_action_set_title($node);
     db_query("UPDATE {hosting_action} SET nid=%d, action_type = '%s', rid = %d, executed=%d, action_status=%d WHERE vid=%d",
-              $node->nid, $node->action_type, $node->rid, $node->executed, $node->action_status, $node->vid);
+      $node->nid, $node->action_type, $node->rid, $node->executed, $node->action_status, $node->vid);
+    if (is_array($node->action_args)) {
+      # Wipe out old arguments first, since arguments could theoretically be removed.
+      db_query("DELETE FROM {hosting_action_arguments} WHERE vid=%d", $node->vid);
+      foreach ($node->action_args as $key => $value) {
+        db_query("INSERT INTO {hosting_action_arguments} (vid, nid, name, value) VALUES (%d, %d, '%s', '%s')",
+             $node->vid, $node->nid, $key, $value);
+      }
+    }
+      
   }
 }
 
 function hosting_nodeapi_action_delete_revision(&$node) {
   db_query('DELETE FROM {hosting_action} WHERE vid = %d', $node->vid);
+  db_query('DELETE FROM {hosting_action_arguments} WHERE vid = %d', $node->vid);
 }
 
 /**
@@ -132,6 +158,7 @@ function hosting_nodeapi_action_delete_revision(&$node) {
  */
 function hosting_action_delete($node) {
   db_query('DELETE FROM {hosting_action} WHERE nid = %d', $node->nid);
+  db_query('DELETE FROM {hosting_action_arguments} WHERE nid = %d', $node->nid);
 }
 
 /**
@@ -139,6 +166,12 @@ function hosting_action_delete($node) {
  */
 function hosting_action_load($node) {
   $additions = db_fetch_object(db_query('SELECT action_type, executed, action_status, rid FROM {hosting_action} WHERE vid = %d', $node->vid));
+  $result = db_query("SELECT name, value FROM {hosting_action_arguments} WHERE vid=%d", $node->vid);
+  if (db_num_rows($result)) {
+    while ($arg = db_fetch_object($result)) {
+      $additions->action_args[$arg->name] = $arg->value;
+    }
+  }
   return $additions;
 }
 
