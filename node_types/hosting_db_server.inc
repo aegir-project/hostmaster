@@ -127,6 +127,14 @@ function hosting_db_server_view($node, $teaser = FALSE, $page = FALSE) {
     '#title' => t('Database user'),
     '#value' => $node->db_user,
   );
+
+  $view = views_get_view('site_embed_client');
+  $node->content['sites_view'] = array(
+    '#type' => 'item',
+    '#title' => t("Sites"),
+    '#value' => views_build_view('embed', $view, array($node->nid)), 
+    '#weight' => 10
+  );
   
   return $node;
 }

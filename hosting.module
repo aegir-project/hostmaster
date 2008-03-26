@@ -329,12 +329,12 @@ function hosting_queue_actions() {
 
       // remove from queue
       hosting_action_log($action->vid, "queue", t("Removing action from hosting queue"), 0);
-      #db_query("UPDATE {hosting_action_queue} SET status=1 WHERE nid=%d", $action->nid);
+      db_query("UPDATE {hosting_action_queue} SET status=1 WHERE nid=%d", $action->nid);
       
       // mark as succesful
       $action->action_status = PROVISION_SUCCESS;
       $action->revision = 0;
-      #node_save($action);
+      node_save($action);
     }
     else {
       $action->action_status = $code;
@@ -358,16 +358,22 @@ function hosting_hosting_post_backup($action, $data) {
   }
 }
 
+/**
+ * Implementation hook_post_verify
+ *
+ * Sets the platform verified timestamp, to discren when it was verified.
+ * Imports all the profiles and modules into package and package release nodes.
+ */
 function hosting_hosting_post_verify($action, $data) {
   $platform = node_load($action->rid);
   $platform->verified = mktime(); // set verified flag on platform, to let it know it has been checked.
   node_save($platform);
   $platform_release = node_load($platform->release_id);
+  hosting_delete_package_instances($platform->nid);
   // Import install profiles as package and release nodes
   foreach ($data['site']['profiles'] as $short_name => $info) {
     if (!$package = hosting_get_package($short_name)) {
       $node = new stdClass();
-      $node->uid = 1;
       $node->title = drupal_ucfirst($short_name);
       $node->type = 'package';
       $node->package_type = 'profile';
@@ -378,17 +384,17 @@ function hosting_hosting_post_verify($action, $data) {
     }
     if (!$release = hosting_get_package_release($short_name, $platform_release->version)) {
       $node = new stdClass();
-      $node->uid = 1;
       $node->type = 'package_release';
       $node->package = $package->nid;
       $node->version = $platform_release->version;
       $node->status = 1;
       node_save($node);
+      $release = $node;
     }
+    hosting_add_package_instance($release->nid, $platform->nid, $info->filename); 
   }
 
   // Delete the package links, to make place for the new ones.
-  hosting_delete_package_instances($platform->nid);
 
   
   // Import install profiles as package and release nodes
@@ -396,7 +402,6 @@ function hosting_hosting_post_verify($action, $data) {
     if (!$package = hosting_get_package($short_name)) {
       $node = new stdClass();
       $node->type = 'package';
-      $node->uid = 1;
       $node->title = $info->info['name'];
       $node->package_type = 'module';
       $node->short_name = $short_name;
@@ -406,7 +411,6 @@ function hosting_hosting_post_verify($action, $data) {
     }
     if (!$release = hosting_get_package_release($short_name, $platform_release->version)) {
       $node = new stdClass();
-      $node->uid = 1;
       $node->type = 'package_release';
       $node->package = $package->nid;
       $version = ($info->info['version']) ? $info->info['version'] : $platform_release->version . '-head'; // dirty hack. but ugh.
@@ -417,8 +421,6 @@ function hosting_hosting_post_verify($action, $data) {
     }
     hosting_add_package_instance($release->nid, $platform->nid, $info->filename); 
   }
-
-
 }
 
 /**
@@ -633,3 +635,33 @@ function _hosting_add_block($module, $delta, $theme, $status, $weight, $region, 
     db_query("INSERT INTO {boxes} (bid, body, info, format) VALUES (%d, '%s', '%s', '%s')", $box->bid, $box->body, $box->info, $box->format);
   }
 }
+
+
+/**
+ * A very basic views 1.x argument handler, to be able to filter by node fields that refer to other nodes.
+ */
+function hosting_reference_arg_handler($table, $column, $op, &$query, $a1, $a2 = null) {
+  switch ($op) {
+  case 'summary' :
+      $query->ensure_table($table);
+      $query->add_field($column, $table);
+      return array('field' => $table . '.' . $column);
+      break;
+    
+    case 'link' :
+      return _hosting_node_link($query->$column);
+      break;
+
+    case 'filter' : 
+      $query->ensure_table($table);
+      $where = db_escape_string($a2);
+      $query->add_where($table . '.' . $column . " = %d", $where);
+      break;
+      
+    case 'title' :
+      return db_result(db_query("SELECT title FROM {node} WHERE nid = %d", $query));
+      break;
+
+  }
+}
+

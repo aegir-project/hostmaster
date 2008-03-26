@@ -158,7 +158,7 @@ function hosting_client_view($node, $teaser = FALSE, $page = FALSE) {
     );
   }
   
-  $view = views_get_view('sites_embed');
+  $view = views_get_view('site_embed_client');
   $node->content['sites_view'] = array(
     '#type' => 'item',
     '#title' => t("Sites"),

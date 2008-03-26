@@ -131,6 +131,15 @@ function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
       '#value' => format_date($node->verified),
     );
   }
+
+  $view = views_get_view('site_embed_platform');
+  $node->content['sites_view'] = array(
+    '#type' => 'item',
+    '#title' => t("Sites"),
+    '#value' => views_build_view('embed', $view, array($node->nid)), 
+    '#weight' => 10
+  );
+
   $view = views_get_view('actions_embed');
   $node->content['actions_view'] = array(
     '#type' => 'item',

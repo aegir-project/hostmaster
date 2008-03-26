@@ -243,7 +243,7 @@ function _hosting_parse_error_code($code) {
 }
 
 function hosting_action_views_tables() {
-  return array(
+  $tables['hosting_action'] = array(
     'name' => 'hosting_action',
     'join' => array(
       'left' => array(
@@ -269,7 +269,6 @@ function hosting_action_views_tables() {
       ),
       'rid' => array(
           'name' => t('Action: Reference'),
-          'sortable' => TRUE,
           'handler' => 'hosting_relation_link_handler',
           'help' => t('The object this action is referring to.'),
         ),
@@ -282,8 +281,33 @@ function hosting_action_views_tables() {
       ),        
       ),
     );
+  return $tables;
 }
 
+/**
+ * Views 1.x display handler for the BITMASK status field.
+ */
 function hosting_action_status_handler($fieldinfo, $fielddata, $value, $data) {
   return ($data->hosting_action_action_status) ? implode(", ", _hosting_parse_error_code($data->hosting_action_action_status)) : t('In progress');
 }
+
+/**
+ * Views 1.x argument handling for action nodes.
+ */
+function hosting_action_views_arguments() {
+  $arguments['hosting_action_reference'] = array(
+    'name' => t('Action: Reference'),
+    'help' => t('Filter actions by the item the actions reference'),
+    'handler' => 'hosting_action_views_reference_argument',
+  );
+  return $arguments;
+}
+
+/**
+ * Views 1.x argument handler for filtering action nodes by reference.
+ */
+function hosting_action_views_reference_argument($op, &$query, $a1, $a2 = null) {
+  hosting_reference_arg_handler("hosting_action", "rid", $op, $query, $a1, $a2);
+}
+
+

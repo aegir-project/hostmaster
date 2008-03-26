@@ -160,7 +160,7 @@ function hosting_web_server_view($node, $teaser = FALSE, $page = FALSE) {
 }
 
 function hosting_web_server_views_tables() {
-  return array(
+  $tables['hosting_web_server'] = array(
     'name' => 'hosting_web_server',
     'join' => array(
       'left' => array(
@@ -179,5 +179,7 @@ function hosting_web_server_views_tables() {
           'help' => t('Display the ip address of the server.'),
         ),
       ),
+
     );
+  return $tables;
 }
