@@ -78,7 +78,7 @@ function hosting_platform_update($node) {
     hosting_platform_insert($node);
   }
   else {
-    db_query("UPDATE {hosting_platform} SET publish_path = '%s', web_server = %d, release_id = %d, verified = %d, WHERE nid=%d",
+    db_query("UPDATE {hosting_platform} SET publish_path = '%s', web_server = %d, release_id = %d, verified = %d WHERE nid=%d",
               $node->publish_path, $node->web_server, $node->release_id, $node->verified, $node->nid);
   }
 }
