@@ -329,7 +329,7 @@ function hosting_queue_actions() {
 
       // remove from queue
       hosting_action_log($action->vid, "queue", t("Removing action from hosting queue"), 0);
-      db_query("UPDATE {hosting_action_queue} SET status=1 WHERE nid=%d", $action->nid);
+      #db_query("UPDATE {hosting_action_queue} SET status=1 WHERE nid=%d", $action->nid);
       
       // mark as succesful
       $action->action_status = PROVISION_SUCCESS;
@@ -369,58 +369,10 @@ function hosting_hosting_post_verify($action, $data) {
   $platform->verified = mktime(); // set verified flag on platform, to let it know it has been checked.
   node_save($platform);
   $platform_release = node_load($platform->release_id);
-  hosting_delete_package_instances($platform->nid);
-  // Import install profiles as package and release nodes
-  foreach ($data['site']['profiles'] as $short_name => $info) {
-    if (!$package = hosting_get_package($short_name)) {
-      $node = new stdClass();
-      $node->title = drupal_ucfirst($short_name);
-      $node->type = 'package';
-      $node->package_type = 'profile';
-      $node->short_name = $short_name;
-      $node->status = 1;
-      node_save($node);
-      $package = $node;
-    }
-    if (!$release = hosting_get_package_release($short_name, $platform_release->version)) {
-      $node = new stdClass();
-      $node->type = 'package_release';
-      $node->package = $package->nid;
-      $node->version = $platform_release->version;
-      $node->status = 1;
-      node_save($node);
-      $release = $node;
-    }
-    hosting_add_package_instance($release->nid, $platform->nid, $info->filename); 
-  }
-
-  // Delete the package links, to make place for the new ones.
-
-  
-  // Import install profiles as package and release nodes
-  foreach ($data['site']['modules'] as $short_name => $info) {
-    if (!$package = hosting_get_package($short_name)) {
-      $node = new stdClass();
-      $node->type = 'package';
-      $node->title = $info->info['name'];
-      $node->package_type = 'module';
-      $node->short_name = $short_name;
-      $node->status = 1;
-      node_save($node);
-      $package = $node;
-    }
-    if (!$release = hosting_get_package_release($short_name, $platform_release->version)) {
-      $node = new stdClass();
-      $node->type = 'package_release';
-      $node->package = $package->nid;
-      $version = ($info->info['version']) ? $info->info['version'] : $platform_release->version . '-head'; // dirty hack. but ugh.
-      $node->version = $version;
-      $node->status = 1;
-      node_save($node);
-      $release = $node;
-    }
-    hosting_add_package_instance($release->nid, $platform->nid, $info->filename); 
-  }
+  hosting_package_import_packages($platform->nid, 'profile', $platform_release->version, $data['site']['profiles']);
+  hosting_package_import_packages($platform->nid, 'module', $platform_release->version, $data['site']['modules']);
+  hosting_package_import_packages($platform->nid, 'engine', $platform_release->version, $data['site']['engines']);
+  hosting_package_import_packages($platform->nid, 'theme', $platform_release->version, $data['site']['themes']);
 }
 
 /**

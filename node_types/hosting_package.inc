@@ -291,3 +291,33 @@ function hosting_package_release_package_argument($op, &$query, $a1, $a2 = null)
   hosting_reference_arg_handler("hosting_package_release", "package", $op, $query, $a1, $a2);
 }
 
+function hosting_package_import_packages($rid, $type, $default_version, $data) {
+  hosting_delete_package_instances($rid);
+  // Import install profiles as package and release nodes
+    print_r($data); exit();
+  foreach ($data as $short_name => $info) {
+    $version = ($info->info['version']) ? $info->info['version'] : $default_version; // dirty hack. but ugh.
+    if (!$package = hosting_get_package($short_name)) {
+      $node = new stdClass();
+      $node->type = 'package';
+      $node->title = $info->info['name'];
+      $node->package_type = $type;
+      $node->short_name = $short_name;
+      $node->status = 1;
+      node_save($node);
+      $package = $node;
+    }
+    if (!$release = hosting_get_package_release($short_name, $default_version)) {
+      $node = new stdClass();
+      $node->type = 'package_release';
+      $node->package = $package->nid;
+      $node->version = $version;
+      $node->status = 1;
+      node_save($node);
+      $release = $node;
+    }
+    hosting_add_package_instance($release->nid, $rid, $info->filename); 
+  }
+
+}
+
