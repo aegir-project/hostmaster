@@ -5,8 +5,10 @@ The front end and back end are designed to be run separately, and each front end
 
 Once installed go to admin -> help -> hosting for more elaborate and translatable help.
 
+The most up to date information regarding the project and it's goal can be found in the hostmaster wiki page - http://groups.drupal.org/hm2/overview .
+
 === Hostmaster Layout ===
-The installation profile should reside under the profiles directory and named hostmaster.
+The installation profile should reside under the profiles directory under the drupal root and is named hostmaster.
 
 Modules Location:
 Hostmaster requires modules to be installed in -
@@ -20,7 +22,9 @@ When installed your filesystem should look like this..
                      /modules/views
                      /modules/drush
 
-=== Requirements ===
+Note: Don't be alarmed by the existence of views both in your profiles and sites/all directory. Hostmaster uses it's own views so it does not rely on a specific site to work.
+
+=== Pre Requirements ===
 Required Modules:
   * hosting
   * provision
