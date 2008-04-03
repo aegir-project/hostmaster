@@ -294,7 +294,6 @@ function hosting_package_release_package_argument($op, &$query, $a1, $a2 = null)
 function hosting_package_import_packages($rid, $type, $default_version, $data) {
   hosting_delete_package_instances($rid);
   // Import install profiles as package and release nodes
-    print_r($data); exit();
   foreach ($data as $short_name => $info) {
     $version = ($info->info['version']) ? $info->info['version'] : $default_version; // dirty hack. but ugh.
     if (!$package = hosting_get_package($short_name)) {
