@@ -26,12 +26,12 @@ function hosting_get_package_release($short_name, $version) {
 }
 
 function hosting_delete_package_instances($nid) {
-  db_query("DELETE FROM {hosting_package_instances} WHERE rid = %d", $nid);
+  #db_query("DELETE FROM {hosting_package_instances} WHERE rid = %d", $nid);
 }
 
 function hosting_add_package_instance($nid, $rid, $path) {
-  $iid = db_next_id("{hosting_package_instance}_iid");
-  db_query("INSERT INTO {hosting_package_instances} (iid, release_id, rid, path) VALUES (%d, %d, %d, '%s')", $iid, $nid, $rid, $path);
+  #$iid = db_next_id("{hosting_package_instance}_iid");
+  #db_query("INSERT INTO {hosting_package_instances} (iid, release_id, rid, path) VALUES (%d, %d, %d, '%s')", $iid, $nid, $rid, $path);
 } 
 
 /**
