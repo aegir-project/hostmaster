@@ -288,7 +288,7 @@ function hosting_queue_actions() {
   foreach ($actions as $action) {
     // create a new revision
     $action->changed = mktime();
-    $action->executed =  mktime();
+    $action->executed = mktime();
     $action->revision = true;
     node_save($action);
 
@@ -323,16 +323,16 @@ function hosting_queue_actions() {
       }
     }
 
-    if (!$code) {
+    if ($code == PROVISION_SUCESS) {
       # The action has been successful. Run the post hook.
       module_invoke_all("hosting_post_" . $action->action_type, $action, $data);
 
       // remove from queue
       hosting_action_log($action->vid, "queue", t("Removing action from hosting queue"), 0);
-      #db_query("UPDATE {hosting_action_queue} SET status=1 WHERE nid=%d", $action->nid);
+      db_query("UPDATE {hosting_action_queue} SET status=1 WHERE nid=%d", $action->nid);
       
       // mark as succesful
-      $action->action_status = PROVISION_SUCCESS;
+      $action->action_status = $code;
       $action->revision = 0;
       node_save($action);
     }
