@@ -26,6 +26,7 @@ function hosting_install() {
     bid int(10) unsigned NOT NULL,
     site int(10) NOT NULL default '0',
     web_server int(10) NOT NULL default '0',
+    description longtext,
     filename longtext,
     timestamp int(11) default NULL,
     PRIMARY KEY  (bid)    
@@ -144,4 +145,8 @@ function hosting_install() {
 
 }
 
-
+function hosting_update_1() {
+  $items = array();
+  $items[] = update_sql("ALTER TABLE {hosting_site_backups} ADD description longtext");
+  return $items;
+}
