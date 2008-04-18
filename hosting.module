@@ -265,7 +265,7 @@ function hosting_dispatch() {
  */
 function _hosting_get_new_actions($limit = 5) {
   $return = array();
-  $result = db_query("SELECT nid FROM {hosting_action_queue} WHERE status=0 ORDER BY timestamp ASC LIMIT %d", $limit);
+  $result = db_query("SELECT nid FROM {hosting_action_queue} WHERE status=%d ORDER BY timestamp ASC LIMIT %d", PROVISION_NOT_RUN, $limit);
   while ($node = db_fetch_object($result)) {
     $return[$node->nid] =  node_load($node->nid);
   }
@@ -329,7 +329,7 @@ function hosting_queue_actions() {
 
       // remove from queue
       hosting_action_log($action->vid, "queue", t("Removing action from hosting queue"), 0);
-      db_query("UPDATE {hosting_action_queue} SET status=1 WHERE nid=%d", $action->nid);
+      db_query("UPDATE {hosting_action_queue} SET status=%d WHERE nid=%d", $code, $action->nid);
       
       // mark as succesful
       $action->action_status = $code;

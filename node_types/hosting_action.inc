@@ -40,6 +40,7 @@ function hosting_add_action($nid, $type, $args = null) {
  #todo: make this pretty
  $action->title = t("!type !title", array('!type' => $type, '!title' => $node->title) );
  $action->action_type = $type;
+ $action->action_status = PROVISION_NOT_RUN;
  $action->rid = $node->nid;
 
  #arguments, such as which backup to restore.
@@ -118,7 +119,7 @@ function hosting_action_insert($node) {
   }
   hosting_action_set_title($node); 
   if (!$node->old_vid) {
-    db_query("INSERT INTO {hosting_action_queue} (nid, timestamp, status) VALUES (%d, %d, 0)", $node->nid, mktime());
+    db_query("INSERT INTO {hosting_action_queue} (nid, timestamp, status) VALUES (%d, %d, %d)", $node->nid, mktime(), PROVISION_NOT_RUN);
   }
 }
 
