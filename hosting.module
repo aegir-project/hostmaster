@@ -331,17 +331,12 @@ function hosting_queue_actions() {
       // remove from queue
       hosting_action_log($action->vid, "queue", t("Removing action from hosting queue"), 0);
       db_query("UPDATE {hosting_action_queue} SET status=%d WHERE nid=%d", $code, $action->nid);
-      
-      // mark as succesful
-      $action->action_status = $code;
-      $action->revision = 0;
-      node_save($action);
     }
-    else {
-      $action->action_status = $code;
-      $action->revision = false;
-      node_save($action);
-    }
+    // record status 
+    $action->action_status = $code;
+    // XXX: what is this for?
+    $action->revision = false;
+    node_save($action);
   }
 }
 
