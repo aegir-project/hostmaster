@@ -301,12 +301,13 @@ function hosting_queue_actions() {
     // For now actions just map to one backend command, but that might need to change with additional complexity.
     $cmd = hosting_provision_cmd($action->action_type, $action);
     exec(escapeshellcmd($cmd), $return, $code);
-    $data = unserialize(trim(implode("\n", $return)));
+    $return = join("\n", $return);
+    $data = unserialize($return);
 
     hosting_action_log($action->vid, 'command', "Executed: " . escapeshellcmd("$cmd"));
 
     if (!is_array($data)) {
-      hosting_action_log($action->vid, 'error', t("The command could not be executed succesfully."));
+      hosting_action_log($action->vid, 'error', t("The command could not be executed succesfully (return: %return, data: %data, code: %code)", array("%return" => $return, "%data" => $data, "%code" =>  $code)));
       $code = PROVISION_FRAMEWORK_ERROR;
     }
     foreach ((array) $data['log'] as $log) {
