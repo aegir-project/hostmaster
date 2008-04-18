@@ -6,6 +6,7 @@
 
 function hosting_action_log($vid, $type, $message, $severity = 0, $timestamp = null ) {
  $timestamp = ($timestamp) ? $timestamp : mktime();
+ if (DRUSH_VERBOSE) print "$message\n";
  db_query("INSERT INTO {action_log} (vid, type, message, severity, timestamp) VALUES (%d, '%s', '%s', %d, %d)", $vid, $type, $message, $severity, $timestamp);
 }
 
