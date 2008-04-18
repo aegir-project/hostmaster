@@ -109,7 +109,7 @@ function hosting_available_actions($ref = null) {
  */
 function hosting_action_insert($node) {
   db_query("INSERT INTO {hosting_action} (vid, nid, action_type, rid, executed, action_status) VALUES (%d, %d, '%s', %d, %d, %d)",
-    $node->vid, $node->nid, $node->action_type, $node->rid, $node->executed, $node->status);
+    $node->vid, $node->nid, $node->action_type, $node->rid, $node->executed, $node->action_status);
 
   if (is_array($node->action_args)) {
     foreach ($node->action_args as $key => $value) {
