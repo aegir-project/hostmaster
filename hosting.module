@@ -265,7 +265,7 @@ function hosting_dispatch() {
  */
 function _hosting_get_new_actions($limit = 5) {
   $return = array();
-  $result = db_query("SELECT nid FROM {hosting_action_queue} WHERE status=%d ORDER BY timestamp ASC LIMIT %d", PROVISION_NOT_RUN, $limit);
+  $result = db_query("SELECT nid FROM {hosting_action_queue} WHERE status=%d ORDER BY timestamp ASC LIMIT %d", PROVISION_QUEUED, $limit);
   while ($node = db_fetch_object($result)) {
     $return[$node->nid] =  node_load($node->nid);
   }
