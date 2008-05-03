@@ -90,11 +90,12 @@ function hosting_available_actions($ref = null) {
     $options['backup'] = t('Backup site');
     $options['synch'] = t('Regenerate configuration files');
 
-    if ($node->site_status) {
+    if ($ref->status) {
         $options['disable'] =  t('Disable the enabled site.');      
     }
     else {
-        $options['enable'] = t('Enable the disabled site.');      
+      $options['enable'] = t('Enable the disabled site.');
+      $options['delete'] = t('Delete the disabled site.');
     }
   }
   elseif ($ref->type == 'platform') {
@@ -229,19 +230,24 @@ function hosting_action_view($node, $teaser = FALSE, $page = FALSE) {
  */
 function _hosting_parse_error_code($code) {
   global $provision_errors;
-  if ($code > 0) {
-    foreach ($provision_errors as $error => $message) {
-      if ($error != PROVISION_SUCCESS) {
-        if ($code & $error) {
-          $return[$error] = $message;
-        }        
+  switch ($code) {
+    case PROVISION_QUEUED : 
+      return array(PROVISION_QUEUED => $provision_errors[PROVISION_QUEUED]);
+      break;
+    case PROVISION_SUCCESS : 
+      return array(PROVISION_SUCCESS => $provision_errors[PROVISION_SUCCESS]);
+      break;
+    default:
+      foreach ($provision_errors as $error => $message) {
+        if (!in_array($error, array(PROVISION_QUEUED, PROVISION_SUCCESS))) {
+          if ($code & $error) {
+            $return[$error] = $message;
+          }        
+        }
       }
-    }    
+      return $return;
+      break;
   }
-  else {
-    $return[PROVISION_SUCCESS] = $provision_errors[PROVISION_SUCCESS];
-  }
-  return $return;
 }
 
 function hosting_action_views_tables() {
@@ -290,7 +296,7 @@ function hosting_action_views_tables() {
  * Views 1.x display handler for the BITMASK status field.
  */
 function hosting_action_status_handler($fieldinfo, $fielddata, $value, $data) {
-  return ($data->hosting_action_action_status) ? implode(", ", _hosting_parse_error_code($data->hosting_action_action_status)) : t('In progress');
+  return implode(", ", _hosting_parse_error_code($data->hosting_action_action_status));
 }
 
 /**

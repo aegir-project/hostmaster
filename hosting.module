@@ -323,8 +323,13 @@ function hosting_queue_actions() {
         hosting_action_log($action->vid, "warning", ereg_replace("/^user warning: /", '', $error), 0, $log['timestamp']);  
       }
     }
+    // record status 
+    $action->action_status = $code;
+    // New revision is created at the beginning of function.
+    $action->revision = false;
+    node_save($action);
 
-    if ($code == PROVISION_SUCESS) {
+    if ($code == PROVISION_SUCCESS) {
       # The action has been successful. Run the post hook.
       module_invoke_all("hosting_post_" . $action->action_type, $action, $data);
 
@@ -332,11 +337,10 @@ function hosting_queue_actions() {
       hosting_action_log($action->vid, "queue", t("Removing action from hosting queue"), 0);
       db_query("UPDATE {hosting_action_queue} SET status=%d WHERE nid=%d", $code, $action->nid);
     }
-    // record status 
-    $action->action_status = $code;
-    // XXX: what is this for?
-    $action->revision = false;
-    node_save($action);
+    else {
+      # Stop the queue from continuing.
+      break;
+    }
   }
 }
 
