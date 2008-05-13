@@ -12,6 +12,7 @@ function hosting_map_values_web_server($node) {
   $values['web_group'] = $node->web_group;
   $values['web_config_path'] = $node->config_path;
   $values['web_backup_path'] = $node->backup_path;
+  $values['web_restart_cmd'] = $node->restard_cmd;
   return $values;
 }
 
@@ -68,9 +69,9 @@ function hosting_web_server_validate(&$node) {
  * Implementation of hook_insert().
  */
 function hosting_web_server_insert($node) {
-  db_query("INSERT INTO {hosting_web_server} (vid, nid, ip_address, script_user, web_group, config_path, backup_path) 
-      VALUES (%d, %d, '%s', '%s', '%s', '%s', '%s')", 
-        $node->vid, $node->nid, $node->ip_address, $node->script_user, $node->web_group, $node->config_path, $node->backup_path);
+  db_query("INSERT INTO {hosting_web_server} (vid, nid, ip_address, script_user, web_group, config_path, backup_path, restart_cmd) 
+      VALUES (%d, %d, '%s', '%s', '%s', '%s', '%s', '%s')", 
+        $node->vid, $node->nid, $node->ip_address, $node->script_user, $node->web_group, $node->config_path, $node->backup_path, $node->restart_cmd);
 }
 
 /**
@@ -86,6 +87,7 @@ function hosting_web_server_update($node) {
     variable_set('provision_web_group', $node->web_group);
     variable_set('provision_config_path', $node->config_path);
     variable_set('provision_backup_path', $node->backup_path);
+    variable_set('provision_restart_cmd', $node->restart_cmd);
   }
 
   // if this is a new node or we're adding a new revision,
@@ -95,11 +97,11 @@ function hosting_web_server_update($node) {
   else {
     db_query("UPDATE {hosting_web_server} SET 
                   ip_address = '%s', script_user = '%s', web_group = '%s', 
-                  config_path = '%s', backup_path = '%s' 
+                  config_path = '%s', backup_path = '%s', restart_cmd = '%s'
               WHERE 
                   vid = %d", 
                   $node->ip_address, $node->script_user, $node->web_group,
-                  $node->config_path, $node->backup_path, 
+                  $node->config_path, $node->backup_path, $node->restart_cmd, 
                   $node->vid);
   }
 }
@@ -119,7 +121,7 @@ function hosting_web_server_delete($node) {
  * Implementation of hook_load().
  */
 function hosting_web_server_load($node) {
-  $additions = db_fetch_object(db_query('SELECT ip_address, script_user, web_group, config_path, backup_path FROM {hosting_web_server} WHERE vid = %d', $node->vid));
+  $additions = db_fetch_object(db_query('SELECT ip_address, script_user, web_group, config_path, backup_path, restart_cmd FROM {hosting_web_server} WHERE vid = %d', $node->vid));
   return $additions;
 }
 
@@ -154,6 +156,11 @@ function hosting_web_server_view($node, $teaser = FALSE, $page = FALSE) {
     '#type' => 'item',
     '#title' => t('Backup path'),
     '#value' => $node->backup_path,
+  );
+   $node->content['restart_cmd'] = array(
+    '#type' => 'item',
+    '#title' => t('Restart command'),
+    '#value' => $node->restart_cmd,
   );
   
   return $node;

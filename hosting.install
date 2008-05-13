@@ -77,6 +77,7 @@ function hosting_install() {
     web_group longtext,
     config_path longtext,
     backup_path longtext,
+    restart_cmd longtext,
     PRIMARY KEY  (vid)
   ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
 
@@ -148,5 +149,11 @@ function hosting_install() {
 function hosting_update_1() {
   $items = array();
   $items[] = update_sql("ALTER TABLE {hosting_site_backups} ADD description longtext");
+  return $items;
+}
+
+function hosting_update_2() {
+  $items = array();
+  $items[] = update_sql("ALTER TABLE {hosting_web_server} ADD restart_cmd longtext");
   return $items;
 }
