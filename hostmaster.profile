@@ -133,7 +133,7 @@ function hostmaster_profile_final() {
   _hosting_add_block("views", "servers", "garland", 1, 0, "right");
 
   #initial configuration of hostmaster - todo
-  variable_set('site_frontpage', 'sites');
+  variable_set('site_frontpage', 'hosting/sites');
 
   // @todo create proper roles, and set up views to be role based
   hostmaster_install_set_permissions(hostmaster_install_get_rid('anonymous user'), array('access content', 'access all views'));
@@ -141,7 +141,7 @@ function hostmaster_profile_final() {
   views_invalidate_cache();
   menu_rebuild();
 
-  drupal_goto('sites');
+  drupal_goto('hosting/sites');
 }
 
 /**
