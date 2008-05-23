@@ -229,7 +229,7 @@ return $args;';
   $view->page_empty = '<?php return _hosting_introduction(); ?>';
   $view->page_empty_format = '2';
   $view->page_type = 'table';
-  $view->url = 'sites';
+  $view->url = 'hosting/sites';
   $view->use_pager = TRUE;
   $view->nodes_per_page = '20';
   $view->sort = array (
