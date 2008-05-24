@@ -1,5 +1,6 @@
 <?php
 
+include_once('hosting_site_status.inc');
 
 function hosting_map_values_site($node) {
   $values['site_id'] = $node->nid;
@@ -11,6 +12,17 @@ function hosting_map_values_site($node) {
 
   # @todo : load profile / release details
   return $values;
+}
+
+/**
+ * implementation of the hosting_post_install hook
+ *
+ * XXX: this should be called hosting_site_hosting_post_install but since this
+ * is not a real module, it will not work so we're taking over the whole
+ * module's hook here, which is bad.
+ */
+function hosting_hosting_post_install($action, $data) {
+  db_query("UPDATE {hosting_site} SET status=status|%d WHERE nid=%d", HOSTING_SITE_INSTALLED, $action->rid);
 }
 
 function hosting_site_form($node) {
@@ -73,15 +85,17 @@ function hosting_site_validate(&$node) {
   if (!preg_match("/^([\w-]+\.)+[a-z]{2,4}$/i", $node->title ) ) {
     form_set_error('title', t("You have not specified a valid url for this site."));
   }
-  if (db_result(db_query("SELECT COUNT(nid) FROM {node} WHERE type='site' AND title='%s' AND  nid <> %d", $node->title, $node->nid))) {
+  # TODO: maybe we should allow creation of sites that conflict with HOSTING_SITE_DISABLED (which would then need to be renamed before being re-enabled)
+  if (db_result(db_query("SELECT COUNT(n.nid) FROM {node} n JOIN {hosting_site} h ON n.nid = h.nid WHERE type='site' AND title='%s' AND  n.nid <> %d AND h.status & %d", $node->title, $node->nid, ~HOSTING_SITE_DELETED))) {
     form_set_error('title', t("The url you specified is not unique."));
   }
 }
 
 
 function hosting_site_insert(&$node) {
-  db_query("INSERT INTO {hosting_site} (vid, nid, client, db_server, platform, last_cron) VALUES (%d, %d, %d, %d, %d, %d)",
-    $node->vid, $node->nid, $node->client, $node->db_server, $node->platform, $node->last_cron);
+  $node->site_status = HOSTING_SITE_ENABLED; # HOSTING_SITE_NOTINSTALLED implicit
+  db_query("INSERT INTO {hosting_site} (vid, nid, client, db_server, platform, last_cron, status) VALUES (%d, %d, %d, %d, %d, %d, %d)",
+    $node->vid, $node->nid, $node->client, $node->db_server, $node->platform, $node->last_cron, $node->site_status);
   if (!$node->old_vid) {
     hosting_add_action($node->nid, 'install');    
   }
@@ -93,14 +107,14 @@ function hosting_site_update(&$node) {
     hosting_site_insert($node);
   }
   else {
-    db_query("UPDATE {hosting_site} SET client = %d, db_server = %d, platform = %d, last_cron =%d WHERE vid=%d",
-              $node->publish_path, $node->web_server, $node->vid, $node->vid);
+    db_query("UPDATE {hosting_site} SET client = %d, db_server = %d, platform = %d, last_cron =%d, status=%d WHERE vid=%d",
+              $node->publish_path, $node->web_server, $node->vid, $node->site_status, $node->vid);
   }
   hosting_add_action($node->nid, 'synch');
 }
 
 function hosting_site_load($node) {
-  $additions = db_fetch_object(db_query('SELECT  client, db_server, platform, last_cron FROM {hosting_site} WHERE vid = %d', $node->vid));
+  $additions = db_fetch_object(db_query('SELECT  client, db_server, platform, last_cron, status AS site_status FROM {hosting_site} WHERE vid = %d', $node->vid));
   return $additions;
 }
 
@@ -120,6 +134,11 @@ function hosting_site_view(&$node, $teaser = false) {
     '#type' => 'item',
     '#title' => t('Database server'),
     '#value' => _hosting_node_link($node->db_server),
+  );
+  $node->content['status'] = array(
+    '#type' => 'item',
+    '#title' => t('Status'),
+    '#value' => hosting_site_status_output($node->site_status),
   );
   
   $view = views_get_view('actions_embed');

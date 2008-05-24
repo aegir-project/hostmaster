@@ -18,7 +18,7 @@ function hosting_install() {
     platform int(11) NOT NULL default '0',
     profile int(11) NOT NULL default '0',
     last_cron int(10) default NULL,
-    enabled tinyint unsigned NOT NULL default '0',
+    status tinyint unsigned NOT NULL default '0',
     PRIMARY KEY  (vid)
     ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
 
