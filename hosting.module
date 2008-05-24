@@ -534,6 +534,7 @@ function hosting_configure_provision($form_id, &$values) {
   $web_server->config_path = $values['web_server']['config_path'];
   $web_server->backup_path = $values['web_server']['backup_path'];
   $web_server->script_user = $values['web_server']['script_user'];
+  $web_server->restart_cmd = $values['web_server']['restart_cmd'];
   $web_server->web_group = $values['web_server']['web_group'];
   node_save($web_server);
 }
