@@ -53,28 +53,43 @@ function hosting_add_action($nid, $type, $args = null) {
 /**
  * Implementation of hook_form().
  */
-function hosting_action_form(&$node, $rid = null) {
-  $type = node_get_types('type', $node);
-  $rid = ($node->rid) ? $node->rid : $rid;
-  if (!is_numeric($rid)) {
-    drupal_goto('node/add');
+function hosting_action_confirm_form(&$node, $action) {
+  $actions = hosting_available_actions($node);
+  $form['help'] = array('#value' => $actions[$action]['description']); 
+  $form['nid'] = array('#type' => 'value', '#value' => $node->nid);
+  $form['action'] = array('#type' => 'value', '#value' => $action); 
+  $form['parameters'] = array('#tree' => TRUE);
+  $func = 'hosting_action_' . $action . '_form';
+  if (function_exists($func)) {
+    $form['parameters'] += $func($node);
   }
+  $question = t("Are you sure you want to @action @object", array('@action' => $action, '@object' => $node->title));
+  return confirm_form($form, $question, 'node/' . $node->nid, '', $actions[$action]['title']);
+}
 
-  # This node can _only_ be created on another object. hook_menu manages the permissions for this.
-  $ref = node_load($rid);
-  drupal_set_title($ref->title);
-  $form['rid'] = array('#type' => 'value', '#value' => $rid);
-  $form['action_type'] = array(
-    '#type' => 'radios',
-    '#title' => t('Type of action'),
-    '#description' => t('The type of action you want to perform on this %type', array('%type' => $ref->type)),
-    '#options' => hosting_available_actions($ref),
-    '#default_value' => $node->action_type,
-  );
-  
-  #TODO action parameters
-
+function hosting_action_restore_form($node) {
+  $list = hosting_site_backup_list($node->nid);
+  if (sizeof($list)) {
+    $form['bid'] = array(
+      '#type' => 'radios',
+      '#title' => t('Backups'),
+      '#options' => $list,
+      '#required' => TRUE
+    );
+  }
+  else {
+    $form['no_backups'] = array(
+      '#type' => 'item', 
+      '#title' => t('Backups'), 
+      '#value' => t('There are no valid backups available.')
+    );
+  }
   return $form;
+}
+
+function hosting_action_confirm_form_submit($form_id, $values) {
+  hosting_add_action($values['nid'], $values['action'], $values['parameters']);
+  return 'node/' . $values['nid'];
 }
 
 function hosting_action_set_title(&$node) {
@@ -82,24 +97,59 @@ function hosting_action_set_title(&$node) {
   $node->title = drupal_ucfirst($node->action_type) . ' ' . $ref->title;
   db_query("UPDATE {node} SET title='%s' WHERE nid=%d", $node->title, $node->nid);
   db_query("UPDATE {node_revisions} SET title='%s' WHERE vid=%d", $node->title, $node->vid);
-
 }
 
-function hosting_available_actions($ref = null) {
-  if ($ref->type == 'site') {
-    $options['backup'] = t('Backup site');
-    $options['synch'] = t('Regenerate configuration files');
+/**
+ * Determine whether there is an outstanding action of a specific type.
+ *
+ * This is used to ensure that there are not multiple actions of the same type queued.
+ */
+function hosting_action_outstanding($nid, $type) {
+  $return = db_result(db_query("
+      SELECT q.nid FROM 
+         {hosting_action_queue} q LEFT JOIN {hosting_action} a ON a.nid=q.nid 
+      WHERE 
+        a.rid = %d 
+        AND q.status = 0 
+        AND a.action_type = '%s' 
+        LIMIT 1", $nid, $type));
+  return $return;
+}
 
-    if ($ref->status) {
-        $options['disable'] =  t('Disable the enabled site.');      
+function hosting_available_actions($node) {
+  $options = array();
+  if ($node->type == 'site') {
+    if (!(hosting_action_outstanding($node->nid, 'enable') && ($ref->site_status & HOSTING_SITE_ENABLED))) {
+      $options['backup']['title'] = t('Backup');
+      $options['backup']['description'] = t('Generate a backup of this site that can be restored to at any time');
+      $options['backup']['weight'] = 7;
+
+      $options['restore']['title'] = t('Restore');
+      $options['restore']['description'] = t('Restore this site to a previous backup. A new backup will be created before this is attempted.');
+      $options['restore']['weight'] = 7;
+
+      $options['synch']['title'] = t('Regenerate');
+      $options['synch']['description'] = t('Regenerate all configuration files on server.');
+      $options['synch']['weight'] =  9;
+
+      $options['disable']['title'] =  t('Disable');      
+      $options['disable']['description'] =  t('Disabling this site will stop it from being accessible. It can be enabled again later.');      
+      $options['disable']['weight'] =  4;      
     }
     else {
-      $options['enable'] = t('Enable the disabled site.');
-      $options['delete'] = t('Delete the disabled site.');
+      $options['enable']['title'] = t('Enable');
+      $options['enable']['description'] = t('Enabling this site will allow it to be accesible again. It may be disabled again if needed.');
+      $options['enable']['weight'] =  4;      
+
+      $options['delete']['title'] = t('Delete');
+      $options['delete']['description'] = t('Deleting this site will completely remove it from the hosting system, but will keep the last backup available. This process can not be undone. Are you really sure you want to delete this site?');
+      $options['delete']['weight'] = 10;
     }
   }
-  elseif ($ref->type == 'platform') {
-    $options['verify'] = t('Verify that this platform is correctly installed.');
+  elseif (($node->type == 'platform') & !hosting_action_outstanding($node->nid, 'verify')) {
+    $options['verify']['title'] = t('Verify');
+    $options['verify']['description'] = t('Verify that the platform is correctly installed and working.');
+    $options['verify']['weight'] = 10;
   }
   return $options;
 }

@@ -31,7 +31,6 @@ global $hosting_site_antistatus;
  * array in order to be able to loop through the "real" statuses. another
  * solution could be to have a "HOSTING_SITE_MAXSTATUS" that would be used to
  * iterate ($i*=2) through the bitmasks instead of going through the array
-
  */
 $hosting_site_antistatus = array(
   HOSTING_SITE_NOTINSTALLED => "Site not installed yet",

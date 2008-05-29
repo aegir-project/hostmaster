@@ -109,34 +109,20 @@ function hosting_menu($may_cache) {
   if (!$may_cache) {
     if ( arg(0) == 'node' && is_numeric(arg(1))) {
       $node = node_load(arg(1));
-      if ($node->type == 'site') {
-        $items[] = array(
-          'path' => 'node/' . arg(1) . '/backups',
-          'title' => t('Backups'),
-          'description' => t('Select a previous version to restore the site to.'),
-          'callback' => 'drupal_get_form',
-          'callback arguments' => array('hosting_site_backups', $node),
-          'access' => user_access('administer provisioning'),
-          'type' => MENU_LOCAL_TASK,
-          'weight' => 10
-        );
-      }
-      if (in_array($node->type, array('platform', 'site'))) {
-        $action = new stdClass();
-        $action->type = "action";
-        $items[] = array(
-          'path' => 'node/' . arg(1) . '/add_action',
-          'title' => t('Actions'),
-          'description' => t('Request that the hosting system runs a command on this %type.', array("%type" => $node->type)),
-          'callback' => 'drupal_get_form',
-          'callback arguments' => array('action_node_form', $action, $node->nid),
-          'access' => user_access('create action nodes'),
-          'type' => MENU_LOCAL_TASK,
-          'weight' => 9
-        );
-        
-      }
-    }
+      foreach (hosting_available_actions($node) as $type => $action) {
+          $items[] = array(
+            'path' => 'node/' . arg(1) . '/action_' . $type,
+            'title' => $action['title'],
+            'description' => $action['description'],
+            'callback' => 'drupal_get_form',
+            'callback arguments' => array('hosting_action_confirm_form', $node, $type),
+            'access' => user_access('create action nodes'),
+            'type' => MENU_LOCAL_TASK,
+            'weight' => ($action['weight']) ? $action['weight'] : 0, 
+          );
+          
+        }
+     }
   }
   return $items;
 }

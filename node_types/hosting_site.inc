@@ -14,6 +14,7 @@ function hosting_map_values_site($node) {
   return $values;
 }
 
+
 /**
  * implementation of the hosting_post_install hook
  *
@@ -24,6 +25,27 @@ function hosting_map_values_site($node) {
 function hosting_hosting_post_install($action, $data) {
   db_query("UPDATE {hosting_site} SET status=status|%d WHERE nid=%d", HOSTING_SITE_INSTALLED, $action->rid);
 }
+
+/**
+ * implementation of hook_hosting_post_disable
+ * I am not very fond of the use of bitwise operators with negatives.
+ */
+function hosting_hosting_post_disable($action, $data) {
+  $ref = node_load($action->rid);
+  if ($data['site']['backup_file'] && $ref->type == 'site') {
+    $platform = node_load($ref->platform);
+    hosting_site_add_backup($ref->nid, $platform->web_server, $data['site']['backup_file'], t('Generated before being disabled'));
+  }
+  db_query("UPDATE {hosting_site} SET status=status&%d WHERE nid=%d", HOSTING_SITE_DISABLED, $action->rid);
+}
+
+/**
+ * implementation of hook_hosting_post_enable
+ */
+function hosting_hosting_post_enable($action, $data) {
+  db_query("UPDATE {hosting_site} SET status=status|%d WHERE nid=%d", HOSTING_SITE_ENABLED, $action->rid);
+}
+
 
 function hosting_site_form($node) {
   $type = node_get_types('type', $node);
@@ -281,22 +303,3 @@ function hosting_relation_link_handler($fieldinfo, $fielddata, $value, $data) {
   return _hosting_node_link($value);
 }
 
-function hosting_site_backups($node) {
-  drupal_set_title($node->title);
-  # ADD CONFIRM TO THIS.
-  $form['site'] = array('#type' => 'value', '#value' => $node->nid);
-  $form['bid'] = array(
-    '#type' => 'radios',
-    '#title' => t('Backups'),
-    '#options' => hosting_site_backup_list($node->nid),
-    '#required' => TRUE
-  );
-
-  $form['submit'] = array('#type' => 'submit', '#value' => "Restore this version");
-  return $form;
-}
-
-function hosting_site_backups_submit($form_id, $values) {
-  hosting_add_action($values['site'], 'restore', array('backup' => $values['bid']));
-  return 'node/' . $values['site'];
-}
