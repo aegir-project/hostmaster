@@ -141,6 +141,10 @@ function hosting_site_load($node) {
 }
 
 function hosting_site_view(&$node, $teaser = false) {
+
+  if (($node->site_status & HOSTING_SITE_ENABLED) && ($node->site_status & HOSTING_SITE_INSTALLED)) {
+    $node->content['link'] = array('#value' => l(t('Go to site'), 'http://' . $node->title), '#weight' => -10);
+  }
   $node->content['client'] = array(
     '#type' => 'item',
     '#title' => t('Client'),

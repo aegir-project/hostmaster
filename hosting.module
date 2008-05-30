@@ -45,7 +45,7 @@ function hosting_node_info() {
     "type" => 'action', "name" => 'Action',
     "module" => 'hosting_action',
     "has_title" => FALSE, "title_label" => '', 
-    "description" => hosting_node_help("action"),
+ #   "description" => hosting_node_help("action"),
     "has_body" => 0, "body_label" => '', "min_word_count" => 0);
 
   #package management
@@ -386,10 +386,10 @@ function hosting_provision_cmd($cmd_type, $node) {
 }
 
 function hosting_provision_restore_cmd($data) {
-  $backup = hosting_site_get_backup($data['action_args']['backup']);
+  $backup = hosting_site_get_backup($data['action_args']['bid']);
   $option_str = _hosting_option_map($data);
   $command = sprintf("%s/drush.php provision restore %s %s --root=%s --uri=%s -b %s", $data['publish_path'] . '/' . drupal_get_path("module", "drush"), $data['site_url'], $backup['filename'], $data['publish_path'], $data['web_host'], $option_str);
-  return $cmd;
+  return $command;
 }
 
 /**
