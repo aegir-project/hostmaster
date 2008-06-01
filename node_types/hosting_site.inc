@@ -46,6 +46,13 @@ function hosting_hosting_post_enable($action, $data) {
   db_query("UPDATE {hosting_site} SET status=status|%d WHERE nid=%d", HOSTING_SITE_ENABLED, $action->rid);
 }
 
+/**
+ * implementation of hook_hosting_post_DELETE
+ */
+function hosting_hosting_post_delete($action, $data) {
+  db_query("UPDATE {hosting_site} SET status=%d WHERE nid=%d", HOSTING_SITE_DELETED, $action->rid);
+}
+
 
 function hosting_site_form($node) {
   $type = node_get_types('type', $node);

@@ -119,6 +119,9 @@ function hosting_action_outstanding($nid, $type) {
 function hosting_available_actions($node) {
   $options = array();
   if ($node->type == 'site') {
+    if (hosting_action_outstanding($node->nid, 'delete') || ($node->site_status & HOSTING_SITE_DELETED)) {
+      return $options;
+    }
     if (hosting_action_outstanding($node->nid, 'enable') || ($node->site_status & HOSTING_SITE_ENABLED)) {
       $options['backup']['title'] = t('Backup');
       $options['backup']['description'] = t('Generate a backup of this site that can be restored to at any time');
