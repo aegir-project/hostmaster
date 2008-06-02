@@ -11,7 +11,7 @@ function hostmaster_profile_modules() {
   return array(
     /* core */ 'block', 'color', 'filter', 'help', 'menu', 'node', 'system', 'user', 'watchdog',
     /* contrib */ 'drush', 'views', 'views_ui', 'cvs_deploy',
-    /* custom */ 'provision', 'provision_apache', 'provision_mysql', 'provision_drupal', 'hosting', 'hosting_action', 'hosting_client', 'hosting_db_server', 'hosting_package', 'hosting_platform', 'hosting_site' 'hosting_web_server');
+    /* custom */ 'provision', 'provision_apache', 'provision_mysql', 'provision_drupal', 'hosting', 'hosting_action', 'hosting_client', 'hosting_db_server', 'hosting_package', 'hosting_platform', 'hosting_site', 'hosting_web_server');
 }
 
 /**
