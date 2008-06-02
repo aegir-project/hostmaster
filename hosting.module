@@ -408,7 +408,10 @@ function _hosting_option_map($data) {
  * Implementation of hook_form_alter
  */
 function hosting_form_alter($form_id, &$form) {
-  
+  // Remove delete button from site edit form
+  if ($form_id == 'site_node_form') {
+    $form['delete']['#type'] = 'hidden';
+  }
   // Replace configuration form submit handler
   if ($form_id == 'provision_configure') {
     $form['#submit'] = array('hosting_configure_provision' => array());
