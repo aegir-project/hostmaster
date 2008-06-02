@@ -1,22 +1,32 @@
 <?php
-function hosting_views_tables() {
-  $tables = array();
-  $tables = array_merge($tables, hosting_action_views_tables());
-  $tables = array_merge($tables, hosting_site_views_tables());
-  $tables = array_merge($tables, hosting_web_server_views_tables());
-  $tables = array_merge($tables, hosting_client_views_tables());
-  $tables = array_merge($tables, hosting_package_views_tables());
-  return $tables;
-}
 
-function hosting_views_arguments() {
-  $arguments = array();
-  $arguments = array_merge($arguments, hosting_action_views_arguments());
-  $arguments = array_merge($arguments, hosting_site_views_arguments());
-  $arguments = array_merge($arguments, hosting_package_views_arguments());
-  return $arguments;
-}
+/**
+ * A very basic views 1.x argument handler, to be able to filter by node fields that refer to other nodes.
+ */
+function hosting_reference_arg_handler($table, $column, $op, &$query, $a1, $a2 = null) {
+  switch ($op) {
+  case 'summary' :
+      $query->ensure_table($table);
+      $query->add_field($column, $table);
+      return array('field' => $table . '.' . $column);
+      break;
+    
+    case 'link' :
+      return _hosting_node_link($query->$column);
+      break;
 
+    case 'filter' : 
+      $query->ensure_table($table);
+      $where = db_escape_string($a2);
+      $query->add_where($table . '.' . $column . " = %d", $where);
+      break;
+      
+    case 'title' :
+      return db_result(db_query("SELECT title FROM {node} WHERE nid = %d", $query));
+      break;
+
+  }
+}
 
 function hosting_views_default_views() {
   $view = new stdClass();

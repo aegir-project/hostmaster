@@ -1,5 +1,16 @@
 <?php
 
+include_once('hosting_db_server.views.inc');
+
+function hosting_db_server_node_info() {
+  $types["db_server"] =  array(
+    "type" => 'db_server', "name" => 'Database server',
+    "module" => 'hosting_db_server',
+    "has_title" => TRUE, "title_label" => t('Host name'), 
+    "description" => hosting_node_help("db_server"),
+    "has_body" => 0, "body_label" => '', "min_word_count" => 0);    
+  return $types;
+}
 
 /**
  * Small helper function to get web servers.
@@ -138,25 +149,6 @@ function hosting_db_server_view($node, $teaser = FALSE, $page = FALSE) {
   
   return $node;
 }
-
-function hosting_db_server_views_tables() {
-  return array(
-    'name' => 'hosting_db_server',
-    'join' => array(
-      'left' => array(
-        'table' => 'node',
-        'field' => 'vid',
-      ),
-      'right' => array(
-        'field' => 'vid',
-      ),
-    ),
-  );
-}
-
-
-
-
 
 
 /**

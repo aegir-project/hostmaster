@@ -10,81 +10,8 @@
  * Not split for performance reasons. Just to keep code together.
  */
 
-#Node type includes
-include_once('node_types/hosting_action.inc');
-include_once('node_types/hosting_client.inc');
-include_once('node_types/hosting_db_server.inc');
-include_once('node_types/hosting_platform.inc');
-include_once('node_types/hosting_site.inc');
-include_once('node_types/hosting_web_server.inc');
-include_once('node_types/hosting_package.inc');
-
-
 include_once('hosting_help.inc');
 include_once('hosting_views.inc');
-
-
-function hosting_node_info() {
-  #content
-  $types["client"] =  array(
-    "type" => 'client', "name" => 'Client',
-    "module" => 'hosting_client',
-    "has_title" => TRUE, "title_label" => 'Client', 
-    "description" => hosting_node_help("client"),
-    "has_body" => 0, "body_label" => '', "min_word_count" => 0);
-
-  $types["site"] =  array(
-    "type" => 'site', "name" => 'Site',
-    "module" => 'hosting_site',
-    "has_title" => TRUE, "title_label" => 'Domain name', 
-    "description" => hosting_node_help("site"),
-    "has_body" => 0, "body_label" => '', "min_word_count" => 0);
-
-  #management
-  $types["action"] =  array(
-    "type" => 'action', "name" => 'Action',
-    "module" => 'hosting_action',
-    "has_title" => FALSE, "title_label" => '', 
- #   "description" => hosting_node_help("action"),
-    "has_body" => 0, "body_label" => '', "min_word_count" => 0);
-
-  #package management
-  $types["package"] =  array(
-    "type" => 'package', "name" => 'Package',
-    "module" => 'hosting_package',
-    "has_title" => FALSE, "title_label" => '', 
-#    "description" => hosting_node_help("package"),
-    "has_body" => 0, "body_label" => '', "min_word_count" => 0);
-
-  $types["package_release"] =  array(
-    "type" => 'package_release', "name" => 'Package release',
-    "module" => 'hosting_package_release',
-    "has_title" => FALSE, "title_label" => '', 
- #   "description" => hosting_node_help("package_release"),
-    "has_body" => 0, "body_label" => '', "min_word_count" => 0);
-
-  #configuration
-  $types["platform"] =  array(
-    "type" => 'platform', "name" => 'Platform',
-    "module" => 'hosting_platform',
-    "has_title" => TRUE, "title_label" => 'Platform', 
-    "description" => hosting_node_help("platform"),
-    "has_body" => 0, "body_label" => '', "min_word_count" => 0);    
-
-  $types["web_server"] =  array(
-    "type" => 'web_server', "name" => 'Web server',
-    "module" => 'hosting_web_server',
-    "has_title" => true, "title_label" => t('Host name'), 
-    "description" => hosting_node_help("web_server"),
-    "has_body" => 0, "body_label" => '', "min_word_count" => 0);
-  $types["db_server"] =  array(
-    "type" => 'db_server', "name" => 'Database server',
-    "module" => 'hosting_db_server',
-    "has_title" => TRUE, "title_label" => t('Host name'), 
-    "description" => hosting_node_help("db_server"),
-    "has_body" => 0, "body_label" => '', "min_word_count" => 0);    
-  return $types;
-}
 
 
 /**
@@ -99,35 +26,6 @@ function hosting_nodeapi(&$node, $op, $teaser) {
     $func($node, $op, $teaser);
   }
 }
-
-/**
- * Implementation of hook_menu().
- */
-function hosting_menu($may_cache) {
-  $items = array();
-  
-  if (!$may_cache) {
-    if ( arg(0) == 'node' && is_numeric(arg(1))) {
-      $node = node_load(arg(1));
-      foreach (hosting_available_actions($node) as $type => $action) {
-          $items[] = array(
-            'path' => 'node/' . arg(1) . '/action_' . $type,
-            'title' => $action['title'],
-            'description' => $action['description'],
-            'callback' => 'drupal_get_form',
-            'callback arguments' => array('hosting_action_confirm_form', $node, $type),
-            'access' => user_access('create action nodes'),
-            'type' => MENU_LOCAL_TASK,
-            'weight' => ($action['weight']) ? $action['weight'] : 0, 
-          );
-          
-        }
-     }
-  }
-  return $items;
-}
-
-
 
 /**
  * Page callback
@@ -331,37 +229,6 @@ function hosting_queue_actions() {
 }
 
 /**
- * Implementation of hook_hosting_post_backup
- *
- * Adds the data file that was saved to the site backup history.
- * This is needed to be able to restore.
- */
-function hosting_hosting_post_backup($action, $data) {
-  $ref = node_load($action->rid);
-  if ($data['site']['backup_file'] && $ref->type == 'site') {
-    $platform = node_load($ref->platform);
-    hosting_site_add_backup($ref->nid, $platform->web_server, $data['site']['backup_file'], t('Generated on request'));
-  }
-}
-
-/**
- * Implementation hook_post_verify
- *
- * Sets the platform verified timestamp, to discren when it was verified.
- * Imports all the profiles and modules into package and package release nodes.
- */
-function hosting_hosting_post_verify($action, $data) {
-  $platform = node_load($action->rid);
-  $platform->verified = mktime(); // set verified flag on platform, to let it know it has been checked.
-  node_save($platform);
-  $platform_release = node_load($platform->release_id);
-  hosting_package_import_packages($platform->nid, 'profile', $platform_release->version, $data['site']['profiles']);
-  hosting_package_import_packages($platform->nid, 'module', $platform_release->version, $data['site']['modules']);
-  hosting_package_import_packages($platform->nid, 'engine', $platform_release->version, $data['site']['engines']);
-  hosting_package_import_packages($platform->nid, 'theme', $platform_release->version, $data['site']['themes']);
-}
-
-/**
  * Generate a command line call to Drush, based on the available data for the action.
  *
  * This acts as the default command for all back end calls. Actions can provide their own
@@ -408,10 +275,6 @@ function _hosting_option_map($data) {
  * Implementation of hook_form_alter
  */
 function hosting_form_alter($form_id, &$form) {
-  // Remove delete button from site edit form
-  if ($form_id == 'site_node_form') {
-    $form['delete']['#type'] = 'hidden';
-  }
   // Replace configuration form submit handler
   if ($form_id == 'provision_configure') {
     $form['#submit'] = array('hosting_configure_provision' => array());
@@ -578,32 +441,4 @@ function _hosting_add_block($module, $delta, $theme, $status, $weight, $region, 
   }
 }
 
-
-/**
- * A very basic views 1.x argument handler, to be able to filter by node fields that refer to other nodes.
- */
-function hosting_reference_arg_handler($table, $column, $op, &$query, $a1, $a2 = null) {
-  switch ($op) {
-  case 'summary' :
-      $query->ensure_table($table);
-      $query->add_field($column, $table);
-      return array('field' => $table . '.' . $column);
-      break;
-    
-    case 'link' :
-      return _hosting_node_link($query->$column);
-      break;
-
-    case 'filter' : 
-      $query->ensure_table($table);
-      $where = db_escape_string($a2);
-      $query->add_where($table . '.' . $column . " = %d", $where);
-      break;
-      
-    case 'title' :
-      return db_result(db_query("SELECT title FROM {node} WHERE nid = %d", $query));
-      break;
-
-  }
-}
 

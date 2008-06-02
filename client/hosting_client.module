@@ -3,6 +3,18 @@
  * @file Client node type is defined here.
  */
 
+include_once('hosting_client.views.inc');
+
+function hosting_client_node_info() {
+  $types["client"] =  array(
+    "type" => 'client', "name" => 'Client',
+    "module" => 'hosting_client',
+    "has_title" => TRUE, "title_label" => 'Client', 
+    "description" => hosting_node_help("client"),
+    "has_body" => 0, "body_label" => '', "min_word_count" => 0);
+
+  return $types;
+}
 
 /**
  * Small helper function to get clients.
@@ -169,34 +181,3 @@ function hosting_client_view($node, $teaser = FALSE, $page = FALSE) {
 }
 
 
-function hosting_client_views_tables() {
-  return array(
-    'name' => 'hosting_client',
-    'join' => array(
-      'left' => array(
-        'table' => 'node',
-        'field' => 'vid',
-      ),
-      'right' => array(
-        'field' => 'vid',
-      ),
-    ),
-    'fields' => array(
-      'name' => array(
-        'name' => t('Client: Contact name'),
-        'sortable' => TRUE,
-        'option' => 'string',
-      ),
-      'organization' => array(
-        'name' => t('Client: Organization'),
-        'sortable' => TRUE,
-        'option' => 'string',
-      ),
-      'email' => array(
-        'name' => t('Client: Email'),
-        'sortable' => TRUE,
-        'option' => 'string',
-      ),   
-    ),
-  );
-}

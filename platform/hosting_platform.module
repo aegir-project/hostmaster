@@ -3,6 +3,23 @@
  * @file Platform node type definition
  */
 
+
+#include_once('hosting_platform.views.inc');
+
+function hosting_platform_node_info() {
+  #configuration
+  $types["platform"] =  array(
+    "type" => 'platform', "name" => 'Platform',
+    "module" => 'hosting_platform',
+    "has_title" => TRUE, "title_label" => 'Platform', 
+    "description" => hosting_node_help("platform"),
+    "has_body" => 0, "body_label" => '', "min_word_count" => 0);    
+
+
+  return $types;
+}
+
+
 /**
  * Small helper function to get platforms.
 */ 
@@ -186,7 +203,22 @@ function _hosting_generate_platform_config_file($node) {
     return false;
   }
   
-  
+}
 
-  
+
+/**
+ * Implementation hook_post_verify
+ *
+ * Sets the platform verified timestamp, to discren when it was verified.
+ * Imports all the profiles and modules into package and package release nodes.
+ */
+function hosting_platform_hosting_post_verify($action, $data) {
+  $platform = node_load($action->rid);
+  $platform->verified = mktime(); // set verified flag on platform, to let it know it has been checked.
+  node_save($platform);
+  $platform_release = node_load($platform->release_id);
+  hosting_package_import_packages($platform->nid, 'profile', $platform_release->version, $data['site']['profiles']);
+  hosting_package_import_packages($platform->nid, 'module', $platform_release->version, $data['site']['modules']);
+  hosting_package_import_packages($platform->nid, 'engine', $platform_release->version, $data['site']['engines']);
+  hosting_package_import_packages($platform->nid, 'theme', $platform_release->version, $data['site']['themes']);
 }

@@ -2,7 +2,17 @@
 /**
  * @file Web server node type is defined here.
  */
+include_once('hosting_web_server.views.inc');
 
+function hosting_web_server_node_info() {
+  $types["web_server"] =  array(
+    "type" => 'web_server', "name" => 'Web server',
+    "module" => 'hosting_web_server',
+    "has_title" => true, "title_label" => t('Host name'), 
+    "description" => hosting_node_help("web_server"),
+    "has_body" => 0, "body_label" => '', "min_word_count" => 0);
+  return $types;
+}
 
 function hosting_map_values_web_server($node) {
   $values['web_id'] = $node->nid;
@@ -166,27 +176,3 @@ function hosting_web_server_view($node, $teaser = FALSE, $page = FALSE) {
   return $node;
 }
 
-function hosting_web_server_views_tables() {
-  $tables['hosting_web_server'] = array(
-    'name' => 'hosting_web_server',
-    'join' => array(
-      'left' => array(
-        'table' => 'node',
-        'field' => 'vid',
-      ),
-      'right' => array(
-        'field' => 'vid',
-      ),
-    ),
-    'fields' => array(
-      'ip_address' => array(
-          'name' => t('Server: IP address'),
-          'sortable' => TRUE,
-          'option' => 'string',
-          'help' => t('Display the ip address of the server.'),
-        ),
-      ),
-
-    );
-  return $tables;
-}

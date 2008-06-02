@@ -2,7 +2,46 @@
 /**
  * @file Web server node type is defined here.
  */
+include_once('hosting_action.views.inc');
 
+/**
+ * Implementation of hook_menu().
+ */
+function hosting_action_menu($may_cache) {
+  $items = array();
+  
+  if (!$may_cache) {
+    if ( arg(0) == 'node' && is_numeric(arg(1))) {
+      $node = node_load(arg(1));
+      foreach (hosting_available_actions($node) as $type => $action) {
+          $items[] = array(
+            'path' => 'node/' . arg(1) . '/action_' . $type,
+            'title' => $action['title'],
+            'description' => $action['description'],
+            'callback' => 'drupal_get_form',
+            'callback arguments' => array('hosting_action_confirm_form', $node, $type),
+            'access' => user_access('create action nodes'),
+            'type' => MENU_LOCAL_TASK,
+            'weight' => ($action['weight']) ? $action['weight'] : 0, 
+          );
+          
+        }
+     }
+  }
+  return $items;
+}
+
+function hosting_action_node_info() {
+  #management
+  $types["action"] =  array(
+    "type" => 'action', "name" => 'Action',
+    "module" => 'hosting_action',
+    "has_title" => FALSE, "title_label" => '', 
+ #   "description" => hosting_node_help("action"),
+    "has_body" => 0, "body_label" => '', "min_word_count" => 0);
+
+  return $types;
+}
 
 function hosting_action_log($vid, $type, $message, $severity = 0, $timestamp = null ) {
  $timestamp = ($timestamp) ? $timestamp : mktime();
@@ -302,73 +341,4 @@ function _hosting_parse_error_code($code) {
       break;
   }
 }
-
-function hosting_action_views_tables() {
-  $tables['hosting_action'] = array(
-    'name' => 'hosting_action',
-    'join' => array(
-      'left' => array(
-        'table' => 'node',
-        'field' => 'vid',
-      ),
-      'right' => array(
-        'field' => 'vid',
-      ),
-    ),
-    'fields' => array(
-      'executed' => array(
-        'name' => t('Action: Executed Time'),
-        'sortable' => TRUE,
-        'handler' => views_handler_field_dates(),
-        'option' => 'string',
-        'help' => t('Display the time the action was executed.'),
-      ),
-      'action_type' => array(
-        'name' => t('Action: Action Type'),
-        'sortable' => TRUE,
-        'help' => t('Display the type of action.'),
-      ),
-      'rid' => array(
-          'name' => t('Action: Reference'),
-          'handler' => 'hosting_relation_link_handler',
-          'help' => t('The object this action is referring to.'),
-        ),
-      'action_status' => array(
-        'name' => t('Action: Action Status'),
-        'sortable' => TRUE,
-        'handler' => "hosting_action_status_handler",
-        'option' => 'string',
-        'help' => t('Whether or not the action was succesful.'),
-      ),        
-      ),
-    );
-  return $tables;
-}
-
-/**
- * Views 1.x display handler for the BITMASK status field.
- */
-function hosting_action_status_handler($fieldinfo, $fielddata, $value, $data) {
-  return implode(", ", _hosting_parse_error_code($data->hosting_action_action_status));
-}
-
-/**
- * Views 1.x argument handling for action nodes.
- */
-function hosting_action_views_arguments() {
-  $arguments['hosting_action_reference'] = array(
-    'name' => t('Action: Reference'),
-    'help' => t('Filter actions by the item the actions reference'),
-    'handler' => 'hosting_action_views_reference_argument',
-  );
-  return $arguments;
-}
-
-/**
- * Views 1.x argument handler for filtering action nodes by reference.
- */
-function hosting_action_views_reference_argument($op, &$query, $a1, $a2 = null) {
-  hosting_reference_arg_handler("hosting_action", "rid", $op, $query, $a1, $a2);
-}
-
 
