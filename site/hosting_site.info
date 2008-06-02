@@ -1,0 +1,4 @@
+name = Hosting
+description = Allow hostmaster manage hosted sites.
+package = Hosting
+dependencies = hosting 

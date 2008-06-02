@@ -1,0 +1,4 @@
+name = Platforms
+description = Allow Hostmaster to keep track of multiple instances of Drupal.
+package = Hosting
+dependencies = hosting

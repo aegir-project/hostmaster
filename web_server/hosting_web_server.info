@@ -1,0 +1,4 @@
+name = Web Server 
+description = Allow hostmaster to configure web servers.
+package = Hosting
+dependencies = hosting
