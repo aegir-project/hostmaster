@@ -277,6 +277,11 @@ function hosting_action_view($node, $teaser = FALSE, $page = FALSE) {
   $node = node_prepare($node, $teaser);
   
   $ref = node_load($node->rid);
+
+  drupal_set_breadcrumb(array( 
+    l(t('Home'), NULL), 
+    l($ref->title, 'node/' . $ref->nid)
+  ));
   $node->content['reference'] = array(
     '#type' => 'item',
     '#title' => drupal_ucfirst($ref->type),
