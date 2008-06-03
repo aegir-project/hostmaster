@@ -387,6 +387,7 @@ function hosting_configure_provision($form_id, &$values) {
   $db_server->revision = true;
   $db_server->title = $values['db_server']['db_host'];
   $db_server->db_user = $values['db_server']['db_user'];
+  $db_server->db_type = $values['db_server']['db_type'];
   if ($values['db_server']['db_passwd']) {
     $db_server->db_passwd = $values['db_server']['db_passwd'];
   }

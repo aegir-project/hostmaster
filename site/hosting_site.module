@@ -169,7 +169,7 @@ function hosting_site_validate(&$node) {
 
 
 function hosting_site_insert(&$node) {
-  if (!$node->site_status & HOSTING_SITE_IMPORTED) {
+  if (!($node->site_status & HOSTING_SITE_IMPORTED)) {
     $node->site_status = HOSTING_SITE_ENABLED; # HOSTING_SITE_NOTINSTALLED implicit
   }
   db_query("INSERT INTO {hosting_site} (vid, nid, client, db_server, platform, last_cron, status) VALUES (%d, %d, %d, %d, %d, %d, %d)",

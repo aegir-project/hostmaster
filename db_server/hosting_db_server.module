@@ -46,6 +46,7 @@ function _hosting_get_db_servers() {
 function hosting_map_values_db_server($node) {
   $values['db_id'] = $node->nid;
   $values['site_db_host'] = $node->title;
+  $values['site_db_type'] = $node->db_type;
   
   $values['provision_db_username'] = $node->db_user;
   $values['provision_db_password'] = $node->db_passwd;
@@ -105,6 +106,7 @@ function hosting_db_server_update($node) {
     variable_set('provision_db_host', $node->title);
     variable_set('provision_db_user', $node->db_user);
     variable_set('provision_db_passwd', $node->db_passwd);
+    variable_set('provision_db_type', $node->db_type);
   }
 
   // if this is a new node or we're adding a new revision,
