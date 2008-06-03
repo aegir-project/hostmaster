@@ -1,0 +1,34 @@
+<?php
+
+function hosting_package_install() {
+
+  # Hosting package 
+  db_query("CREATE TABLE {hosting_package} (
+    vid int NOT NULL default '0',
+    nid int(10) unsigned NOT NULL default '0',
+    package_type varchar(16) NOT NULL default '',
+    short_name varchar(16) NOT NULL default '',
+    PRIMARY KEY (vid)
+  ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
+
+  # Hosting package release
+  db_query("CREATE TABLE {hosting_package_release} (
+    vid int NOT NULL default '0',
+    nid int(10) unsigned NOT NULL default '0',
+    package int(11) NOT NULL default '0',
+    schema_version int(10) NOT NULL default '0',
+    version longtext NOT NULL default '',
+    PRIMARY KEY (vid)
+  ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
+  // @todo Add package dependencies.
+
+  // Junction table for instances. 
+  db_query("CREATE TABLE {hosting_package_instance} (
+    iid int NOT NULL DEFAULT '0',
+    release_id int(11) NOT NULL default '0',
+    rid int(11) NOT NULL default '0',
+    path longtext,
+    PRIMARY KEY (iid)
+  ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
+
+}

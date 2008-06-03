@@ -1,0 +1,16 @@
+<?php
+
+function hosting_web_server_install() {
+  db_query("CREATE TABLE {hosting_web_server} (
+    vid int(10) unsigned NOT NULL default '0',
+    nid int(10) unsigned NOT NULL default '0',
+    ip_address longtext,
+    script_user longtext,
+    web_group longtext,
+    config_path longtext,
+    backup_path longtext,
+    restart_cmd longtext,
+    PRIMARY KEY  (vid)
+  ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
+}
+

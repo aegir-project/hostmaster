@@ -1,0 +1,12 @@
+<?php
+
+function hosting_db_server_install() {
+  db_query("CREATE TABLE {hosting_db_server} (
+    vid int(10) unsigned NOT NULL default '0',
+    nid int(10) unsigned NOT NULL default '0',
+    db_type longtext NOT NULL, 
+    db_user longtext NOT NULL,
+    db_passwd longtext NOT NULL,
+    PRIMARY KEY  (vid)
+  ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
+}

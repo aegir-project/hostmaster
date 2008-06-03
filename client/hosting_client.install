@@ -1,0 +1,13 @@
+<?php
+
+function hosting_client_install() {
+  db_query("CREATE TABLE {hosting_client} (
+    vid int(10) unsigned NOT NULL default '0',
+    nid int(10) unsigned NOT NULL default '0',
+    name longtext,
+    organization longtext,
+    email varchar(255) NOT NULL default '',
+    PRIMARY KEY  (vid)
+  ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
+
+}
