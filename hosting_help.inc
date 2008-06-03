@@ -29,7 +29,7 @@ function hosting_help($section) {
 EOF;
 
       $cron_cmd['@cron_line'] = <<<EOF
-5 * * * * (php "$drush_path" \
+*/5 * * * * (php "$drush_path" \
             -r $_SERVER[DOCUMENT_ROOT] \
             -l $_SERVER[HTTP_HOST] hosting actions)
 EOF;
