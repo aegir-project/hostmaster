@@ -127,7 +127,7 @@ function hostmaster_profile_final() {
   variable_set('hosting_own_platform', $node->nid);
 
   #verify platform
-  hosting_add_action(variable_get('hosting_own_platform', 7), "verify");
+  hosting_add_action(variable_get('hosting_own_platform', 6), "verify");
 
   _hosting_add_block("views", "platforms", "garland", 1, 0, "right");
   _hosting_add_block("views", "servers", "garland", 1, 0, "right");
