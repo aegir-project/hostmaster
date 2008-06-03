@@ -29,13 +29,47 @@ function hosting_map_values_site($node) {
 
 
 /**
+ * Helper function to generate new site node
+ */
+function hosting_add_site($url, $client, $platform, $db_server, $profile, $site_status) {
+ global $user;
+
+ $node = new stdClass();
+ $node->type = 'site';
+ $node->uid = $user->uid;
+ $node->status = 1;
+ #todo: make this pretty
+ $node->title = $url;
+
+ $client = hosting_get_client($client);
+ $node->client = ($client) ? $client->nid : HOSTING_DEFAULT_CLIENT;
+
+ $db_server = hosting_get_db_server($db_server);
+ $node->db_server = ($db_server) ? $db_server->nid : HOSTING_DEFAULT_DB_SERVER;
+
+ // this will only ever be an nid, so we don't need to load a node.
+ $node->platform = ($platform) ? $platform : HOSTING_DEFAULT_PLATFORM;
+
+
+ // need to build some error tolerance in here
+ $profile = hosting_get_package_instance($platform, $profile);
+ if (!$profile) {
+   $profile = hosting_get_package_instance($platform, 'default');
+ }
+ $node->profile = $profile->nid;
+
+ $node->site_status = $site_status;
+ node_save($node);
+}
+
+/**
  * implementation of the hosting_post_install hook
  *
  * XXX: this should be called hosting_site_hosting_post_install but since this
  * is not a real module, it will not work so we're taking over the whole
  * module's hook here, which is bad.
  */
-function hosting_hosting_post_install($action, $data) {
+function hosting_site_hosting_post_install($action, $data) {
   db_query("UPDATE {hosting_site} SET status=status|%d WHERE nid=%d", HOSTING_SITE_INSTALLED, $action->rid);
 }
 
@@ -43,7 +77,7 @@ function hosting_hosting_post_install($action, $data) {
  * implementation of hook_hosting_post_disable
  * I am not very fond of the use of bitwise operators with negatives.
  */
-function hosting_hosting_post_disable($action, $data) {
+function hosting_site_hosting_post_disable($action, $data) {
   $ref = node_load($action->rid);
   if ($data['site']['backup_file'] && $ref->type == 'site') {
     $platform = node_load($ref->platform);
@@ -55,14 +89,14 @@ function hosting_hosting_post_disable($action, $data) {
 /**
  * implementation of hook_hosting_post_enable
  */
-function hosting_hosting_post_enable($action, $data) {
+function hosting_site_hosting_post_enable($action, $data) {
   db_query("UPDATE {hosting_site} SET status=status|%d WHERE nid=%d", HOSTING_SITE_ENABLED, $action->rid);
 }
 
 /**
  * implementation of hook_hosting_post_DELETE
  */
-function hosting_hosting_post_delete($action, $data) {
+function hosting_site_hosting_post_delete($action, $data) {
   db_query("UPDATE {hosting_site} SET status=%d WHERE nid=%d", HOSTING_SITE_DELETED, $action->rid);
 }
 
@@ -135,10 +169,12 @@ function hosting_site_validate(&$node) {
 
 
 function hosting_site_insert(&$node) {
-  $node->site_status = HOSTING_SITE_ENABLED; # HOSTING_SITE_NOTINSTALLED implicit
+  if (!$node->site_status & HOSTING_SITE_IMPORTED) {
+    $node->site_status = HOSTING_SITE_ENABLED; # HOSTING_SITE_NOTINSTALLED implicit
+  }
   db_query("INSERT INTO {hosting_site} (vid, nid, client, db_server, platform, last_cron, status) VALUES (%d, %d, %d, %d, %d, %d, %d)",
     $node->vid, $node->nid, $node->client, $node->db_server, $node->platform, $node->last_cron, $node->site_status);
-  if (!$node->old_vid) {
+  if ((!$node->old_vid) && !($node->site_status & HOSTING_SITE_IMPORTED)) {
     hosting_add_action($node->nid, 'install');    
   }
 }
@@ -197,28 +233,6 @@ function hosting_site_view(&$node, $teaser = false) {
   return $node;
 }
 
-
-
-/**
- * Views 1.x argument handler for filtering site nodes by client.
- */
-function hosting_site_client_argument($op, &$query, $a1, $a2 = null) {
-  hosting_reference_arg_handler("hosting_site", "client", $op, $query, $a1, $a2);
-}
-
-/**
- * Views 1.x argument handler for filtering site nodes by client.
- */
-function hosting_site_platform_argument($op, &$query, $a1, $a2 = null) {
-  hosting_reference_arg_handler("hosting_site", "platform", $op, $query, $a1, $a2);
-}
-
-/**
- * Views 1.x argument handler for filtering site nodes by client.
- */
-function hosting_site_db_server_argument($op, &$query, $a1, $a2 = null) {
-  hosting_reference_arg_handler("hosting_site", "db_server", $op, $query, $a1, $a2);
-}
 
 
 /**
@@ -284,4 +298,14 @@ function hosting_site_form_alter($form_id, &$form) {
   if ($form_id == 'site_node_form') {
     $form['delete']['#type'] = 'hidden';
   }
+}
+
+function hosting_site_exists($url) {
+  $result = db_result(db_query("
+    SELECT COUNT(n.nid) FROM 
+    {node} n JOIN {hosting_site} h 
+    ON n.nid = h.nid WHERE type='site'
+    AND title='%s' AND  n.nid <> %d AND h.status & %d",
+    $node->title, ~HOSTING_SITE_DELETED)); 
+  return $result; 
 }

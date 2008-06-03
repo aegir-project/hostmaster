@@ -86,7 +86,7 @@ function hosting_platform_insert($node) {
  * database updates.
  */
 function hosting_platform_update($node) {
-  if ($node->nid == variable_get('hosting_own_platform', 4)) {
+  if ($node->nid == HOSTING_OWN_PLATFORM) {
     variable_set('hosting_platform_path', $node->publish_path);
     #Switching web server here should change the web server.
   }
@@ -217,8 +217,31 @@ function hosting_platform_hosting_post_verify($action, $data) {
   $platform->verified = mktime(); // set verified flag on platform, to let it know it has been checked.
   node_save($platform);
   $platform_release = node_load($platform->release_id);
+
+  hosting_delete_package_instances($platform->nid);
   hosting_package_import_packages($platform->nid, 'profile', $platform_release->version, $data['site']['profiles']);
   hosting_package_import_packages($platform->nid, 'module', $platform_release->version, $data['site']['modules']);
   hosting_package_import_packages($platform->nid, 'engine', $platform_release->version, $data['site']['engines']);
   hosting_package_import_packages($platform->nid, 'theme', $platform_release->version, $data['site']['themes']);
+
+  foreach ($data['site']['sites'] as $url) {
+    if (!hosting_site_exists($url) && ($url != 'default')) {
+      // Found a site we don't know. Import the platform.
+      hosting_add_action($action->rid, 'import');
+      break;
+    } 
+
+  }
+}
+
+function hosting_platform_hosting_post_import($action, $data) {
+  $platform = node_load($action->rid);
+
+  if (sizeof($data['site']['sites'])) {
+    foreach ($data['site']['sites'] as $url => $info) {
+      if (!hosting_site_exists($url)) {
+        hosting_add_site($url, $info['site_admin_email'], $platform->nid, $info['site_db_host'], $info['site_profile'], HOSTING_SITE_ENABLED | HOSTING_SITE_INSTALLED | HOSTING_SITE_IMPORTED);
+      }
+    }
+  }
 }

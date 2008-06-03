@@ -1,6 +1,5 @@
 <?php
 
-
 function hosting_site_views_tables() {
   $tables['hosting_site'] = array(
     'name' => 'hosting_site',
@@ -62,4 +61,26 @@ function hosting_site_views_arguments() {
 function hosting_relation_link_handler($fieldinfo, $fielddata, $value, $data) {
   return _hosting_node_link($value);
 }
+
+/**
+ * Views 1.x argument handler for filtering site nodes by client.
+ */
+function hosting_site_client_argument($op, &$query, $a1, $a2 = null) {
+  hosting_reference_arg_handler("hosting_site", "client", $op, $query, $a1, $a2);
+}
+
+/**
+ * Views 1.x argument handler for filtering site nodes by client.
+ */
+function hosting_site_platform_argument($op, &$query, $a1, $a2 = null) {
+  hosting_reference_arg_handler("hosting_site", "platform", $op, $query, $a1, $a2);
+}
+
+/**
+ * Views 1.x argument handler for filtering site nodes by client.
+ */
+function hosting_site_db_server_argument($op, &$query, $a1, $a2 = null) {
+  hosting_reference_arg_handler("hosting_site", "db_server", $op, $query, $a1, $a2);
+}
+
 

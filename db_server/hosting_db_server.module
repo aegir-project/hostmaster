@@ -2,6 +2,24 @@
 
 include_once('hosting_db_server.views.inc');
 
+function hosting_get_db_server($hostname, $web_server = null) {
+  if (_hosting_valid_ip($hostname)) {
+    $ip = $hostname;
+    $hostname = gethostbyaddr($hostname);
+  }
+  else {
+    $ip = gethostbyname($hostname);
+  }
+  $result = db_result(db_query("SELECT nid FROM {node} WHERE title in ('%s', %s') and type='db_server'", $ip, $hostname));
+  if ($result) {
+    return node_load($result);
+  }
+
+  return false;
+}
+
+
+
 function hosting_db_server_node_info() {
   $types["db_server"] =  array(
     "type" => 'db_server', "name" => 'Database server',
@@ -83,7 +101,7 @@ function hosting_db_server_insert($node) {
  * database updates.
  */
 function hosting_db_server_update($node) {
-  if ($node->nid == variable_get('hosting_own_db_server', 1)) {
+  if ($node->nid == HOSTING_OWN_DB_SERVER) {
     variable_set('provision_db_host', $node->title);
     variable_set('provision_db_user', $node->db_user);
     variable_set('provision_db_passwd', $node->db_passwd);

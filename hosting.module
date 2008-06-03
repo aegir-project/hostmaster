@@ -332,6 +332,17 @@ function hosting_wizard_current_step($next = false) {
  * @todo Allow the user to go to help paths.
  */
 function hosting_init() {
+  // Definitions for the default platforms, clients etc.
+  // Done to avoid using 'magic numbers'
+  define('HOSTING_DEFAULT_CLIENT', variable_get('hosting_default_client', 1));
+  define('HOSTING_DEFAULT_DB_SERVER', variable_get('hosting_default_db_server', 2));
+  define('HOSTING_DEFAULT_WEB_SERVER', variable_get('hosting_default_web_server', 3));
+  define('HOSTING_DEFAULT_PLATFORM', variable_get('hosting_default_platform', 6)); 
+
+  define('HOSTING_OWN_DB_SERVER', variable_get('hosting_own_db_server', 2));
+  define('HOSTING_OWN_WEB_SERVER', variable_get('hosting_own_web_server', 3));
+  define('HOSTING_OWN_PLATFORM', variable_get('hosting_own_platform', 6)); 
+
   if ($step = hosting_wizard_current_step()) {
     if ($_GET['skip_wizard']) {
       variable_set('hosting_wizard_completed', TRUE);
@@ -367,12 +378,12 @@ function hosting_wizard_steps() {
  */
 
 function hosting_configure_provision($form_id, &$values) {
-  $platform = node_load(variable_get('hosting_own_platform', 4));
+  $platform = node_load(HOSTING_OWN_PLATFORM);
   $platform->revision = true;
   $platform->publish_path = $_SERVER['DOCUMENT_ROOT'];
   node_save($platform);
 
-  $db_server = node_load(variable_get('hosting_own_db_server', 2));
+  $db_server = node_load(HOSTING_OWN_DB_SERVER);
   $db_server->revision = true;
   $db_server->title = $values['db_server']['db_host'];
   $db_server->db_user = $values['db_server']['db_user'];
@@ -441,4 +452,19 @@ function _hosting_add_block($module, $delta, $theme, $status, $weight, $region, 
   }
 }
 
-
+/**
+ * Check if a hostname provided is an ip address
+ */
+function _hosting_valid_ip($hostname) {
+  //TODO : provide IPv6 support
+  $parts = explode('.', $hostname);
+  if (sizeof($parts) != 4) {
+    return false;
+  }
+  foreach ($parts as $part) {
+    if (((int) $part < 0) || ((int) $part > 255)) {
+      return false;
+    }
+  }
+  return true;
+}

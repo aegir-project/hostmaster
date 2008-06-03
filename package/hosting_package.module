@@ -49,13 +49,24 @@ function hosting_get_package_release($short_name, $version) {
   }
 }
 
+function hosting_get_package_instance($rid, $short_name) {
+  $result = db_query("SELECT p.nid FROM {hosting_package} p LEFT JOIN {hosting_package_release} r on p.nid = r.package left join {hosting_package_instance} i ON r.nid = i.release_id WHERE p.short_name = '%s' AND i.rid = '%s'", $short_name, $rid);
+  if ($nid = db_result($result)) {
+    return node_load($nid);
+  }
+  else {
+    return false;
+  }
+}
+
+
 function hosting_delete_package_instances($nid) {
-  #db_query("DELETE FROM {hosting_package_instances} WHERE rid = %d", $nid);
+  db_query("DELETE FROM {hosting_package_instance} WHERE rid = %d", $nid);
 }
 
 function hosting_add_package_instance($nid, $rid, $path) {
-  #$iid = db_next_id("{hosting_package_instance}_iid");
-  #db_query("INSERT INTO {hosting_package_instances} (iid, release_id, rid, path) VALUES (%d, %d, %d, '%s')", $iid, $nid, $rid, $path);
+  $iid = db_next_id("{hosting_package_instance}_iid");
+  db_query("INSERT INTO {hosting_package_instance} (iid, release_id, rid, path) VALUES (%d, %d, %d, '%s')", $iid, $nid, $rid, $path);
 } 
 
 /**
@@ -208,21 +219,20 @@ function hosting_package_release_view($node, $teaser = FALSE, $page = FALSE) {
 }
 
 function hosting_package_import_packages($rid, $type, $default_version, $data) {
-  hosting_delete_package_instances($rid);
   // Import install profiles as package and release nodes
   foreach ($data as $short_name => $info) {
     $version = ($info->info['version']) ? $info->info['version'] : $default_version; // dirty hack. but ugh.
     if (!$package = hosting_get_package($short_name)) {
       $node = new stdClass();
       $node->type = 'package';
-      $node->title = $info->info['name'];
+      $node->title = ($info->info['name']) ? $info->info['name'] : "$short_name $type $version";
       $node->package_type = $type;
       $node->short_name = $short_name;
       $node->status = 1;
       node_save($node);
       $package = $node;
     }
-    if (!$release = hosting_get_package_release($short_name, $default_version)) {
+    if (!$release = hosting_get_package_release($short_name, $version)) {
       $node = new stdClass();
       $node->type = 'package_release';
       $node->package = $package->nid;

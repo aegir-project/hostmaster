@@ -11,6 +11,7 @@ define(HOSTING_SITE_NOTINSTALLED, ~HOSTING_SITE_INSTALLED);
 define(HOSTING_SITE_ENABLED, 2);
 define(HOSTING_SITE_DISABLED, ~HOSTING_SITE_ENABLED);
 define(HOSTING_SITE_DELETED, 4);
+define(HOSTING_SITE_IMPORTED, 8);
 
 global $hosting_site_status;
 /**
@@ -21,6 +22,7 @@ $hosting_site_status = array(
   HOSTING_SITE_INSTALLED => "Site installed",
   HOSTING_SITE_ENABLED => "Site enabled",
   HOSTING_SITE_DELETED => "Site deleted",
+  HOSTING_SITE_IMPORTED => "Site Imported",
 );
 
 global $hosting_site_antistatus;
