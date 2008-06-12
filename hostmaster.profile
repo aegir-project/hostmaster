@@ -87,8 +87,8 @@ function hostmaster_profile_final() {
   $node->uid = 1;
   $node->type = 'web_server';
   $node->title = $_SERVER['HTTP_HOST'];
-  $node->script_user = provision_get_script_owner();
-  $node->web_group = provision_get_group_name();
+  $node->script_user = PROVISION_SCRIPT_USER;
+  $node->web_group = PROVISION_WEB_GROUP;
   $node->status = 1;
   node_save($node);
   variable_set('hosting_default_web_server', $node->nid);
