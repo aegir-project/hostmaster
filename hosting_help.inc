@@ -19,7 +19,7 @@ function hosting_help($section) {
       return $return;
       
     case 'admin/help#hosting':
-      $username = provision_get_script_owner();
+      $username = PROVISION_SCRIPT_USER;
 
 
       $drush_path = $_SERVER['DOCUMENT_ROOT'] . '/' . drupal_get_path('module', 'drush') . '/drush.php';
