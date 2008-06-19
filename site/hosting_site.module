@@ -69,35 +69,35 @@ function hosting_add_site($url, $client, $platform, $db_server, $profile, $site_
  * is not a real module, it will not work so we're taking over the whole
  * module's hook here, which is bad.
  */
-function hosting_site_hosting_post_install($action, $data) {
-  db_query("UPDATE {hosting_site} SET status=status|%d WHERE nid=%d", HOSTING_SITE_INSTALLED, $action->rid);
+function hosting_site_hosting_post_install($task, $data) {
+  db_query("UPDATE {hosting_site} SET status=status|%d WHERE nid=%d", HOSTING_SITE_INSTALLED, $task->rid);
 }
 
 /**
  * implementation of hook_hosting_post_disable
  * I am not very fond of the use of bitwise operators with negatives.
  */
-function hosting_site_hosting_post_disable($action, $data) {
-  $ref = node_load($action->rid);
+function hosting_site_hosting_post_disable($task, $data) {
+  $ref = node_load($task->rid);
   if ($data['site']['backup_file'] && $ref->type == 'site') {
     $platform = node_load($ref->platform);
     hosting_site_add_backup($ref->nid, $platform->web_server, $data['site']['backup_file'], t('Generated before being disabled'));
   }
-  db_query("UPDATE {hosting_site} SET status=status&%d WHERE nid=%d", HOSTING_SITE_DISABLED, $action->rid);
+  db_query("UPDATE {hosting_site} SET status=status&%d WHERE nid=%d", HOSTING_SITE_DISABLED, $task->rid);
 }
 
 /**
  * implementation of hook_hosting_post_enable
  */
-function hosting_site_hosting_post_enable($action, $data) {
-  db_query("UPDATE {hosting_site} SET status=status|%d WHERE nid=%d", HOSTING_SITE_ENABLED, $action->rid);
+function hosting_site_hosting_post_enable($task, $data) {
+  db_query("UPDATE {hosting_site} SET status=status|%d WHERE nid=%d", HOSTING_SITE_ENABLED, $task->rid);
 }
 
 /**
  * implementation of hook_hosting_post_DELETE
  */
-function hosting_site_hosting_post_delete($action, $data) {
-  db_query("UPDATE {hosting_site} SET status=%d WHERE nid=%d", HOSTING_SITE_DELETED, $action->rid);
+function hosting_site_hosting_post_delete($task, $data) {
+  db_query("UPDATE {hosting_site} SET status=%d WHERE nid=%d", HOSTING_SITE_DELETED, $task->rid);
 }
 
 
@@ -175,7 +175,7 @@ function hosting_site_insert(&$node) {
   db_query("INSERT INTO {hosting_site} (vid, nid, client, db_server, platform, last_cron, status) VALUES (%d, %d, %d, %d, %d, %d, %d)",
     $node->vid, $node->nid, $node->client, $node->db_server, $node->platform, $node->last_cron, $node->site_status);
   if ((!$node->old_vid) && !($node->site_status & HOSTING_SITE_IMPORTED)) {
-    hosting_add_action($node->nid, 'install');    
+    hosting_add_task($node->nid, 'install');    
   }
 }
  
@@ -188,7 +188,7 @@ function hosting_site_update(&$node) {
     db_query("UPDATE {hosting_site} SET client = %d, db_server = %d, platform = %d, last_cron =%d, status=%d WHERE vid=%d",
               $node->publish_path, $node->web_server, $node->vid, $node->site_status, $node->vid);
   }
-  hosting_add_action($node->nid, 'synch');
+  hosting_add_task($node->nid, 'synch');
 }
 
 function hosting_site_load($node) {
@@ -223,10 +223,10 @@ function hosting_site_view(&$node, $teaser = false) {
     '#value' => hosting_site_status_output($node->site_status),
   );
   
-  $view = views_get_view('actions_embed');
-  $node->content['actions_view'] = array(
+  $view = views_get_view('tasks_embed');
+  $node->content['tasks_view'] = array(
     '#type' => 'item',
-    '#title' => t("Actions"),
+    '#title' => t("Tasks"),
     '#value' => views_build_view('embed', $view, array($node->nid)), 
     '#weight' => 10
   );
@@ -284,8 +284,8 @@ function hosting_site_backup_list($site) {
  * Adds the data file that was saved to the site backup history.
  * This is needed to be able to restore.
  */
-function hosting_site_hosting_post_backup($action, $data) {
-  $ref = node_load($action->rid);
+function hosting_site_hosting_post_backup($task, $data) {
+  $ref = node_load($task->rid);
   if ($data['site']['backup_file'] && $ref->type == 'site') {
     $platform = node_load($ref->platform);
     hosting_site_add_backup($ref->nid, $platform->web_server, $data['site']['backup_file'], t('Generated on request'));

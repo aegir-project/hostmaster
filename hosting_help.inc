@@ -31,7 +31,7 @@ EOF;
       $cron_cmd['@cron_line'] = <<<EOF
 */5 * * * * (php "$drush_path" \
             -r $_SERVER[DOCUMENT_ROOT] \
-            -l $_SERVER[HTTP_HOST] hosting actions)
+            -l $_SERVER[HTTP_HOST] hosting tasks)
 EOF;
 
       $output .= t('<p>The Hostmaster system is a set of modules that provide an interface to the <a href="@provision_help">Provisioning framework</a>.</p>', 
@@ -177,10 +177,10 @@ function hosting_node_help($type) {
                 If you are not intending to use an external database server, or multiple database servers, you
                 will not need to create any additional database servers for your purposes.");
       break;
-    case 'action' :
+    case 'task' :
       return t("<strong>The mechanism whereby Hostmaster keeps track of all changes that occurr to the system.</strong>
-                Each action acts as a command for the back end, and contains a full log of all changes that have occurred.
-                If an action should fail, the administrator will be notified with an explanation of exactly what went wrong,
+                Each task acts as a command for the back end, and contains a full log of all changes that have occurred.
+                If an task should fail, the administrator will be notified with an explanation of exactly what went wrong,
                 and how to fix it.");
       break;      
   }

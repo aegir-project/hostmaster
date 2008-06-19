@@ -2,27 +2,27 @@
 /**
  * @file Web server node type is defined here.
  */
-include_once('hosting_action.views.inc');
+include_once('hosting_task.views.inc');
 
 /**
  * Implementation of hook_menu().
  */
-function hosting_action_menu($may_cache) {
+function hosting_task_menu($may_cache) {
   $items = array();
   
   if (!$may_cache) {
     if ( arg(0) == 'node' && is_numeric(arg(1))) {
       $node = node_load(arg(1));
-      foreach (hosting_available_actions($node) as $type => $action) {
+      foreach (hosting_available_tasks($node) as $type => $task) {
           $items[] = array(
-            'path' => 'node/' . arg(1) . '/action_' . $type,
-            'title' => $action['title'],
-            'description' => $action['description'],
+            'path' => 'node/' . arg(1) . '/task_' . $type,
+            'title' => $task['title'],
+            'description' => $task['description'],
             'callback' => 'drupal_get_form',
-            'callback arguments' => array('hosting_action_confirm_form', $node, $type),
-            'access' => user_access('create action nodes'),
+            'callback arguments' => array('hosting_task_confirm_form', $node, $type),
+            'access' => user_access('create task nodes'),
             'type' => MENU_LOCAL_TASK,
-            'weight' => ($action['weight']) ? $action['weight'] : 0, 
+            'weight' => ($task['weight']) ? $task['weight'] : 0, 
           );
           
         }
@@ -31,34 +31,34 @@ function hosting_action_menu($may_cache) {
   return $items;
 }
 
-function hosting_action_node_info() {
+function hosting_task_node_info() {
   #management
-  $types["action"] =  array(
-    "type" => 'action', "name" => 'Action',
-    "module" => 'hosting_action',
+  $types["task"] =  array(
+    "type" => 'task', "name" => 'Task',
+    "module" => 'hosting_task',
     "has_title" => FALSE, "title_label" => '', 
- #   "description" => hosting_node_help("action"),
+ #   "description" => hosting_node_help("task"),
     "has_body" => 0, "body_label" => '', "min_word_count" => 0);
 
   return $types;
 }
 
-function hosting_action_log($vid, $type, $message, $severity = 0, $timestamp = null ) {
+function hosting_task_log($vid, $type, $message, $severity = 0, $timestamp = null ) {
  $timestamp = ($timestamp) ? $timestamp : mktime();
  if (DRUSH_VERBOSE) print "$message\n";
- db_query("INSERT INTO {action_log} (vid, type, message, severity, timestamp) VALUES (%d, '%s', '%s', %d, %d)", $vid, $type, $message, $severity, $timestamp);
+ db_query("INSERT INTO {hosting_task_log} (vid, type, message, severity, timestamp) VALUES (%d, '%s', '%s', %d, %d)", $vid, $type, $message, $severity, $timestamp);
 }
 
 
-function hosting_map_values_action($node) {
-  $values['action_id'] = $node->nid;
-  $values['action_type'] = $node->action_type;
-  if (is_array($node->action_args)) {
-    $values['action_args'] = $node->action_args;
+function hosting_map_values_task($node) {
+  $values['task_id'] = $node->nid;
+  $values['task_type'] = $node->task_type;
+  if (is_array($node->task_args)) {
+    $values['task_args'] = $node->task_args;
   }
   $reference = node_load($node->rid);
-  $values['action_reference_type'] = $reference->type;
-  $values['action_reference'] = $reference->nid;
+  $values['task_reference_type'] = $reference->type;
+  $values['task_reference'] = $reference->nid;
   
   $values = array_merge($values, hosting_map_values($reference));    
 
@@ -66,47 +66,47 @@ function hosting_map_values_action($node) {
 }
 
 /**
- * Helper function to generate new action node
+ * Helper function to generate new task node
  */
-function hosting_add_action($nid, $type, $args = null) {
+function hosting_add_task($nid, $type, $args = null) {
  global $user;
 
  $node = node_load($nid);
- $action = new stdClass();
- $action->type = 'action';
- $action->uid = $user->uid;
- $action->status = 1;
+ $task = new stdClass();
+ $task->type = 'task';
+ $task->uid = $user->uid;
+ $task->status = 1;
  #todo: make this pretty
- $action->title = t("!type !title", array('!type' => $type, '!title' => $node->title) );
- $action->action_type = $type;
- $action->action_status = PROVISION_QUEUED;
- $action->rid = $node->nid;
+ $task->title = t("!type !title", array('!type' => $type, '!title' => $node->title) );
+ $task->task_type = $type;
+ $task->task_status = PROVISION_QUEUED;
+ $task->rid = $node->nid;
 
  #arguments, such as which backup to restore.
  if (is_array($args)) {
-   $action->action_args = $args;
+   $task->task_args = $args;
  }
- node_save($action);
+ node_save($task);
 }
 
 /**
  * Implementation of hook_form().
  */
-function hosting_action_confirm_form(&$node, $action) {
-  $actions = hosting_available_actions($node);
-  $form['help'] = array('#value' => $actions[$action]['description']); 
+function hosting_task_confirm_form(&$node, $task) {
+  $tasks = hosting_available_tasks($node);
+  $form['help'] = array('#value' => $tasks[$task]['description']); 
   $form['nid'] = array('#type' => 'value', '#value' => $node->nid);
-  $form['action'] = array('#type' => 'value', '#value' => $action); 
+  $form['task'] = array('#type' => 'value', '#value' => $task); 
   $form['parameters'] = array('#tree' => TRUE);
-  $func = 'hosting_action_' . $action . '_form';
+  $func = 'hosting_task_' . $task . '_form';
   if (function_exists($func)) {
     $form['parameters'] += $func($node);
   }
-  $question = t("Are you sure you want to @action @object", array('@action' => $action, '@object' => $node->title));
-  return confirm_form($form, $question, 'node/' . $node->nid, '', $actions[$action]['title']);
+  $question = t("Are you sure you want to @task @object", array('@task' => $task, '@object' => $node->title));
+  return confirm_form($form, $question, 'node/' . $node->nid, '', $tasks[$task]['title']);
 }
 
-function hosting_action_restore_form($node) {
+function hosting_task_restore_form($node) {
   $list = hosting_site_backup_list($node->nid);
   if (sizeof($list)) {
     $form['bid'] = array(
@@ -126,42 +126,42 @@ function hosting_action_restore_form($node) {
   return $form;
 }
 
-function hosting_action_confirm_form_submit($form_id, $values) {
-  hosting_add_action($values['nid'], $values['action'], $values['parameters']);
+function hosting_task_confirm_form_submit($form_id, $values) {
+  hosting_add_task($values['nid'], $values['task'], $values['parameters']);
   return 'node/' . $values['nid'];
 }
 
-function hosting_action_set_title(&$node) {
+function hosting_task_set_title(&$node) {
   $ref = node_load($node->rid);
-  $node->title = drupal_ucfirst($node->action_type) . ' ' . $ref->title;
+  $node->title = drupal_ucfirst($node->task_type) . ' ' . $ref->title;
   db_query("UPDATE {node} SET title='%s' WHERE nid=%d", $node->title, $node->nid);
   db_query("UPDATE {node_revisions} SET title='%s' WHERE vid=%d", $node->title, $node->vid);
 }
 
 /**
- * Determine whether there is an outstanding action of a specific type.
+ * Determine whether there is an outstanding task of a specific type.
  *
- * This is used to ensure that there are not multiple actions of the same type queued.
+ * This is used to ensure that there are not multiple tasks of the same type queued.
  */
-function hosting_action_outstanding($nid, $type) {
+function hosting_task_outstanding($nid, $type) {
   $return = db_result(db_query("
       SELECT q.nid FROM 
-         {hosting_action_queue} q LEFT JOIN {hosting_action} a ON a.nid=q.nid 
+         {hosting_task_queue} q LEFT JOIN {hosting_task} a ON a.nid=q.nid 
       WHERE 
         a.rid = %d 
         AND q.status = 0 
-        AND a.action_type = '%s' 
+        AND a.task_type = '%s' 
         LIMIT 1", $nid, $type));
   return $return;
 }
 
-function hosting_available_actions($node) {
+function hosting_available_tasks($node) {
   $options = array();
   if ($node->type == 'site') {
-    if (hosting_action_outstanding($node->nid, 'delete') || ($node->site_status & HOSTING_SITE_DELETED)) {
+    if (hosting_task_outstanding($node->nid, 'delete') || ($node->site_status & HOSTING_SITE_DELETED)) {
       return $options;
     }
-    if (hosting_action_outstanding($node->nid, 'enable') || ($node->site_status & HOSTING_SITE_ENABLED)) {
+    if (hosting_task_outstanding($node->nid, 'enable') || ($node->site_status & HOSTING_SITE_ENABLED)) {
       $options['backup']['title'] = t('Backup');
       $options['backup']['description'] = t('Generate a backup of this site that can be restored to at any time');
       $options['backup']['weight'] = 7;
@@ -188,7 +188,7 @@ function hosting_available_actions($node) {
       $options['delete']['weight'] = 10;
     }
   }
-  elseif (($node->type == 'platform') & !hosting_action_outstanding($node->nid, 'verify')) {
+  elseif (($node->type == 'platform') & !hosting_task_outstanding($node->nid, 'verify')) {
     $options['verify']['title'] = t('Verify');
     $options['verify']['description'] = t('Verify that the platform is correctly installed and working.');
     $options['verify']['weight'] = 10;
@@ -200,19 +200,19 @@ function hosting_available_actions($node) {
 /**
  * Implementation of hook_insert().
  */
-function hosting_action_insert($node) {
-  db_query("INSERT INTO {hosting_action} (vid, nid, action_type, rid, executed, action_status) VALUES (%d, %d, '%s', %d, %d, %d)",
-    $node->vid, $node->nid, $node->action_type, $node->rid, $node->executed, $node->action_status);
+function hosting_task_insert($node) {
+  db_query("INSERT INTO {hosting_task} (vid, nid, task_type, rid, executed, task_status) VALUES (%d, %d, '%s', %d, %d, %d)",
+    $node->vid, $node->nid, $node->task_type, $node->rid, $node->executed, $node->task_status);
 
-  if (is_array($node->action_args)) {
-    foreach ($node->action_args as $key => $value) {
-      db_query("INSERT INTO {hosting_action_arguments} (vid, nid, name, value) VALUES (%d, %d, '%s', '%s')",
+  if (is_array($node->task_args)) {
+    foreach ($node->task_args as $key => $value) {
+      db_query("INSERT INTO {hosting_task_arguments} (vid, nid, name, value) VALUES (%d, %d, '%s', '%s')",
            $node->vid, $node->nid, $key, $value);
     }
   }
-  hosting_action_set_title($node); 
+  hosting_task_set_title($node); 
   if (!$node->old_vid) {
-    db_query("INSERT INTO {hosting_action_queue} (nid, timestamp, status) VALUES (%d, %d, %d)", $node->nid, mktime(), PROVISION_QUEUED);
+    db_query("INSERT INTO {hosting_task_queue} (nid, timestamp, status) VALUES (%d, %d, %d)", $node->nid, mktime(), PROVISION_QUEUED);
   }
 }
 
@@ -222,20 +222,20 @@ function hosting_action_insert($node) {
  * As an existing node is being updated in the database, we need to do our own
  * database updates.
  */
-function hosting_action_update($node) {
+function hosting_task_update($node) {
   // if this is a new node or we're adding a new revision,
   if ($node->revision) {
-    hosting_action_insert($node);
+    hosting_task_insert($node);
   }
   else {
-    hosting_action_set_title($node);
-    db_query("UPDATE {hosting_action} SET nid=%d, action_type = '%s', rid = %d, executed=%d, action_status=%d WHERE vid=%d",
-      $node->nid, $node->action_type, $node->rid, $node->executed, $node->action_status, $node->vid);
-    if (is_array($node->action_args)) {
+    hosting_task_set_title($node);
+    db_query("UPDATE {hosting_task} SET nid=%d, task_type = '%s', rid = %d, executed=%d, task_status=%d WHERE vid=%d",
+      $node->nid, $node->task_type, $node->rid, $node->executed, $node->task_status, $node->vid);
+    if (is_array($node->task_args)) {
       # Wipe out old arguments first, since arguments could theoretically be removed.
-      db_query("DELETE FROM {hosting_action_arguments} WHERE vid=%d", $node->vid);
-      foreach ($node->action_args as $key => $value) {
-        db_query("INSERT INTO {hosting_action_arguments} (vid, nid, name, value) VALUES (%d, %d, '%s', '%s')",
+      db_query("DELETE FROM {hosting_task_arguments} WHERE vid=%d", $node->vid);
+      foreach ($node->task_args as $key => $value) {
+        db_query("INSERT INTO {hosting_task_arguments} (vid, nid, name, value) VALUES (%d, %d, '%s', '%s')",
              $node->vid, $node->nid, $key, $value);
       }
     }
@@ -243,28 +243,28 @@ function hosting_action_update($node) {
   }
 }
 
-function hosting_nodeapi_action_delete_revision(&$node) {
-  db_query('DELETE FROM {hosting_action} WHERE vid = %d', $node->vid);
-  db_query('DELETE FROM {hosting_action_arguments} WHERE vid = %d', $node->vid);
+function hosting_nodeapi_task_delete_revision(&$node) {
+  db_query('DELETE FROM {hosting_task} WHERE vid = %d', $node->vid);
+  db_query('DELETE FROM {hosting_task_arguments} WHERE vid = %d', $node->vid);
 }
 
 /**
  * Implementation of hook_delete().
  */
-function hosting_action_delete($node) {
-  db_query('DELETE FROM {hosting_action} WHERE nid = %d', $node->nid);
-  db_query('DELETE FROM {hosting_action_arguments} WHERE nid = %d', $node->nid);
+function hosting_task_delete($node) {
+  db_query('DELETE FROM {hosting_task} WHERE nid = %d', $node->nid);
+  db_query('DELETE FROM {hosting_task_arguments} WHERE nid = %d', $node->nid);
 }
 
 /**
  * Implementation of hook_load().
  */
-function hosting_action_load($node) {
-  $additions = db_fetch_object(db_query('SELECT action_type, executed, action_status, rid FROM {hosting_action} WHERE vid = %d', $node->vid));
-  $result = db_query("SELECT name, value FROM {hosting_action_arguments} WHERE vid=%d", $node->vid);
+function hosting_task_load($node) {
+  $additions = db_fetch_object(db_query('SELECT task_type, executed, task_status, rid FROM {hosting_task} WHERE vid = %d', $node->vid));
+  $result = db_query("SELECT name, value FROM {hosting_task_arguments} WHERE vid=%d", $node->vid);
   if (db_num_rows($result)) {
     while ($arg = db_fetch_object($result)) {
-      $additions->action_args[$arg->name] = $arg->value;
+      $additions->task_args[$arg->name] = $arg->value;
     }
   }
   return $additions;
@@ -273,7 +273,7 @@ function hosting_action_load($node) {
 /**
  * Implementation of hook_view().
  */
-function hosting_action_view($node, $teaser = FALSE, $page = FALSE) {
+function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
   $node = node_prepare($node, $teaser);
   
   $ref = node_load($node->rid);
@@ -295,16 +295,16 @@ function hosting_action_view($node, $teaser = FALSE, $page = FALSE) {
       '#value' => format_date($node->executed),
     );
   }
-  if ($node->action_status) {
+  if ($node->task_status) {
     $node->content['status'] = array(
       '#type' => 'item',
       '#title' => t('Status'),
-      '#value' => implode(", ", _hosting_parse_error_code($node->action_status)),
+      '#value' => implode(", ", _hosting_parse_error_code($node->task_status)),
     );
   }
     
-  # Display table containing the logged information for this action
-  $result = db_query("SELECT * FROM {action_log} WHERE vid=%d", $node->vid);
+  # Display table containing the logged information for this task
+  $result = db_query("SELECT * FROM {hosting_task_log} WHERE vid=%d", $node->vid);
   if (db_num_rows($result)) {
     $header = array("type", "message", "date");
     while ($entry = db_fetch_object($result)) {

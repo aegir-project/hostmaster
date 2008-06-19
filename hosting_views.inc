@@ -144,8 +144,8 @@ function hosting_views_default_views() {
 
   
   $view = new stdClass();
-  $view->name = 'actions_embed';
-  $view->description = 'A list of actions related to the item in question';
+  $view->name = 'tasks_embed';
+  $view->description = 'A list of tasks related to the item in question';
   $view->access = array (
 );
   $view->view_args_php = 'if (!$args[0]) {
@@ -153,7 +153,7 @@ function hosting_views_default_views() {
 }
 return $args;';
   $view->page = TRUE;
-  $view->page_title = 'action';
+  $view->page_title = 'task';
   $view->page_header = '';
   $view->page_header_format = '1';
   $view->page_footer = '';
@@ -168,7 +168,7 @@ return $args;';
   );
   $view->argument = array (
     array (
-      'type' => 'hosting_action_reference',
+      'type' => 'hosting_task_reference',
       'argdefault' => '1',
       'title' => 'Reference',
       'options' => '',
@@ -180,13 +180,13 @@ return $args;';
     array (
       'tablename' => 'node',
       'field' => 'title',
-      'label' => 'Action',
+      'label' => 'Task',
       'handler' => 'views_handler_field_nodelink',
       'options' => 'link',
     ),
     array (
-      'tablename' => 'hosting_action',
-      'field' => 'action_status',
+      'tablename' => 'hosting_task',
+      'field' => 'task_status',
       'label' => 'Status',
     ),
     array (
@@ -196,7 +196,7 @@ return $args;';
       'handler' => 'views_handler_field_date_small',
     ),
     array (
-      'tablename' => 'hosting_action',
+      'tablename' => 'hosting_task',
       'field' => 'executed',
       'label' => 'Executed',
       'handler' => 'views_handler_field_date_small',
@@ -209,13 +209,13 @@ return $args;';
       'operator' => 'OR',
       'options' => '',
       'value' => array (
-  0 => 'action',
+  0 => 'task',
 ),
     ),
   );
   $view->exposed_filter = array (
   );
-  $view->requires = array(node, hosting_action);
+  $view->requires = array(node, hosting_task);
   $views[$view->name] = $view;
 
 

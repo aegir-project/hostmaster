@@ -106,9 +106,9 @@ function hosting_drush_command() {
     'callback' => 'hosting_dispatch',
     'description' => 'Centralized command for dispatching the various queue processors (hosting, cron, backup etc.)'
   );
-  $items['hosting actions'] = array(
-    'callback' => 'hosting_queue_actions',
-    'description' => 'Process the queue of outstanding hosting actions.'
+  $items['hosting tasks'] = array(
+    'callback' => 'hosting_queue_tasks',
+    'description' => 'Process the queue of outstanding hosting tasks.'
   );
   $items['hosting backups'] = array(
     'callback' => 'hosting_queue_backups',
@@ -140,16 +140,16 @@ function hosting_dispatch() {
 }
 
 /**
- * Retrieve a list of outstanding actions.
+ * Retrieve a list of outstanding tasks.
  *
  * @param limit
  *   The amount of items to return.
  * @return
- *   An associative array containing action nodes, indexed by node id.
+ *   An associative array containing task nodes, indexed by node id.
  */
-function _hosting_get_new_actions($limit = 5) {
+function _hosting_get_new_tasks($limit = 5) {
   $return = array();
-  $result = db_query("SELECT nid FROM {hosting_action_queue} WHERE status=%d ORDER BY timestamp ASC LIMIT %d", PROVISION_QUEUED, $limit);
+  $result = db_query("SELECT nid FROM {hosting_task_queue} WHERE status=%d ORDER BY timestamp ASC LIMIT %d", PROVISION_QUEUED, $limit);
   while ($node = db_fetch_object($result)) {
     $return[$node->nid] =  node_load($node->nid);
   }
@@ -157,69 +157,69 @@ function _hosting_get_new_actions($limit = 5) {
 }
 
 /**
- * Process the hosting action queue.
+ * Process the hosting task queue.
  *
- * Iterates through the list of outstanding actions, and execute the commands on the back end.
+ * Iterates through the list of outstanding tasks, and execute the commands on the back end.
  */
-function hosting_queue_actions() {
+function hosting_queue_tasks() {
   global $provision_errors;
   variable_set("hosting_queue_last_run", mktime());
 
   $count = drush_get_option(array('i', 'items'), 5); # process a default of 5 items at a time.
 
-  $actions = _hosting_get_new_actions($count);
+  $tasks = _hosting_get_new_tasks($count);
 
-  foreach ($actions as $action) {
+  foreach ($tasks as $task) {
     // create a new revision
-    $action->changed = mktime();
-    $action->executed = mktime();
-    $action->revision = true;
-    node_save($action);
+    $task->changed = mktime();
+    $task->executed = mktime();
+    $task->revision = true;
+    node_save($task);
 
-    hosting_action_log($action->vid, "queue", t("Action starts processing"));
+    hosting_task_log($task->vid, "queue", t("Task starts processing"));
 
-    // execute the hosting_pre_${action_type} hook.
-    module_invoke_all("hosting_pre_" . $action->action_type, $action);
+    // execute the hosting_pre_${task_type} hook.
+    module_invoke_all("hosting_pre_" . $task->task_type, $task);
 
     // @todo Allow multiple commands to be run. 
-    // For now actions just map to one backend command, but that might need to change with additional complexity.
-    $cmd = hosting_provision_cmd($action->action_type, $action);
+    // For now tasks just map to one backend command, but that might need to change with additional complexity.
+    $cmd = hosting_provision_cmd($task->task_type, $task);
     exec(escapeshellcmd($cmd), $return, $code);
     $return = join("\n", $return);
     $data = unserialize($return);
 
-    hosting_action_log($action->vid, 'command', "Executed: " . escapeshellcmd("$cmd"));
+    hosting_task_log($task->vid, 'command', "Executed: " . escapeshellcmd("$cmd"));
 
     if (!is_array($data)) {
-      hosting_action_log($action->vid, 'error', t("The command could not be executed succesfully (return: %return, data: %data, code: %code)", array("%return" => $return, "%data" => $data, "%code" =>  $code)));
+      hosting_task_log($task->vid, 'error', t("The command could not be executed succesfully (return: %return, data: %data, code: %code)", array("%return" => $return, "%data" => $data, "%code" =>  $code)));
       $code = PROVISION_FRAMEWORK_ERROR;
     }
     foreach ((array) $data['log'] as $log) {
-      hosting_action_log($action->vid, $log['type'], $log['message'], $log['severity'], $log['timestamp']);
+      hosting_task_log($task->vid, $log['type'], $log['message'], $log['severity'], $log['timestamp']);
     }
     
     # Drupal message errors.
     foreach ((array) $data['messages']['error'] as $error) {
       if (preg_match("/^warning:/", $error)) {
-        hosting_action_log($action->vid, "warning", ereg_replace("/^warning: /", '', $error), 0, $log['timestamp']);  
+        hosting_task_log($task->vid, "warning", ereg_replace("/^warning: /", '', $error), 0, $log['timestamp']);  
       }
       elseif (preg_match("/^user warning:/", $error)) {
-        hosting_action_log($action->vid, "warning", ereg_replace("/^user warning: /", '', $error), 0, $log['timestamp']);  
+        hosting_task_log($task->vid, "warning", ereg_replace("/^user warning: /", '', $error), 0, $log['timestamp']);  
       }
     }
     // record status 
-    $action->action_status = $code;
+    $task->task_status = $code;
     // New revision is created at the beginning of function.
-    $action->revision = false;
-    node_save($action);
+    $task->revision = false;
+    node_save($task);
 
     if ($code == PROVISION_SUCCESS) {
-      # The action has been successful. Run the post hook.
-      module_invoke_all("hosting_post_" . $action->action_type, $action, $data);
+      # The task has been successful. Run the post hook.
+      module_invoke_all("hosting_post_" . $task->task_type, $task, $data);
 
       // remove from queue
-      hosting_action_log($action->vid, "queue", t("Removing action from hosting queue"), 0);
-      db_query("UPDATE {hosting_action_queue} SET status=%d WHERE nid=%d", $code, $action->nid);
+      hosting_task_log($task->vid, "queue", t("Removing task from hosting queue"), 0);
+      db_query("UPDATE {hosting_task_queue} SET status=%d WHERE nid=%d", $code, $task->nid);
     }
     else {
       # Stop the queue from continuing.
@@ -229,14 +229,14 @@ function hosting_queue_actions() {
 }
 
 /**
- * Generate a command line call to Drush, based on the available data for the action.
+ * Generate a command line call to Drush, based on the available data for the task.
  *
- * This acts as the default command for all back end calls. Actions can provide their own
- * calls using hook_provision_${action_type}_cmd.
+ * This acts as the default command for all back end calls. Tasks can provide their own
+ * calls using hook_provision_${task_type}_cmd.
  * @todo get rid of the special handling for site-* arguments.
  */
 function hosting_provision_cmd($cmd_type, $node) {
-  // retrieve data map from action.
+  // retrieve data map from task.
   $data = hosting_map_values($node);
 
   $func = "hosting_provision_". $cmd_type . "_cmd";
@@ -253,7 +253,7 @@ function hosting_provision_cmd($cmd_type, $node) {
 }
 
 function hosting_provision_restore_cmd($data) {
-  $backup = hosting_site_get_backup($data['action_args']['bid']);
+  $backup = hosting_site_get_backup($data['task_args']['bid']);
   $option_str = _hosting_option_map($data);
   $command = sprintf("%s/drush.php provision restore %s %s --root=%s --uri=%s -b %s", $data['publish_path'] . '/' . drupal_get_path("module", "drush"), $data['site_url'], $backup['filename'], $data['publish_path'], $data['web_host'], $option_str);
   return $command;
@@ -268,7 +268,7 @@ function _hosting_option_map($data) {
       $option_str .= " --$key=$value";
     }
   }
-  $option_str .= " --action_id=" . $data['action_id'];
+  $option_str .= " --task_id=" . $data['task_id'];
   return $option_str;
 }
 
@@ -407,7 +407,7 @@ function hosting_configure_provision($form_id, &$values) {
  * Maps the properties of a node object to an associative array, based on node type, incrementally.
  *
  * The back end provisioning system accepts communication via a set of pre-defined arguments.
- * This function will generate whatever information can be extracted from a specific action, 
+ * This function will generate whatever information can be extracted from a specific task, 
  * regardless what node type it is related to, and use this for generating the command to be executed.
  *
  * This functionality is similar in scope to the token module, but the token module contains much additional

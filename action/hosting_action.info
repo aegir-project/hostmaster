@@ -1,4 +1,0 @@
-name = Hosting actions
-description = Allow Hostmaster to keep track of actions that have been processed on the servers.
-package = Hosting
-dependencies = hosting 
