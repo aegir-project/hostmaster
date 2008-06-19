@@ -11,7 +11,7 @@ function hostmaster_profile_modules() {
   return array(
     /* core */ 'block', 'color', 'filter', 'help', 'menu', 'node', 'system', 'user', 'watchdog',
     /* contrib */ 'drush', 'views', 'views_ui', 'cvs_deploy',
-    /* custom */ 'provision', 'provision_apache', 'provision_mysql', 'provision_drupal', 'hosting', 'hosting_action', 'hosting_client', 'hosting_db_server', 'hosting_package', 'hosting_platform', 'hosting_site', 'hosting_web_server');
+    /* custom */ 'provision', 'provision_apache', 'provision_mysql', 'provision_drupal', 'hosting', 'hosting_task', 'hosting_client', 'hosting_db_server', 'hosting_package', 'hosting_platform', 'hosting_site', 'hosting_web_server');
 }
 
 /**
@@ -127,7 +127,7 @@ function hostmaster_profile_final() {
   variable_set('hosting_own_platform', $node->nid);
 
   #verify platform
-  hosting_add_action(variable_get('hosting_own_platform', 6), "verify");
+  hosting_add_task(variable_get('hosting_own_platform', 6), "verify");
 
   _hosting_add_block("views", "platforms", "garland", 1, 0, "right");
   _hosting_add_block("views", "servers", "garland", 1, 0, "right");
