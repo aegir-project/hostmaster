@@ -348,8 +348,7 @@ function hosting_init() {
     if ($_GET['skip_wizard']) {
       variable_set('hosting_wizard_completed', TRUE);
     }
-    elseif ($step['path'] != $_GET['q']) {
-      #todo: check for the help paths
+    elseif (($step['path'] != $_GET['q']) && (arg(0) .'/' . arg(1) != 'admin/help')){
       drupal_goto($step['path']);
     }
   }
