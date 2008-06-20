@@ -213,6 +213,6 @@ function hosting_format_interval($ts) {
     return t('Never');
   }
 
-  return t("%interval ago", array("%interval" => format_interval($ts, 1)));
+  return t("@interval ago", array("@interval" => format_interval(mktime() - $ts, 1)));
 }
 

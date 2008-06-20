@@ -46,12 +46,15 @@ function hosting_get_queues() {
     $configured = array(
       'frequency' => variable_get('hosting_queue_' . $key . '_frequency', $queue['frequency']),
       'items' => variable_get('hosting_queue_' . $key . '_items', $queue['items']),
-      'enabled' => variable_get('hosting_queue_' . $key . '_enabled', $queue['enabled'])
+      'enabled' => variable_get('hosting_queue_' . $key . '_enabled', $queue['enabled']),
+      'last_run' => variable_get('hosting_queue_' . $key . '_last_run', false),
+      'running' => variable_get('hosting_queue_' . $key . '_running', false),
+      'interval' => variable_get('hosting_queue_' . $key . '_interval', false),
     );
     $queue = array_merge($queue, $configured);
 
     if ($queue['type'] == 'batch') {
-      $threads = $queue['items'] / $queue['threshold'];
+      $threads = $queue['total_items'] / $queue['threshold'];
       if ($threads <= $queue['min_threads']) {
         $threads = $queue['min_threads'];
       } elseif ($thread > $queue['max_threads']) {
@@ -59,7 +62,7 @@ function hosting_get_queues() {
       }
       $queue['calc_threads'] = $threads;
       $queue['calc_frequency'] = ceil($queue['frequency'] / $threads);
-      $queue['calc_items'] = ceil($queue['items'] / $threads);
+      $queue['calc_items'] = ceil($queue['total_items'] / $threads);
     }
     else {
       $queue['calc_frequency'] = $queue['frequency'];
@@ -83,7 +86,10 @@ function hosting_hosting_queues() {
     'description' => t('Process the queue of outstanding hosting tasks.'),
     'type' => 'serial',  # run queue sequentially. always with the same parameters.
     'frequency' => strtotime("5 minutes", 0),  # run queue every 300 seconds (5 minutes)
-    'items' => 5 # process 5 queue items per execution.
+    'items' => 5, # process 5 queue items per execution.
+    'total_items' => hosting_task_count(),
+    'singular' => t('task'),
+    'plural' => t('tasks'),
   );
   return $queue;
 }
@@ -264,6 +270,7 @@ function hosting_tasks_queue($count) {
  * Configure the frequency of tasks.
  */
 function hosting_queues_configure() {
+  drupal_add_css(drupal_get_path('module', 'hosting') . '/hosting.css');
   $units = array(
     strtotime("1 second", 0) => t("Seconds"),
     strtotime("1 minute", 0) => t("Minutes"),
@@ -291,7 +298,7 @@ function hosting_queues_configure() {
     $form[$queue]["last_run"] = array(
       '#value' => hosting_format_interval(variable_get('hosting_queue_' . $queue . '_last_run', false))
     );
-    $form[$queue]['frequency']['#prefix'] = "<div class='container-inline'>";
+    $form[$queue]['frequency']['#prefix'] = "<div class='hosting-queue-frequency'>";
     $form[$queue]['frequency']['#suffix'] = "</div>";
     
     if ($info['type'] == 'batch') {
@@ -305,7 +312,7 @@ function hosting_queues_configure() {
         '#size' => 3,
         '#maxlength' => 3,
         '#default_value' => $info['items'],
-        '#suffix' => t(' items every '),
+        '#suffix' => t(' %items every ', array('%items' => $info['plural'])),
       );
     }
     foreach ($units as $length => $unit) {

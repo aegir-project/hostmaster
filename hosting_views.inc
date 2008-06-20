@@ -28,6 +28,15 @@ function hosting_reference_arg_handler($table, $column, $op, &$query, $a1, $a2 =
   }
 }
 
+
+/**
+ * Format a date as "X time after".
+ */
+function views_handler_field_offset($fieldinfo, $fielddata, $value, $data) {
+  return $value ? format_interval($value - $data->node_created, 1) : '-';
+}
+
+
 function hosting_views_default_views() {
   $view = new stdClass();
   $view->name = 'site_embed';
@@ -72,7 +81,8 @@ function hosting_views_default_views() {
       'tablename' => 'node',
       'field' => 'created',
       'label' => 'Created',
-      'handler' => 'views_handler_field_date_small',
+      'handler' => 'views_handler_field_since',
+      'options' => '1',
     ),
   );
   $view->filter = array (
@@ -158,7 +168,7 @@ return $args;';
   $view->page_header_format = '1';
   $view->page_footer = '';
   $view->page_footer_format = '1';
-  $view->page_empty = '';
+  $view->page_empty = 'No tasks';
   $view->page_empty_format = '1';
   $view->page_type = 'table';
   $view->url = '';
@@ -193,13 +203,15 @@ return $args;';
       'tablename' => 'node',
       'field' => 'created',
       'label' => 'Created',
-      'handler' => 'views_handler_field_date_small',
+      'handler' => 'views_handler_field_since',
+      'options' => '1',
+      
     ),
     array (
       'tablename' => 'hosting_task',
       'field' => 'executed',
-      'label' => 'Executed',
-      'handler' => 'views_handler_field_date_small',
+      'label' => 'Completed in',
+      'handler' => 'views_handler_field_offset',
     ),
   );
   $view->filter = array (
@@ -265,7 +277,8 @@ return $args;';
       'tablename' => 'node',
       'field' => 'created',
       'label' => 'Created',
-      'handler' => 'views_handler_field_date',
+      'handler' => 'views_handler_field_since',
+      'options' => '1',
     ),
     array (
       'tablename' => 'hosting_site',

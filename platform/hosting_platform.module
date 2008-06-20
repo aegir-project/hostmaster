@@ -142,13 +142,11 @@ function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
     '#value' => $node->publish_path,
   );
   
-  if ($node->verified) {
-    $node->content['verified'] = array(
-      '#type' => 'item',
-      '#title' => t('Verified on'),
-      '#value' => format_date($node->verified),
-    );
-  }
+  $node->content['verified'] = array(
+    '#type' => 'item',
+    '#title' => t('Verified'),
+    '#value' => hosting_format_interval($node->verified),
+  );
 
   $view = views_get_view('site_embed_platform');
   $node->content['sites_view'] = array(

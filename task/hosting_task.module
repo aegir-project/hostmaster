@@ -159,6 +159,14 @@ function hosting_task_outstanding($nid, $type) {
   return $return;
 }
 
+/**
+ * Return the amount of items still in the queue
+ */
+function hosting_task_count() {
+  return db_result(db_query("SELECT COUNT(q.nid) FROM {hosting_task_queue} q 
+    LEFT JOIN {hosting_task} a ON a.nid=q.nid WHERE q.status = 0"));
+}
+
 function hosting_available_tasks($node) {
   $options = array();
   if ($node->type == 'site') {
@@ -318,7 +326,7 @@ function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
     
     $node->content['hosting_log'] = array(
       '#weight' => 1,
-      '#value' => theme_table($header, (array) $rows)
+      '#value' => theme("table", $header, (array) $rows)
     );
     
   }

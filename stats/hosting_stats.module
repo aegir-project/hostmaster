@@ -5,7 +5,7 @@ function hosting_stats_hosting_queues() {
     'name' => t('Statistics queue'),
     'description' => 'Fetch and import statistics for hosted sites.',
     'type' => 'batch',
-    'items' => hosting_site_count(),
+    'total_items' => hosting_site_count(),
     'threshold' => 20,
     'max_threads' => 48,
     'min_threads' => 24,
