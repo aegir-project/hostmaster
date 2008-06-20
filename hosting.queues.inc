@@ -254,10 +254,6 @@ function hosting_tasks_queue($count) {
       hosting_task_log($task->vid, "queue", t("Removing task from hosting queue"), 0);
       db_query("UPDATE {hosting_task_queue} SET status=%d WHERE nid=%d", $code, $task->nid);
     }
-    else {
-      # Stop the queue from continuing.
-      break;
-    }
   }
 }
 
