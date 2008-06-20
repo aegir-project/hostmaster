@@ -99,8 +99,8 @@ function hosting_run_queue() {
   $queue = $args['commands'][1];
   $count = drush_get_option(array('i', 'items'), 5); # process a default of 5 items at a time.
 
-  variable_set('hosting_queue_' . $queue . '_last_run', mktime());
-  variable_set('hosting_queue_' . $queue . '_running', mktime());
+  variable_set('hosting_queue_' . $queue . '_last_run', $t = mktime());
+  variable_set('hosting_queue_' . $queue . '_running', $t);
 
   $func = "hosting_" . $queue . "_queue";
 
