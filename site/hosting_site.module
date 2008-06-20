@@ -101,6 +101,18 @@ function hosting_site_hosting_post_disable($task, $data) {
 }
 
 /**
+ * implementation of hook_hosting_post_restore
+ * I am not very fond of the use of bitwise operators with negatives.
+ */
+function hosting_site_hosting_post_restore($task, $data) {
+  $ref = node_load($task->rid);
+  if ($data['site']['backup_file'] && $ref->type == 'site') {
+    $platform = node_load($ref->platform);
+    hosting_site_add_backup($ref->nid, $platform->web_server, $data['site']['backup_file'], t('Generated before being restored to a previous version'));
+  }
+}
+
+/**
  * implementation of hook_hosting_post_enable
  */
 function hosting_site_hosting_post_enable($task, $data) {
