@@ -1,0 +1,7 @@
+.hosting-queue-frequency div ,.hosting-queue-frequency label{
+  display: inline;
+}
+
+.hosting-queue-frequency {
+  text-align: right;
+}
