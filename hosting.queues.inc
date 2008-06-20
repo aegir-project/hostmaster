@@ -124,14 +124,14 @@ function hosting_generate_command($system, $command, $args = array(), $options =
   $data = hosting_map_values($ref);
   $data = array_merge($data, $options);
 
-  $func = "hosting_cmd_" . $system . "_" . $command;
-  if (function_exists($func)) {
-    $func($args, $options, $data);
-  }
-
   // Hack : add site to arguments if we're generating a command for a site.
   if ($data['site_url']) {
     $args[] = $data['site_url'];
+  }
+
+  $func = "hosting_cmd_" . $system . "_" . $command;
+  if (function_exists($func)) {
+    $func($args, $options, $data);
   }
 
   //escape shell argument
@@ -169,8 +169,9 @@ function hosting_generate_command($system, $command, $args = array(), $options =
   return $cmd;
 }
 
-function hosting_cmd_provision_restore(&$args, &$data) {
-  $args[] = hosting_site_get_backup($data['task_args']['bid']);
+function hosting_cmd_provision_restore(&$args, &$options, $data) {
+  $backup = hosting_site_get_backup($data['task_args']['bid']);
+  $args[] = $backup['filename'];
 }
 
 
