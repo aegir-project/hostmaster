@@ -14,7 +14,6 @@ function hosting_site_node_info() {
 
 }
 
-
 function hosting_map_values_site($node) {
   $values['site_id'] = $node->nid;
   $values['site_url'] = $node->title;
@@ -23,10 +22,25 @@ function hosting_map_values_site($node) {
   $values = array_merge($values, hosting_map_values($node->client));
   $values = array_merge($values, hosting_map_values($node->db_server));
 
+  ## fields that will be used on the command line call
+  $values['#export_site'] = array_merge( 
+    array('publish_path', 'site_id'), 
+    $values['#export_db_server'], 
+    $values['#export_web_server'],
+    $values['#export_client']);
+
   # @todo : load profile / release details
   return $values;
 }
 
+/**
+ * Return a count of enabled sites.
+ *
+ * This is used by cron and statistics to batch the number of sites that are processed with each call
+ */
+function hosting_site_count() {
+  return db_result(db_query("SELECT count(nid) FROM {node} WHERE type='site' AND status=1"));
+}
 
 /**
  * Helper function to generate new site node
@@ -188,7 +202,9 @@ function hosting_site_update(&$node) {
     db_query("UPDATE {hosting_site} SET client = %d, db_server = %d, platform = %d, last_cron =%d, status=%d WHERE vid=%d",
               $node->publish_path, $node->web_server, $node->vid, $node->site_status, $node->vid);
   }
-  hosting_add_task($node->nid, 'synch');
+  if (!$node->no_synch) {
+    hosting_add_task($node->nid, 'synch');
+  }
 }
 
 function hosting_site_load($node) {

@@ -5,6 +5,14 @@
 
 include_once('hosting_client.views.inc');
 
+function hosting_map_values_client($node) {
+  $values['client_id'] = $node->nid;
+  $values['client_email'] = $node->email;
+
+  $values['#export_client'] = array('client_id', 'client_email');
+  return $values;
+}
+
 function hosting_client_node_info() {
   $types["client"] =  array(
     "type" => 'client', "name" => 'Client',

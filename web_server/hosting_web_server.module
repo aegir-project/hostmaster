@@ -23,6 +23,7 @@ function hosting_map_values_web_server($node) {
   $values['web_config_path'] = $node->config_path;
   $values['web_backup_path'] = $node->backup_path;
   $values['web_restart_cmd'] = $node->restard_cmd;
+  $values['#export_web_server'] = array('web_id', 'web_host', 'web_ip');
   return $values;
 }
 

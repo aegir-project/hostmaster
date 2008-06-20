@@ -12,7 +12,28 @@
 
 include_once('hosting_help.inc');
 include_once('hosting_views.inc');
+include_once('hosting.wizard.inc');
+include_once('hosting.queues.inc');
 
+
+/**
+ * Implementation of hook_menu()
+ */
+function hosting_menu($may_cache = true) {
+  $items = array();
+  if ($may_cache) {
+    $items[] = array(
+      'path' => 'admin/settings/queues',
+      'title' => t('Hosting queues'),
+      'description' => t('Configure the frequency that cron, backup and task events are process'),
+      'callback' => 'drupal_get_form',
+      'callback arguments' => array('hosting_queues_configure'),
+      'type' => MENU_NORMAL_ITEM,
+      'access' => TRUE
+    );
+  }
+  return $items;
+}
 
 /**
  * Implementation of hook_nodeapi
@@ -27,250 +48,24 @@ function hosting_nodeapi(&$node, $op, $teaser) {
   }
 }
 
-/**
- * Page callback
- * Configure the templates used to generate config files for the framework.
- */
-function hosting_config_templates($node) {
-  $result = db_query("SELECT * FROM {config_template} WHERE vid=%d AND type='drupal_settings' limit 1", $node->vid);
-
-  if (db_num_rows($result)) {
-    $drupal_settings = db_fetch_array($result);
-  }
-  else {
-    $drupal_settings = array(
-      'template' => variable_get('provision_drupal_settings_template', _provision_drupal_default_template()),
-      'status' => 0
-    );
-  }
-
-  $form['#tree'] = true;
-  $form['drupal_settings'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Drupal configuration files'),
-    '#description' => t('These settings control the generation of the Drupal settings.php file for this host.'),
-    '#collapsible' => FALSE,
-    '#collapsed' => FALSE,
-  );
-  $form['drupal_settings']['template'] = array(
-    '#type' => 'textarea',
-    '#title' => t('Drupal settings file template'),
-    '#description' => t('The text you enter here will be used by the Provisioning framework to generate your Drupal settings.php file. This field contains php, and should start with &lt;?php.'),
-    '#default_value' => $drupal_settings['template'],
-    '#cols' => 60,
-    '#rows' => 5,
-  );
-  $form['drupal_settings']['status'] = array(
-    '#type' => 'checkbox',
-    '#default_value' => $drupal_settings['status'],
-    '#title' => t('Use this configuration file for this platform.'),
-  );
-  
-  $result = db_query("SELECT * FROM {config_template} WHERE vid=%d AND type='apache_vhost' limit 1", $node->vid);
-  if (db_num_rows($result)) {
-    $apache_vhost = db_fetch_array($result);
-  }
-  else {
-    $apache_vhost = array(
-      'template' => variable_get('provision_apache_vhost_template', _provision_apache_default_template()),
-      'status' => 0
-    );
-  }
-
-  $form['#tree'] = true;
-  $form['apache_vhost'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Apache Virtual Host configuration files'),
-    '#description' => t('These settings control the generation of the Virtual Host directives for this platform.'),
-    '#collapsible' => FALSE,
-    '#collapsed' => FALSE,
-  );
-  $form['apache_vhost']['template'] = array(
-    '#type' => 'textarea',
-    '#title' => t('Drupal settings file template'),
-    '#description' => t('The text you enter here will be used by the Provisioning framework to generate your Apache Virtual Host file. This field contains php, and should start with &lt;?php.'),
-    '#default_value' => $apache_vhost['template'],
-    '#cols' => 60,
-    '#rows' => 5,
-  );
-  $form['apache_vhost']['status'] = array(
-    '#type' => 'checkbox',
-    '#default_value' => $apache_vhost['status'],
-    '#title' => t('Use this configuration file for this platform.'),
-  );
-  return $form;
-}
-
 function hosting_drush_command() {
   $items['hosting dispatch'] = array(
     'callback' => 'hosting_dispatch',
     'description' => 'Centralized command for dispatching the various queue processors (hosting, cron, backup etc.)'
   );
-  $items['hosting tasks'] = array(
-    'callback' => 'hosting_queue_tasks',
-    'description' => 'Process the queue of outstanding hosting tasks.'
-  );
-  $items['hosting backups'] = array(
-    'callback' => 'hosting_queue_backups',
-    'description' => 'Process the site backup queue.'
-  );
-  $items['hosting import platform'] = array(
-    'callback' => 'hosting_import_platform',
-    'description' => 'Generate a platform node for an already installed platform.'
-  );
 
-  $items['hosting import site'] = array(
-    'callback' => 'hosting_import_site',
-    'description' => 'Generate a site node for an already installed site.'
-  );
+  $queues = hosting_get_queues();
+  foreach ($queues as $queue => $info) {
+    $dispatch = t("Dispatched: @items items every @frequency minutes", array('@items' => $info['items'], '@frequency' => round($info['frequency'] / 60)));
+    $items['hosting ' . $queue] = array(
+      'callback' => 'hosting_run_queue', 
+      'description' => $info['description'] . " " . $dispatch
+    );
+  }
   
   return $items;
 }
 
-/**
- * Main queue processing command for hostmaster.
- *
- * This is a single command, which will (based on configuration) run all the other
- * queue commands (cron, backup, hosting queue, stats). This is done so that there
- * is only one cron job to configure, and allow the frequency of calls to be configured
- * from the interface.
- */
-function hosting_dispatch() {
-  // @todo All of it. =)
-}
-
-/**
- * Retrieve a list of outstanding tasks.
- *
- * @param limit
- *   The amount of items to return.
- * @return
- *   An associative array containing task nodes, indexed by node id.
- */
-function _hosting_get_new_tasks($limit = 5) {
-  $return = array();
-  $result = db_query("SELECT nid FROM {hosting_task_queue} WHERE status=%d ORDER BY timestamp ASC LIMIT %d", PROVISION_QUEUED, $limit);
-  while ($node = db_fetch_object($result)) {
-    $return[$node->nid] =  node_load($node->nid);
-  }
-  return $return;
-}
-
-/**
- * Process the hosting task queue.
- *
- * Iterates through the list of outstanding tasks, and execute the commands on the back end.
- */
-function hosting_queue_tasks() {
-  global $provision_errors;
-  variable_set("hosting_queue_last_run", mktime());
-
-  $count = drush_get_option(array('i', 'items'), 5); # process a default of 5 items at a time.
-
-  $tasks = _hosting_get_new_tasks($count);
-
-  foreach ($tasks as $task) {
-    // create a new revision
-    $task->changed = mktime();
-    $task->executed = mktime();
-    $task->revision = true;
-    node_save($task);
-
-    hosting_task_log($task->vid, "queue", t("Task starts processing"));
-
-    // execute the hosting_pre_${task_type} hook.
-    module_invoke_all("hosting_pre_" . $task->task_type, $task);
-
-    // @todo Allow multiple commands to be run. 
-    // For now tasks just map to one backend command, but that might need to change with additional complexity.
-    $cmd = hosting_provision_cmd($task->task_type, $task);
-    exec(escapeshellcmd($cmd), $return, $code);
-    $return = join("\n", $return);
-    $data = unserialize($return);
-
-    hosting_task_log($task->vid, 'command', "Executed: " . escapeshellcmd("$cmd"));
-
-    if (!is_array($data)) {
-      hosting_task_log($task->vid, 'error', t("The command could not be executed succesfully (return: %return, data: %data, code: %code)", array("%return" => $return, "%data" => $data, "%code" =>  $code)));
-      $code = PROVISION_FRAMEWORK_ERROR;
-    }
-    foreach ((array) $data['log'] as $log) {
-      hosting_task_log($task->vid, $log['type'], $log['message'], $log['severity'], $log['timestamp']);
-    }
-    
-    # Drupal message errors.
-    foreach ((array) $data['messages']['error'] as $error) {
-      if (preg_match("/^warning:/", $error)) {
-        hosting_task_log($task->vid, "warning", ereg_replace("/^warning: /", '', $error), 0, $log['timestamp']);  
-      }
-      elseif (preg_match("/^user warning:/", $error)) {
-        hosting_task_log($task->vid, "warning", ereg_replace("/^user warning: /", '', $error), 0, $log['timestamp']);  
-      }
-    }
-    // record status 
-    $task->task_status = $code;
-    // New revision is created at the beginning of function.
-    $task->revision = false;
-    node_save($task);
-
-    if ($code == PROVISION_SUCCESS) {
-      # The task has been successful. Run the post hook.
-      module_invoke_all("hosting_post_" . $task->task_type, $task, $data);
-
-      // remove from queue
-      hosting_task_log($task->vid, "queue", t("Removing task from hosting queue"), 0);
-      db_query("UPDATE {hosting_task_queue} SET status=%d WHERE nid=%d", $code, $task->nid);
-    }
-    else {
-      # Stop the queue from continuing.
-      break;
-    }
-  }
-}
-
-/**
- * Generate a command line call to Drush, based on the available data for the task.
- *
- * This acts as the default command for all back end calls. Tasks can provide their own
- * calls using hook_provision_${task_type}_cmd.
- * @todo get rid of the special handling for site-* arguments.
- */
-function hosting_provision_cmd($cmd_type, $node) {
-  // retrieve data map from task.
-  $data = hosting_map_values($node);
-
-  $func = "hosting_provision_". $cmd_type . "_cmd";
-  # Only one implementation of the cmd_type is possible. This might lead to conflicts with additional complexity.
-  if (function_exists($func)) {
-    $command =  $func($data);
-  }
-  else {
-    $option_str = _hosting_option_map($data);
-
-    $command = sprintf("%s/drush.php provision %s %s --root=%s --uri=%s -b %s", $data['publish_path'] . '/' . drupal_get_path("module", "drush"), $cmd_type, $data['site_url'], $data['publish_path'], $data['web_host'], $option_str);
-  }
-  return $command;
-}
-
-function hosting_provision_restore_cmd($data) {
-  $backup = hosting_site_get_backup($data['task_args']['bid']);
-  $option_str = _hosting_option_map($data);
-  $command = sprintf("%s/drush.php provision restore %s %s --root=%s --uri=%s -b %s", $data['publish_path'] . '/' . drupal_get_path("module", "drush"), $data['site_url'], $backup['filename'], $data['publish_path'], $data['web_host'], $option_str);
-  return $command;
-}
-
-/**
- * Maps associative array to option string passed to command line script.
- */
-function _hosting_option_map($data) {
-  foreach ($data as $key => $value) {
-    if (preg_match("/^site_/", $key) && $key != 'site_url') {
-      $option_str .= " --$key=$value";
-    }
-  }
-  $option_str .= " --task_id=" . $data['task_id'];
-  return $option_str;
-}
 
 /**
  * Implementation of hook_form_alter
@@ -281,48 +76,7 @@ function hosting_form_alter($form_id, &$form) {
     $form['#submit'] = array('hosting_configure_provision' => array());
   }
 
-  // Add redirection to next step in wizard
-  if ($step = hosting_wizard_current_step()) {
-    if ($step['form_id'] == $form_id) {
-      $form['#submit']['hosting_wizard_continue_submit'] = array();
-    }
-  }
-}
-
-/**
- * Progress to the next part of the installation wizard
- */
-function hosting_wizard_continue_submit() {
-  if ($step = hosting_wizard_current_step(TRUE)) {
-      return $step['path'];
-  }
-  else {
-      return variable_get('site_frontpage', 'node');      
-  }
-}
-
-/**
- * Return information about the current step of the installation wizard
- */
-function hosting_wizard_current_step($next = false) {
-  if (variable_get('hosting_wizard_completed', false)) {
-    return false;
-  }
-  $steps = hosting_wizard_steps();
-  
-  // set step, initializaing to first element of #steps
-  $step = variable_get('hosting_wizard_current_step', $steps['#steps'][0]);
-  if ($step == $steps['#steps'][sizeof($steps['#steps']) - 1] && $next) {
-    variable_set('hosting_wizard_completed', true);
-    variable_del('hosting_wizard_current_step');
-    return false;
-  }
-  if ($next) {
-    $key = array_search($step, $steps['#steps']);
-    variable_set('hosting_wizard_current_step', $steps['#steps'][$key + 1]);
-  }
-
-  return $steps[$step];
+  hosting_wizard_form_alter($form_id, $form);
 }
 
 /**
@@ -344,30 +98,10 @@ function hosting_init() {
   define('HOSTING_OWN_WEB_SERVER', variable_get('hosting_own_web_server', 3));
   define('HOSTING_OWN_PLATFORM', variable_get('hosting_own_platform', 6)); 
 
-  if ($step = hosting_wizard_current_step()) {
-    if ($_GET['skip_wizard']) {
-      variable_set('hosting_wizard_completed', TRUE);
-    }
-    elseif (($step['path'] != $_GET['q']) && (arg(0) .'/' . arg(1) != 'admin/help')){
-      drupal_goto($step['path']);
-    }
-  }
-}
+  hosting_wizard_init();
 
-/**
- * Control structure for stepping through the installation wizard.
- */
-function hosting_wizard_steps() {
-  return array(
-    '#steps' => array('user_edit', 'provision_configure'),
-    'user_edit' => array("path" => "user/1/edit", 'title' => t("Change your account password."), "form_id" => "user_edit", 
-        'message' => t('An administrator account has been registered for you. 
-          Please change your password to continue with the configuration process.')),
-    'provision_configure' => array("path" => "admin/settings/provision", 'title' => t("Configure the provisioning framework."), "form_id" => "provision_configure",
-      'message' => t('To be able to create sites using Hostmaster, we need some information about your server. Please complete this configuration form.')),
-  );
-}
 
+}
 
 /**
  * Replacement submit handler for the admin/settings/provision page
@@ -469,3 +203,16 @@ function _hosting_valid_ip($hostname) {
   }
   return true;
 }
+
+function hosting_format_interval($ts) {
+  if ($ts==mktime()) { 
+    return t('Now');
+  }
+  if (!$ts) {
+    //Treats EPOCH as never
+    return t('Never');
+  }
+
+  return t("%interval ago", array("%interval" => format_interval($ts, 1)));
+}
+

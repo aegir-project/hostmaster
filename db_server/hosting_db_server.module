@@ -49,7 +49,9 @@ function hosting_map_values_db_server($node) {
   $values['site_db_type'] = $node->db_type;
   $values['provision_db_user'] = $node->db_user;
   $values['provision_db_passwd'] = $node->db_passwd;
-  
+
+  $values['#export_db_server'] = array('site_db_host', 'site_db_type');
+     
   return $values;
 }
 

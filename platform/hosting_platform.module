@@ -40,6 +40,7 @@ function hosting_map_values_platform($node) {
   $reference = node_load($node->web_server);
   $values = array_merge($values, hosting_map_values($reference));
 
+  $values['#export_platform'] = array('publish_path', 'platform');
   return $values;
 }
 

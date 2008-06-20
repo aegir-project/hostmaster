@@ -38,6 +38,4 @@ function hosting_task_install() {
     PRIMARY KEY (nid)
   ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
 
-
-
 }

@@ -62,6 +62,10 @@ function hosting_map_values_task($node) {
   
   $values = array_merge($values, hosting_map_values($reference));    
 
+  $values['#export_task'] = array_merge( 
+    array('task_id'), 
+    $values['#export_' . $reference->type]);
+
   return $values;
 }
 
