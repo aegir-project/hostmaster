@@ -90,13 +90,17 @@ function hosting_wizard_steps() {
       functionality accessible via the web could result in incredibly dangerous vulnerabilities.")
     );
 
+  /**
+   * @todo: need to write a summary of imported sites.
+   */
+  /**
   $steps['import'] = array(
     'title' => t('Import'),
     'message' => t("Hostmaster can import any sites that you are already managing, and start
       managing them for you. Any time you add an additional platform, hostmaster will check for
       additional sites to import")
     );
-
+  **/
   /**
    * @todo: figure out what would go on a features page.
    *
