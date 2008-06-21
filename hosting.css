@@ -2,6 +2,7 @@
   display: inline;
 }
 
-.hosting-queue-frequency {
+.hosting-queue-frequency, .hosting-queue-frequency-head {
   text-align: right;
+  padding-right: 2em;
 }

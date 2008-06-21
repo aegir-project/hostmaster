@@ -11,10 +11,13 @@
 function hosting_dispatch() {
   $queues = hosting_get_queues();
   $now = mktime();
+  variable_set("hosting_dispatch_last_run", $now);
   foreach ($queues as $queue => $info) {
-    if (($now - $info["last"]) >= $info["calc_frequency"]) {
-      system(hosting_generate_command("hosting", $queue, array(),
-        array('items' => $info['calc_items'], 'background' => TRUE)));
+    if ($info['enabled']) {
+      if (($now - $info["last"]) >= $info["calc_frequency"]) {
+        system(hosting_generate_command("hosting", $queue, array(),
+          array('items' => $info['calc_items'], 'background' => TRUE)));
+      }
     }
   }
 }
@@ -25,55 +28,63 @@ function hosting_dispatch() {
  * Generate a list of queues, and the frequency / amount of items
  * that need to be processed for each of them.
  */
-function hosting_get_queues() {
-  $defaults = array(
-    'type' => 'serial',
-    'max_threads' => 6,
-    'threshold' => '100',
-    'min_threads' => 1,
-    'timeout' => strtotime("10 minutes", 0),
-    'frequency' => strtotime("5 minutes", 0),
-    'items' => 5,
-    'enabled' => TRUE,
-    'singular' => t('item'),
-    'plural' => t('items')
-  );  
-  $queues = module_invoke_all("hosting_queues");
-  foreach ($queues as $key => $queue) {
-    $queue = array_merge($defaults, $queue);
+function hosting_get_queues($refresh = false) {
+  static $cache = null;
 
-    // Configurable settings. 
-    $configured = array(
-      'frequency' => variable_get('hosting_queue_' . $key . '_frequency', $queue['frequency']),
-      'items' => variable_get('hosting_queue_' . $key . '_items', $queue['items']),
-      'enabled' => variable_get('hosting_queue_' . $key . '_enabled', $queue['enabled']),
-      'last_run' => variable_get('hosting_queue_' . $key . '_last_run', false),
-      'running' => variable_get('hosting_queue_' . $key . '_running', false),
-      'interval' => variable_get('hosting_queue_' . $key . '_interval', false),
-    );
-    $queue = array_merge($queue, $configured);
+  if (is_null($cache) || $refresh) {
+    $cache = array();
+    $defaults = array(
+      'type' => 'serial',
+      'max_threads' => 6,
+      'threshold' => '100',
+      'min_threads' => 1,
+      'timeout' => strtotime("10 minutes", 0),
+      'frequency' => strtotime("5 minutes", 0),
+      'items' => 5,
+      'enabled' => TRUE,
+      'singular' => t('item'),
+      'plural' => t('items')
+    );  
+    $queues = module_invoke_all("hosting_queues");
+    foreach ($queues as $key => $queue) {
+      $queue = array_merge($defaults, $queue);
 
-    if ($queue['type'] == 'batch') {
-      $threads = $queue['total_items'] / $queue['threshold'];
-      if ($threads <= $queue['min_threads']) {
-        $threads = $queue['min_threads'];
-      } elseif ($thread > $queue['max_threads']) {
-        $threads = $queue['max_threads'];
+      // Configurable settings. 
+      $configured = array(
+        'frequency' => variable_get('hosting_queue_' . $key . '_frequency', $queue['frequency']),
+        'items' => variable_get('hosting_queue_' . $key . '_items', $queue['items']),
+        'enabled' => variable_get('hosting_queue_' . $key . '_enabled', $queue['enabled']),
+        'last_run' => variable_get('hosting_queue_' . $key . '_last_run', false),
+        'running' => variable_get('hosting_queue_' . $key . '_running', false),
+        'interval' => variable_get('hosting_queue_' . $key . '_interval', false),
+      );
+      $queue = array_merge($queue, $configured);
+
+      if ($queue['type'] == 'batch') {
+        $threads = $queue['total_items'] / $queue['threshold'];
+        if ($threads <= $queue['min_threads']) {
+          $threads = $queue['min_threads'];
+        } elseif ($thread > $queue['max_threads']) {
+          $threads = $queue['max_threads'];
+        }
+        $queue['calc_threads'] = $threads;
+        $queue['calc_frequency'] = ceil($queue['frequency'] / $threads);
+        $queue['calc_items'] = ceil($queue['total_items'] / $threads);
       }
-      $queue['calc_threads'] = $threads;
-      $queue['calc_frequency'] = ceil($queue['frequency'] / $threads);
-      $queue['calc_items'] = ceil($queue['total_items'] / $threads);
-    }
-    else {
-      $queue['calc_frequency'] = $queue['frequency'];
-      $queue['calc_items'] = $queue['items'];
-    }
+      else {
+        $queue['calc_frequency'] = $queue['frequency'];
+        $queue['calc_items'] = $queue['items'];
+      }
 
-    $queue['last'] = variable_get('hosting_queue_' . $key . '_last_run', 0);
-    $queues[$key] = $queue;
+      $queue['last'] = variable_get('hosting_queue_' . $key . '_last_run', 0);
+      $queues[$key] = $queue;
+    }
+    $cache = $queues;
   }
-  return $queues;
+  
+  return $cache;
 }
+
 
 /**
  * Implementation of hook_hosting_queues
@@ -291,7 +302,6 @@ function hosting_queues_configure() {
 
     $form[$queue]["enabled"] = array(
       '#type' => 'checkbox',
-      '#value' => true,
       '#default_value' => $info['enabled']
     );
 
@@ -315,23 +325,25 @@ function hosting_queues_configure() {
         '#suffix' => t(' %items every ', array('%items' => $info['plural'])),
       );
     }
-    foreach ($units as $length => $unit) {
+    foreach (array_reverse(array_keys($units)) as $length) {
+      $unit = $units[$length];
+      
       if (!($info['frequency'] % $length)) {
         $frequency_ticks = $info['frequency'] / $length;
-        $frequency_unit = $unit;
+        $frequency_length = $length;
+        break;
       }
     }
-
-    $form[$queue]['frequency']["frequency_ticks"] = array(
+    $form[$queue]['frequency']["ticks"] = array(
       '#type' => 'textfield',
       '#default_value' => $frequency_ticks,
-      '#maxlength' => 10,
-      '#size' => 10
+      '#maxlength' => 5,
+      '#size' => 5
     );
-    $form[$queue]['frequency']["frequency_units"] = array(
+    $form[$queue]['frequency']["unit"] = array(
       '#type' => 'select',
       '#options' => $units,
-      '#default_value' => $frequency_units,
+      '#default_value' => $frequency_length,
     );
   }
   $form['submit'] = array('#type' => 'submit', '#value' => t('Save changes'));
@@ -342,7 +354,9 @@ function theme_hosting_queues_configure($form) {
   $queues = hosting_get_queues();
 
   $rows = array();
-  $header = array('', t('Description'), t('Frequency'), t('Last run'),);
+  $header = array('', t('Description'), 
+    array('data' => t('Frequency'), 'class' => 'hosting-queue-frequency-head'),
+    t('Last run'),);
   foreach ($queues as $key => $info) {
     $row = array();
     $row[] = drupal_render($form[$key]['enabled']); 
@@ -355,4 +369,17 @@ function theme_hosting_queues_configure($form) {
   $output .= drupal_render($form['submit']);
   $output .= drupal_render($form);
   return $output;
+}
+
+function hosting_queues_configure_submit($form_id, $values) {
+  foreach (hosting_get_queues() as $queue => $info) {
+    if ($values[$queue]) {
+      variable_set("hosting_queue_" . $queue . "_enabled", $values[$queue]['enabled']);
+      variable_set("hosting_queue_" . $queue . "_frequency", $values[$queue]['frequency']['ticks'] * $values[$queue]['frequency']['unit']);
+      if ($info['type'] == 'serial') {
+        variable_set("hosting_queue_" . $queue . "_items", $values[$queue]['items']);
+      }
+
+    }
+  }
 }

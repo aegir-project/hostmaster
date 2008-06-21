@@ -2,13 +2,16 @@
 
 function hosting_cron_hosting_queues() {
   $items['cron'] = array(
+    'type' => 'batch',
     'name' => t('Cron queue'),
     'description' => t('Run cron on hosted sites.'),
-    'items' => hosting_site_count(),
+    'total_items' => hosting_site_count(),
     'frequency' => strtotime("1 hour", 0),
     'min_threads' => 6,
     'max_threads' => 12,
-    'threshold' => 100
+    'threshold' => 100,
+    'singular' => t('site'),
+    'plural' => t('sites'),
   );
   return $items;
 }
