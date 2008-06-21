@@ -7,52 +7,17 @@
  * Implementation of hook_help()
  */
 function hosting_help($section) {
-  $step = hosting_wizard_current_step();
 
   switch ($section) {
-    case $step['path'] :
-      if (isset($step['message'])) {
-        $return = $step['message'] . '<br />';
-      }
-      $return .= t("If you do not want help configuring Hostmaster, just <a href='@link'>click this link</a>",
-        array('@link' => url(variable_get('site_frontpage', 'node'), 'skip_wizard=TRUE')));
-      return $return;
-      
     case 'admin/help#hosting':
-      $username = PROVISION_SCRIPT_USER;
-
-
-      $drush_path = $_SERVER['DOCUMENT_ROOT'] . '/' . drupal_get_path('module', 'drush') . '/drush.php';
-      $cron_cmd['@drush_path'] = $drush_path;
-      $cron_cmd['@cron_cmd'] = <<<EOF
-[$username@hm2 ~]$ crontab -e
-EOF;
-
-      $cron_cmd['@cron_line'] = <<<EOF
-*/5 * * * * (php "$drush_path" \
-            -r $_SERVER[DOCUMENT_ROOT] \
-            -l $_SERVER[HTTP_HOST] hosting tasks)
-EOF;
-
       $output .= t('<p>The Hostmaster system is a set of modules that provide an interface to the <a href="@provision_help">Provisioning framework</a>.</p>', 
                   array('@provision_help' => url('admin/help/provision')));
       $output .= '</dl>';      
       $output .= '<a name=\'requirements\'><h3>' . t('Requirements') . '</h3></a>';
       $output .= '<ul>';
       // @TODO: make this more clear
-      $output .= '<li>' . t('<p><strong>Correctly configured provisioning framework.</strong>
-                  This system requires the <a href="@provision_help">Provisioning framework</a> to be configured
-                  and working for changes to have any effect.</p>
-                  <p><strong>To configure: </strong> As this Hostmaster site is also running on a platform, you can configure this platform in the <a href="@provision_section">Provisioning section</a>.
-                  If you have multiple platforms, web servers or database servers, you can configure their settings
-                  for each individual item, on their edit pages.</p>', array('@provision_help' => url('admin/help/provision'), '@provision_section' => url('admin/settings/provision'))) . '</li>';
-      $output .= '<li>' . t('<p><strong>A cron entry for the back end scripts.</strong>
-                  Changes to this system are executed via a back end script which needs to be called by a user other than 
-                  the web server user for security reasons at regular intervals.</p>
-                  <p><strong>To configure: </strong> Run the crontab command : 
-                  <pre>@cron_cmd</pre>
-                  And then add the following line to it :
-                  <pre>@cron_line</pre></p>', $cron_cmd) . '</li>';
+      $output .= '<li>' . _provision_requirements('provision') . '</li>';
+      $output .= '<li>' . _provision_requirements('cron')  . '</li>';
       $output .= '</ul>';
 
       $output .= '<a name=\'requirements\'><h3>' . t('Glossary') . '</h3></a>';
@@ -65,7 +30,6 @@ EOF;
           $output .= '<dd>' . $info->description . '</dd>';
         }
       }
-
       
       $output .= '<a name=\'commands\'><h3>' . t('Commands') . '</h3></a>';
       $commands = module_invoke_all('drush_command');
@@ -85,15 +49,58 @@ EOF;
       }
       $output .= "</dl>";
       return $output;
-      
+
     case 'admin/settings/provision' :
       $output = t("These settings will also change the settings of the platform, database server and web server that this site is running on.");
     
       return $output;
-
   }
 }
 
+function _provision_cron_requirements() {
+  $username = PROVISION_SCRIPT_USER;
+  $drush_path = $_SERVER['DOCUMENT_ROOT'] . '/' . drupal_get_path('module', 'drush') . '/drush.php';
+  $cron_cmd['@drush_path'] = $drush_path;
+  $cron_cmd['!queueconf'] = l(t("Queue administration"), "admin/settings/queues");
+  $cron_cmd['@cron_cmd'] = <<<EOF
+[$username@hm2 ~]$ crontab -e
+EOF;
+
+  $cron_cmd['@cron_line'] = <<<EOF
+*/1 * * * * (php "$drush_path" \
+            -r $_SERVER[DOCUMENT_ROOT] \
+            -l $_SERVER[HTTP_HOST] hosting dispatch)
+EOF;
+
+ 
+  $help['summary'] = t('<p><strong>A cron entry for the back end script.</strong>
+                  Changes to this system are executed via a back end script which needs to be called by a user other than 
+                  the web server user for security reasons at regular intervals.</p>
+                  <p>The intervals at which these commands are run can be customised by going to the !queueconf section.</p>');
+  $help['configuration'] = 
+    t('<strong>To configure: </strong><p> Run the crontab command : 
+                  <pre>@cron_cmd</pre>
+                  And then add the following line to it :
+                  <pre>@cron_line</pre></p>', $cron_cmd);
+  return $help;
+}
+
+function _provision_provision_requirements() {
+  $help['summary'] =
+      t('<p><strong>Correctly configured provisioning framework.</strong>
+         This system requires the <a href="@provision_help">Provisioning framework</a> to be configured
+        and working for changes to have any effect.</p>
+        <p><strong>To configure: </strong> As this Hostmaster site is also running on a platform, you can configure this platform in the <a href="@provision_section">Provisioning section</a>.
+        If you have multiple platforms, web servers or database servers, you can configure their settings
+        for each individual item, on their edit pages.</p>', array('@provision_help' => url('admin/help/provision'), '@provision_section' => url('admin/settings/provision')));
+
+ return $help;
+
+}
+
+/**
+ * TODO: replace. this is OLD OLD OLD
+ */
 function _hosting_introduction() {
   $create_site_link = l(t('Create a site now?'), 'node/add/site');
   if ($_GET['q'] != variable_get('site_frontpage', 'node')) {
