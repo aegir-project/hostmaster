@@ -15,12 +15,12 @@ include_once('hosting_views.inc');
 include_once('hosting.wizard.inc');
 include_once('hosting.queues.inc');
 
-
 /**
  * Implementation of hook_menu()
  */
 function hosting_menu($may_cache = true) {
   $items = array();
+  hosting_wizard_menu($may_cache, $items);
   if ($may_cache) {
     $items[] = array(
       'path' => 'admin/settings/queues',
@@ -76,15 +76,17 @@ function hosting_form_alter($form_id, &$form) {
     $form['#submit'] = array('hosting_configure_provision' => array());
   }
 
-  hosting_wizard_form_alter($form_id, $form);
+}
+
+/**
+ * Implementation of hook_perm
+ */
+function hosting_perm() {
+  return array('access hosting wizard');
 }
 
 /**
  * Implementation of hook_init
- *
- * Used by hosting to drive the installation wizard, by redirecting to the right page
- * in the wizard.
- * @todo Allow the user to go to help paths.
  */
 function hosting_init() {
   // Definitions for the default platforms, clients etc.
@@ -97,10 +99,6 @@ function hosting_init() {
   define('HOSTING_OWN_DB_SERVER', variable_get('hosting_own_db_server', 2));
   define('HOSTING_OWN_WEB_SERVER', variable_get('hosting_own_web_server', 3));
   define('HOSTING_OWN_PLATFORM', variable_get('hosting_own_platform', 6)); 
-
-  hosting_wizard_init();
-
-
 }
 
 /**
