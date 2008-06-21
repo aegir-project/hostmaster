@@ -36,8 +36,12 @@ function hostmaster_profile_details() {
  */
 function hostmaster_profile_final() {
   /* Default node types and default node */
- $types =  node_types_rebuild();
+  $types =  node_types_rebuild();
 
+  //set up needed PROVISION_CONSTANTS
+ if (function_exists('provision_init')) {
+   provision_init();
+ }
   /**
   * Generate administrator account
   */
@@ -55,7 +59,7 @@ function hostmaster_profile_final() {
   $node->uid = 1;
   $node->type = 'client';
   $node->email = ($_SERVER['SERVER_ADMIN']) ? $_SERVER['SERVER_ADMIN'] : 'changeme@example.com';
-  $node->name = 'Administrator';
+  $node->client_name = 'Administrator';
   $node->status = 1;
   node_save($node);
   variable_set('hosting_default_client', $node->nid);  
@@ -126,6 +130,7 @@ function hostmaster_profile_final() {
   variable_set('hosting_default_platform', $node->nid);
   variable_set('hosting_own_platform', $node->nid);
 
+
   #verify platform
   hosting_add_task(variable_get('hosting_own_platform', 6), "verify");
 
@@ -133,6 +138,7 @@ function hostmaster_profile_final() {
   _hosting_add_block("views", "servers", "garland", 1, 0, "right");
 
   #initial configuration of hostmaster - todo
+  variable_set('site_name', t('Hostmaster'));
   variable_set('site_frontpage', 'hosting/sites');
 
   // @todo create proper roles, and set up views to be role based
@@ -141,7 +147,7 @@ function hostmaster_profile_final() {
   views_invalidate_cache();
   menu_rebuild();
 
-  drupal_goto('hosting/sites');
+  drupal_goto('hosting/wizard');
 }
 
 /**
