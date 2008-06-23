@@ -9,14 +9,16 @@
  * from the interface.
  */
 function hosting_dispatch() {
-  $queues = hosting_get_queues();
   $now = mktime();
   variable_set("hosting_dispatch_last_run", $now);
-  foreach ($queues as $queue => $info) {
-    if ($info['enabled']) {
-      if (($now - $info["last"]) >= $info["calc_frequency"]) {
-        system(hosting_generate_command("hosting", $queue, array(),
-          array('items' => $info['calc_items'], 'background' => TRUE)));
+  if (variable_get('hosting_dispatch_enabled', false)) {
+    $queues = hosting_get_queues();
+    foreach ($queues as $queue => $info) {
+      if ($info['enabled']) {
+        if (($now - $info["last"]) >= $info["calc_frequency"]) {
+          system(hosting_generate_command("hosting", $queue, array(),
+            array('items' => $info['calc_items'], 'background' => TRUE)));
+        }
       }
     }
   }
@@ -382,4 +384,11 @@ function hosting_queues_configure_submit($form_id, $values) {
 
     }
   }
+}
+
+function hosting_queues_cron_cmd() {
+  $drush_path = sprintf("%s/%s/drush.php", PROVISION_DOCROOT_PATH, drupal_get_path('module', 'drush'));
+  $cron_cmd = sprintf("*/1 * * * * (php %s hosting dispatch --uri=%s --root=%s)", 
+    escapeshellarg($drush_path), escapeshellarg(PROVISION_DOMAIN), escapeshellarg(PROVISION_DOCROOT_PATH));
+  return $cron_cmd;
 }

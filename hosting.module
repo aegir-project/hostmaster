@@ -54,6 +54,11 @@ function hosting_drush_command() {
     'description' => 'Centralized command for dispatching the various queue processors (hosting, cron, backup etc.)'
   );
 
+  $items['hosting setup'] = array(
+    'callback' => 'hosting_setup',
+    'description' => t('Set up initial configuration settings such as the cron entry for the queue dispatcher and more.'),
+  );
+
   $queues = hosting_get_queues();
   foreach ($queues as $queue => $info) {
     $dispatch = t("Dispatched: @items items every @frequency minutes", array('@items' => $info['items'], '@frequency' => round($info['frequency'] / 60)));
@@ -214,3 +219,41 @@ function hosting_format_interval($ts) {
   return t("@interval ago", array("@interval" => format_interval(mktime() - $ts, 1)));
 }
 
+function hosting_setup() {
+  $newcron = array();
+  variable_set('hosting_dispatch_enabled', FALSE);
+  $existing = FALSE;
+  exec('crontab -l 2> /dev/null', $oldcron);
+  if (sizeof($oldcron)) {
+    foreach ($oldcron as $line => $entry) {
+      if (preg_match('/hosting dispatch/', $entry)) {
+        print "Existing hosting dispatch cron entry was found\n";
+        $existing = TRUE;
+        break;
+      }
+    }
+  }
+  else {
+    print "No existing crontab was found\n";
+  }
+
+  if (!$existing) {
+    if (sizeof($oldcron)) {
+      $newcron = $oldcron;
+      variable_set('hosting_cron_backup', $oldcron);
+#      exec('crontab -r', $delcron);
+    }
+    $newcron[] = hosting_queues_cron_cmd();
+    $tmpnam = tempnam('hostmaster', 'hm.cron');
+    $fp = fopen($tmpnam, "w");
+    foreach ($newcron as $line) {
+      fwrite($fp, $line . "\n");
+    }
+    fclose($fp);
+    system(sprintf('crontab %s', escapeshellarg($tmpnam)));
+    unlink($tmpnam);
+    print "Installed hosting dispatch cron entry to run every minute\n";
+  }
+  
+  variable_set('hosting_dispatch_enabled', TRUE);
+}
