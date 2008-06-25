@@ -295,6 +295,8 @@ function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
     l(t('Home'), NULL), 
     l($ref->title, 'node/' . $ref->nid)
   ));
+  $node->content['fields']['#prefix'] = '<div class="hosting-task-fields">';
+  $node->content['fields']['#suffix'] = '</div>';
   $node->content['fields']['reference'] = array(
     '#type' => 'item',
     '#title' => drupal_ucfirst($ref->type),

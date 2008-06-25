@@ -6,3 +6,19 @@
   text-align: right;
   padding-right: 2em;
 }
+
+.hosting-task-log-date {
+  white-space : nowrap
+}
+
+.hosting-task-log-type {
+  font-weight : bold;
+}
+
+.hosting-task-log-error {
+  color: red
+}
+
+.hosting-task-fields div {
+  display: inline;
+}
