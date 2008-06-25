@@ -286,6 +286,7 @@ function hosting_task_load($node) {
  * Implementation of hook_view().
  */
 function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
+  drupal_add_css(drupal_get_path('module', 'hosting') . '/hosting.css');
   $node = node_prepare($node, $teaser);
   
   $ref = node_load($node->rid);
@@ -294,21 +295,21 @@ function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
     l(t('Home'), NULL), 
     l($ref->title, 'node/' . $ref->nid)
   ));
-  $node->content['reference'] = array(
+  $node->content['fields']['reference'] = array(
     '#type' => 'item',
     '#title' => drupal_ucfirst($ref->type),
     '#value' => _hosting_node_link($node->rid),
   );
   
   if ($node->executed) {
-    $node->content['executed'] = array(
+    $node->content['fields']['executed'] = array(
       '#type' => 'item',
       '#title' => t('Executed'),
       '#value' => format_date($node->executed),
     );
   }
   if ($node->task_status) {
-    $node->content['status'] = array(
+    $node->content['fields']['status'] = array(
       '#type' => 'item',
       '#title' => t('Status'),
       '#value' => implode(", ", _hosting_parse_error_code($node->task_status)),
@@ -318,14 +319,17 @@ function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
   # Display table containing the logged information for this task
   $result = db_query("SELECT * FROM {hosting_task_log} WHERE vid=%d", $node->vid);
   if (db_num_rows($result)) {
-    $header = array("type", "message", "date");
+    $header = array( t("Date"), t("Message"));
     while ($entry = db_fetch_object($result)) {
-      $rows[] = array($entry->type, $entry->message, format_date($entry->timestamp, "custom", "Y-m-d m:s"));
+      $row =  array(array('data' => format_date($entry->timestamp, "small", "Y-m-d m:s"), 'class' => 'hosting-task-log-date'), "<span class='hosting-task-log-type'>" . $entry->type . "</span> " . $entry->message );
+      $rows[] = array('data' => $row, 'class' => 'hosting-task-log-' . $entry->type);
     }
 
     
     $node->content['hosting_log'] = array(
       '#weight' => 1,
+      '#type' => 'item',
+      '#title' => t('Log'),
       '#value' => theme("table", $header, (array) $rows)
     );
     
