@@ -236,7 +236,7 @@ function hosting_site_update(&$node) {
 }
 
 function hosting_site_load($node) {
-  $additions = db_fetch_object(db_query('SELECT  client, db_server, platform, last_cron, status , profile AS site_status FROM {hosting_site} WHERE vid = %d', $node->vid));
+  $additions = db_fetch_object(db_query('SELECT  client, db_server, platform, last_cron, status  AS site_status FROM {hosting_site} WHERE vid = %d', $node->vid));
   return $additions;
 }
 
