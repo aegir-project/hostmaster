@@ -419,7 +419,7 @@ function hosting_wizard_hosting_import() {
     $form['own']['#value'] = t('* This is the site node for the Hosting site. This is the site that manages all the other sites, and should be regularly backed up.');
   }
   else {
-    $form['no_sites'] = t('<p>Provision did not find any sites to import.</p>');
+    $form['no_sites']['#value'] = t('<p>Provision did not find any sites to import.</p>');
   }
   return hosting_wizard_form('hosting/import', $form);
 }
