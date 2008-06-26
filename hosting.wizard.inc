@@ -118,7 +118,9 @@ function hosting_wizard_intro() {
     <p>Once properly configured, this system will help you manage your Drupal sites. 
     It will even be able to manage them across multiple versions of Drupal, and even across multiple servers.</p>
     <p>Before we get started with the configuration, please make sure that you meet the following requirements.</p>");
-  $form['requirements']['#value'] = _provision_requirements('basic');
+  $form['drupal'] = array('#type' => 'requirement_help', '#requirement' => 'basic_drupal');
+  $form['unix'] = array('#type' => 'requirement_help', '#requirement' => 'basic_unix');
+  $form['server'] = array('#type' => 'requirement_help', '#requirement' => 'basic_server');
 
   return hosting_wizard_form('intro', $form);
 }

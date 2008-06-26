@@ -174,17 +174,15 @@ function hosting_generate_command($system, $command, $args = array(), $options =
   if ($options['backend']) {
     $option_str .= " --backend";
   }
-  
+  $drush_path = sprintf("%s/%s/drush.php", $data['publish_path'], drupal_get_path("module", "drush")); 
   // @TODO: Implement proper multi platform / multi server support.
-  $cmd = sprintf(escapeshellcmd("%s/%s/drush.php %s %s %s --root=%s --uri=%s %s"), 
-    escapeshellarg($data['publish_path']), escapeshellarg(drupal_get_path("module", "drush")),
+  $cmd = sprintf(escapeshellcmd("%s %s %s %s --root=%s --uri=%s %s"), escapeshellcmd($drush_path) ,
     escapeshellarg($system), escapeshellarg($command), implode(" ", $args), escapeshellarg($data['publish_path']),
     escapeshellarg($data['web_host']), $option_str);
 
   if ($options['background']) {
     $cmd .= " &";
   }
-
   return $cmd;
 }
 
@@ -240,7 +238,7 @@ function hosting_tasks_queue($count) {
     $return = join("\n", $return);
     $data = unserialize($return);
 
-    hosting_task_log($task->vid, 'command', "Executed: " . escapeshellcmd("$cmd"));
+    hosting_task_log($task->vid, 'command', escapeshellcmd("$cmd"));
 
     if (!is_array($data)) {
       hosting_task_log($task->vid, 'error', t("The command could not be executed succesfully (return: %return, data: %data, code: %code)", array("%return" => $return, "%data" => $data, "%code" =>  $code)));
@@ -384,6 +382,11 @@ function hosting_queues_configure_submit($form_id, $values) {
 
     }
   }
+}
+
+function hosting_queue_drush_path($platform) {
+
+
 }
 
 function hosting_queues_cron_cmd() {

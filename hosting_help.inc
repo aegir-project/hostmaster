@@ -13,14 +13,13 @@ function hosting_help($section) {
       $output .= t('<p>The Hostmaster system is a set of modules that provide an interface to the <a href="@provision_help">Provisioning framework</a>.</p>', 
                   array('@provision_help' => url('admin/help/provision')));
       $output .= '</dl>';      
-      $output .= '<a name=\'requirements\'><h3>' . t('Requirements') . '</h3></a>';
-      $output .= '<ul>';
+      $output .= '<a name=\'requirements\'></a><h3>' . t('Requirements') . '</h3></a>';
       // @TODO: make this more clear
-      $output .= '<li>' . _provision_requirements('provision') . '</li>';
-      $output .= '<li>' . _provision_requirements('cron')  . '</li>';
-      $output .= '</ul>';
+      $output .= _provision_requirements('provision');
+      $output .= _provision_requirements('hosting_setup');
+      $output .=  _provision_requirements('cron');
 
-      $output .= '<a name=\'requirements\'><h3>' . t('Glossary') . '</h3></a>';
+      $output .= '<a name=\'requirements\'></a><h3>' . t('Glossary') . '</h3></a>';
       $output .= '<dl>';
       $types = node_get_types();
 
@@ -57,43 +56,49 @@ function hosting_help($section) {
   }
 }
 
+function _provision_hosting_setup_requirements() {
+  $docroot = PROVISION_DOCROOT_PATH;
+  $uri = PROVISION_DOMAIN;
+  $drush_path = PROVISION_DRUSH_PATH;
+  $setup_cmd = <<<EOF
+    [$username@hm2 ~]$ cd $docroot
+    [$username@hm2 ~]$ $drush_path hosting setup --uri=$uri
+EOF;
+  $help['title'] = t('Perform initial configuration by running the <code>Hosting Setup</code> command.');
+
+  $help['summary'][] = t('The hosting setup command performs several useful installation functions, but it\'s primary responsibility
+        is adding, and ensuring that the crontab entry for the queue dispatcher has been correctly installed.');
+
+  $help['summary'][] = t('The queue dispatcher runs every minute, and keeps track of what work needs to be done on the system,
+    and instructs the provisioning framework to perform the needed tasks in the task queue.');
+  $help['summary'][] = t('Without the dispatcher, changes on the front end will not result in the required backend configuration, and your sites would not be managed.');
+  $help['configuration'] = t('Ensure that you are logged into the shell as %script_user, and then execute the following commands :<pre>@setup_cmd</pre>', 
+     array('%script_user' => PROVISION_SCRIPT_USER, '@setup_cmd' => $setup_cmd));
+
+  return $help;
+}
 function _provision_cron_requirements() {
   $username = PROVISION_SCRIPT_USER;
-  $drush_path = $_SERVER['DOCUMENT_ROOT'] . '/' . drupal_get_path('module', 'drush') . '/drush.php';
-  $cron_cmd['@drush_path'] = $drush_path;
   $cron_cmd['!queueconf'] = l(t("Queue administration"), "admin/settings/queues");
-  $cron_cmd['@cron_cmd'] = <<<EOF
-[$username@hm2 ~]$ crontab -e
-EOF;
-
-  $cron_cmd['@cron_line'] = <<<EOF
-*/1 * * * * (php "$drush_path" \
-            -r $_SERVER[DOCUMENT_ROOT] \
-            -l $_SERVER[HTTP_HOST] hosting dispatch)
-EOF;
-
- 
-  $help['summary'] = t('<p><strong>A cron entry for the back end script.</strong>
-                  Changes to this system are executed via a back end script which needs to be called by a user other than 
-                  the web server user for security reasons at regular intervals.</p>
-                  <p>The intervals at which these commands are run can be customised by going to the !queueconf section.</p>');
-  $help['configuration'] = 
-    t('<strong>To configure: </strong><p> Run the crontab command : 
-                  <pre>@cron_cmd</pre>
-                  And then add the following line to it :
-                  <pre>@cron_line</pre></p>', $cron_cmd);
+  $cron_cmd['@cron_line'] = hosting_queues_cron_cmd();
+  $help['title'] = t('A cron entry for queue dispatcher.');
+  $help['summary'][] = t('Changes to this system are executed via a back end script which needs to be called by a user other than 
+    the web server user for security reasons at regular intervals.');
+  $help['summary'][] = t('The intervals at which these commands are run can be customised by going to the !queueconf section.', $cron_cmd);
+  $help['summary'][] = t('The <code>hosting setup</code> command installs the required cron entry for you.', $cron_cmd);
+  $help['configuration'] = t('Add the following line to your crontab : <code>@cron_line</code>', $cron_cmd);
   return $help;
 }
 
 function _provision_provision_requirements() {
-  $help['summary'] =
-      t('<p><strong>Correctly configured provisioning framework.</strong>
-         This system requires the <a href="@provision_help">Provisioning framework</a> to be configured
-        and working for changes to have any effect.</p>
+  $help['title'] = t('A configured and verified provisioning framework.');
+  $help['summary'] = t('This system requires the <a href="@provision_help">Provisioning framework</a> to be configured
+         and working for changes to have any effect.</p>', array('@provision_help' => l('admin/help/provision/requirements')));
+  /*
         <p><strong>To configure: </strong> As this Hostmaster site is also running on a platform, you can configure this platform in the <a href="@provision_section">Provisioning section</a>.
         If you have multiple platforms, web servers or database servers, you can configure their settings
         for each individual item, on their edit pages.</p>', array('@provision_help' => url('admin/help/provision'), '@provision_section' => url('admin/settings/provision')));
-
+   */
  return $help;
 
 }
