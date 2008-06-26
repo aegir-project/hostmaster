@@ -43,6 +43,19 @@ function hosting_site_count() {
 }
 
 /**
+ * Retrieve sites on a specific platform, with a specific status
+ */
+function hosting_get_sites_by_status($platform, $status) {
+  $nodes = array();
+  $result = db_query("SELECT nid FROM hosting_site WHERE platform=%d AND status & %d", $platform, $status);
+  while ($nid = db_fetch_object($result)) {
+    $nodes[$nid->nid] = node_load($nid->nid);
+  }
+
+  return $nodes;
+}
+
+/**
  * Helper function to generate new site node
  */
 function hosting_add_site($url, $client, $platform, $db_server, $profile, $site_status) {
@@ -203,6 +216,9 @@ function hosting_site_insert(&$node) {
   if ((!$node->old_vid) && !($node->site_status & HOSTING_SITE_IMPORTED)) {
     hosting_add_task($node->nid, 'install');    
   }
+  if (($node->platform == HOSTING_OWN_PLATFORM) && ($node->title == PROVISION_DOMAIN)) {
+    variable_set('HOSTING_OWN_SITE', $node->nid);
+  }
 }
  
 function hosting_site_update(&$node) {
@@ -220,7 +236,7 @@ function hosting_site_update(&$node) {
 }
 
 function hosting_site_load($node) {
-  $additions = db_fetch_object(db_query('SELECT  client, db_server, platform, last_cron, status AS site_status FROM {hosting_site} WHERE vid = %d', $node->vid));
+  $additions = db_fetch_object(db_query('SELECT  client, db_server, platform, last_cron, status , profile AS site_status FROM {hosting_site} WHERE vid = %d', $node->vid));
   return $additions;
 }
 

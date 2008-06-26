@@ -295,23 +295,23 @@ function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
     l(t('Home'), NULL), 
     l($ref->title, 'node/' . $ref->nid)
   ));
-  $node->content['fields']['#prefix'] = '<div class="hosting-task-fields">';
-  $node->content['fields']['#suffix'] = '</div>';
-  $node->content['fields']['reference'] = array(
+  $node->content['#prefix'] = '<div class="hosting-task-fields">';
+  $node->content['#suffix'] = '</div>';
+  $node->content['reference'] = array(
     '#type' => 'item',
     '#title' => drupal_ucfirst($ref->type),
     '#value' => _hosting_node_link($node->rid),
   );
   
   if ($node->executed) {
-    $node->content['fields']['executed'] = array(
+    $node->content['executed'] = array(
       '#type' => 'item',
       '#title' => t('Executed'),
       '#value' => format_date($node->executed),
     );
   }
   if ($node->task_status) {
-    $node->content['fields']['status'] = array(
+    $node->content['status'] = array(
       '#type' => 'item',
       '#title' => t('Status'),
       '#value' => implode(", ", _hosting_parse_error_code($node->task_status)),
@@ -339,6 +339,20 @@ function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
   
   return $node;
 }
+
+/**
+ * Retrieve the latest task related to the specified platform, of a specific type
+ *
+ * This is used for documenting issues with verification.
+ */
+function hosting_get_most_recent_task($rid, $type) {
+  $nid = db_result(db_query("SELECT nid FROM hosting_task t WHERE task_type='%s' and t.rid=%d ORDER BY t.executed DESC limit 1", $type, $rid));
+  if ($nid) {
+    return node_load($nid);
+  }
+  return false;
+}
+
 
 /**
  * Turn bitmask integer error code into associative array

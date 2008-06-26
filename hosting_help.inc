@@ -90,16 +90,21 @@ function _provision_cron_requirements() {
   return $help;
 }
 
-function _provision_provision_requirements() {
+
+function _provision_platform_requirements() {
+  $platform = node_load(HOSTING_OWN_PLATFORM);
+  $web_server = node_load(HOSTING_OWN_WEB_SERVER);
+  $db_server = node_load(HOSTING_OWN_DB_SERVER);
+
+  $task = hosting_get_most_recent_task($platform->nid, 'verify');
+  
   $help['title'] = t('A configured and verified provisioning framework.');
-  $help['summary'] = t('This system requires the <a href="@provision_help">Provisioning framework</a> to be configured
-         and working for changes to have any effect.</p>', array('@provision_help' => l('admin/help/provision/requirements')));
-  /*
-        <p><strong>To configure: </strong> As this Hostmaster site is also running on a platform, you can configure this platform in the <a href="@provision_section">Provisioning section</a>.
-        If you have multiple platforms, web servers or database servers, you can configure their settings
-        for each individual item, on their edit pages.</p>', array('@provision_help' => url('admin/help/provision'), '@provision_section' => url('admin/settings/provision')));
-   */
- return $help;
+  $help['summary'][] = t('In order for the hosting system to be able to create sites, it needs a platform to publish these sites on. A platform is a Drupal site that has the provision back end installed. Each platform also requires one correctly configured web server and one correctly configured database server. Once a new platform has been created, Hosting will automatically schedule a task that will verify the new platform, to check that it is in working order.');
+  $help['summary'][] = t('As hosting is also running on a platform, it is suggested that you succesfully configure your <a href="@platform">primary platform</a>
+    before creating additional platforms and servers.', array('@platform' => url('node/' . HOSTING_OWN_PLATFORM)));
+  $help['summary'][] = t('Each platform must be verified at least once, but if you find your platform is not being verified, look at the error log on the <a href="@verify_link">Verify platform task of this platform</a>', array("@verify_link" => url("node/" . $task->nid)));
+
+   return $help;
 
 }
 

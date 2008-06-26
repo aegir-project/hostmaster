@@ -242,8 +242,8 @@ function hosting_wizard_provision_db() {
     '#type' => 'fieldset',
     '#collapsed' => false,
     '#title' => t('Database account details'),
-    '#description' => _provision_requirements('mysql_user', 'summary'),
   );
+  $form['db_details']['help'] = array('#type' => 'requirement_help', '#requirement' => 'mysql_user', '#configuration' => PROVISION_HELP_COLLAPSED, '#summary' => PROVISION_HELP_COLLAPSED);
   $form['db_details']['db_user'] = $form['db_user'];
   unset($form['db_user']);
   $form['db_details']['db_passwd'] = $form['db_passwd'];
@@ -288,17 +288,22 @@ function hosting_wizard_provision_web() {
 
   $form['title']['#type'] = 'value';
   $form['ip_address']['#type'] = 'value';
-  $form['backup_path']['#description'] = _provision_requirements('backup_path', 'summary');
-  $form['config_path']['#description'] = _provision_requirements('config_path', 'summary');
-  $form['restart_cmd']['#description'] = _provision_requirements('visudo', 'summary');
+  $form['backup_path_help'] = array('#type' => 'requirement_help', '#requirement' => 'backup_path', '#weight' => 9, '#summary' => PROVISION_HELP_COLLAPSED, '#configuration' => PROVISION_HELP_COLLAPSED);
+  $form['backup_path']['#weight'] = 10;  
+
+  $form['config_path_help'] = array('#type' => 'requirement_help', '#requirement' => 'config_path', '#weight' => 14, '#summary' => PROVISION_HELP_COLLAPSED, '#configuration' => PROVISION_HELP_COLLAPSED);
+  $form['config_path']['#weight'] = 15;  
+
+  $form['restart_cmd_help'] = array('#type' => 'requirement_help', '#requirement' => 'visudo', '#weight' => 19, '#summary' => PROVISION_HELP_COLLAPSED, '#configuration' => PROVISION_HELP_COLLAPSED);
+  $form['restart_cmd']['#weight'] = 20;
 
   $form['acc_details'] = array(
     '#type' => 'fieldset',
     '#collapsed' => false,
     '#title' => t('System account details'),
-    '#description' => _provision_requirements('group', 'summary'),
     '#weight' => -30
   );
+  $form['acc_details']['acc_help'] = array('#type' => 'requirement_help', '#requirement' => 'group', '#weight' => -20, '#summary' => PROVISION_HELP_COLLAPSED, '#configuration' => PROVISION_HELP_COLLAPSED);
   $form['acc_details']['script_user'] = $form['script_user'];
   unset($form['script_user']);
   $form['acc_details']['web_group'] = $form['web_group'];
@@ -336,17 +341,87 @@ function hosting_wizard_hosting_init() {
     All components of the managed sites from the database and web servers, to the packages installed
     on them, to the sites themselves are represented by the hosting framework as nodes.
     This step is going to ensure that it is correctly initialized.</p>');
+  $form['cron'] = array('#type' => 'requirement_help', '#requirement' => 'hosting_setup', '#configuration' => PROVISION_HELP_COLLAPSIBLE);
 
-  $form['cron']['#value'] = _provision_requirements('hosting_setup');
-
-  if (variable_get('hosting_dispatch_last_run', false)) {
-    $form['last_run']['#value'] = t('<p>The dispatch process has been succesfully executed</p>');
+  if (!variable_get('hosting_dispatch_enabled', FALSE)) {
+    $form['cron']['#status'] = PROVISION_STATUS_WARNING;
+    $form['cron']['#message'] = t('Please follow the configuration help below to initialize the system.');
+  }
+  elseif (!variable_get('hosting_dispatch_last_run', false)) {
+    $form['cron']['#status'] = PROVISION_STATUS_ERROR;
+    $form['cron']['#message'] = t('The dispatch process has not been run. Please follow the instructions below.');
   }
   else {
-    $form['last_run']['#value'] = t('<p>The dispatch process has not been run.</p>');
+    $form['cron']['#status'] = PROVISION_STATUS_SUCCESS;
+    $form['cron']['#message'] = t('The dispatch process has been succesfully executed');
   }
-
   return hosting_wizard_form('hosting', $form);
+}
+
+function hosting_wizard_hosting_init_validate() {
+  if (!variable_get('hosting_dispatch_last_run', false)) {
+  drupal_goto('hosting/wizard/hosting');
+  #  form_set_error('cron', t("The hosting setup command has not been run yet"));
+  }
+}
+
+function hosting_wizard_hosting_verify() {
+  $form = array();
+  $node = hosting_get_most_recent_task(HOSTING_OWN_PLATFORM, 'verify');
+  $form['provision'] = array('#type' => 'requirement_help', '#requirement' => 'platform');
+  if ($node->task_status & PROVISION_SUCCESS) {
+    $form['provision']['#status'] = PROVISION_STATUS_SUCCESS;
+    $form['provision']['#message'] = t('Your platform has been succesfully configured. You can now create sites.');
+
+    $form['import']['#value'] = t('On the next page we will import any existing sites on this platform.');
+  }
+  else {
+    $form['provision']['#status'] = PROVISION_STATUS_ERROR;
+    $form['provision']['#message'] = t('One of more errors has occurred during platform verification.');
+    $form['log_tip']['#value'] = t('Underneath is the log output and status of your verification task.
+      Check your settings on the previous pages of the wizard, and follow the applicable examples from the configuration
+      tips. Dispatch will continue attempting to run the verification task until it succeeds, so clicking on the Check again button
+      or just reloading the page will update the information below');
+    $view = hosting_task_view($node);
+    $form['task_status'] = $view->content['status'];
+    $form['task_status']['#title'] = t('Errors');
+    $form['last_attempt'] = array('#type' => 'item', '#title' => t('Last attempt'), '#value' => hosting_format_interval($node->changed));
+    $form['log'] = $view->content['hosting_log'];
+    $next = t('Check again');
+  }
+  return hosting_wizard_form('hosting/verify', $form, $next);
+}
+
+function hosting_wizard_hosting_verify_validate() {
+  $node = hosting_get_most_recent_task(HOSTING_OWN_PLATFORM, 'verify');
+  if (!($node->task_status & PROVISION_SUCCESS)) {
+    drupal_goto('/hosting/wizard/hosting/verify');
+  }
+}
+
+function hosting_wizard_hosting_import() {
+  $form = array();
+  $task = hosting_get_most_recent_task(HOSTING_OWN_PLATFORM, 'import');
+
+  $sites = hosting_get_sites_by_status(HOSTING_OWN_PLATFORM, HOSTING_SITE_IMPORTED | HOSTING_SITE_ENABLED | HOSTING_SITE_INSTALLED);
+  if (sizeof($sites)) {
+    $form['intro']['#value'] = t('<p>Below is a list of sites which were imported into the Hosting framework. Each of these pre-existing sites is now being managed
+      by Hosting, and has the same capabilities of sites that were created using the framework.</p>');
+    $rows = array();
+    foreach ($sites as $site) {
+      $own = '';
+      if (($site->title == PROVISION_DOMAIN) && ($site->platform == HOSTING_OWN_PLATFORM)) {
+        $own = '*';
+      }
+      $rows[] = array( $own . _hosting_node_link($site->nid), _hosting_node_link($site->platform), hosting_format_interval($node->created));
+    }
+    $form['sites'] = array('#type' => 'item', '#title' => t('Imported sites'), '#value' => theme('table', array(t('Site'), t('Platform'), t('Imported')), $rows));
+    $form['own']['#value'] = t('* This is the site node for the Hosting site. This is the site that manages all the other sites, and should be regularly backed up.');
+  }
+  else {
+    $form['no_sites'] = t('<p>Provision did not find any sites to import.</p>');
+  }
+  return hosting_wizard_form('hosting/import', $form);
 }
 
 
