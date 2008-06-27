@@ -80,6 +80,7 @@ function hosting_get_queues($refresh = false) {
       }
 
       $queue['last'] = variable_get('hosting_queue_' . $key . '_last_run', 0);
+      $queue['running'] = variable_get('hosting_queue_' . $key . '_running', 0);
       $queues[$key] = $queue;
     }
     $cache = $queues;
@@ -319,7 +320,7 @@ function hosting_queues_configure() {
     
     if ($info['type'] == 'batch') {
       $form[$queue]['frequency']['items'] = array(
-        '#value' => t('%count %items every ', array("%count" => $info['calc_items'], "%items" => format_plural($info['calc_items'], $info['singular'], $info['plural']))),
+        '#value' => t('%count %items every ', array("%count" => $info['total_items'], "%items" => format_plural($info['total_items'], $info['singular'], $info['plural']))),
       ); 
     }
     else {
@@ -400,3 +401,4 @@ function _hosting_dispatch_cmd() {
 function hosting_queues_cron_cmd() {
   return sprintf("*/1 * * * * (%s)", _hosting_dispatch_cmd());
 }
+
