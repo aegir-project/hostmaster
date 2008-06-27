@@ -244,13 +244,15 @@ function hosting_setup() {
     if ($exists = _provision_create_dir(PROVISION_DRUSHRC_PATH, t('Drush config path'), 0700)) {
       ## attempting to run the dispatch command, to make sure it runs without the queue being
       ## enabled.
+      variable_set('hosting_dispatch_enabled', TRUE);
       exec(_hosting_dispatch_cmd(), $return, $code);
+      variable_set('hosting_dispatch_enabled', FALSE);
       $return = join("\n", $return);
       $data = unserialize($return);
       if ($code == PROVISION_SUCCESS) {
+        variable_set('hosting_dispatch_enabled', TRUE);
         provision_log("message", t("Dispatch command was run successfully"));
         _hosting_setup_cron();
-        variable_set('hosting_dispatch_enabled', TRUE);
       }
       else {
         provisision_log("error", t("Dispatch command could not be run. Returned: \n@return", array('@return' => $return))); 
