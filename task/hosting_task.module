@@ -43,6 +43,10 @@ function hosting_task_node_info() {
   return $types;
 }
 
+function hosting_task_access($op, $node) {
+  return hosting_access($op, $node);
+}
+
 function hosting_task_log($vid, $type, $message, $severity = 0, $timestamp = null ) {
  $timestamp = ($timestamp) ? $timestamp : mktime();
  if (DRUSH_VERBOSE) print "$message\n";

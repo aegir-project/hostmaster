@@ -28,6 +28,13 @@ function hosting_package_node_info() {
   return $types;
 }
 
+function hosting_package_access($op, $node) {
+  return hosting_access($op, $node);
+}
+
+function hosting_package_release_access($op, $node) {
+  return hosting_access($op, $node);
+}
 
 function hosting_get_package($short_name) {
   $result = db_query("SELECT nid FROM {hosting_package} WHERE short_name = '%s'", $short_name);

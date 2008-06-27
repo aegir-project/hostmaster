@@ -11,7 +11,10 @@ function hosting_site_node_info() {
     "description" => hosting_node_help("site"),
     "has_body" => 0, "body_label" => '', "min_word_count" => 0);
   return $types;
+}
 
+function hosting_site_access($op, $node) {
+  return hosting_access($op, $node);
 }
 
 function hosting_map_values_site($node) {

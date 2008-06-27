@@ -14,6 +14,10 @@ function hosting_web_server_node_info() {
   return $types;
 }
 
+function hosting_web_server_access($op, $node) {
+  return hosting_access($op, $node);
+}
+
 function hosting_map_values_web_server($node) {
   $values['web_id'] = $node->nid;
   $values['web_host'] = $node->title;

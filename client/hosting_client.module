@@ -24,6 +24,10 @@ function hosting_client_node_info() {
   return $types;
 }
 
+function hosting_client_access($op, $node) {
+  return hosting_access($op, $node);
+}
+
 function hosting_get_client($email) {
   $result = db_result(db_query("SELECT nid FROM {hosting_client} WHERE email='%s'", $email));
   if ($result) {

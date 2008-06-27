@@ -19,6 +19,9 @@ function hosting_platform_node_info() {
   return $types;
 }
 
+function hosting_platform_access($op, $node) {
+  return hosting_access($op, $node);
+}
 
 /**
  * Small helper function to get platforms.
