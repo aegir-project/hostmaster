@@ -405,8 +405,8 @@ function hosting_wizard_hosting_import() {
   $form = array();
   $task = hosting_get_most_recent_task(HOSTING_OWN_PLATFORM, 'import');
 
-  $sites = hosting_get_sites_by_status(HOSTING_OWN_PLATFORM, HOSTING_SITE_IMPORTED | HOSTING_SITE_ENABLED | HOSTING_SITE_INSTALLED);
-  if (sizeof($sites)) {
+  $sites = hosting_get_sites_by_status(HOSTING_OWN_PLATFORM, HOSTING_SITE_IMPORTED);
+  if ($task->task_status & PROVISION_SUCCESS) {
     $form['intro']['#value'] = t('<p>Below is a list of sites which were imported into the Hosting framework. Each of these pre-existing sites is now being managed
       by Hosting, and has the same capabilities of sites that were created using the framework.</p>');
     $rows = array();
@@ -415,13 +415,13 @@ function hosting_wizard_hosting_import() {
       if (($site->title == PROVISION_DOMAIN) && ($site->platform == HOSTING_OWN_PLATFORM)) {
         $own = '*';
       }
-      $rows[] = array( $own . _hosting_node_link($site->nid), _hosting_node_link($site->platform), hosting_format_interval($node->created));
+      $rows[] = array( _hosting_node_link($site->nid) . $own, _hosting_node_link($site->platform), hosting_format_interval($site->created));
     }
     $form['sites'] = array('#type' => 'item', '#title' => t('Imported sites'), '#value' => theme('table', array(t('Site'), t('Platform'), t('Imported')), $rows));
     $form['own']['#value'] = t('* This is the site node for the Hosting site. This is the site that manages all the other sites, and should be regularly backed up.');
   }
   else {
-    $form['no_sites']['#value'] = t('<p>Provision did not find any sites to import.</p>');
+    $form['no_sites']['#value'] = t('<p>Provision has not imported any sites yet. You may wait a few moments and reload this page, or click on the button to complete your installation.</p>');
   }
   return hosting_wizard_form('hosting/import', $form);
 }
@@ -503,8 +503,8 @@ function hosting_wizard_form($step, $form, $next = null) {
   $text = ($next) ? $next : (($info['heading']) ? $info['heading'] : t('Continue'));
   $form['wizard_form']['submit'] = array(
     '#type' => 'submit',
-    '#value' => $text 
-   );
+    '#value' => $text . ' ->',
+   ); 
 
   return $form;
 }
