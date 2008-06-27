@@ -17,14 +17,16 @@
  */
 function hosting_wizard_steps($step = null) {
   static $steps = array();
+  global $user;
 
   if (!sizeof($steps)) {
     // todo: perhaps add a hook to allow modules to add features into the system
     $steps['intro'] = array( 'title' => t("Introduction"), 'heading' => t("Welcome to your new hosting system"), 'type' => MENU_DEFAULT_LOCAL_TASK);
 
-    $steps['account'] = array('title' => t("User account"), 'heading' => t("Configure your user account"),
-      'message' => t('An administrator account has been registered for you. Please change your password to continue with the configuration process.'));
-
+    if ($user->uid == 1) {
+      $steps['account'] = array('title' => t("User account"), 'heading' => t("Configure your user account"),
+        'message' => t('An administrator account has been registered for you. Please change your password to continue with the configuration process.'));
+    }
     $steps['provision'] = array('title' => t("Provisioning"), 'heading' => t("Configure your provisioning framework"),
       'message' => t('To be able to create sites using Hostmaster, we need some information about your server.'), );
 

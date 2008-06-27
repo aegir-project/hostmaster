@@ -373,10 +373,8 @@ function _hosting_task_log_class($type) {
       break;
     case "command" : 
     case "queue" :
-      $type = "info";
-      break;
     case "notice" : 
-      $type = "warning";
+      $type = "info";
       break;
     default: 
       $type = 'success';
