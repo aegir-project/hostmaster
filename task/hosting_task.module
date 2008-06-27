@@ -20,7 +20,7 @@ function hosting_task_menu($may_cache) {
             'description' => $task['description'],
             'callback' => 'drupal_get_form',
             'callback arguments' => array('hosting_task_confirm_form', $node, $type),
-            'access' => user_access('create task nodes'),
+            'access' => user_access('can schedule tasks'),
             'type' => MENU_LOCAL_TASK,
             'weight' => ($task['weight']) ? $task['weight'] : 0, 
           );
@@ -45,6 +45,10 @@ function hosting_task_node_info() {
 
 function hosting_task_access($op, $node) {
   return hosting_access($op, $node);
+}
+
+function hosting_task_perm() {
+  return array('can schedule tasks');
 }
 
 function hosting_task_log($vid, $type, $message, $severity = 0, $timestamp = null ) {
