@@ -287,6 +287,7 @@ function hosting_task_load($node) {
  */
 function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
   drupal_add_css(drupal_get_path('module', 'hosting') . '/hosting.css');
+  drupal_add_js(drupal_get_path('module', 'hosting') . '/hosting.js');
   $node = node_prepare($node, $teaser);
   
   $ref = node_load($node->rid);
@@ -317,27 +318,68 @@ function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
       '#value' => implode(", ", _hosting_parse_error_code($node->task_status)),
     );
   }
-    
-  # Display table containing the logged information for this task
-  $result = db_query("SELECT * FROM {hosting_task_log} WHERE vid=%d", $node->vid);
-  if (db_num_rows($result)) {
-    $header = array( t("Date"), t("Message"));
-    while ($entry = db_fetch_object($result)) {
-      $row =  array(array('data' => format_date($entry->timestamp, "small", "Y-m-d m:s"), 'class' => 'hosting-task-log-date'), "<span class='hosting-task-log-type'>" . $entry->type . "</span> " . $entry->message );
-      $rows[] = array('data' => $row, 'class' => 'hosting-task-log-' . $entry->type);
-    }
-
-    
+  
+  if ($table = _hosting_task_log_table($node->vid)) { 
     $node->content['hosting_log'] = array(
       '#weight' => 1,
       '#type' => 'item',
       '#title' => t('Log'),
-      '#value' => theme("table", $header, (array) $rows)
+      '#value' => $table
     );
-    
   }
-  
+    
   return $node;
+}
+
+/**
+ * Display table containing the logged information for this task
+ */ 
+function _hosting_task_log_table($vid) {
+  $result = db_query("SELECT * FROM {hosting_task_log} WHERE vid=%d", $vid);
+  if (db_num_rows($result)) {
+    $header = array("");
+    while ($entry = db_fetch_object($result)) {
+      if (strlen($entry->message) > 300) {
+        $summary = "<span class='hosting-task-summary'>" . filter_xss(substr($entry->message, 0, 75), array()) . "... <a href='javascript:void(0)' class='hosting-summary-expand'>(" . t('Expand') . ')</a></span>';
+        $message = $summary . "<span class='hosting-task-full'>" . nl2br($entry->message) . '</span>';
+      }
+      else {
+        $message = $entry->message;
+      } 
+      $row =  array($message);
+      $rows[] = array('data' => $row, 'class' => _hosting_task_log_class($entry->type));
+    }
+
+    return theme("table", $header, (array) $rows, array('id' => 'hosting-task-log'));
+  }
+
+  return false; 
+}
+
+/**
+ * Map entry statuses to coincide.
+ *
+ * @todo make this irrelevant.
+ */
+function _hosting_task_log_class($type) {
+  switch (strtolower($type)) {
+    case "warning" :
+    case "error" : 
+      $type = strtolower($type);
+      break;
+    case "command" : 
+    case "queue" :
+      $type = "info";
+      break;
+    case "notice" : 
+      $type = "warning";
+      break;
+    default: 
+      $type = 'success';
+      break;
+  }
+
+  return 'hosting-' . $type;
 }
 
 /**

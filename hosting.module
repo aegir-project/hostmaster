@@ -220,28 +220,56 @@ function hosting_format_interval($ts) {
 }
 
 function hosting_setup() {
-  $newcron = array();
   variable_set('hosting_dispatch_enabled', FALSE);
+  if ($exists = _provision_create_dir(PROVISION_CONFIG_PATH, t('Config path'), 0700)) {
+    if ($exists = _provision_create_dir(PROVISION_DRUSHRC_PATH, t('Drush config path'), 0700)) {
+      ## attempting to run the dispatch command, to make sure it runs without the queue being
+      ## enabled.
+      exec(_hosting_dispatch_cmd(), $return, $code);
+      $return = join("\n", $return);
+      $data = unserialize($return);
+      if ($code == PROVISION_SUCCESS) {
+        provision_log("message", t("Dispatch command was run successfully"));
+        _hosting_setup_cron();
+        variable_set('hosting_dispatch_enabled', TRUE);
+      }
+      else {
+        provisision_log("error", t("Dispatch command could not be run. Returned: \n@return", array('@return' => $return))); 
+        provision_set_error(PROVISION_FRAMEWORK_ERROR);
+      }
+    }
+  }
+  $logs = provision_get_log();
+  foreach ($logs as $log) {
+    print "$log[message]\n";
+  }
+
+  if (provision_get_error()) {
+    print "\nThe command did not complete successfully, please fix the issues and re-run this script.";
+  }
+}
+
+function _hosting_setup_cron() {
+  $newcron = array();
   $existing = FALSE;
   exec('crontab -l 2> /dev/null', $oldcron);
   if (sizeof($oldcron)) {
     foreach ($oldcron as $line => $entry) {
       if (preg_match('/hosting dispatch/', $entry)) {
-        print "Existing hosting dispatch cron entry was found\n";
+        provision_log("Notice", t("Existing hosting dispatch cron entry was found. Not replacing"));
         $existing = TRUE;
         break;
       }
     }
   }
   else {
-    print "No existing crontab was found\n";
+    provision_log("message", t("No existing crontab was found"));
   }
 
   if (!$existing) {
     if (sizeof($oldcron)) {
       $newcron = $oldcron;
       variable_set('hosting_cron_backup', $oldcron);
-#      exec('crontab -r', $delcron);
     }
     $newcron[] = hosting_queues_cron_cmd();
     $tmpnam = tempnam('hostmaster', 'hm.cron');
@@ -252,8 +280,6 @@ function hosting_setup() {
     fclose($fp);
     system(sprintf('crontab %s', escapeshellarg($tmpnam)));
     unlink($tmpnam);
-    print "Installed hosting dispatch cron entry to run every minute\n";
+    provision_log("Notice", t("Installed hosting dispatch cron entry to run every minute"));
   }
-  
-  variable_set('hosting_dispatch_enabled', TRUE);
 }

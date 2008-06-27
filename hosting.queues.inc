@@ -22,6 +22,7 @@ function hosting_dispatch() {
       }
     }
   }
+  exit(PROVISION_SUCCESS);
 }
 
 /**
@@ -98,7 +99,7 @@ function hosting_hosting_queues() {
     'name' => t('Task queue'),
     'description' => t('Process the queue of outstanding hosting tasks.'),
     'type' => 'serial',  # run queue sequentially. always with the same parameters.
-    'frequency' => strtotime("5 minutes", 0),  # run queue every 300 seconds (5 minutes)
+    'frequency' => strtotime("1 minute", 0),  # run queue every minute.
     'items' => 5, # process 5 queue items per execution.
     'total_items' => hosting_task_count(),
     'singular' => t('task'),
@@ -128,6 +129,7 @@ function hosting_run_queue() {
   }
 
   variable_del('hosting_queue_' . $queue . '_running');
+  exit(PROVISION_SUCCESS);
 }
 
 /**
@@ -238,10 +240,10 @@ function hosting_tasks_queue($count) {
     $return = join("\n", $return);
     $data = unserialize($return);
 
-    hosting_task_log($task->vid, 'command', escapeshellcmd("$cmd"));
+    hosting_task_log($task->vid, 'command', 'Running:' . escapeshellcmd("$cmd"));
 
     if (!is_array($data)) {
-      hosting_task_log($task->vid, 'error', t("The command could not be executed succesfully (return: %return, data: %data, code: %code)", array("%return" => $return, "%data" => $data, "%code" =>  $code)));
+      hosting_task_log($task->vid, 'error', t("The command could not be executed succesfully (returned: %return, code: %code)", array("%return" => _hosting_queues_clean_output($return), "%code" =>  $code)));
       $code = PROVISION_FRAMEWORK_ERROR;
     }
 
@@ -273,6 +275,10 @@ function hosting_tasks_queue($count) {
       db_query("UPDATE {hosting_task_queue} SET status=%d WHERE nid=%d", $code, $task->nid);
     }
   }
+}
+
+function _hosting_queues_clean_output($return) {
+  return filter_xss($return, array());
 }
 
 /**
@@ -384,14 +390,13 @@ function hosting_queues_configure_submit($form_id, $values) {
   }
 }
 
-function hosting_queue_drush_path($platform) {
-
-
+function _hosting_dispatch_cmd() {
+  $drush_path = sprintf("%s/%s/drush.php", PROVISION_DOCROOT_PATH, drupal_get_path('module', 'drush'));
+  $cmd = sprintf("php %s hosting dispatch --uri=%s --root=%s", escapeshellarg($drush_path), 
+      escapeshellarg(PROVISION_DOMAIN), escapeshellarg(PROVISION_DOCROOT_PATH));
+  return $cmd;
 }
 
 function hosting_queues_cron_cmd() {
-  $drush_path = sprintf("%s/%s/drush.php", PROVISION_DOCROOT_PATH, drupal_get_path('module', 'drush'));
-  $cron_cmd = sprintf("*/1 * * * * (php %s hosting dispatch --uri=%s --root=%s)", 
-    escapeshellarg($drush_path), escapeshellarg(PROVISION_DOMAIN), escapeshellarg(PROVISION_DOCROOT_PATH));
-  return $cron_cmd;
+  return sprintf("*/1 * * * * (%s)", _hosting_dispatch_cmd());
 }

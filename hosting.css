@@ -7,14 +7,41 @@
   padding-right: 2em;
 }
 
-.hosting-task-log-date {
-  white-space : nowrap
+table#hosting-task-log tr td {
+  background-repeat: no-repeat;
+  background-position: 5px 5px;
+  padding-left: 27px;
+  padding-right: 1em;
 }
 
-.hosting-task-log-type {
-  font-weight : bold;
+table#hosting-task-log tr.hosting-warning td {
+  background-color: #ffd;
+  background-image: url(/misc/watchdog-warning.png);
 }
 
-.hosting-task-log-error {
-  color: red
+table#hosting-task-log tr.hosting-info td {
+  background-image: url(info.png);
 }
+
+table#hosting-task-log tr.hosting-error td {
+  background-color: #fcc;
+  color: #200;
+  background-image: url(/misc/watchdog-error.png);
+}
+
+table#hosting-task-log tr.hosting-success td {
+  background-color: #dfd;
+  background-image: url(/misc/watchdog-ok.png);
+}
+
+.hosting-task-full { display: none }
+/*
+html.js input.form-autocomplete {
+  background-image: url(../../misc/throbber.gif);
+  background-repeat: no-repeat;
+  background-position: 100% 2px;
+}
+html.js input.throbbing {
+  background-position: 100% -18px;
+}
+*/

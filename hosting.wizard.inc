@@ -189,7 +189,7 @@ function hosting_wizard_account_submit($form_id, $values) {
   user_save($user, $values);
   $node = node_load(HOSTING_DEFAULT_CLIENT);
   $node->client_name = $values['name'];
-  $node->email = $values['email'];
+  $node->email = $values['mail'];
   node_save($node);
 }
 
@@ -515,7 +515,7 @@ function hosting_wizard_form($step, $form, $next = null) {
  */
 function hosting_wizard_form_submit($form_id, $values) {
   $values = (array) $values;
-  variable_set('hosting_wizard_completed_' . $values['step'], mktime);
+  variable_set('hosting_wizard_completed_' . $values['step'], mktime());
 
   $next = hosting_wizard_next_step();
   if ($next) {
