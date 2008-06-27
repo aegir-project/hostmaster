@@ -227,7 +227,7 @@ function hosting_task_insert($node) {
     }
   }
   hosting_task_set_title($node); 
-  if (!$node->old_vid) {
+  if ($node->is_new) {
     db_query("INSERT INTO {hosting_task_queue} (nid, timestamp, status) VALUES (%d, %d, %d)", $node->nid, mktime(), PROVISION_QUEUED);
   }
 }
