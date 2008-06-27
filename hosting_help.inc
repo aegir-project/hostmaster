@@ -58,7 +58,7 @@ function hosting_help($section) {
 
 function _provision_hosting_setup_requirements() {
   $docroot = PROVISION_DOCROOT_PATH;
-  $uri = PROVISION_DOMAIN;
+  $uri = PROVISION_BASE_URL;
   $drush_path = PROVISION_DRUSH_PATH;
   $setup_cmd = <<<EOF
     [$username@hm2 ~]$ cd $docroot

@@ -180,7 +180,7 @@ function hosting_generate_command($system, $command, $args = array(), $options =
   // @TODO: Implement proper multi platform / multi server support.
   $cmd = sprintf(escapeshellcmd("%s %s %s %s --root=%s --uri=%s %s"), escapeshellcmd($drush_path) ,
     escapeshellarg($system), escapeshellarg($command), implode(" ", $args), escapeshellarg($data['publish_path']),
-    escapeshellarg($data['web_host']), $option_str);
+    escapeshellarg($data['web_host_uri']), $option_str);
 
   if ($options['background']) {
     $cmd .= " &";
@@ -393,7 +393,7 @@ function hosting_queues_configure_submit($form_id, $values) {
 function _hosting_dispatch_cmd() {
   $drush_path = sprintf("%s/%s/drush.php", PROVISION_DOCROOT_PATH, drupal_get_path('module', 'drush'));
   $cmd = sprintf("php %s hosting dispatch --uri=%s --root=%s", escapeshellarg($drush_path), 
-      escapeshellarg(PROVISION_DOMAIN), escapeshellarg(PROVISION_DOCROOT_PATH));
+      escapeshellarg(PROVISION_BASE_URL), escapeshellarg(PROVISION_DOCROOT_PATH));
   return $cmd;
 }
 

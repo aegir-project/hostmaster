@@ -21,6 +21,7 @@ function hosting_web_server_access($op, $node) {
 function hosting_map_values_web_server($node) {
   $values['web_id'] = $node->nid;
   $values['web_host'] = $node->title;
+  $values['web_host_uri'] = 'http://' . $node->title;
   $values['web_ip'] = $node->ip_address;  
   $values['web_script_user'] = $node->script_user;
   $values['web_group'] = $node->web_group;
