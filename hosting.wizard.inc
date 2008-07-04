@@ -293,7 +293,12 @@ function hosting_wizard_provision_web() {
   $form['backup_path_help'] = array('#type' => 'requirement_help', '#requirement' => 'backup_path', '#weight' => 9, '#summary' => PROVISION_HELP_COLLAPSED, '#configuration' => PROVISION_HELP_COLLAPSED);
   $form['backup_path']['#weight'] = 10;  
 
-  $form['config_path_help'] = array('#type' => 'requirement_help', '#requirement' => 'config_path', '#weight' => 14, '#summary' => PROVISION_HELP_COLLAPSED, '#configuration' => PROVISION_HELP_COLLAPSED);
+  $form['config_path_help'] = array('#type' => 'requirement_help', '#requirement' => 'config_path', '#weight' => 13, '#summary' => PROVISION_HELP_COLLAPSED, '#configuration' => PROVISION_HELP_COLLAPSED);
+  $form['httpd_conf'] = array(
+    '#type' => 'requirement_help', '#requirement' => 'httpd_conf',
+    '#summary' => PROVISION_HELP_ENABLED, '#configuration' => PROVISION_HELP_ENABLED,
+    '#status' => PROVISION_STATUS_WARNING, '#message' => t('This needs to be configured for Apache to pick up new sites. We can not confirm that this is working correctly yet, so if your sites are installed but do not work from a web browser, please confirm that you have completed this step'),
+    '#weight' => 14,);
   $form['config_path']['#weight'] = 15;  
 
   $form['restart_cmd_help'] = array('#type' => 'requirement_help', '#requirement' => 'visudo', '#weight' => 19, '#summary' => PROVISION_HELP_COLLAPSED, '#configuration' => PROVISION_HELP_COLLAPSED);
