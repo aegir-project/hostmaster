@@ -224,7 +224,7 @@ function hosting_wizard_provision_db() {
   $form['introduction']['#weight'] = -9;
   $form['introduction']['#value'] = 
     t('<p>You need at least one fully functional database server to be able to manage sites. 
-        Luckily, if you can read this, you are already most of the way there.</p>
+       Luckily, if you can read this, you are already most of the way there. <strong>If the user you specified when first configuring the Drupal can create databases, you probably do not need to change anything here.</strong></p>
         <p>This configuration form is actually the !edit_page for the !own_server database server node. 
         It has however been heavily annotated and slightly simplified for this installation wizard. And while
         the wizard can be run multiple times, it won\'t be able to edit any database servers other than the database
