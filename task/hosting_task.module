@@ -318,6 +318,24 @@ function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
       '#title' => t('Executed'),
       '#value' => format_date($node->executed),
     );
+  } else {
+    $queues = hosting_get_queues();
+    $queue = $queues['tasks'];
+    $freq = $queue['frequency'];
+    $last = $queue['last_run'];
+    $next = $last + $freq;
+    if ($freq < 60*60*12) { # 12h
+      # display only the time if we have short iterations
+      $date = format_date($next, 'custom', 'H:i:sO');
+    } else {
+      $date = format_date($next, 'medium');
+    }
+    $items = $queue['items'];
+    $node->content['notexecuted'] = array(
+      '#type' => 'item',
+      '#title' => t('This task has not been processed yet'),
+      '#value' => t('It will be processed around %date, if the queue is not too crowded. The queue is currently ran every %freq, was last ran %last and processes %items items at a time. Server time is %time.', array('%freq' => format_interval($freq), '%date' => $date, '%last' => hosting_format_interval($last), '%items' => $items, '%time' => format_date(time(), 'custom', 'H:i:sO'))),
+    );
   }
   if ($node->task_status) {
     $node->content['status'] = array(
