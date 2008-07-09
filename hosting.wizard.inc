@@ -30,12 +30,15 @@ function hosting_wizard_steps($step = null) {
     $steps['provision'] = array('title' => t("Provisioning"), 'heading' => t("Configure your provisioning framework"),
       'message' => t('To be able to create sites using Hostmaster, we need some information about your server.'), );
 
-    $steps['provision/db'] = array('title' => t('Database server'), 'heading' => t('Configure your database server'),
+    $steps['provision/paths'] = array('title' => t("Paths"), 'heading' => t("Configure where to store provisioning data"),
       'type' => MENU_DEFAULT_LOCAL_TASK,
-      'message' => t("You need to be able to create databases and database users."));
+      'message' => t('To be able to create sites using Hostmaster, provisioning needs access to the file system.'), );
 
     $steps['provision/web'] = array('title' => t("Web server"), 'heading' => t("Configure your web server"),
       'message' => t("You will need somewhere to server your files from."));
+
+    $steps['provision/db'] = array('title' => t('Database server'), 'heading' => t('Configure your database server'),
+      'message' => t("You need to be able to create databases and database users."));
 
     $steps['hosting'] = array( 'title' => t('Hosting'), 'heading' => t('Set up your hosting framework'), 
       'message' => t("Finalize your setup by ensuring communication between the front end and back end."));
@@ -209,6 +212,122 @@ function hosting_wizard_provision() {
   return hosting_wizard_form('provision', $form);
 }
 
+
+
+/**
+ * Configures web_server_node_form paths.
+ *
+ * @todo pull changes in the form upstream
+ */
+function hosting_wizard_provision_paths() {
+  $form = drupal_retrieve_form('web_server_node_form', node_load(HOSTING_OWN_WEB_SERVER));
+  _hosting_wizard_cleanse_node_form($form);
+
+  $own_link = _hosting_node_link(HOSTING_OWN_WEB_SERVER);
+
+  $form['script_user']['#type'] = 'value';
+  $form['web_group']['#type'] = 'value';
+  /*
+  $form['introduction']['#weight'] = -45;
+  $form['introduction']['#value'] = 
+    t('<p>This form is actually the !edit_page for the !own_server web server node, which has been heavily annotated and a number of fields removed for simplicity.</p>
+    <p>It is recommended to use the !own_server page to manage this information in the future.</p>
+        ', 
+        array('!own_server' => $own_link, '!edit_page' => l(t("edit page"), 'node/' . HOSTING_OWN_WEB_SERVER . '/edit' )));*/
+
+  $form['title']['#type'] = 'value';
+  $form['ip_address']['#type'] = 'value';
+  $form['restart_cmd']['#type'] = 'value';
+
+  $form['config_path_help'] = array('#type' => 'requirement_help', '#requirement' => 'config_path', '#weight' => 9, '#summary' => PROVISION_HELP_ENABLED, '#configuration' => PROVISION_HELP_COLLAPSED);
+  $form['config_path']['#weight'] = 10;
+
+  $form['backup_path_help'] = array('#type' => 'requirement_help', '#requirement' => 'backup_path', '#weight' => 14, '#summary' => PROVISION_HELP_ENABLED, '#configuration' => PROVISION_HELP_COLLAPSED);
+  $form['backup_path']['#weight'] = 15;  
+
+  // remove all the things i don't want from the node form.
+  return hosting_wizard_form('provision/paths', $form);
+}
+
+/**
+ * Save the changes to the default web server node
+ */
+function hosting_wizard_provision_paths_submit($form_id, $values) {
+  $node = node_load(HOSTING_OWN_WEB_SERVER);
+  $node->config_path = $values['config_path'];
+  $node->backup_path = $values['backup_path'];
+  node_save($node);
+}
+
+
+
+
+
+/**
+ * Configures web_server_node_form minus almost all the forms.
+ *
+ * @todo pull changes in the form upstream
+ */
+function hosting_wizard_provision_web() {
+  $form = drupal_retrieve_form('web_server_node_form', node_load(HOSTING_OWN_WEB_SERVER));
+  _hosting_wizard_cleanse_node_form($form);
+
+  $own_link = _hosting_node_link(HOSTING_OWN_WEB_SERVER);
+
+  /*
+  $form['introduction']['#weight'] = -45;
+  $form['introduction']['#value'] = 
+    t('<p>You need to have one fully working web server configured to be able to create sites. The web server can run into problems with file permissions quite easily, and these are unfortunately undetectable to us until the hosting back end is configured.</p>
+    <p>Like the database configuration, this form is actually the !edit_page for the !own_server database server node, which has been heavily annotated and a number of fields removed for simplicity.</p>
+    <p>It is recommended to use the !own_server page to manage this server during daily use.</p>
+        ', 
+        array('!own_server' => $own_link, '!edit_page' => l(t("edit page"), 'node/' . HOSTING_OWN_WEB_SERVER . '/edit' ))); */
+
+  $form['httpd_conf'] = array(
+    '#type' => 'requirement_help', '#requirement' => 'httpd_conf',
+    '#summary' => PROVISION_HELP_ENABLED, '#configuration' => PROVISION_HELP_ENABLED,
+    /*    '#status' => PROVISION_STATUS_WARNING, '#message' => t('This needs to be configured for Apache to pick up new sites. We can not confirm that this is working correctly yet, so if your sites are installed but do not work from a web browser, please confirm that you have completed this step'),*/
+    '#weight' => -1,);
+
+  $form['title']['#type'] = 'value';
+  $form['ip_address']['#type'] = 'value';
+  $form['backup_path']['#type'] = 'value';  
+  $form['config_path']['#type'] = 'value';  
+  $form['acc_details'] = array(
+    '#type' => 'fieldset',
+    '#collapsed' => false,
+    '#title' => t('System account details'),
+    '#weight' => 0 
+  );
+  $form['acc_details']['acc_help'] = array('#type' => 'requirement_help', '#requirement' => 'group', '#weight' => -20, '#summary' => PROVISION_HELP_ENABLED, '#configuration' => PROVISION_HELP_COLLAPSED);
+  $form['acc_details']['script_user'] = $form['script_user'];
+  unset($form['script_user']);
+  $form['acc_details']['web_group'] = $form['web_group'];
+  unset($form['web_group']);
+
+
+  $form['restart_cmd_help'] = array('#type' => 'requirement_help', '#requirement' => 'visudo', '#weight' => 19, '#summary' => PROVISION_HELP_ENABLED, '#configuration' => PROVISION_HELP_COLLAPSED);
+  $form['restart_cmd']['#weight'] = 20;
+
+
+
+  // remove all the things i don't want from the node form.
+  return hosting_wizard_form('provision/web', $form);
+}
+
+/**
+ * Save the changes to the default web server node
+ */
+function hosting_wizard_provision_web_submit($form_id, $values) {
+  $node = node_load(HOSTING_OWN_WEB_SERVER);
+  $node->title = $values['title'];
+  $node->ip_address = $values['ip_address'];
+  $node->script_user = $values['script_user'];
+  $node->web_group = $values['web_group'];
+  $node->restart_cmd = $values['restart_cmd'];
+  node_save($node);
+}
+
 /**
  * Database configuration form
  *
@@ -267,73 +386,6 @@ function hosting_wizard_provision_db_submit($form_id, $values) {
   node_save($node); 
 }
 
-
-
-/**
- * Configures web_server_node_form minus almost all the forms.
- *
- * @todo pull changes in the form upstream
- */
-function hosting_wizard_provision_web() {
-  $form = drupal_retrieve_form('web_server_node_form', node_load(HOSTING_OWN_WEB_SERVER));
-  _hosting_wizard_cleanse_node_form($form);
-
-  $own_link = _hosting_node_link(HOSTING_OWN_WEB_SERVER);
-
-  $form['introduction']['#weight'] = -45;
-  $form['introduction']['#value'] = 
-    t('<p>You need to have one fully working web server configured to be able to create sites. The web server can run into problems with file permissions quite easily, and these are unfortunately undetectable to us until the hosting back end is configured.</p>
-    <p>Like the database configuration, this form is actually the !edit_page for the !own_server database server node, which has been heavily annotated and a number of fields removed for simplicity.</p>
-    <p>It is recommended to use the !own_server page to manage this server during daily use.</p>
-        ', 
-        array('!own_server' => $own_link, '!edit_page' => l(t("edit page"), 'node/' . HOSTING_OWN_WEB_SERVER . '/edit' )));
-
-  $form['title']['#type'] = 'value';
-  $form['ip_address']['#type'] = 'value';
-  $form['backup_path_help'] = array('#type' => 'requirement_help', '#requirement' => 'backup_path', '#weight' => 9, '#summary' => PROVISION_HELP_COLLAPSED, '#configuration' => PROVISION_HELP_COLLAPSED);
-  $form['backup_path']['#weight'] = 10;  
-
-  $form['config_path_help'] = array('#type' => 'requirement_help', '#requirement' => 'config_path', '#weight' => 13, '#summary' => PROVISION_HELP_COLLAPSED, '#configuration' => PROVISION_HELP_COLLAPSED);
-  $form['httpd_conf'] = array(
-    '#type' => 'requirement_help', '#requirement' => 'httpd_conf',
-    '#summary' => PROVISION_HELP_ENABLED, '#configuration' => PROVISION_HELP_ENABLED,
-    '#status' => PROVISION_STATUS_WARNING, '#message' => t('This needs to be configured for Apache to pick up new sites. We can not confirm that this is working correctly yet, so if your sites are installed but do not work from a web browser, please confirm that you have completed this step'),
-    '#weight' => 14,);
-  $form['config_path']['#weight'] = 15;  
-
-  $form['restart_cmd_help'] = array('#type' => 'requirement_help', '#requirement' => 'visudo', '#weight' => 19, '#summary' => PROVISION_HELP_COLLAPSED, '#configuration' => PROVISION_HELP_COLLAPSED);
-  $form['restart_cmd']['#weight'] = 20;
-
-  $form['acc_details'] = array(
-    '#type' => 'fieldset',
-    '#collapsed' => false,
-    '#title' => t('System account details'),
-    '#weight' => -30
-  );
-  $form['acc_details']['acc_help'] = array('#type' => 'requirement_help', '#requirement' => 'group', '#weight' => -20, '#summary' => PROVISION_HELP_COLLAPSED, '#configuration' => PROVISION_HELP_COLLAPSED);
-  $form['acc_details']['script_user'] = $form['script_user'];
-  unset($form['script_user']);
-  $form['acc_details']['web_group'] = $form['web_group'];
-  unset($form['web_group']);
-
-  // remove all the things i don't want from the node form.
-  return hosting_wizard_form('provision/web', $form);
-}
-
-/**
- * Save the changes to the default web server node
- */
-function hosting_wizard_provision_web_submit($form_id, $values) {
-  $node = node_load(HOSTING_OWN_WEB_SERVER);
-  $node->title = $values['title'];
-  $node->ip_address = $values['ip_address'];
-  $node->script_user = $values['script_user'];
-  $node->web_group = $values['web_group'];
-  $node->config_path = $values['config_path'];
-  $node->backup_path = $values['backup_path'];
-  $node->restart_cmd = $values['restart_cmd'];
-  node_save($node);
-}
 
 
 /**
