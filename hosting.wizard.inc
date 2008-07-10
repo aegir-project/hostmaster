@@ -260,9 +260,6 @@ function hosting_wizard_provision_paths_submit($form_id, $values) {
 }
 
 
-
-
-
 /**
  * Configures web_server_node_form minus almost all the forms.
  *
@@ -308,8 +305,6 @@ function hosting_wizard_provision_web() {
 
   $form['restart_cmd_help'] = array('#type' => 'requirement_help', '#requirement' => 'visudo', '#weight' => 19, '#summary' => PROVISION_HELP_ENABLED, '#configuration' => PROVISION_HELP_COLLAPSED);
   $form['restart_cmd']['#weight'] = 20;
-
-
 
   // remove all the things i don't want from the node form.
   return hosting_wizard_form('provision/web', $form);
