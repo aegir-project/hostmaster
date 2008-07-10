@@ -255,6 +255,7 @@ function hosting_wizard_provision_paths() {
 function hosting_wizard_provision_paths_submit($form_id, $values) {
   $node = node_load(HOSTING_OWN_WEB_SERVER);
   $node->config_path = $values['config_path'];
+  $node->restart_cmd = $values['restart_cmd'];
   $node->backup_path = $values['backup_path'];
   node_save($node);
 }
