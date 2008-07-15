@@ -255,7 +255,7 @@ function hosting_setup() {
         _hosting_setup_cron();
       }
       else {
-        provisision_log("error", t("Dispatch command could not be run. Returned: \n@return", array('@return' => $return))); 
+        provision_log("error", t("Dispatch command could not be run. Returned: \n@return", array('@return' => $return))); 
         provision_set_error(PROVISION_FRAMEWORK_ERROR);
       }
     }
