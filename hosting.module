@@ -31,6 +31,21 @@ function hosting_menu($may_cache = true) {
       'type' => MENU_NORMAL_ITEM,
       'access' => TRUE
     );
+
+    // Disable unsupported features.
+    $features = module_invoke_all('hosting_features');
+    $types = node_get_types();
+    foreach ($types as $type) {
+      if (isset($features[$type->type])) {
+        $type_url_str = str_replace('_', '-', $type->type);
+        $items[] = array(
+          'path' => 'node/add/'. $type_url_str,
+          'title' => drupal_ucfirst($type->name),
+          'access' => node_access('create', $type->type) && hosting_feature($type->type),
+        ); 
+      }
+
+    }
   }
   return $items;
 }

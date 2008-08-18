@@ -15,7 +15,7 @@ function hosting_web_server_node_info() {
 }
 
 function hosting_web_server_hosting_features() {
-  return array('web_servers' => array(
+  return array('web_server' => array(
       'title' => t('Multiple web servers'), 
       'description' => t('Allow for creation of multiple web server nodes, and for distributed management of sites.'),
       'status' => HOSTING_FEATURE_DISABLED));
@@ -26,6 +26,9 @@ function hosting_web_server_perm() {
 }
 
 function hosting_web_server_access($op, $node) {
+  if (!hosting_feature('web_server')) {
+    return FALSE;
+  }
   switch ($op) {
     case 'create':
       return user_access('create web server');

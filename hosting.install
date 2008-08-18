@@ -13,5 +13,10 @@ function hosting_install() {
     KEY (type)
   ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
 
+  db_query("UPDATE {system} SET weight = 10 WHERE type='module' and name='hosting'");
 }
 
+function hosting_update_1() {
+  $ret[] = update_sql("UPDATE {system} SET weight = 10 WHERE type='module' and name='hosting'");
+  return $ret;
+}

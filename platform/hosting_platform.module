@@ -19,11 +19,11 @@ function hosting_platform_node_info() {
 }
 
 function hosting_platform_hosting_features() {
-  return array('platforms' => array(
+  return array('platform' => array(
       'title' => t('Multiple platforms'), 
       'description' => t('Allow for management of multiple platforms, and migration between platforms.'),
       'status' => HOSTING_FEATURE_DISABLED),
-      'node_type' => 'platform');
+      );
 }
 
 
@@ -32,7 +32,7 @@ function hosting_platform_perm() {
 }
 
 function hosting_platform_access($op, $node) {
-  if (!hosting_feature('platforms')) {
+  if (!hosting_feature('platform')) {
     return FALSE;
   }
 

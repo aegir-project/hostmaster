@@ -30,7 +30,7 @@ function hosting_client_node_info() {
  * Used to simplify the interface.
  */
 function hosting_client_hosting_features() {
-  return array('clients' => array(
+  return array('client' => array(
       'title' => t('Multiple clients'), 
       'description' => t('Allow for multiple client nodes to be created.'),
       'status' => 0));
@@ -42,7 +42,7 @@ function hosting_client_perm() {
 }
 
 function hosting_client_access($op, $node) {
-  if (!hosting_feature('clients')) {
+  if (!hosting_feature('client')) {
     // multiple client support has been disabled for this site.
     return FALSE;
   }
