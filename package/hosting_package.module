@@ -36,6 +36,19 @@ function hosting_package_release_access($op, $node) {
   return hosting_access($op, $node);
 }
 
+
+function hosting_get_packages_by_type($type) {
+  $result = db_query("SELECT nid FROM {hosting_package} WHERE package_type = '%s'", $type);
+
+  if ($nid = db_result($result)) {
+    return node_load($nid);
+  }
+  else {
+    return false;
+  }
+}
+
+
 function hosting_get_package($short_name) {
   $result = db_query("SELECT nid FROM {hosting_package} WHERE short_name = '%s'", $short_name);
   if ($nid = db_result($result)) {

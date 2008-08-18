@@ -35,24 +35,6 @@ function hosting_menu($may_cache = true) {
   return $items;
 }
 
-function hosting_access($op, $node) {
-  global $user;
-
-  if ($op == 'create') {
-    return user_access('create hosting nodes');
-  }
-
-  if ($op == 'view') {
-    return user_access('access hosting nodes');
-  }
-
-  if ($op == 'update' || $op == 'delete') {
-    if (user_access('edit own hosting nodes') && ($user->uid == $node->uid)) {
-      return TRUE;
-    }
-  }
-}
-
 
 /**
  * Implementation of hook_nodeapi
@@ -90,6 +72,18 @@ function hosting_drush_command() {
   return $items;
 }
 
+define('HOSTING_FEATURE_DISABLED', 0);
+define('HOSTING_FEATURE_ENABLED', 1);
+
+function hosting_feature($feature) {
+  static $features = array();
+
+  if (!sizeof($features)) {
+    $features = module_invoke_all("hosting_features");
+  }
+  return variable_get('hosting_feature_' . $feature, $features[$feature]['status']);
+}
+
 
 /**
  * Implementation of hook_form_alter
@@ -106,7 +100,7 @@ function hosting_form_alter($form_id, &$form) {
  * Implementation of hook_perm
  */
 function hosting_perm() {
-  return array('access hosting wizard', 'create hosting nodes', 'access hosting nodes', 'edit own hosting nodes');
+  return array('access hosting wizard', 'administer hosting queues');
 }
 
 /**

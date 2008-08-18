@@ -18,8 +18,40 @@ function hosting_platform_node_info() {
   return $types;
 }
 
+function hosting_platform_hosting_features() {
+  return array('platforms' => array(
+      'title' => t('Multiple platforms'), 
+      'description' => t('Allow for management of multiple platforms, and migration between platforms.'),
+      'status' => HOSTING_FEATURE_DISABLED),
+      'node_type' => 'platform');
+}
+
+
+function hosting_platform_perm() {
+  return array('create platform', 'view platform', 'edit platform', 'delete platform');
+}
+
 function hosting_platform_access($op, $node) {
-  return hosting_access($op, $node);
+  if (!hosting_feature('platforms')) {
+    return FALSE;
+  }
+
+  switch ($op) {
+    case 'create':
+      return user_access('create platform');
+      break;
+    case 'view': 
+      return user_access('view platform');
+      break;
+    case 'update':
+      return user_access('edit platform');
+      break;
+    case 'delete':
+      return user_access('delete platform');
+      break;
+    default:
+      break;
+  }  
 }
 
 /**

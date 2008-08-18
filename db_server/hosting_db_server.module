@@ -30,8 +30,31 @@ function hosting_db_server_node_info() {
   return $types;
 }
 
+function hosting_db_server_perm() {
+  return array('create database server','view database server', 'edit database server', 'delete database server');
+}
+
 function hosting_db_server_access($op, $node) {
-  return hosting_access($op, $node);
+  global $user;
+
+  switch($op) {
+    case 'create':
+      return user_access('create database server');
+      break;
+    case 'view':
+      return user_access('view database server');
+      break;
+    case 'update':
+      return user_access('edit database server');
+      break;
+    case 'delete':
+      return user_access('delete database server');
+      break;
+    default:
+      break;
+  }
+
+//  return hosting_access($op, $node);
 }
 
 /**

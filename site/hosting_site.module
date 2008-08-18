@@ -13,8 +13,27 @@ function hosting_site_node_info() {
   return $types;
 }
 
+function hosting_site_perm() {
+  return array('create site', 'view site', 'edit site', 'delete site');
+}
+
 function hosting_site_access($op, $node) {
-  return hosting_access($op, $node);
+  switch ($op) {
+    case 'create':
+      return user_access('create site');
+      break;
+    case 'view':
+      return user_access('view site');
+      break;
+    case 'update':
+      return user_access('edit site');
+      break;
+    case 'delete':
+      return user_access('delete site');
+      break;
+    default:
+      break;
+  }
 }
 
 function hosting_map_values_site($node) {
@@ -182,6 +201,20 @@ function hosting_site_form($node) {
     $form['platform'] = array('#type' => 'value', '#value' => key($platforms));
   }
 
+/*  $profiles = _hosting_get_profiles();
+  if (sizeof($profiles) > 1) {
+    $form['profile'] = array(
+      '#type' => 'radios',
+      '#title' => t('Profile'),
+      '#description' => t('The installation profile for your site.'),
+      '#options' => $profiles,
+      '#default_value' => $node->profile,
+    );
+  }
+  else {
+    $form['profile'] = array('#type' => 'value', '#value' => key($profiles));
+  }
+ */
   $db_servers = _hosting_get_db_servers();
   if (sizeof($db_servers) > 1) {
     $form['db_server'] = array(

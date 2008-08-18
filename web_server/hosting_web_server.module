@@ -14,8 +14,34 @@ function hosting_web_server_node_info() {
   return $types;
 }
 
+function hosting_web_server_hosting_features() {
+  return array('web_servers' => array(
+      'title' => t('Multiple web servers'), 
+      'description' => t('Allow for creation of multiple web server nodes, and for distributed management of sites.'),
+      'status' => HOSTING_FEATURE_DISABLED));
+}
+
+function hosting_web_server_perm() {
+  return array('create web server', 'view web server', 'edit web server', 'delete web server');
+}
+
 function hosting_web_server_access($op, $node) {
-  return hosting_access($op, $node);
+  switch ($op) {
+    case 'create':
+      return user_access('create web server');
+      break;
+    case 'view':
+      return user_access('view web server');
+      break;
+    case 'update':
+      return user_access('edit web server');
+      break;
+    case 'delete':
+      return user_access('delete web server');
+      break;
+    default:
+      break;
+  }
 }
 
 function hosting_map_values_web_server($node) {

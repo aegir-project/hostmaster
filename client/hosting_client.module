@@ -24,8 +24,55 @@ function hosting_client_node_info() {
   return $types;
 }
 
+/**
+ * Hook definining hosting related features
+ * 
+ * Used to simplify the interface.
+ */
+function hosting_client_hosting_features() {
+  return array('clients' => array(
+      'title' => t('Multiple clients'), 
+      'description' => t('Allow for multiple client nodes to be created.'),
+      'status' => 0));
+}
+
+
+function hosting_client_perm() {
+  return array('create client','view client', 'edit own client', 'delete own client', 'administer clients');
+}
+
 function hosting_client_access($op, $node) {
-  return hosting_access($op, $node);
+  if (!hosting_feature('clients')) {
+    // multiple client support has been disabled for this site.
+    return FALSE;
+  }
+
+  if (user_access('administer_clients')) {
+    return TRUE;
+  }
+  else {
+    global $user;
+    switch ($op) {
+      case 'create': 
+        return user_access('create client');
+        break;
+      case 'view':
+        return user_access('view client');
+        break;
+      case 'update':
+        if (user_access('edit own client') && $user->uid == $node->uid) {
+          return TRUE;
+        }
+        break;
+      case 'delete':
+        if ((user_access('delete own client') && $user->uid == $node ->uid)) {
+          return TRUE;
+        }
+        break;
+      default:
+        break;
+    }
+  }
 }
 
 function hosting_get_client($email) {

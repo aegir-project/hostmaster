@@ -20,7 +20,7 @@ function hosting_task_menu($may_cache) {
             'description' => $task['description'],
             'callback' => 'drupal_get_form',
             'callback arguments' => array('hosting_task_confirm_form', $node, $type),
-            'access' => user_access('can schedule tasks'),
+            'access' => user_access('create ' .$type. ' task'),
             'type' => MENU_LOCAL_TASK,
             'weight' => ($task['weight']) ? $task['weight'] : 0, 
           );
@@ -44,11 +44,34 @@ function hosting_task_node_info() {
 }
 
 function hosting_task_access($op, $node) {
-  return hosting_access($op, $node);
+  if(user_access('administer tasks')) {
+    return TRUE;
+  }
+  else {
+    switch ($op) {
+// waiting for the node access to accomplish different view permissions for same node type
+      case 'view':
+        return TRUE;
+        break;
+      default:
+        break;
+    }
+  }
 }
 
 function hosting_task_perm() {
-  return array('can schedule tasks');
+  return array(
+    'administer tasks',
+    'create backup task',
+    'create restore task',
+    'create synch task',
+    'create disable task',
+    'create enable task',
+    'create delete task',
+    'create verify task',
+    'view own tasks',
+    'access task logs'
+  );
 }
 
 function hosting_task_log($vid, $type, $message, $severity = 0, $timestamp = null ) {
@@ -347,16 +370,17 @@ function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
       '#value' => implode(", ", _hosting_parse_error_code($node->task_status)),
     );
   }
-  
-  if ($table = _hosting_task_log_table($node->vid)) { 
-    $node->content['hosting_log'] = array(
-      '#weight' => 1,
-      '#type' => 'item',
-      '#title' => t('Log'),
-      '#value' => $table
-    );
-  }
-    
+
+  if (user_access('access task log')) {
+    if ($table = _hosting_task_log_table($node->vid)) { 
+      $node->content['hosting_log'] = array(
+        '#weight' => 1,
+        '#type' => 'item',
+        '#title' => t('Log'),
+        '#value' => $table
+      );
+    }
+  }    
   return $node;
 }
 
