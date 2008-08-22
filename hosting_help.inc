@@ -64,14 +64,14 @@ function _provision_hosting_setup_requirements() {
     [$username@hm2 ~]$ cd $docroot
     [$username@hm2 ~]$ ./$drush_path hosting setup --uri=$uri
 EOF;
-  $help['title'] = t('Perform initial configuration by running the <code>Hosting Setup</code> command.');
+  $help['title'] = t('Perform initial configuration by running the <code>Hosting Setup</code> command');
 
   $help['summary'][] = t('The hosting setup command performs several useful installation functions, but it\'s primary responsibility
-        is adding, and ensuring that the crontab entry for the queue dispatcher has been correctly installed.');
+        is adding the crontab entry for the queue dispatcher and ensuring that has been correctly installed.');
 
-  $help['summary'][] = t('The queue dispatcher runs every minute, and keeps track of what work needs to be done on the system,
+  $help['summary'][] = t('The queue dispatcher runs every minute. It keeps track of what work needs to be done on the system 
     and instructs the provisioning framework to perform the needed tasks in the task queue.');
-  $help['summary'][] = t('Without the dispatcher, changes on the front end will not result in the required backend configuration, and your sites would not be managed.');
+  $help['summary'][] = t('Otherwise said, without the dispatcher, changes on the front end will not translate in the required backend configuration preventing actual sites management.');
   $help['configuration'] = t('Ensure that you are logged into the shell as %script_user, and then execute the following commands :<pre>@setup_cmd</pre>', 
      array('%script_user' => PROVISION_SCRIPT_USER, '@setup_cmd' => $setup_cmd));
 
@@ -98,8 +98,8 @@ function _provision_platform_requirements() {
 
   $task = hosting_get_most_recent_task($platform->nid, 'verify');
   
-  $help['title'] = t('A configured and verified provisioning framework.');
-  $help['summary'][] = t('In order for the hosting system to be able to create sites, it needs a platform to publish these sites on. A platform is a Drupal site that has the provision back end installed. Each platform also requires one correctly configured web server and one correctly configured database server. Once a new platform has been created, Hosting will automatically schedule a task that will verify the new platform, to check that it is in working order.');
+  $help['title'] = t('Provisioning framework status');
+  $help['summary'][] = t('In order for the hosting system to be able to create sites, it needs a platform to publish these sites on. A platform is a Drupal site that has the provision back end installed. Each platform also requires one correctly configured web server and one correctly configured database server. Once a new platform has been created, Hosting will automatically schedule a task that will verify the new platform is working properly.');
   $help['summary'][] = t('As hosting is also running on a platform, it is suggested that you succesfully configure your <a href="@platform">primary platform</a>
     before creating additional platforms and servers.', array('@platform' => url('node/' . HOSTING_OWN_PLATFORM)));
   $help['summary'][] = t('Each platform must be verified at least once, but if you find your platform is not being verified, look at the error log on the <a href="@verify_link">Verify platform task of this platform</a>', array("@verify_link" => url("node/" . $task->nid)));

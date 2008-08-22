@@ -119,10 +119,10 @@ function hosting_wizard_menu($may_cache, &$items) {
  */
 function hosting_wizard_intro() {
   $form['introduction']['#value'] = 
-    t("<p>I am a configuration wizard designed to help you through configuring the Hostmaster provisioning system.</p>
+    t("<p>I am a configuration wizard designed to help you through configuring the ®gir provisioning system.</p>
     <p>Once properly configured, this system will help you manage your Drupal sites. 
-    It will even be able to manage them across multiple versions of Drupal, and even across multiple servers.</p>
-    <p>Before we get started with the configuration, please make sure that you meet the following requirements.</p>");
+    It will even be able to manage them across multiple versions of Drupal and across multiple servers.</p>
+    <p>Before we get started with the configuration, please make sure that your system meets the following requirements:</p>");
   $form['drupal'] = array('#type' => 'requirement_help', '#requirement' => 'basic_drupal');
   $form['unix'] = array('#type' => 'requirement_help', '#requirement' => 'basic_unix');
   $form['server'] = array('#type' => 'requirement_help', '#requirement' => 'basic_server');
@@ -392,7 +392,7 @@ function hosting_wizard_provision_db_submit($form_id, $values) {
 function hosting_wizard_hosting_init() {
   // @ TODO: make this coherent, and add error reporting about what went wrong, and how it needs to be fixed.
   $form = array();
-  $form['intro']['#value'] = t('<p>The hosting framework provides the user interface used to administrate your sites.
+  $form['intro']['#value'] = t('<p>The hosting framework provides the user interface used to administer your sites.
     All components of the managed sites from the database and web servers, to the packages installed
     on them, to the sites themselves are represented by the hosting framework as nodes.
     This step is going to ensure that it is correctly initialized.</p>');
