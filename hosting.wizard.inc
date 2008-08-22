@@ -53,6 +53,10 @@ function hosting_wizard_steps($step = null) {
     $steps['hosting/import'] = array('title' => t('Import sites'), 'heading' => t('Import your existing sites'),
       'message' => t("Details of any existing sites found and imported into Hostmaster."));
 
+    $steps['hosting/features'] = array('title' => t('Features'), 'heading' => t('Enable hosting features'),
+      'message' => t("Enable or disable any of the features available."));
+
+
     $steps['complete'] = array('title' => t("Complete"), 'heading' => t('Complete your installation'),
     'message' => t("Congratulations, you have finished installation of hostmaster. If you have any questions, go to groups.drupal.org/hm2."));
 
@@ -479,6 +483,26 @@ function hosting_wizard_hosting_import() {
   return hosting_wizard_form('hosting/import', $form);
 }
 
+function hosting_wizard_hosting_features() {
+  $features = module_invoke_all('hosting_features');
+
+  foreach ($features as $feature => $info) {
+    $form['hosting_feature_' . $feature] = array(
+      '#type' => 'checkbox',
+      '#title' => $info['title'],
+      '#description' => $info['description'],
+      '#default_value' => hosting_feature($feature),
+      '#required' => hosting_feature($feature) == HOSTING_FEATURE_REQUIRED,
+    );
+
+  }
+  return hosting_wizard_form('hosting/features', $form);
+}
+
+function hosting_wizard_hosting_features_submit() {
+
+
+}
 
 /**
  * The last page.

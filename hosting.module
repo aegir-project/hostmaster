@@ -44,8 +44,15 @@ function hosting_menu($may_cache = true) {
           'access' => node_access('create', $type->type) && hosting_feature($type->type),
         ); 
       }
-
     }
+
+    // Kludge : Replace node/add page to hide functionality.
+    $items[] = array('path' => 'node/add',
+      'title' => t('Create content'),
+      'callback' => '_hosting_node_add',
+      'access' => user_access('access content'),
+      'type' => MENU_ITEM_GROUPING,
+      'weight' => 1);
   }
   return $items;
 }
@@ -89,6 +96,7 @@ function hosting_drush_command() {
 
 define('HOSTING_FEATURE_DISABLED', 0);
 define('HOSTING_FEATURE_ENABLED', 1);
+define('HOSTING_FEATURE_REQUIRED', 2);
 
 function hosting_feature($feature) {
   static $features = array();
@@ -96,9 +104,9 @@ function hosting_feature($feature) {
   if (!sizeof($features)) {
     $features = module_invoke_all("hosting_features");
   }
+
   return variable_get('hosting_feature_' . $feature, $features[$feature]['status']);
 }
-
 
 /**
  * Implementation of hook_form_alter
@@ -313,3 +321,50 @@ function _hosting_setup_cron() {
     provision_log("Notice", t("Installed hosting dispatch cron entry to run every minute"));
   }
 }
+
+/**
+ * Replacement node/add page.
+ *
+ * Major kludge to remove the hidden node types from node/add page
+ *
+ * Copied from node.module
+ */
+function _hosting_node_add() {
+  global $user;
+
+  $types = node_get_types();
+  $type = isset($type) ? str_replace('-', '_', $type) : NULL;
+  // If a node type has been specified, validate its existence.
+  if (isset($types[$type]) && node_access('create', $type) && (hosting_feature($type) !== HOSTING_FEATURE_DISABLED)) {
+    // Initialize settings:
+    $node = array('uid' => $user->uid, 'name' => $user->name, 'type' => $type);
+
+    drupal_set_title(t('Submit @name', array('@name' => $types[$type]->name)));
+    $output = drupal_get_form($type .'_node_form', $node);
+  }
+  else {
+    // If no (valid) node type has been provided, display a node type overview.
+    foreach ($types as $type) {
+      if (function_exists($type->module .'_form') && node_access('create', $type->type) && (hosting_feature($type->type) !== HOSTING_FEATURE_DISABLED)) {
+        $type_url_str = str_replace('_', '-', $type->type);
+        $title = t('Add a new @s.', array('@s' => $type->name));
+        $out = '<dt>'. l(drupal_ucfirst($type->name), "node/add/$type_url_str", array('title' => $title)) .'</dt>';
+        $out .= '<dd>'. filter_xss_admin($type->description) .'</dd>';
+        $item[$type->name] = $out;
+      }
+    }
+
+    if (isset($item)) {
+      uksort($item, 'strnatcasecmp');
+      $output = t('Choose the appropriate item from the list:') .'<dl>'. implode('', $item) .'</dl>';
+    }
+    else {
+      $output = t('No content types available.');
+    }
+  }
+
+  return $output;
+}
+
+
+

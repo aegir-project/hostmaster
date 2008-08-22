@@ -31,9 +31,9 @@ function hosting_client_node_info() {
  */
 function hosting_client_hosting_features() {
   return array('client' => array(
-      'title' => t('Multiple clients'), 
-      'description' => t('Allow for multiple client nodes to be created.'),
-      'status' => 0));
+      'title' => t('Client management (experimental)'), 
+      'description' => t('Enable this feature if you will have multiple clients with sites running on your system. It is generally not recommended to enable this feature if your hosting site is only going to be used internally, and will not be accessed by clients. Clients will only be able to view their own sites.'),
+      'status' => HOSTING_FEATURE_DISABLED));
 }
 
 
