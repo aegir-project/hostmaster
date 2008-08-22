@@ -69,7 +69,7 @@ function hosting_site_count() {
  */
 function hosting_get_sites_by_status($platform, $status) {
   $nodes = array();
-  $result = db_query("SELECT nid FROM hosting_site WHERE platform=%d AND (status & %d)", $platform, $status);
+  $result = db_query("SELECT nid FROM {hosting_site} WHERE platform=%d AND (status & %d)", $platform, $status);
   while ($nid = db_fetch_object($result)) {
     $nodes[$nid->nid] = node_load($nid->nid);
   }

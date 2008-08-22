@@ -439,7 +439,7 @@ function _hosting_task_log_class($type) {
  * This is used for documenting issues with verification.
  */
 function hosting_get_most_recent_task($rid, $type) {
-  $nid = db_result(db_query("SELECT nid FROM hosting_task t WHERE task_type='%s' and t.rid=%d ORDER BY t.executed DESC limit 1", $type, $rid));
+  $nid = db_result(db_query("SELECT nid FROM {hosting_task} t WHERE task_type='%s' and t.rid=%d ORDER BY t.executed DESC limit 1", $type, $rid));
   if ($nid) {
     return node_load($nid);
   }
