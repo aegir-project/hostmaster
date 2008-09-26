@@ -31,7 +31,14 @@ function hosting_menu($may_cache = true) {
       'type' => MENU_NORMAL_ITEM,
       'access' => TRUE
     );
-
+/*
+    // Kludge : Replace node/add page to hide functionality.
+    $items[] = array('path' => 'node/add',
+      'title' => t('Create content'),
+      'callback' => '_hosting_node_add',
+      'access' => user_access('access content'),
+      'type' => MENU_ITEM_GROUPING,
+      'weight' => 1);
     // Disable unsupported features.
     $features = module_invoke_all('hosting_features');
     $types = node_get_types();
@@ -41,18 +48,12 @@ function hosting_menu($may_cache = true) {
         $items[] = array(
           'path' => 'node/add/'. $type_url_str,
           'title' => drupal_ucfirst($type->name),
-          'access' => node_access('create', $type->type) && hosting_feature($type->type),
+          'access' => node_access('create', $type->type) && (hosting_feature($type->type) !== HOSTING_FEATURE_DISABLED),
         ); 
       }
     }
+ */
 
-    // Kludge : Replace node/add page to hide functionality.
-    $items[] = array('path' => 'node/add',
-      'title' => t('Create content'),
-      'callback' => '_hosting_node_add',
-      'access' => user_access('access content'),
-      'type' => MENU_ITEM_GROUPING,
-      'weight' => 1);
   }
   return $items;
 }
@@ -267,7 +268,10 @@ function hosting_setup() {
       $return = join("\n", $return);
       $data = unserialize($return);
       if ($code == PROVISION_SUCCESS) {
+        ## Run the dispatch command again to import the existing sites.
+        variable_del('hosting_queue_dispatch_last_run');
         variable_set('hosting_dispatch_enabled', TRUE);
+        exec(_hosting_dispatch_cmd(), $return, $code);
         provision_log("message", t("Dispatch command was run successfully"));
         _hosting_setup_cron();
       }

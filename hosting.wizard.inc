@@ -123,7 +123,7 @@ function hosting_wizard_menu($may_cache, &$items) {
  */
 function hosting_wizard_intro() {
   $form['introduction']['#value'] = 
-    t("<p>I am a configuration wizard designed to help you through configuring the ®gir provisioning system.</p>
+    t("<p>I am a configuration wizard designed to help you through configuring the Aegir provisioning system.</p>
     <p>Once properly configured, this system will help you manage your Drupal sites. 
     It will even be able to manage them across multiple versions of Drupal and across multiple servers.</p>
     <p>Before we get started with the configuration, please make sure that your system meets the following requirements:</p>");

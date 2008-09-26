@@ -20,7 +20,7 @@ function hosting_platform_node_info() {
 
 function hosting_platform_hosting_features() {
   return array('platform' => array(
-      'title' => t('Multiple platforms'), 
+      'title' => t('Multiple platforms (experimental)'), 
       'description' => t('Allow for management of multiple platforms, and migration between platforms.'),
       'status' => HOSTING_FEATURE_DISABLED),
       );
