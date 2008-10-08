@@ -11,7 +11,6 @@
  */
 
 include_once('hosting_help.inc');
-include_once('hosting_views.inc');
 include_once('hosting.wizard.inc');
 include_once('hosting.queues.inc');
 
@@ -216,7 +215,7 @@ function _hosting_node_link($nid) {
 
 /**
  * Creates a new block.
- */
+ *
 function _hosting_add_block($module, $delta, $theme, $status, $weight, $region, $visibility = 0, $pages = '', $custom = 0, $throttle = 0, $title = '') {
   db_query("INSERT INTO {blocks} (module, delta, theme, status, weight, region, visibility, pages, custom, throttle, title) 
      VALUES ('%s', '%s', '%s', %d, %d, '%s', %d, '%s', %d, %d, '%s')", 
@@ -226,6 +225,34 @@ function _hosting_add_block($module, $delta, $theme, $status, $weight, $region, 
     db_query("INSERT INTO {boxes} (bid, body, info, format) VALUES (%d, '%s', '%s', '%s')", $box->bid, $box->body, $box->info, $box->format);
   }
 }
+
+
+function hosting_block($op = 'list', $delta = 0, $edit = array()) {
+  switch ($op) {
+    case 'list' :
+      $blocks['hosting_summary'] = array('info' => t('Hosting summary'));
+      return $blocks;
+    case 'view' : 
+      if ($delta == 'hosting_summary') {
+        return array(
+          'title' => t('Summary'),
+          'content' => hosting_summary_block());
+      }
+  }
+
+}
+
+function hosting_summary_block() {
+  return theme('hosting_summary_block', _hosting_node_link(HOSTING_DEFAULT_PLATFORM), _hosting_node_link(HOSTING_DEFAULT_WEB_SERVER), _hosting_node_link(HOSTING_DEFAULT_DB_SERVER));
+}
+
+function theme_hosting_summary_block($platform, $web_server, $db_server) {
+  $output .= theme("item_list", $platforms, t('Platforms'));
+  $output .= theme("item_list", $web_servers, t('Web servers'));
+  $output .= theme("item_list", $db_servers, t('Database servers'));
+  return $output;
+}
+*/
 
 /**
  * Check if a hostname provided is an ip address

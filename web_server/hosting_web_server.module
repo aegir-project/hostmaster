@@ -2,7 +2,6 @@
 /**
  * @file Web server node type is defined here.
  */
-include_once('hosting_web_server.views.inc');
 
 function hosting_web_server_node_info() {
   $types["web_server"] =  array(

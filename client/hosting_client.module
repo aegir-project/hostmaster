@@ -3,7 +3,6 @@
  * @file Client node type is defined here.
  */
 
-include_once('hosting_client.views.inc');
 
 function hosting_map_values_client($node) {
   $values['client_id'] = $node->nid;
@@ -239,11 +238,10 @@ function hosting_client_view($node, $teaser = FALSE, $page = FALSE) {
     );
   }
   
-  $view = views_get_view('site_embed_client');
   $node->content['sites_view'] = array(
     '#type' => 'item',
     '#title' => t("Sites"),
-    '#value' => views_build_view('embed', $view, array($node->nid)), 
+    '#value' => hosting_site_list("client", $node->nid), 
     '#weight' => 10
   );
   return $node;

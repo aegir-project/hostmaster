@@ -1,7 +1,6 @@
 <?php
 
 include_once('hosting_site_status.inc');
-include_once('hosting_site.views.inc');
 
 function hosting_site_node_info() {
   $types["site"] =  array(
@@ -309,13 +308,11 @@ function hosting_site_view(&$node, $teaser = false) {
     '#title' => t('Status'),
     '#value' => hosting_site_status_output($node->site_status),
   );
-
    
-  $view = views_get_view('tasks_embed');
   $node->content['tasks_view'] = array(
     '#type' => 'item',
     '#title' => t("Tasks"),
-    '#value' => views_build_view('embed', $view, array($node->nid)), 
+    '#value' => hosting_task_list('rid', $node->nid), 
     '#weight' => 10
   );
   return $node;
@@ -396,4 +393,57 @@ function hosting_site_exists($url) {
     AND title='%s' AND  n.nid <> %d AND h.status & %d",
     $node->title, ~HOSTING_SITE_DELETED)); 
   return $result; 
+}
+
+/**
+ * Display a list of created sites on the front page
+ * @TODO Add ability to filter by additional fields
+ * @TODO Add paging.
+ */
+function hosting_site_list($filter_by = null, $filter_value = null) {
+  $args[] = 'site';
+  $cond = '';
+
+  if ($filter_by && $filter_value) {
+    $cond = ' AND s.' . $filter_by . ' = %d';
+    $args[] = $filter_value;
+  }
+  $result = db_query(db_rewrite_sql("SELECT * FROM {node} n left join {hosting_site} s on n.nid=s.nid where type='%s'" . $cond), $args);
+
+  if (!db_num_rows($result)) {
+    return null;
+  }
+
+  $rows = array();
+  while ($node = db_fetch_object($result)) {
+    $row = array();
+    $row[] = l($node->title, 'node/' . $node->nid);
+    $row[] = _hosting_node_link($node->profile);
+    $row[] = format_interval(mktime() - $node->created, 1);
+    $rows[] = $row;
+  }
+  
+  return theme('table', array(t('Domain'), t('Profile'), t('Created')), $rows);
+}
+
+/**
+ * Page handler for displaying list of hosted sites on front page
+ */
+function hosting_sites() {
+  if ($list = hosting_site_list()) {
+    return $list;
+  }
+  return _hosting_introduction();
+}
+
+function hosting_site_menu($may_cache = false) {
+   $items[] = array(
+    'path' => 'hosting/sites',
+    'title' => t('Hosted sites'),
+    'description' => t('Display a list of sites'),
+    'callback' => 'hosting_sites',
+    'type' => MENU_CALLBACK,
+    'access' => TRUE
+  );
+  return $items;
 }

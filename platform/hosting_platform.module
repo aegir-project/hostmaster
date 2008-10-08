@@ -3,9 +3,6 @@
  * @file Platform node type definition
  */
 
-
-#include_once('hosting_platform.views.inc');
-
 function hosting_platform_node_info() {
   #configuration
   $types["platform"] =  array(
@@ -182,19 +179,17 @@ function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
     '#value' => hosting_format_interval($node->verified),
   );
 
-  $view = views_get_view('site_embed_platform');
   $node->content['sites_view'] = array(
     '#type' => 'item',
     '#title' => t("Sites"),
-    '#value' => views_build_view('embed', $view, array($node->nid)), 
+    '#value' => hosting_site_list("platform", $node->nid), 
     '#weight' => 10
   );
 
-  $view = views_get_view('tasks_embed');
   $node->content['tasks_view'] = array(
     '#type' => 'item',
     '#title' => t("Tasks"),
-    '#value' => views_build_view('embed', $view, array($node->nid)), 
+    '#value' => hosting_task_list("rid", $node->nid),
     '#weight' => 10
   );
   return $node;
