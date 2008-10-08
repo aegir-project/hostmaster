@@ -8,6 +8,7 @@ function hosting_package_install() {
     nid int(10) unsigned NOT NULL default '0',
     package_type varchar(16) NOT NULL default '',
     short_name varchar(16) NOT NULL default '',
+    description longtext NOT NULL default '',
     PRIMARY KEY (vid)
   ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
 
@@ -31,4 +32,13 @@ function hosting_package_install() {
     PRIMARY KEY (iid)
   ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
 
+}
+
+/**
+ * Add package description to hosting_package table
+ */
+function hosting_package_update_1() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE {hosting_package} ADD COLUMN description longtext NOT NULL default ''");
+  return $ret;
 }

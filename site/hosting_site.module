@@ -39,14 +39,15 @@ function hosting_site_access($op, $node) {
 function hosting_map_values_site($node) {
   $values['site_id'] = $node->nid;
   $values['site_url'] = $node->title;
-
+  $profile = node_load($node->profile);
+  $values['site_profile'] = $profile->short_name;
   $values = array_merge($values, hosting_map_values($node->platform));
   $values = array_merge($values, hosting_map_values($node->client));
   $values = array_merge($values, hosting_map_values($node->db_server));
 
   ## fields that will be used on the command line call
   $values['#export_site'] = array_merge( 
-    array('publish_path', 'site_id'), 
+    array('publish_path', 'site_id', 'site_profile', ), 
     $values['#export_db_server'], 
     $values['#export_web_server'],
     $values['#export_client']);
@@ -201,12 +202,12 @@ function hosting_site_form($node) {
     $form['platform'] = array('#type' => 'value', '#value' => key($platforms));
   }
 
-/*  $profiles = _hosting_get_profiles();
+  $profiles = hosting_get_profiles();
   if (sizeof($profiles) > 1) {
     $form['profile'] = array(
       '#type' => 'radios',
-      '#title' => t('Profile'),
-      '#description' => t('The installation profile for your site.'),
+      '#title' => t('Install profile'),
+      '#description' => t('The type of site to install.'),
       '#options' => $profiles,
       '#default_value' => $node->profile,
     );
@@ -214,12 +215,13 @@ function hosting_site_form($node) {
   else {
     $form['profile'] = array('#type' => 'value', '#value' => key($profiles));
   }
- */
+
   $db_servers = _hosting_get_db_servers();
   if (sizeof($db_servers) > 1) {
     $form['db_server'] = array(
       '#type' => 'radios',
       '#title' => t('Database server'),
+      '#required' => TRUE,
       '#description' => t('The database server the site will use to host it\'s content.'),
       '#options' => $db_servers,
       '#default_value' => $node->db_server,
@@ -247,8 +249,8 @@ function hosting_site_insert(&$node) {
   if (!($node->site_status & HOSTING_SITE_IMPORTED)) {
     $node->site_status = HOSTING_SITE_ENABLED; # HOSTING_SITE_NOTINSTALLED implicit
   }
-  db_query("INSERT INTO {hosting_site} (vid, nid, client, db_server, platform, last_cron, status) VALUES (%d, %d, %d, %d, %d, %d, %d)",
-    $node->vid, $node->nid, $node->client, $node->db_server, $node->platform, $node->last_cron, $node->site_status);
+  db_query("INSERT INTO {hosting_site} (vid, nid, client, db_server, platform, profile, last_cron, status) VALUES (%d, %d, %d, %d, %d, %d, %d, %d)",
+    $node->vid, $node->nid, $node->client, $node->db_server, $node->platform, $node->profile, $node->last_cron, $node->site_status);
   if ((!$node->old_vid) && !($node->site_status & HOSTING_SITE_IMPORTED)) {
     hosting_add_task($node->nid, 'install');    
   }
@@ -272,7 +274,7 @@ function hosting_site_update(&$node) {
 }
 
 function hosting_site_load($node) {
-  $additions = db_fetch_object(db_query('SELECT  client, db_server, platform, last_cron, status  AS site_status FROM {hosting_site} WHERE vid = %d', $node->vid));
+  $additions = db_fetch_object(db_query('SELECT  client, db_server, platform, profile, last_cron, status  AS site_status FROM {hosting_site} WHERE vid = %d', $node->vid));
   return $additions;
 }
 
@@ -292,6 +294,11 @@ function hosting_site_view(&$node, $teaser = false) {
     '#title' => t('Platform'),
     '#value' => _hosting_node_link($node->platform),
   );
+  $node->content['profile'] = array(
+    '#type' => 'item',
+    '#title' => t('Install profile'),
+    '#value' => _hosting_node_link($node->profile),
+  );
   $node->content['db_server'] = array(
     '#type' => 'item',
     '#title' => t('Database server'),
@@ -302,7 +309,8 @@ function hosting_site_view(&$node, $teaser = false) {
     '#title' => t('Status'),
     '#value' => hosting_site_status_output($node->site_status),
   );
-  
+
+   
   $view = views_get_view('tasks_embed');
   $node->content['tasks_view'] = array(
     '#type' => 'item',

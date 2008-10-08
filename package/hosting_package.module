@@ -36,6 +36,43 @@ function hosting_package_release_access($op, $node) {
   return hosting_access($op, $node);
 }
 
+function hosting_get_profiles() {
+  $profiles = _hosting_package_load(array('package_type' => 'profile'));
+
+  foreach ($profiles as $profile) {
+    $return[$profile->nid] = $profile->title;
+  }
+  return $return;
+}
+
+/**
+ * A generic method for finding whichever packages you are looking for.
+ *
+ * This works similarly to node_load's implementation, but it will only look
+ * for fields related to packages.
+ *
+ * @param
+ *    An associated array containing the following properties
+ *      name => A string containing the friendly name of the package
+ *      short_name => The name of the drupal package in the system table
+ *      package_type => The type of package. (theme|module|profile|engine)
+ */
+function _hosting_package_load($param) {
+  // Turn the conditions into a query.
+  foreach ($param as $key => $value) {
+    $cond[] = 'p.'. db_escape_table($key) ." = '%s'";
+    $arguments[] = $value;
+  }
+  $cond = implode(' AND ', $cond);
+  $result = db_query('SELECT n.nid FROM node n left join hosting_package p on n.nid = p.nid WHERE ' . $cond, $arguments);
+  while ($nid = db_fetch_object($result)) {
+    $return[$nid->nid] = node_load(array('nid' => $nid->nid));
+  }
+  if (sizeof($return)) {
+    return $return;
+  }
+  return null;
+}
 
 function hosting_get_packages_by_type($type) {
   $result = db_query("SELECT nid FROM {hosting_package} WHERE package_type = '%s'", $type);
@@ -93,8 +130,8 @@ function hosting_add_package_instance($nid, $rid, $path) {
  * Implementation of hook_insert().
  */
 function hosting_package_insert($node) {
-  db_query("INSERT INTO {hosting_package} (vid, nid, package_type, short_name ) VALUES (%d, %d, '%s', '%s')",
-    $node->vid, $node->nid, $node->package_type, $node->short_name );
+  db_query("INSERT INTO {hosting_package} (vid, nid, package_type, short_name, description ) VALUES (%d, %d, '%s', '%s', '%s')",
+    $node->vid, $node->nid, $node->package_type, $node->short_name, $node->description );
 }
 
 /**
@@ -109,8 +146,8 @@ function hosting_package_update($node) {
     hosting_package_insert($node);
   }
   else {
-    db_query("UPDATE {hosting_package} SET package_type = '%s', short_name = '%s' WHERE nid=%d",
-              $node->package_type, $node->short_name, $node->vid, $node->nid);
+    db_query("UPDATE {hosting_package} SET package_type = '%s', short_name = '%s', description = '%s' WHERE nid=%d",
+              $node->package_type, $node->short_name, $node->description, $node->vid, $node->nid);
   }
 }
 
@@ -129,7 +166,7 @@ function hosting_package_delete($node) {
  * Implementation of hook_load().
  */
 function hosting_package_load($node) {
-  $additions = db_fetch_object(db_query('SELECT package_type, short_name FROM {hosting_package} WHERE vid = %d', $node->vid));
+  $additions = db_fetch_object(db_query('SELECT package_type, short_name, description FROM {hosting_package} WHERE vid = %d', $node->vid));
   return $additions;
 }
 
