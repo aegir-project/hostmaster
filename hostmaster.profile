@@ -9,8 +9,8 @@
  */
 function hostmaster_profile_modules() {
   return array(
-    /* core */ 'block', 'color', 'filter', 'help', 'menu', 'node', 'system', 'user', 'watchdog',
-    /* contrib */ 'drush', 'views', 'views_ui', 'cvs_deploy',
+    /* core */ 'block', 'color', 'filter', 'help', 'menu', 'node', 'system', 'user',
+    /* contrib */ 'drush', 'cvs_deploy',
     /* custom */ 'provision', 'provision_apache', 'provision_mysql', 'provision_drupal', 'hosting', 'hosting_task', 'hosting_client', 'hosting_db_server', 'hosting_package', 'hosting_platform', 'hosting_site', 'hosting_web_server');
 }
 
@@ -134,9 +134,6 @@ function hostmaster_profile_final() {
   #verify platform
   hosting_add_task(variable_get('hosting_own_platform', 6), "verify");
 
-  _hosting_add_block("views", "platforms", "garland", 1, 0, "right");
-  _hosting_add_block("views", "servers", "garland", 1, 0, "right");
-
   #initial configuration of hostmaster - todo
   variable_set('site_name', t('Hostmaster'));
   variable_set('site_frontpage', 'hosting/sites');
@@ -144,7 +141,6 @@ function hostmaster_profile_final() {
   // @todo create proper roles, and set up views to be role based
   hostmaster_install_set_permissions(hostmaster_install_get_rid('anonymous user'), array('access content', 'access all views'));
   hostmaster_install_set_permissions(hostmaster_install_get_rid('authenticated user'), array('access content', 'access all views'));
-  views_invalidate_cache();
   menu_rebuild();
 
   drupal_goto('hosting/wizard');
