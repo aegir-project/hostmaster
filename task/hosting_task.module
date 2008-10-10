@@ -234,6 +234,10 @@ function hosting_available_tasks($node) {
     $options['verify']['title'] = t('Verify');
     $options['verify']['description'] = t('Verify that the platform is correctly installed and working.');
     $options['verify']['weight'] = 10;
+
+    $options['import']['title'] = t('Import');
+    $options['import']['description'] = t('Import any sites running on this platform.');
+    $options['import']['weight'] = 11;
   }
   return $options;
 }
