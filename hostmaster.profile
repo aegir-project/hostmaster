@@ -130,10 +130,6 @@ function hostmaster_profile_final() {
   variable_set('hosting_default_platform', $node->nid);
   variable_set('hosting_own_platform', $node->nid);
 
-
-  #verify platform
-  hosting_add_task(variable_get('hosting_own_platform', 6), "verify");
-
   #initial configuration of hostmaster - todo
   variable_set('site_name', t('Hostmaster'));
   variable_set('site_frontpage', 'hosting/sites');
