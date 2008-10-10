@@ -640,7 +640,7 @@ function hosting_wizard_init() {
  * This could probably work for a number of theme functions.
  */
 function hosting_wizard_dummy_theme_block() {
-  $func = $GLOBALS['conf']['theme_default'] . "_block";
+  $func = $GLOBALS['conf']['theme_default'] . "_blocks";
 
   if (!function_exists($func)) {
     drupal_eval("<?php function $func() { return ' ';}");
