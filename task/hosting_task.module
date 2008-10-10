@@ -374,7 +374,7 @@ function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
     );
   }
 
-  if (user_access('access task log')) {
+  if (user_access('access task logs')) {
     if ($table = _hosting_task_log_table($node->vid)) { 
       $node->content['hosting_log'] = array(
         '#weight' => 1,

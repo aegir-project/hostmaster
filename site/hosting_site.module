@@ -273,6 +273,7 @@ function hosting_site_validate(&$node) {
   if (db_result(db_query("SELECT COUNT(n.nid) FROM {node} n JOIN {hosting_site} h ON n.nid = h.nid WHERE type='site' AND title='%s' AND  n.nid <> %d AND h.status & %d", $node->title, $node->nid, ~HOSTING_SITE_DELETED))) {
     form_set_error('title', t("The url you specified is not unique."));
   }
+
 }
 
 

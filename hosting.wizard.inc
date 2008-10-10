@@ -485,9 +485,9 @@ function hosting_wizard_hosting_import() {
 
 function hosting_wizard_hosting_features() {
   $features = module_invoke_all('hosting_features');
-
+  $form['features']['#tree'] = TRUE;
   foreach ($features as $feature => $info) {
-    $form['hosting_feature_' . $feature] = array(
+    $form['features'][$feature] = array(
       '#type' => 'checkbox',
       '#title' => $info['title'],
       '#description' => $info['description'],
@@ -499,9 +499,11 @@ function hosting_wizard_hosting_features() {
   return hosting_wizard_form('hosting/features', $form);
 }
 
-function hosting_wizard_hosting_features_submit() {
-
-
+function hosting_wizard_hosting_features_submit($form_id, $values) {
+  foreach ($values['features'] as $feature => $value) {
+    variable_set('hosting_feature_' . $feature, $value);
+  }
+  menu_rebuild();
 }
 
 /**

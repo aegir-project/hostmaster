@@ -18,6 +18,7 @@ include_once('hosting.queues.inc');
  * Implementation of hook_menu()
  */
 function hosting_menu($may_cache = true) {
+  global $user;
   $items = array();
   hosting_wizard_menu($may_cache, $items);
   if ($may_cache) {
@@ -30,7 +31,7 @@ function hosting_menu($may_cache = true) {
       'type' => MENU_NORMAL_ITEM,
       'access' => TRUE
     );
-/*
+
     // Kludge : Replace node/add page to hide functionality.
     $items[] = array('path' => 'node/add',
       'title' => t('Create content'),
@@ -47,11 +48,11 @@ function hosting_menu($may_cache = true) {
         $items[] = array(
           'path' => 'node/add/'. $type_url_str,
           'title' => drupal_ucfirst($type->name),
-          'access' => node_access('create', $type->type) && (hosting_feature($type->type) !== HOSTING_FEATURE_DISABLED),
+          'access' => (($user->uid == 1) || node_access('create', $type->type)) && (hosting_feature($type->type) !== HOSTING_FEATURE_DISABLED),
         ); 
       }
     }
- */
+
 
   }
   return $items;
@@ -360,11 +361,11 @@ function _hosting_setup_cron() {
  *
  * Copied from node.module
  */
-function _hosting_node_add() {
+function _hosting_node_add($type = '') {
   global $user;
 
   $types = node_get_types();
-  $type = isset($type) ? str_replace('-', '_', $type) : NULL;
+  $type = ($type) ? str_replace('-', '_', $type) : NULL;
   // If a node type has been specified, validate its existence.
   if (isset($types[$type]) && node_access('create', $type) && (hosting_feature($type) !== HOSTING_FEATURE_DISABLED)) {
     // Initialize settings:
