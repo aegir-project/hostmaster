@@ -104,6 +104,7 @@ function hosting_add_site($url, $client, $platform, $db_server, $profile, $site_
  $node->status = 1;
  #todo: make this pretty
  $node->title = $url;
+ $node->language = $language;
 
  $client = hosting_get_client($client);
  $node->client = ($client) ? $client->nid : HOSTING_DEFAULT_CLIENT;
