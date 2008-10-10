@@ -243,15 +243,18 @@ function hosting_package_view($node, $teaser = FALSE, $page = FALSE) {
  */
 
 function _hosting_language_names($languages) {
-  include_once './includes/locale.inc';
-  $locales = _locale_get_iso639_list();
   foreach ($languages as $language) {
     // Try to use verbose language name
-    $return[$language] = $locales[$language][0] . (isset($locales[$language][1]) ? ' '. t('(@language)', array('@language' => $locales[$language][1])) : '');
+    $return[$language] = _hosting_language_name($language);
   }
   return $return;
 }
 
+function _hosting_language_name($language) {
+  include_once './includes/locale.inc';
+  $locales = _locale_get_iso639_list();
+  return $locales[$language][0] . (isset($locales[$language][1]) ? ' '. t('(@language)', array('@language' => $locales[$language][1])) : '');
+}
 
 function hosting_package_release_set_title(&$node) {
   $package = node_load($node->package);
