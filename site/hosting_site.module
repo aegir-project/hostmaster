@@ -336,7 +336,7 @@ function hosting_site_view(&$node, $teaser = false) {
   $node->content['language'] = array(
     '#type' => 'item',
     '#title' => t('Language'),
-    '#value' => _hosting_language_name($node->language),,
+    '#value' => _hosting_language_name($node->language),
   );
 
   $node->content['db_server'] = array(
