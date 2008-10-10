@@ -226,6 +226,15 @@ function hosting_package_view($node, $teaser = FALSE, $page = FALSE) {
       '#value' => implode(', ', _hosting_language_names($node->languages)),
     );
   }
+  if ($node->package_type == 'profile') {
+    $node->content['sites'] = array(
+      '#type' => 'item',
+      '#title' => t("Sites"),
+      '#value' => hosting_site_list("profile", $node->nid), 
+      '#weight' => 10
+    );
+  }
+
   /**
   $view = views_get_view('package_release_embed');
   $node->content['release_view'] = array(

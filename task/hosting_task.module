@@ -489,7 +489,7 @@ function hosting_task_list($filter_by = null, $filter_value = null) {
   $result = db_query(db_rewrite_sql("SELECT * FROM {node} n left join {hosting_task} t on n.vid=t.vid where type='%s'" . $cond . " ORDER BY n.nid DESC"), $args);
 
   if (!db_num_rows($result)) {
-    return null;
+    return t('No tasks available');
   }
 
   $rows = array();
@@ -497,7 +497,7 @@ function hosting_task_list($filter_by = null, $filter_value = null) {
     $row = array();
     $row[] = l($node->title, 'node/' . $node->nid);
     $row[] =  implode(", ", _hosting_parse_error_code($node->task_status)); 
-    $row[] = format_interval(mktime() - $node->created, 1);
+    $row[] = t("@interval ago", array('@interval' => format_interval(mktime() - $node->created, 1)));
 #    $row[] = format_interval(mktime() - $node->completed, 1);
     $rows[] = $row;
   }

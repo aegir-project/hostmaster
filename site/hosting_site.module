@@ -471,7 +471,7 @@ function hosting_site_list($filter_by = null, $filter_value = null) {
     $row[] = l($node->title, 'node/' . $node->nid);
     $row[] = _hosting_node_link($node->profile);
     $row[] = _hosting_language_name($node->language);
-    $row[] = format_interval(mktime() - $node->created, 1);
+    $row[] = t("@interval ago", array('@interval' => format_interval(mktime() - $node->created, 1)));
     $rows[] = $row;
   }
   
