@@ -42,6 +42,18 @@ function hosting_get_profiles() {
   return $return;
 }
 
+function hosting_get_profile_languages() {
+  $result = db_query("SELECT DISTINCT(language) FROM {hosting_package_languages}");
+  while ($language = db_fetch_object($result)) {
+    $languages[] = $language->language;
+  }
+
+  if (!is_array($languages)) {
+    $languages = array('en'); 
+  }
+  return _hosting_language_names($languages); 
+}
+
 /**
  * A generic method for finding whichever packages you are looking for.
  *
@@ -127,8 +139,21 @@ function hosting_add_package_instance($nid, $rid, $path) {
  * Implementation of hook_insert().
  */
 function hosting_package_insert($node) {
+  if (is_array($node->languages)) {
+    hosting_package_languages_insert($node->vid, $node->nid, $node->languages);
+  }
+
   db_query("INSERT INTO {hosting_package} (vid, nid, package_type, short_name, description ) VALUES (%d, %d, '%s', '%s', '%s')",
     $node->vid, $node->nid, $node->package_type, $node->short_name, $node->description );
+}
+
+/**
+ * Insert translation of packages
+ */
+function hosting_package_languages_insert($vid, $nid, $languages) {
+  foreach ($languages as $language) {
+    db_query("INSERT INTO {hosting_package_languages} (vid, nid, language) VALUES (%d, %d, '%s')", $vid, $nid, $language);
+  }
 }
 
 /**
@@ -144,12 +169,17 @@ function hosting_package_update($node) {
   }
   else {
     db_query("UPDATE {hosting_package} SET package_type = '%s', short_name = '%s', description = '%s' WHERE nid=%d",
-              $node->package_type, $node->short_name, $node->description, $node->vid, $node->nid);
+      $node->package_type, $node->short_name, $node->description, $node->vid, $node->nid);
+    if (is_array($node->languages)) {
+      db_query("DELETE FROM {hosting_package_languages} WHERE vid = %d and nid = %d", $node->vid, $node->nid);
+      hosting_package_languages_insert($vid, $nid, $node->languages);
+    }
   }
 }
 
 function hosting_nodeapi_package_delete_revision(&$node) {
   db_query('DELETE FROM {hosting_package} WHERE vid = %d', $node->vid);
+  db_query('DELETE FROM {hosting_package_languages} WHERE vid=%s', $node->vid);
 }
 
 /**
@@ -157,6 +187,7 @@ function hosting_nodeapi_package_delete_revision(&$node) {
  */
 function hosting_package_delete($node) {
   db_query('DELETE FROM {hosting_package} WHERE nid = %d', $node->nid);
+  db_query('DELETE FROM {hosting_package_languages} WHERE nid=%s', $node->nid);
 }
 
 /**
@@ -164,6 +195,12 @@ function hosting_package_delete($node) {
  */
 function hosting_package_load($node) {
   $additions = db_fetch_object(db_query('SELECT package_type, short_name, description FROM {hosting_package} WHERE vid = %d', $node->vid));
+  
+  // Add localizations.
+  $languages = db_fetch_array(db_query('SELECT language FROM hosting_package_languages WHERE vid = %d', $node->vid)); 
+  if (sizeof($languages)) {
+    $additions->languages = $languages;
+  }
   return $additions;
 }
 
@@ -182,6 +219,13 @@ function hosting_package_view($node, $teaser = FALSE, $page = FALSE) {
     '#value' => $node->short_name,
   );
 
+  if (is_array($node->languages)) {
+    $node->content['translation'] = array(
+      '#type' => 'item',
+      '#title' => t('Languages'),
+      '#value' => implode(', ', _hosting_language_names($node->languages)),
+    );
+  }
   /**
   $view = views_get_view('package_release_embed');
   $node->content['release_view'] = array(
@@ -192,6 +236,20 @@ function hosting_package_view($node, $teaser = FALSE, $page = FALSE) {
   );
   */
   return $node;
+}
+
+/**
+ * Return names of the languages available
+ */
+
+function _hosting_language_names($languages) {
+  include_once './includes/locale.inc';
+  $locales = _locale_get_iso639_list();
+  foreach ($languages as $language) {
+    // Try to use verbose language name
+    $return[$language] = $locales[$language][0] . (isset($locales[$language][1]) ? ' '. t('(@language)', array('@language' => $locales[$language][1])) : '');
+  }
+  return $return;
 }
 
 
@@ -283,6 +341,9 @@ function hosting_package_import_packages($rid, $type, $default_version, $data) {
       $node->title = ($info->info['name']) ? $info->info['name'] : "$short_name $type $version";
       $node->package_type = $type;
       $node->short_name = $short_name;
+      if (is_array($info->info['languages'])) {
+        $node->languages = $info->info['languages'];
+      }
       $node->status = 1;
       node_save($node);
       $package = $node;
@@ -292,6 +353,11 @@ function hosting_package_import_packages($rid, $type, $default_version, $data) {
       $node->type = 'package_release';
       $node->package = $package->nid;
       $node->version = $version;
+
+      if (is_array($info->info['languages'])) {
+        $node->languages = $info->info['languages'];
+      }
+
       $node->status = 1;
       node_save($node);
       $release = $node;

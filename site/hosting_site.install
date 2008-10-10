@@ -8,6 +8,7 @@ function hosting_site_install() {
     db_server int(11) NOT NULL default '0',
     platform int(11) NOT NULL default '0',
     profile int(11) NOT NULL default '0',
+    language VARCHAR(10) NOT NULL default 'en',
     last_cron int(10) default NULL,
     status tinyint unsigned NOT NULL default '0',
     PRIMARY KEY  (vid)
@@ -22,5 +23,14 @@ function hosting_site_install() {
     timestamp int(11) default NULL,
     PRIMARY KEY  (bid)    
     ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
+}
+
+/**
+ * Add language field to hosting_sites table
+ */
+function hosting_site_update_1() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE {hosting_site} ADD COLUMN language VARCHAR(10) NOT NULL default 'en'");
+  return $ret;
 }
 

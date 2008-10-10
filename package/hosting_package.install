@@ -32,6 +32,11 @@ function hosting_package_install() {
     PRIMARY KEY (iid)
   ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
 
+  db_query("CREATE TABLE {hosting_package_languages} (
+    vid int NOT NULL,
+    nid int(10) UNSIGNED NOT NULL,
+    language VARCHAR(12) NOT NULL DEFAULT ''
+  )  /*!40100 DEFAULT CHARACTER SET UTF8 */");
 }
 
 /**
@@ -42,3 +47,17 @@ function hosting_package_update_1() {
   $ret[] = update_sql("ALTER TABLE {hosting_package} ADD COLUMN description longtext NOT NULL default ''");
   return $ret;
 }
+
+/**
+ * Add localization support for installed sites
+ */
+function hosting_package_update_2() {
+  $ret = array();
+  $ret[] = update_sql("CREATE TABLE {hosting_package_languages} (
+    vid int NOT NULL,
+    nid int(10) UNSIGNED NOT NULL,
+    language VARCHAR(12) NOT NULL DEFAULT ''
+  )  /*!40100 DEFAULT CHARACTER SET UTF8 */");
+  return $ret;
+}
+

@@ -2,6 +2,9 @@
 
 include_once('hosting_site_status.inc');
 
+/**
+ * Implementation of hook_node_info
+ */
 function hosting_site_node_info() {
   $types["site"] =  array(
     "type" => 'site', "name" => 'Site',
@@ -12,10 +15,16 @@ function hosting_site_node_info() {
   return $types;
 }
 
+/**
+ * Implementation of hook_perm
+ */
 function hosting_site_perm() {
   return array('create site', 'view site', 'edit site', 'delete site');
 }
 
+/**
+ * Implementation of hook_access
+ */
 function hosting_site_access($op, $node) {
   switch ($op) {
     case 'create':
@@ -35,18 +44,24 @@ function hosting_site_access($op, $node) {
   }
 }
 
+/**
+ * Map values of site node into command line arguments
+ */
 function hosting_map_values_site($node) {
   $values['site_id'] = $node->nid;
   $values['site_url'] = $node->title;
+  $values['site_language'] = $node->language;
+
   $profile = node_load($node->profile);
   $values['site_profile'] = $profile->short_name;
+
   $values = array_merge($values, hosting_map_values($node->platform));
   $values = array_merge($values, hosting_map_values($node->client));
   $values = array_merge($values, hosting_map_values($node->db_server));
 
   ## fields that will be used on the command line call
-  $values['#export_site'] = array_merge( 
-    array('publish_path', 'site_id', 'site_profile', ), 
+  $values['#export_site'] = array_merge(
+    array('publish_path', 'site_id', 'site_profile', 'site_language'), 
     $values['#export_db_server'], 
     $values['#export_web_server'],
     $values['#export_client']);
@@ -113,10 +128,6 @@ function hosting_add_site($url, $client, $platform, $db_server, $profile, $site_
 
 /**
  * implementation of the hosting_post_install hook
- *
- * XXX: this should be called hosting_site_hosting_post_install but since this
- * is not a real module, it will not work so we're taking over the whole
- * module's hook here, which is bad.
  */
 function hosting_site_hosting_post_install($task, $data) {
   db_query("UPDATE {hosting_site} SET status=status|%d WHERE nid=%d", HOSTING_SITE_INSTALLED, $task->rid);
@@ -161,7 +172,11 @@ function hosting_site_hosting_post_delete($task, $data) {
   db_query("UPDATE {hosting_site} SET status=%d WHERE nid=%d", HOSTING_SITE_DELETED, $task->rid);
 }
 
-
+/**
+ * Implementation of hook_form
+ *
+ * TODO: additional nested logic. Certain profiles are available only on certain platforms, and certain languages on certain profiles.
+ */
 function hosting_site_form($node) {
   $type = node_get_types('type', $node);
   
@@ -201,6 +216,7 @@ function hosting_site_form($node) {
     $form['platform'] = array('#type' => 'value', '#value' => key($platforms));
   }
 
+
   $profiles = hosting_get_profiles();
   if (sizeof($profiles) > 1) {
     $form['profile'] = array(
@@ -213,6 +229,21 @@ function hosting_site_form($node) {
   }
   else {
     $form['profile'] = array('#type' => 'value', '#value' => key($profiles));
+  }
+
+  $languages = hosting_get_profile_languages();
+  // @todo Implement jquery AHAH selectors, to filter the available languages.
+  if (sizeof($languages) > 1) {
+    $form['language'] = array(
+      '#type' => 'radios',
+      '#title' => t('Language'),
+      '#description' => t('The type of site to install.'),
+      '#options' => $languages,
+      '#default_value' => ($node->language) ? $node->language : 'en',
+    );
+  }
+  else {
+    $form['language'] = array('#type' => 'value', '#value' => 'en');
   }
 
   $db_servers = _hosting_get_db_servers();
@@ -248,10 +279,12 @@ function hosting_site_insert(&$node) {
   if (!($node->site_status & HOSTING_SITE_IMPORTED)) {
     $node->site_status = HOSTING_SITE_ENABLED; # HOSTING_SITE_NOTINSTALLED implicit
   }
-  db_query("INSERT INTO {hosting_site} (vid, nid, client, db_server, platform, profile, last_cron, status) VALUES (%d, %d, %d, %d, %d, %d, %d, %d)",
-    $node->vid, $node->nid, $node->client, $node->db_server, $node->platform, $node->profile, $node->last_cron, $node->site_status);
+  $node->language = ($node->language) ? $node->language : 'en';
+
+  db_query("INSERT INTO {hosting_site} (vid, nid, client, db_server, platform, profile, language, last_cron, status) VALUES (%d, %d, %d, %d, %d, %d, '%s', %d, %d)",
+    $node->vid, $node->nid, $node->client, $node->db_server, $node->platform, $node->profile, $node->language, $node->last_cron, $node->site_status);
   if ((!$node->old_vid) && !($node->site_status & HOSTING_SITE_IMPORTED)) {
-    hosting_add_task($node->nid, 'install');    
+    hosting_add_task($node->nid, 'install');
   }
   if (($node->platform == HOSTING_OWN_PLATFORM) && ($node->title == PROVISION_DOMAIN)) {
     variable_set('HOSTING_OWN_SITE', $node->nid);
@@ -264,8 +297,8 @@ function hosting_site_update(&$node) {
     hosting_site_insert($node);
   }
   else {
-    db_query("UPDATE {hosting_site} SET client = %d, db_server = %d, platform = %d, last_cron =%d, status=%d WHERE vid=%d",
-              $node->publish_path, $node->web_server, $node->vid, $node->site_status, $node->vid);
+    db_query("UPDATE {hosting_site} SET client = %d, db_server = %d, platform = %d, last_cron = %d, status = %d, profile = %d, language = '%s' WHERE vid=%d",
+              $node->publish_path, $node->web_server, $node->vid, $node->site_status, $node->language, $node->vid);
   }
   if (!$node->no_synch) {
     hosting_add_task($node->nid, 'synch');
@@ -273,7 +306,7 @@ function hosting_site_update(&$node) {
 }
 
 function hosting_site_load($node) {
-  $additions = db_fetch_object(db_query('SELECT  client, db_server, platform, profile, last_cron, status  AS site_status FROM {hosting_site} WHERE vid = %d', $node->vid));
+  $additions = db_fetch_object(db_query('SELECT  client, db_server, platform, profile, language, last_cron, status  AS site_status FROM {hosting_site} WHERE vid = %d', $node->vid));
   return $additions;
 }
 
@@ -293,16 +326,26 @@ function hosting_site_view(&$node, $teaser = false) {
     '#title' => t('Platform'),
     '#value' => _hosting_node_link($node->platform),
   );
+
   $node->content['profile'] = array(
     '#type' => 'item',
     '#title' => t('Install profile'),
     '#value' => _hosting_node_link($node->profile),
   );
+
+  $languages = _hosting_language_names(array($node->language));
+  $node->content['language'] = array(
+    '#type' => 'item',
+    '#title' => t('Language'),
+    '#value' => $languages[$node->language],
+  );
+
   $node->content['db_server'] = array(
     '#type' => 'item',
     '#title' => t('Database server'),
     '#value' => _hosting_node_link($node->db_server),
   );
+
   $node->content['status'] = array(
     '#type' => 'item',
     '#title' => t('Status'),
@@ -315,6 +358,7 @@ function hosting_site_view(&$node, $teaser = false) {
     '#value' => hosting_task_list('rid', $node->nid), 
     '#weight' => 10
   );
+
   return $node;
 }
 
@@ -378,6 +422,9 @@ function hosting_site_hosting_post_backup($task, $data) {
 }
 
 
+/**
+ * Hide the delete button on site nodes
+ */
 function hosting_site_form_alter($form_id, &$form) {
   // Remove delete button from site edit form
   if ($form_id == 'site_node_form') {
@@ -385,6 +432,9 @@ function hosting_site_form_alter($form_id, &$form) {
   }
 }
 
+/**
+ * Check if a site with a specific url exists, ignoring deleted sites
+ */
 function hosting_site_exists($url) {
   $result = db_result(db_query("
     SELECT COUNT(n.nid) FROM 
@@ -408,6 +458,8 @@ function hosting_site_list($filter_by = null, $filter_value = null) {
     $cond = ' AND s.' . $filter_by . ' = %d';
     $args[] = $filter_value;
   }
+
+  // @TODO hide deleted sites
   $result = db_query(db_rewrite_sql("SELECT * FROM {node} n left join {hosting_site} s on n.nid=s.nid where type='%s'" . $cond), $args);
 
   if (!db_num_rows($result)) {
