@@ -29,7 +29,7 @@ function hosting_menu($may_cache = true) {
       'callback' => 'drupal_get_form',
       'callback arguments' => array('hosting_queues_configure'),
       'type' => MENU_NORMAL_ITEM,
-      'access' => TRUE
+      'access' => user_access('administer hosting queues'),
     );
 
     // Kludge : Replace node/add page to hide functionality.
