@@ -7,7 +7,7 @@ function hosting_get_db_server($hostname, $web_server = null) {
   else {
     $ip = gethostbyname($hostname);
   }
-  $result = db_result(db_query("SELECT nid FROM {node} WHERE title in ('%s', %s') and type='db_server'", $ip, $hostname));
+  $result = db_result(db_query("SELECT nid FROM {node} WHERE title in ('%s', '%s') and type='db_server'", $ip, $hostname));
   if ($result) {
     return node_load($result);
   }

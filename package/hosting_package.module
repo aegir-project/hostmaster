@@ -73,7 +73,7 @@ function _hosting_package_load($param) {
     $arguments[] = $value;
   }
   $cond = implode(' AND ', $cond);
-  $result = db_query('SELECT n.nid FROM node n left join hosting_package p on n.nid = p.nid WHERE ' . $cond, $arguments);
+  $result = db_query('SELECT n.nid FROM {node} n left join {hosting_package} p on n.nid = p.nid WHERE ' . $cond, $arguments);
   while ($nid = db_fetch_object($result)) {
     $return[$nid->nid] = node_load(array('nid' => $nid->nid));
   }
@@ -179,7 +179,7 @@ function hosting_package_update($node) {
 
 function hosting_nodeapi_package_delete_revision(&$node) {
   db_query('DELETE FROM {hosting_package} WHERE vid = %d', $node->vid);
-  db_query('DELETE FROM {hosting_package_languages} WHERE vid=%s', $node->vid);
+  db_query('DELETE FROM {hosting_package_languages} WHERE vid=%d', $node->vid);
 }
 
 /**
@@ -187,7 +187,7 @@ function hosting_nodeapi_package_delete_revision(&$node) {
  */
 function hosting_package_delete($node) {
   db_query('DELETE FROM {hosting_package} WHERE nid = %d', $node->nid);
-  db_query('DELETE FROM {hosting_package_languages} WHERE nid=%s', $node->nid);
+  db_query('DELETE FROM {hosting_package_languages} WHERE nid=%d', $node->nid);
 }
 
 /**
@@ -197,7 +197,7 @@ function hosting_package_load($node) {
   $additions = db_fetch_object(db_query('SELECT package_type, short_name, description FROM {hosting_package} WHERE vid = %d', $node->vid));
   
   // Add localizations.
-  $languages = db_fetch_array(db_query('SELECT language FROM hosting_package_languages WHERE vid = %d', $node->vid)); 
+  $languages = db_fetch_array(db_query('SELECT language FROM {hosting_package_languages} WHERE vid = %d', $node->vid)); 
   if (sizeof($languages)) {
     $additions->languages = $languages;
   }
