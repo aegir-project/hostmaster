@@ -1,22 +1,24 @@
 <?php
+// $Id$ 
 
 function hosting_install() {
-  # Configuration template table
-  db_query("CREATE TABLE {hosting_config_template} (
-    tid int NOT NULL auto_increment,
-    vid int NOT NULL default '0',
-    type varchar(16) NOT NULL default '',
-    template longtext NOT NULL,
-    status tinyint unsigned NOT NULL default '0',
-    timestamp int NOT NULL default '0',
-    PRIMARY KEY (tid),
-    KEY (type)
-  ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
-
   db_query("UPDATE {system} SET weight = 10 WHERE type='module' and name='hosting'");
 }
 
 function hosting_update_1() {
+  $ret = array();
   $ret[] = update_sql("UPDATE {system} SET weight = 10 WHERE type='module' and name='hosting'");
   return $ret;
+}
+
+/**
+ * Update function to remove unused table
+ */
+function hosting_update_2() {
+  switch ($GLOBALS['db_type']) {
+    case 'mysql' :
+    case 'mysqli' : 
+      db_query("DROP TABLE {hosting_config_template}");
+      break;
+   }
 }

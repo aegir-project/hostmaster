@@ -1,28 +1,34 @@
 <?php
+// $Id$
 
 function hosting_site_install() {
-   db_query("CREATE TABLE {hosting_site} (
-    vid int(10) unsigned NOT NULL default '0',
-    nid int(10) unsigned NOT NULL default '0',
-    client int(11) NOT NULL default '0',
-    db_server int(11) NOT NULL default '0',
-    platform int(11) NOT NULL default '0',
-    profile int(11) NOT NULL default '0',
-    language VARCHAR(10) NOT NULL default 'en',
-    last_cron int(10) default NULL,
-    status tinyint unsigned NOT NULL default '0',
-    PRIMARY KEY  (vid)
-  ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
+  switch ($GLOBALS['db_type']) {
+    case 'mysql' :
+    case 'mysqli' :
+      db_query("CREATE TABLE {hosting_site} (
+        vid int(10) unsigned NOT NULL default '0',
+        nid int(10) unsigned NOT NULL default '0',
+        client int(11) NOT NULL default '0',
+        db_server int(11) NOT NULL default '0',
+        platform int(11) NOT NULL default '0',
+        profile int(11) NOT NULL default '0',
+        language VARCHAR(10) NOT NULL default 'en',
+        last_cron int(10) default NULL,
+        status tinyint unsigned NOT NULL default '0',
+        PRIMARY KEY  (vid)
+      ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
 
-  db_query("CREATE TABLE {hosting_site_backups} (
-    bid int(10) unsigned NOT NULL,
-    site int(10) NOT NULL default '0',
-    web_server int(10) NOT NULL default '0',
-    description longtext,
-    filename longtext,
-    timestamp int(11) default NULL,
-    PRIMARY KEY  (bid)    
-    ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
+      db_query("CREATE TABLE {hosting_site_backups} (
+        bid int(10) unsigned NOT NULL,
+        site int(10) NOT NULL default '0',
+        web_server int(10) NOT NULL default '0',
+        description longtext,
+        filename longtext,
+        timestamp int(11) default NULL,
+        PRIMARY KEY  (bid)    
+        ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
+      break;
+   }
 }
 
 /**
