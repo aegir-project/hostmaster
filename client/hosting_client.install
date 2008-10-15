@@ -1,7 +1,7 @@
 <?php
 // $Id$
 function hosting_client_install() {
-  switch ($GLOBALS['db_type']) :
+  switch ($GLOBALS['db_type']) {
     case 'mysql' :
     case 'mysqli':
       db_query("CREATE TABLE {hosting_client} (
