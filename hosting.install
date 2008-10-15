@@ -15,10 +15,7 @@ function hosting_update_1() {
  * Update function to remove unused table
  */
 function hosting_update_2() {
-  switch ($GLOBALS['db_type']) {
-    case 'mysql' :
-    case 'mysqli' : 
-      db_query("DROP TABLE {hosting_config_template}");
-      break;
-   }
+  $ret = array();
+  $ret[] = update_sql("DROP TABLE {hosting_config_template}");
+  return $ret;
 }
