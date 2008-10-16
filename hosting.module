@@ -285,27 +285,35 @@ function hosting_format_interval($ts) {
 }
 
 function hosting_setup() {
-  variable_set('hosting_dispatch_enabled', FALSE);
-  if ($exists = _provision_create_dir(PROVISION_CONFIG_PATH, t('Config path'), 0700)) {
-    if ($exists = _provision_create_dir(PROVISION_DRUSHRC_PATH, t('Drush config path'), 0700)) {
-      ## attempting to run the dispatch command, to make sure it runs without the queue being
-      ## enabled.
-      variable_set('hosting_dispatch_enabled', TRUE);
-      exec(_hosting_dispatch_cmd(), $return, $code);
-      variable_set('hosting_dispatch_enabled', FALSE);
-      $return = join("\n", $return);
-      $data = unserialize($return);
-      if ($code == PROVISION_SUCCESS) {
-        ## Run the dispatch command again to import the existing sites.
-        variable_del('hosting_queue_dispatch_last_run');
+   variable_set('hosting_dispatch_enabled', FALSE);
+  $drush_path = sprintf("%s/%s/drush.php", PROVISION_DOCROOT_PATH, drupal_get_path('module', 'drush'));
+
+  $exists = provision_path('symlink', $drush_path, PROVISION_DOCROOT_PATH . '/drush.php', 
+    t('Created symlink for drush.php file'), 
+    t('Could not create symlink for drush.php'), 
+    PROVISION_FRAMEWORK_ERROR);
+  if ($exists) {
+    if ($exists = _provision_create_dir(PROVISION_CONFIG_PATH, t('Config path'), 0700)) {
+      if ($exists = _provision_create_dir(PROVISION_DRUSHRC_PATH, t('Drush config path'), 0700)) {
+        ## attempting to run the dispatch command, to make sure it runs without the queue being
+        ## enabled.
         variable_set('hosting_dispatch_enabled', TRUE);
         exec(_hosting_dispatch_cmd(), $return, $code);
-        provision_log("message", t("Dispatch command was run successfully"));
-        _hosting_setup_cron();
-      }
-      else {
-        provision_log("error", t("Dispatch command could not be run. Returned: \n@return", array('@return' => $return))); 
-        provision_set_error(PROVISION_FRAMEWORK_ERROR);
+        variable_set('hosting_dispatch_enabled', FALSE);
+        $return = join("\n", $return);
+        $data = unserialize($return);
+        if ($code == PROVISION_SUCCESS) {
+          ## Run the dispatch command again to import the existing sites.
+          variable_del('hosting_queue_dispatch_last_run');
+          variable_set('hosting_dispatch_enabled', TRUE);
+          exec(_hosting_dispatch_cmd(), $return, $code);
+          provision_log("message", t("Dispatch command was run successfully"));
+          _hosting_setup_cron();
+        }
+        else {
+          provision_log("error", t("Dispatch command could not be run. Returned: \n@return", array('@return' => $return))); 
+          provision_set_error(PROVISION_FRAMEWORK_ERROR);
+        }
       }
     }
   }
