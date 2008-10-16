@@ -121,7 +121,7 @@ function hostmaster_profile_final() {
   $node = new stdClass();
   $node->uid = 1;
   $node->type = 'platform';
-  $node->title = "Drupal " . VERSION . ' on ' . $_SERVER['HTTP_HOST'];
+  $node->title = $_SERVER['HTTP_HOST'] . ' (Drupal ' . VERSION . ')';
   $node->publish_path = $_SERVER['DOCUMENT_ROOT'];
   $node->web_server = variable_get('hosting_default_web_server', 3);
   $node->release_id = $release_id;
