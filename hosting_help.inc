@@ -62,7 +62,7 @@ function _provision_hosting_setup_requirements() {
   $drush_path = PROVISION_DRUSH_PATH;
   $setup_cmd = <<<EOF
     [$username@hm2 ~]$ cd $docroot
-    [$username@hm2 ~]$ ./$drush_path hosting setup --uri=$uri
+    [$username@hm2 ~]$ ./$drush_path hosting setup
 EOF;
   $help['title'] = t('Perform initial configuration by running the <code>Hosting Setup</code> command');
 

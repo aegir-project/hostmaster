@@ -393,8 +393,8 @@ function hosting_queues_configure_submit($form_id, $values) {
 
 function _hosting_dispatch_cmd() {
   $drush_path = sprintf("%s/%s/drush.php", PROVISION_DOCROOT_PATH, drupal_get_path('module', 'drush'));
-  $cmd = sprintf("php %s hosting dispatch --uri=%s --root=%s", escapeshellarg($drush_path), 
-      escapeshellarg(PROVISION_BASE_URL), escapeshellarg(PROVISION_DOCROOT_PATH));
+  $cmd = sprintf("php %s hosting dispatch --root=%s", escapeshellarg($drush_path), 
+      escapeshellarg(PROVISION_DOCROOT_PATH));
   return $cmd;
 }
 
