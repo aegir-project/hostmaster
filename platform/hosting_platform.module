@@ -8,7 +8,7 @@ function hosting_platform_node_info() {
   $types["platform"] =  array(
     "type" => 'platform', "name" => 'Platform',
     "module" => 'hosting_platform',
-    "has_title" => TRUE, "title_label" => 'Platform', 
+    "has_title" => TRUE, "title_label" => t('Name'), 
     "description" => hosting_node_help("platform"),
     "has_body" => 0, "body_label" => '', "min_word_count" => 0);    
 
@@ -80,6 +80,16 @@ function hosting_map_values_platform($node) {
  */
 function hosting_platform_form(&$node) {
   $type = node_get_types('type', $node);
+  $form['title'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Name'),
+    '#required' => TRUE,
+    '#description' => t('Choose a descriptive name for your platform.'),
+    '#size' => 40,
+    '#default_value' => $node->title,
+    '#maxlength' => 255,
+  );
+
   $form['publish_path'] = array(
     '#type' => 'textfield',
     '#title' => t('Publish path'),
