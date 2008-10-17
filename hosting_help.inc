@@ -60,6 +60,7 @@ function _provision_hosting_setup_requirements() {
   $docroot = PROVISION_DOCROOT_PATH;
   $uri = PROVISION_BASE_URL;
   $drush_path = PROVISION_DRUSH_PATH;
+  $username = PROVISION_SCRIPT_USER;
   $setup_cmd = <<<EOF
     [$username@hm2 ~]$ cd $docroot
     [$username@hm2 ~]$ ./$drush_path hosting setup
@@ -73,7 +74,7 @@ EOF;
     and instructs the provisioning framework to perform the needed tasks in the task queue.');
   $help['summary'][] = t('Otherwise said, without the dispatcher, changes on the front end will not translate in the required backend configuration preventing actual sites management.');
   $help['configuration'] = t('Ensure that you are logged into the shell as %script_user, and then execute the following commands :<pre>@setup_cmd</pre>', 
-     array('%script_user' => PROVISION_SCRIPT_USER, '@setup_cmd' => $setup_cmd));
+     array('%script_user' => $username, '@setup_cmd' => $setup_cmd));
 
   return $help;
 }
