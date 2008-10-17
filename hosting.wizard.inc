@@ -469,7 +469,7 @@ function hosting_wizard_hosting_import() {
     $rows = array();
     foreach ($sites as $site) {
       $own = '';
-      if (($site->title == PROVISION_DOMAIN) && ($site->platform == HOSTING_OWN_PLATFORM)) {
+      if (($site->title == 'default') && ($site->platform == HOSTING_OWN_PLATFORM)) {
         $own = '*';
       }
       $rows[] = array( _hosting_node_link($site->nid) . $own, _hosting_node_link($site->platform), hosting_format_interval($site->created));
