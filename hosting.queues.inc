@@ -177,11 +177,10 @@ function hosting_generate_command($system, $command, $args = array(), $options =
   if ($options['backend']) {
     $option_str .= " --backend";
   }
-  $drush_path = sprintf("%s/%s/drush.php", $data['publish_path'], drupal_get_path("module", "drush")); 
+  $drush_path = sprintf("%s/drush.php", $data['publish_path']); 
   // @TODO: Implement proper multi platform / multi server support.
-  $cmd = sprintf(escapeshellcmd("%s %s %s %s --root=%s --uri=%s %s"), escapeshellcmd($drush_path) ,
-    escapeshellarg($system), escapeshellarg($command), implode(" ", $args), escapeshellarg($data['publish_path']),
-    escapeshellarg($data['web_host_uri']), $option_str);
+  $cmd = sprintf(escapeshellcmd("%s %s %s %s --root=%s %s"), escapeshellcmd($drush_path) ,
+    escapeshellarg($system), escapeshellarg($command), implode(" ", $args), escapeshellarg($data['publish_path']), $option_str);
 
   if ($options['background']) {
     $cmd .= " &";
@@ -392,7 +391,7 @@ function hosting_queues_configure_submit($form_id, $values) {
 }
 
 function _hosting_dispatch_cmd() {
-  $drush_path = sprintf("%s/%s/drush.php", PROVISION_DOCROOT_PATH, drupal_get_path('module', 'drush'));
+  $drush_path = sprintf("%s/drush.php", PROVISION_DOCROOT_PATH);
   $cmd = sprintf("php %s hosting dispatch --root=%s", escapeshellarg($drush_path), 
       escapeshellarg(PROVISION_DOCROOT_PATH));
   return $cmd;
