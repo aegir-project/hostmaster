@@ -10,7 +10,7 @@
 function hostmaster_profile_modules() {
   return array(
     /* core */ 'block', 'color', 'filter', 'help', 'menu', 'node', 'system', 'user',
-    /* contrib */ 'drush', 'cvs_deploy',
+    /* contrib */ 'drush', 'cvs_deploy', //'ahah_forms', 'dynamic_subform',
     /* custom */ 'provision', 'provision_apache', 'provision_mysql', 'provision_drupal', 'hosting', 'hosting_task', 'hosting_client', 'hosting_db_server', 'hosting_package', 'hosting_platform', 'hosting_site', 'hosting_web_server');
 }
 
@@ -133,6 +133,13 @@ function hostmaster_profile_final() {
   #initial configuration of hostmaster - todo
   variable_set('site_name', t('Hostmaster'));
   variable_set('site_frontpage', 'hosting/sites');
+
+  // This is set to true, because the node/add/site form needs
+  // to use AHAH to create a valid node, and ahah_forms requires clean_urls
+  variable_set('clean_url', TRUE);
+
+  // This is saved because the config generation script is running via drush, and does not have access to this value
+  variable_set('install_url' , $GLOBALS['base_url']);
 
   // @todo create proper roles, and set up views to be role based
   hostmaster_install_set_permissions(hostmaster_install_get_rid('anonymous user'), array('access content', 'access all views'));
