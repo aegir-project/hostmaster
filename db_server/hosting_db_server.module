@@ -163,10 +163,10 @@ function hosting_db_server_update($node) {
   }
   else {
     db_query("UPDATE {hosting_db_server} SET 
-                  db_type = '%s', db_user = '%s'
+                  db_type = '%s', db_user = '%s', db_passwd = '%s'
               WHERE 
                   vid = %d", 
-                  $node->db_type, $node->db_user, $node->vid);
+                  $node->db_type, $node->db_user, $node->db_passwd, $node->vid);
   }
 }
 

@@ -59,7 +59,7 @@ function hosting_help($section) {
 function _provision_hosting_setup_requirements() {
   $docroot = PROVISION_DOCROOT_PATH;
   $uri = PROVISION_BASE_URL;
-  $drush_path = rtrim(drupal_get_path('module', 'provision'), '/') . '/drush.php';
+  $drush_path = rtrim(drupal_get_path('module', 'drush'), '/') . '/drush.php';
   $username = PROVISION_SCRIPT_USER;
   $setup_cmd = <<<EOF
     [$username@hm2 ~]$ cd $docroot
