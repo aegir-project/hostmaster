@@ -210,7 +210,7 @@ function hosting_site_form($node) {
       '#title' => t('Platform'),
       '#description' => t('The platform you want the site to be hosted on.'),
       '#options' => $platforms,
-      '#default_value' => $node->platform,
+      '#default_value' => $node->platform ? $node->platform : HOSTING_DEFAULT_PLATFORM,
     );
   }
   else {
@@ -267,7 +267,7 @@ function hosting_site_form($node) {
 
 function _hosting_site_validate_fqdn($fqdn) {
   # regex is an implementation of RFC1035
-  return preg_match("/^([a-z]([-a-z0-9]*[a-z0-9]+)?\.)*[a-z]([-a-z0-9]*[a-z0-9]+)?\.?$/i", $fqdn);
+  return preg_match("/^([a-z0-9]([a-z0-9-]*[a-z0-9])?\.?)+$/i", $fqdn);
 }
 
 function hosting_site_validate(&$node) {
