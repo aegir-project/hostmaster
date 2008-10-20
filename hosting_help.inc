@@ -59,11 +59,11 @@ function hosting_help($section) {
 function _provision_hosting_setup_requirements() {
   $docroot = PROVISION_DOCROOT_PATH;
   $uri = PROVISION_BASE_URL;
-  $drush_path = PROVISION_DRUSH_PATH;
+  $drush_path = rtrim(drupal_get_path('module', 'provision'), '/') . '/drush.php';
   $username = PROVISION_SCRIPT_USER;
   $setup_cmd = <<<EOF
     [$username@hm2 ~]$ cd $docroot
-    [$username@hm2 ~]$ ./$drush_path hosting setup
+    [$username@hm2 ~]$ $drush_path hosting setup
 EOF;
   $help['title'] = t('Perform initial configuration by running the <code>Hosting Setup</code> command');
 
