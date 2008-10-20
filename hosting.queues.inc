@@ -147,8 +147,8 @@ function hosting_generate_command($system, $command, $args = array(), $options =
   $data = array_merge($data, $options);
 
   // Hack : add site to arguments if we're generating a command for a site.
-  if ($data['site_url']) {
-    $args[] = $data['site_url'];
+  if ($data['url']) {
+    $args[] = $data['url'];
   }
 
   $func = "hosting_cmd_" . $system . "_" . $command;
@@ -170,13 +170,12 @@ function hosting_generate_command($system, $command, $args = array(), $options =
   $export = array_merge($data['#export_' . $ref->type], array_keys($options));
   foreach ($export as $key) {
     if (!is_array($data[$key]) && !is_object($data[$key]) && !is_bool($data[$key]) && $data[$key]) {
-      $option_str .= " --$key=" . escapeshellarg($data[$key]);
+      $options[$key] = $data[$key];
     }
   } 
- 
-  if ($options['backend']) {
-    $option_str .= " --backend";
-  }
+  foreach ($options as $key => $value) {
+    $option_str .= " --$key=" . escapeshellarg($value);
+  } 
   $drush_path = sprintf("%s/drush.php", $data['publish_path']); 
   // @TODO: Implement proper multi platform / multi server support.
   $cmd = sprintf(escapeshellcmd("%s %s %s %s --root=%s %s"), escapeshellcmd($drush_path) ,
@@ -193,6 +192,18 @@ function hosting_cmd_provision_restore(&$args, &$options, $data) {
   $args[] = $backup['filename'];
 }
 
+// Add extra parameters to synch platforms
+function hosting_cmd_provision_synch(&$args, &$options, $data) {
+  if (!$data['url']) {
+    $options['backup_path'] = $data['backup_path'];
+    $options['config_path'] = $data['config_path'];
+    $options['script_user'] = $data['script_user'];
+    $options['web_group'] = $data['web_group'];
+    $options['restart_cmd'] = $data['restart_cmd'];
+    $options['master_url'] = variable_get('install_url', $GLOBALS['base_url']);
+    $options['master_db'] = hosting_db_server_as_url(HOSTING_DEFAULT_DB_SERVER);
+  }
+}
 
 /**
  * Retrieve a list of outstanding tasks.

@@ -49,13 +49,12 @@ function hosting_web_server_access($op, $node) {
 function hosting_map_values_web_server($node) {
   $values['web_id'] = $node->nid;
   $values['web_host'] = $node->title;
-  $values['web_host_uri'] = 'http://' . $node->title;
   $values['web_ip'] = $node->ip_address;  
-  $values['web_script_user'] = $node->script_user;
+  $values['script_user'] = $node->script_user;
   $values['web_group'] = $node->web_group;
-  $values['web_config_path'] = $node->config_path;
-  $values['web_backup_path'] = $node->backup_path;
-  $values['web_restart_cmd'] = $node->restard_cmd;
+  $values['config_path'] = $node->config_path;
+  $values['backup_path'] = $node->backup_path;
+  $values['restart_cmd'] = $node->restart_cmd;
   $values['#export_web_server'] = array('web_id', 'web_host', 'web_ip');
   return $values;
 }
@@ -96,10 +95,78 @@ function hosting_web_server_form(&$node) {
     '#description' => t("The IP address the server can be accessed by.<br />If this is empty, the hostname will be used instead.")
   );
 
-  // merge the web server configuration.
-  $form += provision_apache_provision_configure($node);
+
+  $form['restart_cmd'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Restart command'),
+      '#required' => TRUE,
+      '#description' => t('The command to run to restart the for new changes to take effect. This is required for the new site to become live'),
+      '#default_value' => ($node->restart_cmd) ? $node->restart_cmd : PROVISION_RESTART_CMD,
+      '#size' => 40,
+      '#maxlength' => 255,
+      '#weight' => -20,
+  );
+
+  $form['script_user'] = array(
+    '#type' => 'textfield',
+    '#title' => t('System account'),
+    '#required' => TRUE,
+    '#description' => t('The system account that the hosted files will belong to, for security reasons.<br />This should be a different to the account the web server is running as.'),
+    '#default_value' => ($node->script_user) ? $node->script_user : PROVISION_SCRIPT_USER,
+    '#size' => 20,
+    '#maxlength' => 255,
+    '#weight' => -15,
+  );
+   
+  $form['web_group'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Web server group'),
+    '#required' => TRUE,
+    '#description' => t('The group that the hosted files will belong to.<br />This should be the group the web server is running as.'),
+    '#default_value' => ($node->web_group) ? $node->web_group : PROVISION_WEB_GROUP,
+    '#size' => 20,
+    '#maxlength' => 75,
+    '#validate' => array('hosting_validate_web_group' => array()),
+    '#weight' => -10,
+  );
+  
+  $form['config_path'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Configuration path'),
+    '#required' => TRUE,
+    '#size' => 40,
+    '#default_value' => ($node->config_path) ? $node->config_path : PROVISION_CONFIG_PATH,
+    '#description' => t("The path on the server where configuration files will be stored.<br />
+        It is essential that this directory should not be accessible via a web browser."),
+    '#maxlength' => 255,
+    '#weight' => -10,
+  );
+  
+  $form['backup_path'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Backup path'),
+    '#required' => TRUE,
+    '#size' => 40,
+    '#default_value' => ($node->backup_path) ? $node->backup_path : PROVISION_BACKUP_PATH,
+    '#description' => t("The path on the server where backups will be stored.<br />
+        It is essential that this directory should not be accessible via a web browser."),
+    '#maxlength' => 255,
+    '#weight' => -10,
+  );
+  
 
   return $form;
+}
+
+function hosting_validate_web_group($element) {
+  $user = $element['#post']['script_user'];
+  $group = $element['#post']['web_group'];
+  if ($user && $group) {
+    if (!provision_user_in_group($user, $group)) {
+       form_set_error('web_group', t("The %user user is not in the %group group. For information on how to fix this, please check the !link.", 
+         array('%user' => $user, '%group' =>  $group, '!link' => l(t("provisioning requirements"), "admin/help/provision/requirements") )));
+    }
+  }
 }
 
 /**
@@ -125,15 +192,6 @@ function hosting_web_server_insert($node) {
  * database updates.
  */
 function hosting_web_server_update($node) {
-  $platform = node_load(HOSTING_OWN_PLATFORM);
-  if ($node->nid == $platform->web_server) {
-    variable_set('provision_script_user', $node->script_user);
-    variable_set('provision_web_group', $node->web_group);
-    variable_set('provision_config_path', $node->config_path);
-    variable_set('provision_backup_path', $node->backup_path);
-    variable_set('provision_restart_cmd', $node->restart_cmd);
-  }
-
   // if this is a new node or we're adding a new revision,
   if ($node->revision) {
     hosting_web_server_insert($node);

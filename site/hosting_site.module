@@ -49,11 +49,11 @@ function hosting_site_access($op, $node) {
  */
 function hosting_map_values_site($node) {
   $values['site_id'] = $node->nid;
-  $values['site_url'] = $node->title;
-  $values['site_language'] = $node->language;
+  $values['url'] = $node->title;
+  $values['language'] = $node->language;
 
   $profile = node_load($node->profile);
-  $values['site_profile'] = $profile->short_name;
+  $values['profile'] = $profile->short_name;
 
   $values = array_merge($values, hosting_map_values($node->platform));
   $values = array_merge($values, hosting_map_values($node->client));
@@ -61,7 +61,7 @@ function hosting_map_values_site($node) {
 
   ## fields that will be used on the command line call
   $values['#export_site'] = array_merge(
-    array('publish_path', 'site_id', 'site_profile', 'site_language'), 
+    array('publish_path', 'site_id', 'profile', 'language'), 
     $values['#export_db_server'], 
     $values['#export_web_server'],
     $values['#export_client']);
@@ -225,7 +225,7 @@ function hosting_site_form($node) {
       '#title' => t('Install profile'),
       '#description' => t('The type of site to install.'),
       '#options' => $profiles,
-      '#default_value' => $node->profile,
+      '#default_value' => $node->prNULLe,
     );
   }
   else {

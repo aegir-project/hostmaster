@@ -15,7 +15,10 @@ function hosting_get_db_server($hostname, $web_server = null) {
   return false;
 }
 
-
+function hosting_db_server_as_url($nid) {
+  $node = node_load($nid);
+  return sprintf("%s://%s:%s@%s", $node->db_type, $node->db_user, $node->db_passwd, $node->title);
+}
 
 function hosting_db_server_node_info() {
   $types["db_server"] =  array(
@@ -78,34 +81,52 @@ function _hosting_get_db_servers() {
 
 function hosting_map_values_db_server($node) {
   $values['db_id'] = $node->nid;
-  $values['site_db_host'] = $node->title;
-  $values['site_db_type'] = $node->db_type;
-  $values['provision_db_user'] = $node->db_user;
-  $values['provision_db_passwd'] = $node->db_passwd;
+  $values['db_host'] = $node->title;
+  $values['db_type'] = $node->db_type;
+  $values['db_user'] = $node->db_user;
+  $values['db_passwd'] = $node->db_passwd;
 
-  $values['#export_db_server'] = array('site_db_host', 'site_db_type');
+  $values['#export_db_server'] = array('db_host', 'db_type');
      
   return $values;
 }
-
 
 /**
  * Implementation of hook_form().
  */
 function hosting_db_server_form(&$node) {
-  $type = node_get_types('type', $node);
-
-  // We need to define form elements for the node's title and body.
+  
   $form['title'] = array(
     '#type' => 'textfield',
-    '#title' => check_plain($type->title_label),
-    '#required' => TRUE,
+    '#title' => t('Hostname'),
+    '#description' => t('The address of the database server to connect to.'),
+    '#size' => 30,
     '#default_value' => $node->title,
-    '#weight' => -5
+    '#maxlength' => 64,
+    '#weight' => 0,
   );
-  // merge the web server configuration.
-  $form += provision_mysql_provision_configure($node);
-  unset($form['db_host']);
+  
+  $form['db_user'] = array(
+    '#type' => 'textfield',
+    '#required' => TRUE,
+    '#title' => t('Username'),
+    '#description' => t('The user that will be used to create users and databases for new sites.'),
+    '#size' => 40,
+    '#default_value' => $node->db_user,
+    '#maxlength' => 255,
+    '#weight' => 5,
+  );
+  if ($node->db_passwd) {
+    $passwd_description = t('<strong>You have already set a password for this database server.</strong><br />');
+  }
+  $form['db_passwd'] = array(
+    '#type' => 'password_confirm',
+    '#required' => ($node->db_passwd) ? FALSE : TRUE,
+    '#description' => $passwd_description . t('The user account that will be used to create new mysql users and databases for new sites'),
+    '#size' => 30,
+    '#weight' => 10
+  );
+
   return $form;
 }
 
@@ -136,13 +157,6 @@ function hosting_db_server_insert($node) {
  * database updates.
  */
 function hosting_db_server_update($node) {
-  if ($node->nid == HOSTING_OWN_DB_SERVER) {
-    variable_set('provision_db_host', $node->title);
-    variable_set('provision_db_user', $node->db_user);
-    variable_set('provision_db_passwd', $node->db_passwd);
-    variable_set('provision_db_type', $node->db_type);
-  }
-
   // if this is a new node or we're adding a new revision,
   if ($node->revision) {
     hosting_db_server_insert($node);

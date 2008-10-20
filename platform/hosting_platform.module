@@ -117,6 +117,7 @@ function hosting_platform_form(&$node) {
  * Implementation of hook_insert().
  */
 function hosting_platform_insert($node) {
+  hosting_add_task($node->nid, 'synch');
   hosting_add_task($node->nid, 'verify');
   hosting_add_task($node->nid, 'import');
   db_query("INSERT INTO {hosting_platform} (vid, nid, publish_path, release_id, verified, web_server) VALUES (%d, %d, '%s', %d, %d, %d)",
@@ -130,10 +131,6 @@ function hosting_platform_insert($node) {
  * database updates.
  */
 function hosting_platform_update($node) {
-  if ($node->nid == HOSTING_OWN_PLATFORM) {
-    variable_set('hosting_platform_path', $node->publish_path);
-    #Switching web server here should change the web server.
-  }
   // if this is a new node or we're adding a new revision,
   if ($node->revision) {
     hosting_platform_insert($node);
