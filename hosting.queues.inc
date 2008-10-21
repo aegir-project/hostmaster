@@ -248,9 +248,8 @@ function hosting_tasks_queue($count) {
     // For now tasks just map to one backend command, but that might need to change with additional complexity.
     $cmd = hosting_generate_command("provision", $task->task_type, array(), array('backend' => TRUE), $task);
     exec($cmd, $return, $code);
-    $return = join("\n", $return);
+    $return = join("", $return);
     $data = unserialize($return);
-
     hosting_task_log($task->vid, 'command', 'Running:' . escapeshellcmd("$cmd"));
 
     if (!is_array($data)) {

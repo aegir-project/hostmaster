@@ -195,12 +195,14 @@ function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
     '#weight' => 10
   );
 
-  $node->content['tasks_view'] = array(
-    '#type' => 'item',
-    '#title' => t("Tasks"),
-    '#value' => hosting_task_list("rid", $node->nid),
-    '#weight' => 10
-  );
+  if ($node->nid) {
+    $node->content['tasks_view'] = array(
+      '#type' => 'item',
+      '#title' => t("Tasks"),
+      '#value' => hosting_task_list("rid", $node->nid),
+      '#weight' => 10
+    );
+  }
   return $node;
 }
 
