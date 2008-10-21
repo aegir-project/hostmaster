@@ -320,7 +320,6 @@ function hosting_task_load($node) {
  * Implementation of hook_view().
  */
 function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
-  drupal_add_css(drupal_get_path('module', 'hosting') . '/hosting.css');
   drupal_add_js(drupal_get_path('module', 'hosting') . '/hosting.js');
   $node = node_prepare($node, $teaser);
   

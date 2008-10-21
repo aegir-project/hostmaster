@@ -131,6 +131,7 @@ function hosting_perm() {
  * Implementation of hook_init
  */
 function hosting_init() {
+  drupal_add_css(drupal_get_path('module', 'hosting') . '/hosting.css');
   // Definitions for the default platforms, clients etc.
   // Done to avoid using 'magic numbers'
   define('HOSTING_DEFAULT_CLIENT', variable_get('hosting_default_client', 1));

@@ -465,24 +465,42 @@ function hosting_site_list($filter_by = null, $filter_value = null) {
     $args[] = $filter_value;
   }
 
+  $header = array(
+    array('data' => t('Domain'), 'field' => 'title'),
+    array('data' => t('Profile'), 'field' => 'profile'),
+    array('data' => t('Language'), 'field' => 'language'),
+    array('data' => t('Created'), 'field' => 'created', 'sort' => 'desc'));
+
+  $sql = "SELECT * FROM {node} n left join {hosting_site} s on n.nid=s.nid where type='%s'" . $cond;
+  $sql .= tablesort_sql($header);
+
   // @TODO hide deleted sites
-  $result = db_query(db_rewrite_sql("SELECT * FROM {node} n left join {hosting_site} s on n.nid=s.nid where type='%s'" . $cond), $args);
+  $result = pager_query(db_rewrite_sql($sql), 10, 0, null, $args);
 
   if (!db_num_rows($result)) {
     return null;
   }
-
   $rows = array();
   while ($node = db_fetch_object($result)) {
     $row = array();
-    $row[] = l($node->title, 'node/' . $node->nid);
+    $row[] =  array('data' => l($node->title, 'node/' . $node->nid), 'class'=> 'hosting-status');
     $row[] = _hosting_node_link($node->profile);
     $row[] = _hosting_language_name($node->language);
     $row[] = t("@interval ago", array('@interval' => format_interval(mktime() - $node->created, 1)));
-    $rows[] = $row;
+    $rows[] = array('data' => $row, 'class' => _hosting_site_list_class($node->status));
   }
   
-  return theme('table', array(t('Domain'), t('Profile'), t('Language'), t('Created')), $rows);
+  return theme('table',  $header, $rows) . theme('pager', NULL, 10, 0);
+}
+
+function _hosting_site_list_class($status) {
+  if ($status & HOSTING_SITE_DELETED) {
+    return 'hosting-error';
+  }
+  if ($status & HOSTING_SITE_INSTALLED) {
+    return 'hosting-success';
+  }
+  return 'hosting-queue';
 }
 
 /**
