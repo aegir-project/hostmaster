@@ -173,12 +173,14 @@ function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
     '#weight' => -10
   );
 
-  $node->content['release'] = array(
-    '#type' => 'item',
-    '#title' => t('Release'),
-    '#value' => _hosting_node_link($node->release_id),
-    '#weight' => -9
-  );
+  if ($node->release_id) {
+    $node->content['release'] = array(
+      '#type' => 'item',
+      '#title' => t('Release'),
+      '#value' => _hosting_node_link($node->release_id),
+      '#weight' => -9
+    );
+  }
 
   $node->content['publish_path'] = array(
     '#type' => 'item',
@@ -274,6 +276,14 @@ function _hosting_generate_platform_config_file($node) {
 function hosting_platform_hosting_post_verify($task, $data) {
   $platform = node_load($task->rid);
   $platform->verified = mktime(); // set verified flag on platform, to let it know it has been checked.
+
+  // set the platform of the site
+  if (is_array($data['site']['platform'])) {
+    $info = $data['site']['platform'];
+    hosting_package_import_packages($platform->nid, 'platform', $info['version'], array($info['short_name'] => $info));
+    $release = hosting_get_package_release($info['short_name'], $info['version']);
+    $platform->release_id = $release->nid;
+  }
   node_save($platform);
   $platform_release = node_load($platform->release_id);
 
