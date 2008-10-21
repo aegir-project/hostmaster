@@ -1,3 +1,68 @@
+/*
+ *  Overview 
+ */
+
+#hosting-platform-info, #hosting-site-info {
+  float:left;
+  width:35%;
+  padding: 2% 5%;
+  margin:30px 0;
+  background:#F1F1F1;
+  border:solid 3px #CCC;
+}
+
+#hosting-platform-info label, #hosting-site-info label {
+  float:left;
+  margin:0 5px 0 0;
+}
+
+#hosting-recent-tasks, #hosting-task-list {
+  width:49%;
+  float:right;
+}
+
+#hosting-recent-tasks label, #hosting-site-list label, #hosting-task-list label {
+  font-size:1.4em;
+  margin:0.5em 0 0;
+  font-weight:normal;
+}
+
+#hosting-site-list {
+  clear:both;
+}
+
+#hosting-site-list table, #hosting-recent-tasks table, #hosting-task-list table {
+  border:solid 1px #F1F1F1;
+  border-bottom:solid 1px #F1F1F1;
+}
+
+#hosting-site-list table th, #hosting-recent-tasks table th, #hosting-task-list table th {
+  border:solid 1px #808080;
+  border-bottom-width: 2px;
+  border-bottom-color: #333333;
+  border-top-width: 2px;
+  background:#4D4D4D !important;
+  padding:5px 5px 5px 10px;
+  margin:3px 2px;
+  color:#FFF;
+}
+
+#hosting-site-list table th a, #hosting-recent-tasks table th a, #hosting-task-list table th a {
+  color:#FFF;
+}
+
+#hosting-site-list table tr, #hosting-recent-tasks table tr, #hosting-task-list table tr {
+  border-color:#CCC !important;
+}
+
+#hosting-site-list table td, #hosting-recent-tasks table td, #hosting-task-list table td {
+  padding:5px 5px 5px 10px;
+  margin:3px 2px;
+  border-left:solid 1px #F1F1F1;
+  border-bottom:solid 1px #F1F1F1;
+
+}
+
 .hosting-queue-frequency div ,.hosting-queue-frequency label{
   display: inline;
 }
@@ -32,9 +97,8 @@ tr.hosting-success {
 }
 
 td.hosting-status {
-  padding-left:25px;
-  padding-right:1em;
-  background-position:5px 5px;
+  padding-left:30px !important;
+  background-position:10px 7px;
   background-repeat:no-repeat;
 }
 

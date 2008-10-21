@@ -164,48 +164,68 @@ function hosting_platform_load($node) {
  * Implementation of hook_view().
  */
 function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
+  $node->content['#theme'] = 'hosting_platform_view';
+
+  $node->content['verified'] = array(
+    '#type' => 'item',
+    '#title' => t('Verified'),
+    '#value' => hosting_format_interval($node->verified),
+    '#weight' => -10
+  );
+
   $node->content['release'] = array(
     '#type' => 'item',
     '#title' => t('Release'),
     '#value' => _hosting_node_link($node->release_id),
-  );
- 
-  $node->content['web_server'] = array(
-    '#type' => 'item',
-    '#title' => t('Web server'),
-    '#value' => _hosting_node_link($node->web_server),
+    '#weight' => -9
   );
 
   $node->content['publish_path'] = array(
     '#type' => 'item',
     '#title' => t('Publish path'),
     '#value' => $node->publish_path,
+    '#weight' => -8
   );
-  
-  $node->content['verified'] = array(
+ 
+  $node->content['web_server'] = array(
     '#type' => 'item',
-    '#title' => t('Verified'),
-    '#value' => hosting_format_interval($node->verified),
+    '#title' => t('Web server'),
+    '#value' => _hosting_node_link($node->web_server),
+    '#weight' => -7
   );
 
   $node->content['sites_view'] = array(
     '#type' => 'item',
-    '#title' => t("Sites"),
-    '#value' => hosting_site_list("platform", $node->nid), 
+    '#title' => t("Site list"),
+    '#value' => hosting_site_list("platform", $node->nid),
+    '#prefix' => '<div id="hosting-site-list">',
+    '#suffix' => '</div>',
     '#weight' => 10
   );
 
   if ($node->nid) {
     $node->content['tasks_view'] = array(
       '#type' => 'item',
-      '#title' => t("Tasks"),
+      '#title' => t("Recent tasks"),
       '#value' => hosting_task_list("rid", $node->nid),
-      '#weight' => 10
+      '#prefix' => '<div id="hosting-recent-tasks">',
+      '#suffix' => '</div>',
+      '#weight' => -6
     );
   }
   return $node;
 }
 
+function theme_hosting_platform_view(&$content) {
+  $output = '<div id="hosting-platform-info">';
+  $output .= drupal_render($content['verified']);
+  $output .= drupal_render($content['release']);
+  $output .= drupal_render($content['publish_path']);
+  $output .= drupal_render($content['web_server']);
+  $output .= '</div>';
+  $output .= drupal_render($content); // Render the rest of the content
+  return $output;
+}
 
 /**
  * Create the configuration file containing the drush details.
