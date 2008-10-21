@@ -16,22 +16,26 @@ table#hosting-task-log tr td {
 
 table#hosting-task-log tr.hosting-warning td {
   background-color: #ffd;
-  background-image: url(/misc/watchdog-warning.png);
+  background-image: url(warning.png);
 }
 
-table#hosting-task-log tr.hosting-info td {
-  background-image: url(info.png);
+table#hosting-task-log tr.hosting-notice td {
+  background-image: url(notice.png);
+}
+
+table#hosting-task-log tr.hosting-queue td {
+  background-image: url(queue.png);
 }
 
 table#hosting-task-log tr.hosting-error td {
   background-color: #fcc;
   color: #200;
-  background-image: url(/misc/watchdog-error.png);
+  background-image: url(error.png);
 }
 
 table#hosting-task-log tr.hosting-success td {
   background-color: #dfd;
-  background-image: url(/misc/watchdog-ok.png);
+  background-image: url(ok.png);
 }
 
 .hosting-task-full { display: none }

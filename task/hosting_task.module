@@ -420,13 +420,17 @@ function _hosting_task_log_table($vid) {
 function _hosting_task_log_class($type) {
   switch (strtolower($type)) {
     case "warning" :
+      $type = "warning";
+      break;
     case "error" : 
-      $type = strtolower($type);
+      $type = "error";
+      break;
+    case "queue" :
+      $type = "queue";
       break;
     case "command" : 
-    case "queue" :
     case "notice" : 
-      $type = "info";
+      $type = "notice";
       break;
     default: 
       $type = 'success';
