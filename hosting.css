@@ -59,6 +59,11 @@ tr.hosting-success td.hosting-status {
 }
 
 .hosting-task-full { display: none }
+
+tr.hosting-warning td, tr.hosting-info td, tr.hosting-error td, tr.hosting-queue td, tr.hosting-success td {
+  background-color:transparent !important;
+}
+
 /*
 html.js input.form-autocomplete {
   background-image: url(../../misc/throbber.gif);
