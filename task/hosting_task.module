@@ -489,7 +489,7 @@ function hosting_task_list($filter_by = null, $filter_value = null) {
     $cond = ' AND t.' . $filter_by . ' = %d';
     $args[] = $filter_value;
   }
-  $result = db_query(db_rewrite_sql("SELECT * FROM {node} n left join {hosting_task} t on n.vid=t.vid where type='%s'" . $cond . " ORDER BY n.nid DESC"), $args);
+  $result = pager_query(db_rewrite_sql("SELECT * FROM {node} n left join {hosting_task} t on n.vid=t.vid where type='%s'" . $cond . " ORDER BY n.nid DESC"), 5, 0, NULL, $args);
 
   if (!db_num_rows($result)) {
     return t('No tasks available');
@@ -498,13 +498,23 @@ function hosting_task_list($filter_by = null, $filter_value = null) {
   $rows = array();
   while ($node = db_fetch_object($result)) {
     $row = array();
-    $row[] = l($node->title, 'node/' . $node->nid);
-    $row[] =  implode(", ", _hosting_parse_error_code($node->task_status)); 
-    $row[] = t("@interval ago", array('@interval' => format_interval(mktime() - $node->created, 1)));
+    $row['type'] = array('data' => l(drupal_ucfirst($node->task_type), 'node/' . $node->nid), 'class' => 'hosting-status');
+#    $row['rid'] = _hosting_node_link($node->rid);
+    $row['created'] = t("@interval ago", array('@interval' => format_interval(mktime() - $node->created, 1)));
 #    $row[] = format_interval(mktime() - $node->completed, 1);
-    $rows[] = $row;
+    $rows[] = array('data' => $row, 'class' => _hosting_task_list_class($node->task_status));
   }
   
-  return theme('table', array(t('Task'), t('Status'), t('Created')), $rows);
+  return theme('table', array(t('Task'), t('Created')), $rows) . theme('pager', NULL, 5, 0);
 
+}
+
+function _hosting_task_list_class($status) {
+  if ($status == PROVISION_QUEUED) {
+    return 'hosting-queue';
+  }
+  if ($status & PROVISION_SUCCESS) {
+    return 'hosting-success';
+  }
+  return 'hosting-error';
 }
