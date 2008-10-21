@@ -475,7 +475,7 @@ function hosting_site_list($filter_by = null, $filter_value = null) {
   $sql .= tablesort_sql($header);
 
   // @TODO hide deleted sites
-  $result = pager_query(db_rewrite_sql($sql), 10, 0, null, $args);
+  $result = pager_query(db_rewrite_sql($sql), 25, 0, null, $args);
 
   if (!db_num_rows($result)) {
     return null;
@@ -490,7 +490,7 @@ function hosting_site_list($filter_by = null, $filter_value = null) {
     $rows[] = array('data' => $row, 'class' => _hosting_site_list_class($node->status));
   }
   
-  return theme('table',  $header, $rows) . theme('pager', NULL, 10, 0);
+  return theme('table',  $header, $rows) . theme('pager', NULL, 25, 0);
 }
 
 function _hosting_site_list_class($status) {
