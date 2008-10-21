@@ -78,6 +78,7 @@ EOF;
 
   return $help;
 }
+
 function _provision_cron_requirements() {
   $username = PROVISION_SCRIPT_USER;
   $cron_cmd['!queueconf'] = l(t("Queue administration"), "admin/settings/queues");

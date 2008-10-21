@@ -402,7 +402,7 @@ function _hosting_task_log_table($vid) {
       else {
         $message = $entry->message;
       } 
-      $row =  array($message);
+      $row =  array(array('data' => $message, 'class' => 'hosting-status'));
       $rows[] = array('data' => $row, 'class' => _hosting_task_log_class($entry->type));
     }
 
@@ -430,7 +430,7 @@ function _hosting_task_log_class($type) {
       break;
     case "command" : 
     case "notice" : 
-      $type = "notice";
+      $type = "info";
       break;
     default: 
       $type = 'success';

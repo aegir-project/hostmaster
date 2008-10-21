@@ -7,34 +7,54 @@
   padding-right: 2em;
 }
 
-table#hosting-task-log tr td {
-  background-repeat: no-repeat;
-  background-position: 5px 5px;
-  padding-left: 27px;
-  padding-right: 1em;
+/*
+ *  Status icons
+ */
+
+tr.hosting-warning {
+  background: #FFD !important;
 }
 
-table#hosting-task-log tr.hosting-warning td {
-  background-color: #ffd;
+tr.hosting-info {
+  background: #EDF5FA !important;
+}
+
+tr.hosting-error {
+  background: #FCC !important;
+}
+
+tr.hosting-queue {
+  background: #FFE6D5 !important;
+}
+
+tr.hosting-success {
+  background: #DFD !important;
+}
+
+td.hosting-status {
+  padding-left:25px;
+  padding-right:1em;
+  background-position:5px 5px;
+  background-repeat:no-repeat;
+}
+
+tr.hosting-warning td.hosting-status {
   background-image: url(warning.png);
 }
 
-table#hosting-task-log tr.hosting-notice td {
+tr.hosting-info td.hosting-status {
   background-image: url(notice.png);
 }
 
-table#hosting-task-log tr.hosting-queue td {
+tr.hosting-queue td.hosting-status {
   background-image: url(queue.png);
 }
 
-table#hosting-task-log tr.hosting-error td {
-  background-color: #fcc;
-  color: #200;
+tr.hosting-error td.hosting-status {
   background-image: url(error.png);
 }
 
-table#hosting-task-log tr.hosting-success td {
-  background-color: #dfd;
+tr.hosting-success td.hosting-status {
   background-image: url(ok.png);
 }
 
