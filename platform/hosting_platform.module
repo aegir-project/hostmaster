@@ -208,9 +208,8 @@ function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
   if ($node->nid) {
     $node->content['tasks_view'] = array(
       '#type' => 'item',
-      '#title' => t("Recent tasks"),
       '#value' => hosting_task_list("rid", $node->nid),
-      '#prefix' => '<div id="hosting-recent-tasks">',
+      '#prefix' => '<div id="hosting-task-list">',
       '#suffix' => '</div>',
       '#weight' => -6
     );

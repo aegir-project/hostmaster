@@ -329,8 +329,7 @@ function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
     l(t('Home'), NULL), 
     l($ref->title, 'node/' . $ref->nid)
   ));
-  $node->content['#prefix'] = '<div class="hosting-task-fields">';
-  $node->content['#suffix'] = '</div>';
+  $node->content['#prefix'] = '<div id="hosting-task-info" class="clear-block">';
   $node->content['reference'] = array(
     '#type' => 'item',
     '#title' => drupal_ucfirst($ref->type),
@@ -378,7 +377,7 @@ function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
       $node->content['hosting_log'] = array(
         '#weight' => 1,
         '#type' => 'item',
-        '#title' => t('Log'),
+        '#prefix' => '</div>',
         '#value' => $table
       );
     }
@@ -392,7 +391,7 @@ function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
 function _hosting_task_log_table($vid) {
   $result = db_query("SELECT * FROM {hosting_task_log} WHERE vid=%d", $vid);
   if (db_num_rows($result)) {
-    $header = array("");
+    $header = array('data' => 'Log message');
     while ($entry = db_fetch_object($result)) {
       if (strlen($entry->message) > 300) {
         $summary = "<span class='hosting-task-summary'>" . filter_xss(substr($entry->message, 0, 75), array()) . "... <a href='javascript:void(0)' class='hosting-summary-expand'>(" . t('Expand') . ')</a></span>';
@@ -405,7 +404,7 @@ function _hosting_task_log_table($vid) {
       $rows[] = array('data' => $row, 'class' => _hosting_task_log_class($entry->type));
     }
 
-    return theme("table", $header, (array) $rows, array('id' => 'hosting-task-log'));
+    return theme("table", $header, (array) $rows, array('id' => 'hosting-task-log', 'class' => 'hosting-table'));
   }
 
   return false; 
@@ -505,7 +504,7 @@ function hosting_task_list($filter_by = null, $filter_value = null) {
     $rows[] = array('data' => $row, 'class' => _hosting_task_list_class($node->task_status));
   }
   
-  return theme('table', array(t('Task'), t('Created')), $rows) . theme('pager', NULL, 5, 0);
+  return theme('table', array(t('Task'), t('Created')), $rows, array('class' => 'hosting-table')) . theme('pager', NULL, 5, 0);
 
 }
 

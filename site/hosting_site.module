@@ -366,7 +366,6 @@ function hosting_site_view(&$node, $teaser = false) {
   if ($node->nid) { 
     $node->content['tasks_view'] = array(
       '#type' => 'item',
-      '#title' => t("Tasks"),
       '#value' => hosting_task_list('rid', $node->nid),
       '#prefix' => '<div id="hosting-task-list">',
       '#suffix' => '</div>', 
@@ -512,7 +511,7 @@ function hosting_site_list($filter_by = null, $filter_value = null) {
     $rows[] = array('data' => $row, 'class' => _hosting_site_list_class($node->status));
   }
   
-  return theme('table',  $header, $rows) . theme('pager', null, 25, 1);
+  return theme('table',  $header, $rows, array('class' => 'hosting-table')) . theme('pager', null, 25, 1);
 }
 
 function _hosting_site_list_class($status) {
