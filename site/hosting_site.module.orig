@@ -1,0 +1,583 @@
+<?php
+
+include_once('hosting_site_status.inc');
+
+/**
+ * Implementation of hook_node_info
+ */
+function hosting_site_node_info() {
+  $types["site"] =  array(
+    "type" => 'site', "name" => 'Site',
+    "module" => 'hosting_site',
+    "has_title" => TRUE, "title_label" => 'Domain name', 
+    "description" => hosting_node_help("site"),
+    "has_body" => 0, "body_label" => '', "min_word_count" => 0);
+  return $types;
+}
+
+/**
+ * Implementation of hook_perm
+ */
+function hosting_site_perm() {
+  return array('create site', 'view site', 'edit site', 'delete site');
+}
+
+/**
+ * Implementation of hook_access
+ */
+function hosting_site_access($op, $node) {
+  switch ($op) {
+    case 'create':
+      return user_access('create site');
+      break;
+    case 'view':
+      return user_access('view site');
+      break;
+    case 'update':
+      return user_access('edit site');
+      break;
+    case 'delete':
+      return user_access('delete site');
+      break;
+    default:
+      break;
+  }
+}
+
+/**
+ * Map values of site node into command line arguments
+ */
+function hosting_map_values_site($node) {
+  $values['site_id'] = $node->nid;
+  $values['url'] = $node->title;
+  $values['language'] = $node->language;
+
+  $profile = node_load($node->profile);
+  $values['profile'] = $profile->short_name;
+
+  $values = array_merge($values, hosting_map_values($node->platform));
+  $values = array_merge($values, hosting_map_values($node->client));
+  $values = array_merge($values, hosting_map_values($node->db_server));
+
+  ## fields that will be used on the command line call
+  $values['#export_site'] = array_merge(
+    array('publish_path', 'site_id', 'profile', 'language'), 
+    $values['#export_db_server'], 
+    $values['#export_web_server'],
+    $values['#export_client']);
+
+  # @todo : load profile / release details
+  return $values;
+}
+
+/**
+ * Return a count of enabled sites.
+ *
+ * This is used by cron and statistics to batch the number of sites that are processed with each call
+ */
+function hosting_site_count() {
+  return db_result(db_query("SELECT count(nid) FROM {node} WHERE type='site' AND status=1"));
+}
+
+/**
+ * Retrieve sites on a specific platform, with a specific status
+ */
+function hosting_get_sites_by_status($platform, $status) {
+  $nodes = array();
+  $result = db_query("SELECT nid FROM {hosting_site} WHERE platform=%d AND (status & %d)", $platform, $status);
+  while ($nid = db_fetch_object($result)) {
+    $nodes[$nid->nid] = node_load($nid->nid);
+  }
+
+  return $nodes;
+}
+
+/**
+ * Helper function to generate new site node
+ */
+function hosting_add_site($url, $client, $platform, $db_server, $profile, $site_status, $language = 'en') {
+ global $user;
+
+ $node = new stdClass();
+ $node->type = 'site';
+ $node->uid = $user->uid;
+ $node->status = 1;
+ #todo: make this pretty
+ $node->title = $url;
+ $node->language = $language;
+
+ $client = hosting_get_client($client);
+ $node->client = ($client) ? $client->nid : HOSTING_DEFAULT_CLIENT;
+
+ $db_server = hosting_get_db_server($db_server);
+ $node->db_server = ($db_server) ? $db_server->nid : HOSTING_DEFAULT_DB_SERVER;
+
+ // this will only ever be an nid, so we don't need to load a node.
+ $node->platform = ($platform) ? $platform : HOSTING_DEFAULT_PLATFORM;
+
+
+ // need to build some error tolerance in here
+ $profile = hosting_get_package_instance($platform, $profile);
+ if (!$profile) {
+   $profile = hosting_get_package_instance($platform, 'default');
+ }
+ $node->profile = $profile->nid;
+
+ $node->site_status = $site_status;
+ node_save($node);
+}
+
+/**
+ * implementation of the hosting_post_install hook
+ */
+function hosting_site_hosting_post_install($task, $data) {
+  db_query("UPDATE {hosting_site} SET status=status|%d WHERE nid=%d", HOSTING_SITE_INSTALLED, $task->rid);
+}
+
+/**
+ * implementation of hook_hosting_post_disable
+ * I am not very fond of the use of bitwise operators with negatives.
+ */
+function hosting_site_hosting_post_disable($task, $data) {
+  $ref = node_load($task->rid);
+  if ($data['site']['backup_file'] && $ref->type == 'site') {
+    $platform = node_load($ref->platform);
+    hosting_site_add_backup($ref->nid, $platform->web_server, $data['site']['backup_file'], t('Generated before being disabled'));
+  }
+  db_query("UPDATE {hosting_site} SET status=status&%d WHERE nid=%d", HOSTING_SITE_DISABLED, $task->rid);
+}
+
+/**
+ * implementation of hook_hosting_post_restore
+ * I am not very fond of the use of bitwise operators with negatives.
+ */
+function hosting_site_hosting_post_restore($task, $data) {
+  $ref = node_load($task->rid);
+  if ($data['site']['backup_file'] && $ref->type == 'site') {
+    $platform = node_load($ref->platform);
+    hosting_site_add_backup($ref->nid, $platform->web_server, $data['site']['backup_file'], t('Generated before being restored to a previous version'));
+  }
+}
+
+/**
+ * implementation of hook_hosting_post_enable
+ */
+function hosting_site_hosting_post_enable($task, $data) {
+  db_query("UPDATE {hosting_site} SET status=status|%d WHERE nid=%d", HOSTING_SITE_ENABLED, $task->rid);
+}
+
+/**
+ * implementation of hook_hosting_post_DELETE
+ */
+function hosting_site_hosting_post_delete($task, $data) {
+  db_query("UPDATE {hosting_site} SET status=%d WHERE nid=%d", HOSTING_SITE_DELETED, $task->rid);
+}
+
+/**
+ * Implementation of hook_form
+ *
+ * TODO: additional nested logic. Certain profiles are available only on certain platforms, and certain languages on certain profiles.
+ */
+function hosting_site_form($node) {
+  $type = node_get_types('type', $node);
+  
+  // We need to define form elements for the node's title and body.
+  $form['title'] = array(
+    '#type' => 'textfield',
+    '#title' => check_plain($type->title_label),
+    '#required' => TRUE,
+    '#default_value' => $node->title,
+    '#weight' => -5
+  );
+  $clients = _hosting_get_clients();
+  if (sizeof($clients) > 1) {
+    $form['client'] = array(
+      '#type' => 'radios',
+      '#title' => t('Client'),
+      '#description' => t('The client who this site belongs to.'),
+      '#options' => $clients,
+      '#default_value' => $node->client,
+    );
+  }
+  else {
+    $form['client'] = array('#type' => 'value', '#value' => key($clients));
+  }
+
+  // Placeholder for AHAH subform
+  $form['site_subform'] = array(
+    '#type' => 'item',
+    '#prefix' => '<div id = "hosting-site-subform">',
+    '#suffix' => '</div>',
+  );
+  // Pre-embed the AHAH subform
+  $form['site_subform'] += dynamic_subform_get_embedded('site_node_form', 'hosting_site_subform', array());
+
+  $db_servers = _hosting_get_db_servers();
+  if (sizeof($db_servers) > 1) {
+    $form['db_server'] = array(
+      '#type' => 'radios',
+      '#title' => t('Database server'),
+      '#required' => TRUE,
+      '#description' => t('The database server the site will use to host it\'s content.'),
+      '#options' => $db_servers,
+      '#default_value' => $node->db_server,
+    );
+  }
+  else {
+    $form['db_server'] = array('#type' => 'value', '#value' => key($db_servers));
+  } 
+  
+  return $form;
+}
+
+
+
+// AHAH function to render the subform
+function _hosting_site_ahah_subform() {
+  $subform = dynamic_subform_get_prepped('site_node_form', 'hosting_site_subform');
+  print drupal_render($subform);
+  exit();
+}
+
+// The AHAH subform
+function hosting_site_subform($form_values) {
+  $form = array();
+
+  $platforms = _hosting_get_platforms();
+  if (sizeof($platforms) > 1) {
+    $form['platform'] = array(
+      '#type' => 'radios',
+      '#title' => t('Platform'),
+      '#description' => t('The platform you want the site to be hosted on.'),
+      '#options' => $platforms,
+      '#default_value' => $node->platform,
+      '#attributes' => array('class' => 'hosting-platform-options'),
+      '#ahah_bindings' => array (
+        array(
+          'wrapper' => 'hosting-site-subform',
+          'selector' => 'input.hosting-platform-options',
+          'event' => 'click',
+          'path' => 'hosting/site/hosting_site_ahah_subform',
+        ),
+        array(
+          'wrapper' => 'hosting-site-subform',
+          'selector' => 'input.hosting-profile-options',
+          'event' => 'click',
+          'path' => 'hosting/site/hosting_site_ahah_subform',
+        ),
+      )
+    );
+  }
+  else {
+    if ($platforms) {
+      $platforms = HOSTING_DEFAULT_PLATFORM;
+    }
+    $form['platform'] = array('#type' => 'value', '#value' => key($platforms));
+  }
+  
+  // If a platform is selected, load the relavant profiles
+  if ($form_values['platform']) {
+    $profiles = hosting_get_profiles($form_values['platform']);
+    if (sizeof($profiles) > 1) {
+      $form['profile'] = array(
+        '#type' => 'radios',
+        '#title' => t('Install profile'),
+        '#description' => t('The type of site to install.'),
+        '#options' => $profiles,
+        '#default_value' => $node->profile,
+        '#attributes' => array('class' => 'hosting-profile-options'),
+      );
+    }
+    else {
+      $form['profile'] = array('#type' => 'value', '#value' => key($profiles));
+    }
+  }
+
+  // If a profile is selected, load the relavant languages
+  if ($form_values['profile']) {
+    $languages = hosting_get_profile_languages($form_values['profile']);
+    if (sizeof($languages) > 1) {
+      $form['language'] = array(
+        '#type' => 'radios',
+        '#title' => t('Language'),
+        '#description' => t('The language of your site.'),
+        '#options' => $languages,
+        '#default_value' => ($node->language) ? $node->language : 'en',
+      );
+    }
+    else {
+      $form['language'] = array('#type' => 'hidden', '#value' => 'en');
+    }
+  }
+
+  return $form;
+}
+
+function _hosting_site_validate_fqdn($fqdn) {
+  # regex is an implementation of RFC1035
+  return preg_match("/^([a-z0-9]([a-z0-9-]*[a-z0-9])?\.?)+$/i", $fqdn);
+}
+
+function hosting_site_validate(&$node) {
+  if (!_hosting_site_validate_fqdn($node->title)) {
+    form_set_error('title', t("You have not specified a valid url for this site."));
+  }
+  # TODO: maybe we should allow creation of sites that conflict with HOSTING_SITE_DISABLED (which would then need to be renamed before being re-enabled)
+  if (db_result(db_query("SELECT COUNT(n.nid) FROM {node} n JOIN {hosting_site} h ON n.nid = h.nid WHERE type='site' AND title='%s' AND  n.nid <> %d AND h.status & %d", $node->title, $node->nid, ~HOSTING_SITE_DELETED))) {
+    form_set_error('title', t("The url you specified is not unique."));
+  }
+
+}
+
+
+function hosting_site_insert(&$node) {
+  if (!($node->site_status & HOSTING_SITE_IMPORTED)) {
+    $node->site_status = HOSTING_SITE_ENABLED; # HOSTING_SITE_NOTINSTALLED implicit
+  }
+  $node->language = ($node->language) ? $node->language : 'en';
+
+  db_query("INSERT INTO {hosting_site} (vid, nid, client, db_server, platform, profile, language, last_cron, status) VALUES (%d, %d, %d, %d, %d, %d, '%s', %d, %d)",
+    $node->vid, $node->nid, $node->client, $node->db_server, $node->platform, $node->profile, $node->language, $node->last_cron, $node->site_status);
+  if ((!$node->old_vid) && !($node->site_status & HOSTING_SITE_IMPORTED)) {
+    hosting_add_task($node->nid, 'install');
+  }
+  if (($node->platform == HOSTING_OWN_PLATFORM) && ($node->title == PROVISION_DOMAIN)) {
+    variable_set('HOSTING_OWN_SITE', $node->nid);
+  }
+}
+ 
+function hosting_site_update(&$node) {
+  // if this is a new node or we're adding a new revision,
+  if ($node->revision) {
+    hosting_site_insert($node);
+  }
+  else {
+    db_query("UPDATE {hosting_site} SET client = %d, db_server = %d, platform = %d, last_cron = %d, status = %d, profile = %d, language = '%s' WHERE vid=%d",
+              $node->publish_path, $node->web_server, $node->vid, $node->site_status, $node->language, $node->vid);
+  }
+  if (!$node->no_synch) {
+    hosting_add_task($node->nid, 'synch');
+  }
+}
+
+function hosting_site_load($node) {
+  $additions = db_fetch_object(db_query('SELECT  client, db_server, platform, profile, language, last_cron, status  AS site_status FROM {hosting_site} WHERE vid = %d', $node->vid));
+  return $additions;
+}
+
+function hosting_site_view(&$node, $teaser = false) {
+
+  if (($node->site_status & HOSTING_SITE_ENABLED) && ($node->site_status & HOSTING_SITE_INSTALLED)) {
+    $node->content['link'] = array('#value' => l(t('Go to site'), 'http://' . $node->title), '#weight' => -10);
+  }
+  $node->content['client'] = array(
+    '#type' => 'item',
+    '#title' => t('Client'),
+    '#value' => _hosting_node_link($node->client),
+  );
+  
+  $node->content['platform'] = array(
+    '#type' => 'item',
+    '#title' => t('Platform'),
+    '#value' => _hosting_node_link($node->platform),
+  );
+
+  $node->content['profile'] = array(
+    '#type' => 'item',
+    '#title' => t('Install profile'),
+    '#value' => _hosting_node_link($node->profile),
+  );
+
+  $node->content['language'] = array(
+    '#type' => 'item',
+    '#title' => t('Language'),
+    '#value' => _hosting_language_name($node->language),
+  );
+
+  $node->content['db_server'] = array(
+    '#type' => 'item',
+    '#title' => t('Database server'),
+    '#value' => _hosting_node_link($node->db_server),
+  );
+
+  $node->content['status'] = array(
+    '#type' => 'item',
+    '#title' => t('Status'),
+    '#value' => hosting_site_status_output($node->site_status),
+  );
+
+  if ($node->nid) { 
+    $node->content['tasks_view'] = array(
+      '#type' => 'item',
+      '#title' => t("Tasks"),
+      '#value' => hosting_task_list('rid', $node->nid), 
+      '#weight' => 10
+    );
+  }
+  return $node;
+}
+
+
+
+/**
+ * Add a site backup record.
+ *
+ * Builds a list of backups of the site that have been generated.
+ */
+function hosting_site_add_backup($site, $web_server, $filename, $description = '') {
+  $bid = db_next_id("{hosting_site_backups}_bid");
+  db_query("INSERT INTO {hosting_site_backups} (bid, site, web_server, filename, description, timestamp) VALUES (%d, %d, %d, '%s', '%s', %d)",
+    $bid, $site, $web_server, $filename, $description, mktime());
+  return $bid;
+}
+
+/**
+ * Delete a site backup record
+ */
+function hosting_site_delete_backup($bid) {
+  db_query("DELETE FROM {hosting_site_backups} WHERE bid=%d", $bid);
+}
+
+/**
+ * Get a site backup record
+ */
+function hosting_site_get_backup($bid) {
+  return db_fetch_array(db_query("SELECT bid, site, web_server, filename, description, timestamp FROM {hosting_site_backups} WHERE bid = %d", $bid));
+}
+
+/**
+ * Retrieve a list of backup generated for a site.
+ *
+ * @param site
+ *   The node if of the site backups are being retrieved for
+ * @return
+ *   An associative array of backups existing for the site, indexed by bid and sorted reverse chronologically.
+ */
+function hosting_site_backup_list($site) {
+  $result = db_query("SELECT bid, description, timestamp FROM {hosting_site_backups} WHERE site=%d ORDER BY timestamp DESC", $site);
+  while ($object = db_fetch_object($result)) {
+    #needs to be cleaned up. but i am NOT generating a theme func for this right now.
+    $backups[$object->bid] = '<strong>' . format_date($object->timestamp) . '</strong> - ' . $object->description;
+  }
+  return $backups;
+}
+
+/**
+ * Implementation of hook_hosting_post_backup
+ *
+ * Adds the data file that was saved to the site backup history.
+ * This is needed to be able to restore.
+ */
+function hosting_site_hosting_post_backup($task, $data) {
+  $ref = node_load($task->rid);
+  if ($data['site']['backup_file'] && $ref->type == 'site') {
+    $platform = node_load($ref->platform);
+    hosting_site_add_backup($ref->nid, $platform->web_server, $data['site']['backup_file'], t('Generated on request'));
+  }
+}
+
+
+/**
+ * Hide the delete button on site nodes
+ */
+function hosting_site_form_alter($form_id, &$form) {
+  // Remove delete button from site edit form
+  if ($form_id == 'site_node_form') {
+    $form['delete']['#type'] = 'hidden';
+  }
+}
+
+/**
+ * Check if a site with a specific url exists, ignoring deleted sites
+ */
+function hosting_site_exists($url) {
+  $result = db_result(db_query("SELECT COUNT(n.nid) FROM 
+    {node} n JOIN {hosting_site} h 
+    ON n.nid = h.nid WHERE type='site'
+    AND title='%s' AND h.status & %d",
+    $url, ~HOSTING_SITE_DELETED)); 
+  return $result; 
+}
+
+/**
+ * Display a list of created sites on the front page
+ * @TODO Add ability to filter by additional fields
+ * @TODO Add paging.
+ */
+function hosting_site_list($filter_by = null, $filter_value = null) {
+  $args[] = 'site';
+  $cond = '';
+
+  if ($filter_by && $filter_value) {
+    $cond = ' AND s.' . $filter_by . ' = %d';
+    $args[] = $filter_value;
+  }
+
+  $header = array(
+    array('data' => t('Domain'), 'field' => 'title'),
+    array('data' => t('Profile'), 'field' => 'profile'),
+    array('data' => t('Language'), 'field' => 'language'),
+    array('data' => t('Created'), 'field' => 'created', 'sort' => 'desc'));
+
+  $sql = "SELECT * FROM {node} n left join {hosting_site} s on n.nid=s.nid where type='%s'" . $cond;
+  $sql .= tablesort_sql($header);
+
+  // @TODO hide deleted sites
+  $result = pager_query(db_rewrite_sql($sql), 25, 1, null, $args);
+
+  if (!db_num_rows($result)) {
+    return null;
+  }
+  $rows = array();
+  while ($node = db_fetch_object($result)) {
+    $row = array();
+    $row[] =  array('data' => l($node->title, 'node/' . $node->nid), 'class'=> 'hosting-status');
+    $row[] = _hosting_node_link($node->profile);
+    $row[] = _hosting_language_name($node->language);
+    $row[] = t("@interval ago", array('@interval' => format_interval(mktime() - $node->created, 1)));
+    $rows[] = array('data' => $row, 'class' => _hosting_site_list_class($node->status));
+  }
+  
+  return theme('table',  $header, $rows) . theme('pager', null, 25, 1);
+}
+
+function _hosting_site_list_class($status) {
+  if ($status & HOSTING_SITE_DELETED) {
+    return 'hosting-error';
+  }
+  if ($status & HOSTING_SITE_INSTALLED) {
+    return 'hosting-success';
+  }
+  return 'hosting-queue';
+}
+
+/**
+ * Page handler for displaying list of hosted sites on front page
+ */
+function hosting_sites() {
+  if ($list = hosting_site_list()) {
+    return $list;
+  }
+  return _hosting_introduction();
+}
+
+function hosting_site_menu($may_cache = false) {
+   $items[] = array(
+    'path' => 'hosting/sites',
+    'title' => t('Hosted sites'),
+    'description' => t('Display a list of sites'),
+    'callback' => 'hosting_sites',
+    'type' => MENU_CALLBACK,
+    'access' => TRUE
+  );
+  $items[] = array(
+    'path' => 'hosting/site/hosting_site_ahah_subform',
+    'callback' => '_hosting_site_ahah_subform',
+    'type' => MENU_CALLBACK,
+    'access' => TRUE,
+  );
+
+
+
+  return $items;
+}

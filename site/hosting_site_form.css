@@ -1,0 +1,7 @@
+div#hm-processing {
+  background: url(./loading.gif);
+  width: 64px;
+  height: 64px;
+  position: absolute;
+  margin-left: 200px;
+}
