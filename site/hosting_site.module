@@ -179,6 +179,9 @@ function hosting_site_hosting_post_delete($task, $data) {
  * TODO: additional nested logic. Certain profiles are available only on certain platforms, and certain languages on certain profiles.
  */
 function hosting_site_form($node) {
+  drupal_add_js(drupal_get_path('module', 'hosting_site') . '/hosting_site_form.js');
+  drupal_add_css(drupal_get_path('module', 'hosting_site') . '/hosting_site_form.css');
+
   $type = node_get_types('type', $node);
   
   // We need to define form elements for the node's title and body.
@@ -217,35 +220,8 @@ function hosting_site_form($node) {
     $form['platform'] = array('#type' => 'value', '#value' => key($platforms));
   }
 
-
-  $profiles = hosting_get_profiles();
-  if (sizeof($profiles) > 1) {
-    $form['profile'] = array(
-      '#type' => 'radios',
-      '#title' => t('Install profile'),
-      '#description' => t('The type of site to install.'),
-      '#options' => $profiles,
-      '#default_value' => $node->prNULLe,
-    );
-  }
-  else {
-    $form['profile'] = array('#type' => 'value', '#value' => key($profiles));
-  }
-
-  $languages = hosting_get_profile_languages();
-  // @todo Implement jquery AHAH selectors, to filter the available languages.
-  if (sizeof($languages) > 1) {
-    $form['language'] = array(
-      '#type' => 'radios',
-      '#title' => t('Language'),
-      '#description' => t('The type of site to install.'),
-      '#options' => $languages,
-      '#default_value' => ($node->language) ? $node->language : 'en',
-    );
-  }
-  else {
-    $form['language'] = array('#type' => 'value', '#value' => 'en');
-  }
+  $form['profile'] = _hosting_site_form_profile();
+  $form['language'] = _hosting_site_form_language();
 
   $db_servers = _hosting_get_db_servers();
   if (sizeof($db_servers) > 1) {
@@ -535,7 +511,7 @@ function hosting_sites() {
 }
 
 function hosting_site_menu($may_cache = false) {
-   $items[] = array(
+  $items[] = array(
     'path' => 'hosting/sites',
     'title' => t('Hosted sites'),
     'description' => t('Display a list of sites'),
@@ -543,5 +519,69 @@ function hosting_site_menu($may_cache = false) {
     'type' => MENU_CALLBACK,
     'access' => TRUE
   );
+  $items[] = array(
+    'path' => 'hosting/hosting_site_form_populate',
+    'callback' =>'_hosting_site_form_populate',
+    'type' => MENU_CALLBACK,
+    'access' => TRUE,
+  );
+
   return $items;
+}
+
+/**
+ * generate hosting site node form element 'profile'
+ */
+function _hosting_site_form_profile($platform = NULL) {
+  $profiles = hosting_get_profiles($platform);
+  if (sizeof($profiles) > 1) {
+    $form['profile'] = array(
+      '#type' => 'radios',
+      '#title' => t('Install profile'),
+      '#description' => t('The type of site to install.'),
+      '#options' => $profiles,
+      '#default_value' => $node->prNULLe,
+      '#attributes' => array('class' => "hosting-site-form-profile-options"),
+    );
+  }
+  else {
+    $form['profile'] = array('#type' => 'value', '#value' => key($profiles));
+  }
+  return $form['profile'];
+}
+
+/**
+ * generate hosting site node form element 'language'
+ */
+function _hosting_site_form_language($profile = NULL) {
+  $languages = hosting_get_profile_languages($profile);
+  if (sizeof($languages) > 1) {
+    $form['language'] = array(
+      '#type' => 'radios',
+      '#title' => t('Language'),
+      '#description' => t('The type of site to install.'),
+      '#options' => $languages,
+      '#default_value' => ($node->language) ? $node->language : 'en',
+      '#attributes' => array('class' => "hosting-site-form-language-options"),
+    );
+  }
+  else {
+    $form['language'] = array('#type' => 'hidden', '#value' => 'en', '#attributes' => array('class' => "hosting-site-form-language-options"));
+  }
+  return $form['language'];
+}
+
+/**
+ * populate hosting site node form element with specified arguments
+ */
+function _hosting_site_form_populate($element, $value) {
+  $form[$element] = call_user_func('_hosting_site_form_'. $element, $value);
+
+  print drupal_to_js(
+    array(
+      'status' => 'TRUE',
+      'data' => drupal_render(form_builder('hosting-site-form', $form)),
+    )
+  );
+  exit();
 }
