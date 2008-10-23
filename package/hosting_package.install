@@ -31,8 +31,7 @@ function hosting_package_install() {
       ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
 
       db_query("CREATE TABLE {hosting_package_languages} (
-        vid int NOT NULL,
-        nid int(10) UNSIGNED NOT NULL,
+        iid int NOT NULL,
         language VARCHAR(12) NOT NULL DEFAULT ''
       )  /*!40100 DEFAULT CHARACTER SET UTF8 */");
       break;
@@ -68,6 +67,26 @@ function hosting_package_update_2() {
 function hosting_package_update_3() {
   $ret = array();
   $ret[] = update_sql("ALTER TABLE {hosting_package} MODIFY COLUMN short_name longtext NOT NULL default ''");
+  return $ret;
+}
+
+/**
+ * Package languages are associated to package instances, not packages
+ */
+function hosting_package_update_4() {
+  include_once(drupal_get_path('module', 'hosting_task') . '/hosting_task.module');
+  $ret = array();
+  $ret[] = update_sql("DROP TABLE {hosting_package_languages}");
+  $ret[] = update_sql("CREATE TABLE {hosting_package_languages} (
+    iid int UNSIGNED NOT NULL,
+    language VARCHAR(12) NOT NULL DEFAULT ''
+  )  /*!40100 DEFAULT CHARACTER SET UTF8 */");
+
+  // Re-verify all existing platforms
+  $result = db_query("SELECT nid FROM {node} WHERE type='platform' AND status=1");
+  while ($platform = db_fetch_object($result)) {
+    hosting_add_task($platform->nid, 'verify');
+  }
   return $ret;
 }
 

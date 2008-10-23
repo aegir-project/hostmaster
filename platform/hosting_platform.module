@@ -311,7 +311,7 @@ function hosting_platform_hosting_post_import($task, $data) {
   if (sizeof($data['site']['sites'])) {
     foreach ($data['site']['sites'] as $url => $info) {
       if (!hosting_site_exists($url)) {
-        hosting_add_site($url, $info['site_admin_email'], $platform->nid, $info['site_db_host'], $info['site_profile'], HOSTING_SITE_ENABLED | HOSTING_SITE_INSTALLED | HOSTING_SITE_IMPORTED, $info['site_language']);
+        hosting_add_site($url, $info['client_email'], $platform->nid, $info['db_host'], $info['profile'], HOSTING_SITE_ENABLED | HOSTING_SITE_INSTALLED | HOSTING_SITE_IMPORTED, $info['language']);
       }
     }
   }
