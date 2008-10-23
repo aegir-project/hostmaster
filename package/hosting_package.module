@@ -25,6 +25,49 @@ function hosting_package_node_info() {
   return $types;
 }
 
+function hosting_package_menu($may_cache) {
+  $items = array();
+  
+  if (!$may_cache) {
+    if ( arg(0) == 'node' && is_numeric(arg(1))) {
+      $node = node_load(arg(1));
+      if ($node->type == 'platform') {
+        $items[] = array(
+          'path' => 'node/' . arg(1) . '/packages',
+          'title' => t('Packages'),
+          'description' => t('List of packages available for this platform'),
+          'callback' => 'hosting_package_list',
+          'callback arguments' => array(arg(1)),
+          'type' => MENU_LOCAL_TASK,
+          'weight' => 1, 
+        );
+        $items[] = array(
+          'path' => 'node/' . arg(1) . '/packages/all',
+          'title' => t('All packages'),
+          'description' => t('List of all packages'),
+          'callback' => 'hosting_package_list',
+          'callback arguments' => array(arg(1)),
+          'type' => MENU_DEFAULT_LOCAL_TASK,
+          'weight' => -1, 
+        );
+        foreach (_hosting_package_types() as $type => $description) {
+          $items[] = array(
+            'path' => 'node/' . arg(1) . '/packages/' . $type,
+            'title' => $description,
+            'description' => $description,
+            'callback' => 'hosting_package_list',
+            'callback arguments' => array(arg(1), $type),
+            'type' => MENU_LOCAL_TASK,
+            'weight' => $x++, 
+          );           
+        }
+      }
+     }
+  }
+  return $items;
+}
+
+
 function hosting_package_access($op, $node) {
   return hosting_access($op, $node);
 }
@@ -387,5 +430,58 @@ function hosting_package_import_packages($rid, $type, $default_version, $data) {
     hosting_add_package_instance($release->nid, $rid, $info->filename); 
   }
 
+}
+
+function _hosting_package_types() {
+  return array(
+    'profile' => t('Installation Profiles'), 
+    'module' => t('Modules'), 
+    'theme' => t('Themes')
+  );
+}
+
+
+/**
+ * Display a list of packages associated to a node
+ * @TODO Add ability to filter by additional fields
+ * @TODO Add paging.
+ */
+function hosting_package_list($rid, $type = null) {
+  $ref = node_load($rid);
+  drupal_set_title(t('Packages on @reference', array('@reference' => $ref->title)));
+
+
+  $header = array(
+    array('data' => t('Package'), 'field' => 'short_name'),
+    array('data' => t('Release'), 'field' => 'version'),
+    array('data' => t('Package type'), 'field' => 'package_type'));
+  $args[] = $rid;
+
+  if (!is_null($type)) {
+    $cond = " AND p.package_type = '%s'";
+    $args[] = $type;
+  }
+
+  $sql = "SELECT p.nid as 'package', p.short_name, r.nid as 'release', r.version, p.package_type FROM {hosting_package} p
+    LEFT JOIN {hosting_package_release} r ON r.package=p.nid
+    LEFT JOIN {hosting_package_instance} i ON i.release_id=r.nid WHERE i.rid=%d" . $cond;
+  $sql .= tablesort_sql($header);
+
+  // @TODO hide deleted sites
+  $result = pager_query(db_rewrite_sql($sql), 25, 2, null, $args);
+
+  if (!db_num_rows($result)) {
+    return t('No packages are associated with @reference yet', array('@reference' => $ref->title));
+  }
+  $rows = array();
+  while ($package = db_fetch_object($result)) {
+    $row = array();
+    $row[] =  array('data' => l($package->short_name, 'node/' . $package->package), 'class'=> 'hosting-status');
+    $row[] =  l($package->version, 'node/' . $package->release);
+    $row[] = $package->package_type;
+    $rows[] = array('data' => $row, 'class' => 'hosting-info');
+  }
+  
+  return theme('table',  $header, $rows, array('class' => 'hosting-table')) . theme('pager', null, 25, 2);
 }
 
