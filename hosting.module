@@ -396,5 +396,7 @@ function _hosting_node_add($type = '') {
   return $output;
 }
 
-
-
+function hosting_log($type, $message, $severity = 0) {
+  if (DRUSH_VERBOSE) print "$message\n";
+  if ($type) watchdog($type, $message, $severity);
+}

@@ -11,16 +11,25 @@
 function hosting_dispatch() {
   $now = mktime();
   variable_set("hosting_dispatch_last_run", $now);
+  hosting_log('hosting_dispatch', t("dispatching queues"));
   if (variable_get('hosting_dispatch_enabled', false)) {
     $queues = hosting_get_queues();
     foreach ($queues as $queue => $info) {
       if ($info['enabled']) {
         if (($now - $info["last"]) >= $info["calc_frequency"]) {
-          system(hosting_generate_command("hosting", $queue, array(),
-            array('items' => $info['calc_items'], 'background' => TRUE)));
+          $cmd = hosting_generate_command("hosting", $queue, array(),
+                 array('items' => $info['calc_items'], 'background' => TRUE));
+          hosting_log('hosting_dispatch', t("dispatching command !cmd", array('!cmd' => $cmd)));
+          system($cmd);
+        } else {
+          hosting_log(false, t("too early for queue @queue", array('@queue' => $queue)));
         }
+      } else {
+        hosting_log(false, t("queue @queue disabled", array('@queue' => $queue)));
       }
     }
+  } else {
+    hosting_log('hosting_dispatch', t("dispatching disabled"));
   }
   exit(PROVISION_SUCCESS);
 }
