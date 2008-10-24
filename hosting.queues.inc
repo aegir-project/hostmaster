@@ -239,6 +239,7 @@ function _hosting_get_new_tasks($limit = 5) {
 function hosting_tasks_queue($count) {
   global $provision_errors;
 
+  hosting_log('hosting_tasks', t("Running tasks queue"));
   $tasks = _hosting_get_new_tasks($count);
 
   foreach ($tasks as $task) {
