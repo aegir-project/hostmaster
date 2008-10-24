@@ -144,6 +144,8 @@ function hostmaster_profile_final() {
   // @todo create proper roles, and set up views to be role based
   hostmaster_install_set_permissions(hostmaster_install_get_rid('anonymous user'), array('access content', 'access all views'));
   hostmaster_install_set_permissions(hostmaster_install_get_rid('authenticated user'), array('access content', 'access all views'));
+  // @todo we may need to have a hook here to consider plugins
+  hostmaster_install_set_permissions(hostmaster_install_get_rid('aegir client'), array('access content', 'access all views', 'edit own client', 'create site', 'delete site', 'view site', 'create backup task', 'create delete task', 'create disable task', 'create enable task', 'create restore task', 'view own tasks'));
   menu_rebuild();
 
   drupal_goto('hosting/wizard');
