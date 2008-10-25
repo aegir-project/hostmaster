@@ -252,6 +252,7 @@ function hosting_package_load($node) {
  * Implementation of hook_view().
  */
 function hosting_package_view($node, $teaser = FALSE, $page = FALSE) {
+  hosting_set_breadcrumb($node);
   $node->content['package_type'] = array(
     '#type' => 'item',
     '#title' => t('Package Type'),
@@ -359,6 +360,7 @@ function hosting_package_release_load($node) {
  * Implementation of hook_view().
  */
 function hosting_package_release_view($node, $teaser = FALSE, $page = FALSE) {
+  hosting_set_breadcrumb($node);
   $node->content['package'] = array(
     '#type' => 'item',
     '#title' => t('Package'),

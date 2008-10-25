@@ -294,6 +294,7 @@ function hosting_site_load($node) {
 }
 
 function hosting_site_view(&$node, $teaser = false) {
+  hosting_set_breadcrumb($node);
   $node->content['#theme'] = 'hosting_site_view';
   if (($node->site_status & HOSTING_SITE_ENABLED) && ($node->site_status & HOSTING_SITE_INSTALLED)) {
     $node->content['link'] = array(

@@ -396,6 +396,29 @@ function _hosting_node_add($type = '') {
   return $output;
 }
 
+
+/**
+ * Generate context sensitive breadcrumbs
+ */
+function hosting_set_breadcrumb($node) {
+  $breadcrumbs[] = l(t('Home'), NULL);
+  switch ($node->type) {
+    case 'task':
+      $breadcrumbs[] = _hosting_node_link($node->rid);
+      break;
+    case 'platform' :
+      $breadcrumbs[] = _hosting_node_link($node->web_server);
+      break;
+    case 'site' :
+      $breadcrumbs[] = _hosting_node_link($node->platform);
+      break;
+    case 'package_release' :
+      $breadcrumbs[] = _hosting_node_link($node->package);
+      break;
+  }
+  drupal_set_breadcrumb($breadcrumbs);
+}
+
 function hosting_log($type, $message, $severity = 0) {
   if (DRUSH_VERBOSE) print "$message\n";
   if ($type) watchdog($type, $message, $severity);
