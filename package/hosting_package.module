@@ -78,33 +78,42 @@ function hosting_package_release_access($op, $node) {
 
 function hosting_get_profiles($platform = NULL) {
   // load profile options: if argument is null, load all profile options
-  $result = db_query('SELECT n.nid FROM {node} n LEFT JOIN {hosting_package} hp ON n.nid = hp.nid 
-                                                 LEFT JOIN {hosting_package_release} hpr ON hp.nid = hpr.package 
-                                                 LEFT JOIN {hosting_package_instance} hpi ON hpr.nid = hpi.release_id 
-                                                 LEFT JOIN {hosting_platform} l ON hpi.rid = l.nid 
-                                                 WHERE '. ($platform ? ' l.nid = %d AND ' : '') .' hp.package_type = "profile"', $platform);
+  $query = 'SELECT n.nid FROM {node} n LEFT JOIN {hosting_package} hp ON n.nid = hp.nid 
+                                       LEFT JOIN {hosting_package_release} hpr ON hp.nid = hpr.package 
+                                       LEFT JOIN {hosting_package_instance} hpi ON hpr.nid = hpi.release_id 
+                                       LEFT JOIN {hosting_platform} l ON hpi.rid = l.nid 
+                                       WHERE '. ($platform ? ' l.nid = %d AND ' : '') .' hp.package_type = "profile"';
 
+  // if there is no result, provide results from default platform
+  if (!(db_result(db_query($query, $platform)))) {
+    $platform = HOSTING_DEFAULT_PLATFORM;
+  }
+
+  $result = db_query($query, $platform);
   while ($nid = db_fetch_object($result)) {
     $profiles[$nid->nid] = node_load(array('nid' => $nid->nid));
   }
-
   foreach ($profiles as $profile) {
     $return[$profile->nid] = $profile->title;
   }
   return $return;
 }
 
-function hosting_get_profile_languages($platform = NULL, $profile = NULL) {
+function hosting_get_profile_languages($profile = NULL, $platform = NULL) {
   // load language options: if argument is null, load all language options
-  $result = db_query("SELECT DISTINCT(language) FROM {hosting_package_languages}". ($profile ? " WHERE iid = %d" : ""), $profile);
+  $result = db_query("SELECT DISTINCT(language) FROM {hosting_package_languages} l". ($profile ? "
+                                                LEFT JOIN {hosting_package_instance} hpi ON l.iid = hpi.iid
+                                                LEFT JOIN {hosting_package_release} hpr ON hpi.release_id = hpr.nid
+                                                LEFT JOIN {hosting_package} hp ON hp.nid = hpr.package
+                                                WHERE hp.nid = %d AND hpi.rid = %d" : ""), $profile, $platform);
+  
   while ($language = db_fetch_object($result)) {
-    $languages[] = $language->language;
+    $languages[$language->language] = _hosting_language_name($language->language);
   }
-
   if (!is_array($languages)) {
     $languages = array('en');
   }
-  return _hosting_language_names($languages);
+  return $languages;
 }
 
 /**
