@@ -79,25 +79,23 @@ function hosting_task_log($vid, $type, $message, $severity = 0, $timestamp = nul
  db_query("INSERT INTO {hosting_task_log} (vid, type, message, severity, timestamp) VALUES (%d, '%s', '%s', %d, %d)", $vid, $type, $message, $severity, $timestamp);
 }
 
-
-function hosting_map_values_task($node) {
-  $values['task_id'] = $node->nid;
-  $values['task_type'] = $node->task_type;
-  if (is_array($node->task_args)) {
-    $values['task_args'] = $node->task_args;
+function hosting_task_provision_args($node, $task = '') {
+  $values = array();
+  if ($node->type == 'task') {
+    $values['task_id'] = $node->nid;
+    $values = array_merge($values, module_invoke_all('provision_args', node_load($node->rid), $task));    
   }
-  $reference = node_load($node->rid);
-  $values['task_reference_type'] = $reference->type;
-  $values['task_reference'] = $reference->nid;
-  
-  $values = array_merge($values, hosting_map_values($reference));    
-
-  $values['#export_task'] = array_merge( 
-    array('task_id'), 
-    $values['#export_' . $reference->type]);
-
   return $values;
 }
+
+function hosting_task_retry_task($task_id) {
+  $status = db_query("SELECT status FROM {hosting_task_queue} WHERE nid=%d", $task_id);
+  if ($status != PROVISION_SUCCESS) {
+    db_query("UPDATE {hosting_task_queue} SET STATUS = %d WHERE nid =%d", PROVISION_QUEUED, $task_id);
+  }
+
+}
+
 
 /**
  * Helper function to generate new task node

@@ -147,71 +147,41 @@ function hosting_run_queue() {
  *
  * Generates a drush command for either the provision or hosting system.
  */
-function hosting_generate_command($system, $command, $args = array(), $options = array(), $ref = null) {
-  if (is_null($ref)) {
-    $ref = node_load(HOSTING_OWN_PLATFORM);
-  }
+function hosting_generate_command($system, $command, $ref, $args = array(), $options = array()) {
 
-  $data = hosting_map_values($ref);
+  $data = module_invoke_all('provision_args', $ref, $command); 
   $data = array_merge($data, $options);
 
-  // Hack : add site to arguments if we're generating a command for a site.
-  if ($data['url']) {
-    $args[] = $data['url'];
-  }
-
-  $func = "hosting_cmd_" . $system . "_" . $command;
-  if (function_exists($func)) {
-    $func($args, $options, $data);
-  }
-
-  //escape shell argument
-  foreach ($args as $key => $arg) {
-    $args[$key] = escapeshellarg($arg); 
-  }
-
-  /**
-   * A list of keys in $data that will be exported to the command line.
-   *
-   * This is defined in the map_values function for each of the types, and by
-   * whatever $options were passed to the functions.
-   */
-  $export = array_merge($data['#export_' . $ref->type], array_keys($options));
-  foreach ($export as $key) {
-    if (!is_array($data[$key]) && !is_object($data[$key]) && !is_bool($data[$key]) && $data[$key]) {
-      $options[$key] = $data[$key];
+  foreach ($data as $key => $value) {
+    if (!is_array($value) && !is_object($value) && !is_bool($value) && $value) {
+      if (substr($key, 0, 1) == '#') {
+        $args[$key] = $value;
+      }
+      else {
+        $options[$key] = $value;
+      }
     }
   } 
+  ksort($args);
+
+  $arg_str = '';
+  foreach ($args as $key => $value) {
+    $arg_str .= ' ' . escapeshellarg($value);
+  }
+
+  $option_str = '';
   foreach ($options as $key => $value) {
     $option_str .= " --$key=" . escapeshellarg($value);
   } 
   $drush_path = sprintf("%s/drush.php", $data['publish_path']); 
   // @TODO: Implement proper multi platform / multi server support.
   $cmd = sprintf(escapeshellcmd("%s %s %s %s --root=%s %s"), escapeshellcmd($drush_path) ,
-    escapeshellarg($system), escapeshellarg($command), implode(" ", $args), escapeshellarg($data['publish_path']), $option_str);
+    escapeshellarg($system), escapeshellarg($command), $arg_str, escapeshellarg($data['publish_path']), $option_str);
 
   if ($options['background']) {
     $cmd .= " &";
   }
   return $cmd;
-}
-
-function hosting_cmd_provision_restore(&$args, &$options, $data) {
-  $backup = hosting_site_get_backup($data['task_args']['bid']);
-  $args[] = $backup['filename'];
-}
-
-// Add extra parameters to synch platforms
-function hosting_cmd_provision_synch(&$args, &$options, $data) {
-  if (!$data['url']) {
-    $options['backup_path'] = $data['backup_path'];
-    $options['config_path'] = $data['config_path'];
-    $options['script_user'] = $data['script_user'];
-    $options['web_group'] = $data['web_group'];
-    $options['restart_cmd'] = $data['restart_cmd'];
-    $options['master_url'] = variable_get('install_url', $GLOBALS['base_url']);
-    $options['master_db'] = hosting_db_server_as_url(HOSTING_DEFAULT_DB_SERVER);
-  }
 }
 
 /**
@@ -256,7 +226,7 @@ function hosting_tasks_queue($count) {
 
     // @todo Allow multiple commands to be run. 
     // For now tasks just map to one backend command, but that might need to change with additional complexity.
-    $cmd = hosting_generate_command("provision", $task->task_type, array(), array('backend' => TRUE), $task);
+    $cmd = hosting_generate_command("provision", $task->task_type, $task, array(), array('backend' => TRUE));
     exec($cmd, $return, $code);
     $return = join("", $return);
     $data = unserialize($return);
@@ -290,7 +260,6 @@ function hosting_tasks_queue($count) {
       # The task has been successful. Run the post hook.
       module_invoke_all("hosting_post_" . $task->task_type, $task, $data);
     }
-
     // remove from queue
     hosting_task_log($task->vid, "queue", t("Removing task from hosting queue"), 0);
     db_query("UPDATE {hosting_task_queue} SET status=%d WHERE nid=%d", $code, $task->nid);
@@ -298,7 +267,6 @@ function hosting_tasks_queue($count) {
 }
 
 function _hosting_queues_clean_output($return) {
-  return filter_xss($return, array());
 }
 
 /**

@@ -25,6 +25,17 @@ function hosting_package_node_info() {
   return $types;
 }
 
+function hosting_package_provision_args($node, $task = '') {
+  $values = array();
+
+  if ($node->type == 'site') {
+    $profile = node_load($node->profile);
+    $values['profile'] = $profile->short_name;
+  }
+
+  return $values;
+}
+
 function hosting_package_menu($may_cache) {
   $items = array();
   

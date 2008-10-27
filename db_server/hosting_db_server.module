@@ -79,15 +79,14 @@ function _hosting_get_db_servers() {
 }
 
 
-function hosting_map_values_db_server($node) {
-  $values['db_id'] = $node->nid;
-  $values['db_host'] = $node->title;
-  $values['db_type'] = $node->db_type;
-  $values['db_user'] = $node->db_user;
-  $values['db_passwd'] = $node->db_passwd;
-
-  $values['#export_db_server'] = array('db_host', 'db_type');
-     
+function hosting_db_server_provision_args($node, $task = '') {
+  $values = array();
+  if ($node->type == 'platform' && $task == 'synch') {
+    $values['master_db'] = hosting_db_server_as_url(HOSTING_DEFAULT_DB_SERVER);
+  }
+  if ($node->type == 'site') {
+    $values['db_id'] = $node->db_server;
+  }
   return $values;
 }
 

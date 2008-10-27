@@ -47,26 +47,18 @@ function hosting_site_access($op, $node) {
 /**
  * Map values of site node into command line arguments
  */
-function hosting_map_values_site($node) {
-  $values['site_id'] = $node->nid;
-  $values['url'] = $node->title;
-  $values['language'] = $node->language;
-
-  $profile = node_load($node->profile);
-  $values['profile'] = $profile->short_name;
-
-  $values = array_merge($values, hosting_map_values($node->platform));
-  $values = array_merge($values, hosting_map_values($node->client));
-  $values = array_merge($values, hosting_map_values($node->db_server));
-
-  ## fields that will be used on the command line call
-  $values['#export_site'] = array_merge(
-    array('publish_path', 'site_id', 'profile', 'language'), 
-    $values['#export_db_server'], 
-    $values['#export_web_server'],
-    $values['#export_client']);
-
-  # @todo : load profile / release details
+function hosting_site_provision_args($node, $task = '') {
+  $values = array();
+  if ($node->type == 'site') {
+    $values['#1'] = $node->title;
+#    $values['#url'] = $node->title;
+    $values['site_id'] = $node->nid;
+    $values['language'] = $node->language;
+  }
+  if ($node->type == 'task' && $task == 'restore') {
+    $backup = hosting_site_get_backup($node->task_args['bid']);
+    $values['#2'] = $backup['filename'];
+  }
   return $values;
 }
 

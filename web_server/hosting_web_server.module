@@ -45,17 +45,21 @@ function hosting_web_server_access($op, $node) {
       break;
   }
 }
-
-function hosting_map_values_web_server($node) {
-  $values['web_id'] = $node->nid;
-  $values['web_host'] = $node->title;
-  $values['web_ip'] = $node->ip_address;  
-  $values['script_user'] = $node->script_user;
-  $values['web_group'] = $node->web_group;
-  $values['config_path'] = $node->config_path;
-  $values['backup_path'] = $node->backup_path;
-  $values['restart_cmd'] = $node->restart_cmd;
-  $values['#export_web_server'] = array('web_id', 'web_host', 'web_ip');
+function hosting_web_server_provision_args($node, $task = '') {
+  $values = array();
+  if (in_array($node->type, array('site', 'platform'))) {
+    $web = node_load($node->web_server);
+    $values['web_id'] = $web->nid;
+    $values['web_host'] = $web->title;
+    $values['web_ip'] = $web->ip_address;
+    if ($task == 'synch' && $node->type == 'platform') {
+        $values['script_user'] = $web->script_user;
+        $values['web_group'] = $web->web_group;
+        $values['config_path'] = $web->config_path;
+        $values['backup_path'] = $web->backup_path;
+        $values['restart_cmd'] = $web->restart_cmd;
+    }
+  }
   return $values;
 }
 

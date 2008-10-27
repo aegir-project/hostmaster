@@ -4,11 +4,13 @@
  */
 
 
-function hosting_map_values_client($node) {
-  $values['client_id'] = $node->nid;
-  $values['client_email'] = $node->email;
-
-  $values['#export_client'] = array('client_id', 'client_email');
+function hosting_client_provision_args($node, $task = '') {
+  $values = array();
+  if ($node->type == 'site' && $task == 'install') {
+    $client = node_load($node->client);
+    $values['client_id'] = $node->client;
+    $values['client_email'] = $client->email;
+  }
   return $values;
 }
 

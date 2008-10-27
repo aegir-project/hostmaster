@@ -64,14 +64,16 @@ function _hosting_get_platforms() {
 }
 
 
-function hosting_map_values_platform($node) {
-  $values['platform'] = $node->nid;
-  $values['publish_path'] = $node->publish_path;
-
-  $reference = node_load($node->web_server);
-  $values = array_merge($values, hosting_map_values($reference));
-
-  $values['#export_platform'] = array('publish_path', 'platform');
+function hosting_platform_provision_args($node, $task = '') {
+  $values = array();
+  switch ($node->type) {
+    case 'site' : 
+      $node = node_load($node->platform);
+    case 'platform' : 
+      $values['platform'] = $node->nid;
+      $values['publish_path'] = $node->publish_path;
+      break;
+  }
   return $values;
 }
 
