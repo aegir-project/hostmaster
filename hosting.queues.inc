@@ -17,7 +17,7 @@ function hosting_dispatch() {
     foreach ($queues as $queue => $info) {
       if ($info['enabled']) {
         if (($now - $info["last"]) >= $info["calc_frequency"]) {
-          $cmd = hosting_generate_command("hosting", $queue, array(),
+          $cmd = hosting_generate_command("hosting", $queue, node_load(HOSTING_OWN_PLATFORM), array(),
                  array('items' => $info['calc_items'], 'background' => TRUE));
           hosting_log('hosting_dispatch', t("dispatching command !cmd", array('!cmd' => $cmd)));
           system($cmd);
@@ -267,6 +267,7 @@ function hosting_tasks_queue($count) {
 }
 
 function _hosting_queues_clean_output($return) {
+  return filter_xss($return, array());
 }
 
 /**
