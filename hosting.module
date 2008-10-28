@@ -234,6 +234,7 @@ function hosting_block($op = 'list', $delta = 0, $edit = array()) {
     case 'list' :
       $blocks['hosting_summary'] = array('info' => t('Hosting summary'));
       $blocks['hosting_queues'] = array('info' => t('Hosting queues'));
+      $blocks['hosting_queues_summary'] = array('info' => t('Hosting queues summary'));
       return $blocks;
     case 'view' : 
       switch ($delta) {
@@ -246,8 +247,34 @@ function hosting_block($op = 'list', $delta = 0, $edit = array()) {
         return array('title' => t('Queues'),
                      'content' => hosting_queue_block());
         break;
+      case 'hosting_queues_summary':
+        return array('title' => t('Queues summary'),
+                     'content' => hosting_queue_summary_block());
+        break;
       }
   }
+}
+
+function hosting_queue_summary_block() {
+  $queues = hosting_get_queues();
+  $output = '';
+  foreach ($queues as $queue => $info) {
+    foreach (array('description' => t('Description'), 'frequency' => t('Frequency'), 'items' => t('Items per run'), 'total_items' => t('Items in queue'), 'last_run' => t('Last run')) as $key => $title) {
+      # special case
+      if ($key == 'last_run') {
+        $info[$key] = hosting_format_interval($info[$key]);
+      } elseif ($key == 'frequency') {
+        $info[$key] = t('every @interval', array('@interval' => format_interval($info[$key])));
+      }
+      $disp[] = $title . ": " . $info[$key]; 
+    }
+    $output .= theme('item_list', $disp, $info['name']);
+    /* to print all stats of the queue...
+    $lambda = create_function('$k,$v', 'return "$k: $v";');
+    $output .= theme('item_list', array_map($lambda, array_keys($info), $info), $info['name']);
+    */
+  }
+  return $output;
 }
 
 function hosting_queue_block() {
