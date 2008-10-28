@@ -217,7 +217,7 @@ function _hosting_node_link($nid) {
 
 /**
  * Creates a new block.
- *
+ */
 function _hosting_add_block($module, $delta, $theme, $status, $weight, $region, $visibility = 0, $pages = '', $custom = 0, $throttle = 0, $title = '') {
   db_query("INSERT INTO {blocks} (module, delta, theme, status, weight, region, visibility, pages, custom, throttle, title) 
      VALUES ('%s', '%s', '%s', %d, %d, '%s', %d, '%s', %d, %d, '%s')", 
@@ -245,16 +245,19 @@ function hosting_block($op = 'list', $delta = 0, $edit = array()) {
 }
 
 function hosting_summary_block() {
-  return theme('hosting_summary_block', _hosting_node_link(HOSTING_DEFAULT_PLATFORM), _hosting_node_link(HOSTING_DEFAULT_WEB_SERVER), _hosting_node_link(HOSTING_DEFAULT_DB_SERVER));
+  $db_servers = _hosting_get_db_servers();
+  $platforms = _hosting_get_platforms();
+  $web_servers = _hosting_get_web_servers();
+  
+  return theme('hosting_summary_block', array_map('_hosting_node_link', array_keys($platforms)), array_map('_hosting_node_link', array_keys($web_servers)), array_map('_hosting_node_link', array_keys($db_servers)));
 }
 
-function theme_hosting_summary_block($platform, $web_server, $db_server) {
+function theme_hosting_summary_block($platforms, $web_servers, $db_servers) {
   $output .= theme("item_list", $platforms, t('Platforms'));
   $output .= theme("item_list", $web_servers, t('Web servers'));
   $output .= theme("item_list", $db_servers, t('Database servers'));
   return $output;
 }
-*/
 
 /**
  * Check if a hostname provided is an ip address
