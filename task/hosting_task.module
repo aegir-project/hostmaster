@@ -472,6 +472,22 @@ function _hosting_parse_error_code($code) {
   }
 }
 
+function hosting_task_status($filter_by, $filter_value, $type = 'install') {
+  $args[] = 'task';
+  $args[] = $type;
+  $cond = '';
+  if ($filter_by && $filter_value) {
+    $cond = ' AND t.' . $filter_by . ' = %d';
+    $args[] = $filter_value;
+  }
+  $result = db_fetch_array(db_query("SELECT q.status AS status FROM {node} n left join {hosting_task_queue} q on n.nid=q.nid left join {hosting_task} t on n.vid=t.vid where n.type='%s' AND t.task_type='%s' " . $cond, $args));
+  return $result['status'];
+}
+
+function hosting_task_status_output($filter_by, $filter_value, $type = 'install') {
+  return join(', ', _hosting_parse_error_code(hosting_task_status($filter_by, $filter_value, $type)));
+}
+
 /**
  * Display list of tasks
  */

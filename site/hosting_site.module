@@ -326,10 +326,15 @@ function hosting_site_view(&$node, $teaser = false) {
     '#value' => _hosting_node_link($node->db_server),
   );
 
+  $site_status = array(hosting_site_status_output($node->site_sta));
+  $install_status = hosting_site_task_status($node->nid);
+  if ($install_status) {
+    $site_status[] = $install_status;
+  }
   $node->content['status'] = array(
     '#type' => 'item',
     '#title' => t('Status'),
-    '#value' => hosting_site_status_output($node->site_status),
+    '#value' => join(', ', $site_status),
   );
 
   if ($node->nid) { 
@@ -441,6 +446,10 @@ function hosting_site_exists($url) {
   return $result; 
 }
 
+function hosting_site_task_status($nid) {
+  return hosting_task_status_output('nid', $nid, 'install');
+}
+
 /**
  * Display a list of created sites on the front page
  * @TODO Add ability to filter by additional fields
@@ -477,17 +486,18 @@ function hosting_site_list($filter_by = null, $filter_value = null) {
     $row[] = _hosting_node_link($node->profile);
     $row[] = _hosting_language_name($node->language);
     $row[] = t("@interval ago", array('@interval' => format_interval(mktime() - $node->created, 1)));
-    $rows[] = array('data' => $row, 'class' => _hosting_site_list_class($node->status));
+    $rows[] = array('data' => $row, 'class' => _hosting_site_list_class($node));
   }
   
   return theme('table',  $header, $rows, array('class' => 'hosting-table')) . theme('pager', null, 25, 1);
 }
 
-function _hosting_site_list_class($status) {
-  if ($status & HOSTING_SITE_DELETED) {
+function _hosting_site_list_class($node) {
+  $task_status = hosting_site_task_status($node->nid);
+  if ($node->status & HOSTING_SITE_DELETED || ($task_status != PROVISION_QUEUED && $task_status != PROVISION_SUCCESS)) {
     return 'hosting-error';
   }
-  if ($status & HOSTING_SITE_INSTALLED) {
+  if ($node->status & HOSTING_SITE_INSTALLED) {
     return 'hosting-success';
   }
   return 'hosting-queue';
