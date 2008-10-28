@@ -326,7 +326,7 @@ function hosting_site_view(&$node, $teaser = false) {
     '#value' => _hosting_node_link($node->db_server),
   );
 
-  $site_status = array(hosting_site_status_output($node->site_sta));
+  $site_status = array(hosting_site_status_output($node->site_status));
   $install_status = hosting_site_task_status($node->nid);
   if ($install_status) {
     $site_status[] = $install_status;
