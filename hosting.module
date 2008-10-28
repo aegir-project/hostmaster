@@ -233,15 +233,33 @@ function hosting_block($op = 'list', $delta = 0, $edit = array()) {
   switch ($op) {
     case 'list' :
       $blocks['hosting_summary'] = array('info' => t('Hosting summary'));
+      $blocks['hosting_queues'] = array('info' => t('Hosting queues'));
       return $blocks;
     case 'view' : 
-      if ($delta == 'hosting_summary') {
+      switch ($delta) {
+      case 'hosting_summary':
         return array(
-          'title' => t('Summary'),
-          'content' => hosting_summary_block());
+                     'title' => t('Summary'),
+                     'content' => hosting_summary_block());
+        break;
+      case 'hosting_queues':
+        return array('title' => t('Queues'),
+                     'content' => hosting_queue_block());
+        break;
       }
   }
+}
 
+function hosting_queue_block() {
+  $queues = hosting_get_queues();
+  $output = '';
+  foreach ($queues as $queue => $info) {
+    $func = 'hosting_'.$info['singular'].'_list';
+    if (function_exists($func)) {
+      $output .= $func();
+    }
+  }
+  return $output;
 }
 
 function hosting_summary_block() {
