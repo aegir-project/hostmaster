@@ -94,6 +94,7 @@ function hosting_get_profiles($platform = NULL) {
                                        LEFT JOIN {hosting_package_instance} hpi ON hpr.nid = hpi.release_id 
                                        LEFT JOIN {hosting_platform} l ON hpi.rid = l.nid 
                                        WHERE '. ($platform ? ' l.nid = %d AND ' : '') .' hp.package_type = "profile"';
+  $query .= ' ORDER BY hp.short_name ASC';
 
   // if there is no result, provide results from default platform
   if (!(db_result(db_query($query, $platform)))) {
