@@ -493,7 +493,7 @@ function hosting_site_list($filter_by = null, $filter_value = null) {
 }
 
 function _hosting_site_list_class($node) {
-  $task_status = hosting_site_task_status($node->nid);
+  $task_status = hosting_task_status('rid', $node->nid, 'install');
   if ($node->status & HOSTING_SITE_DELETED || ($task_status != PROVISION_QUEUED && $task_status != PROVISION_SUCCESS)) {
     return 'hosting-error';
   }
