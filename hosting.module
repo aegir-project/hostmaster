@@ -261,6 +261,11 @@ function hosting_queue_summary_block() {
   foreach ($queues as $queue => $info) {
     foreach (array('description' => t('Description'), 'frequency' => t('Frequency'), 'items' => t('Items per run'), 'total_items' => t('Items in queue'), 'last_run' => t('Last run')) as $key => $title) {
       # special case
+      if (!$info['enabled']) {
+        $disp[] = t('Status: disabled');
+        continue;
+      }
+      $disp[] = t('Status: enabled');
       if ($key == 'last_run') {
         $info[$key] = hosting_format_interval($info[$key]);
       } elseif ($key == 'frequency') {
@@ -269,10 +274,10 @@ function hosting_queue_summary_block() {
       $disp[] = $title . ": " . $info[$key]; 
     }
     $output .= theme('item_list', $disp, $info['name']);
-    /* to print all stats of the queue...
-    $lambda = create_function('$k,$v', 'return "$k: $v";');
-    $output .= theme('item_list', array_map($lambda, array_keys($info), $info), $info['name']);
-    */
+    /* to print all stats of the queue... */
+    #$lambda = create_function('$k,$v', 'return "$k: $v";');
+    #$output .= theme('item_list', array_map($lambda, array_keys($info), $info), $info['name']);
+    
   }
   return $output;
 }
