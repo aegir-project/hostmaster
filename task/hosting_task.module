@@ -553,7 +553,7 @@ function hosting_task_list($filter_by = null, $filter_value = null) {
     $in_queue = _hosting_task_in_queue($node->nid); 
     if (user_access('retry failed tasks')) {
       if (!in_array($node->task_status, array(PROVISION_QUEUED, PROVISION_SUCCESS)) && !$in_queue) {
-        $row['actions'] = drupal_get_form('hosting_task_retry_form', $node->nid);
+        $row['actions'] = array('data' => drupal_get_form('hosting_task_retry_form', $node->nid), 'class' => 'hosting-task-retry');
       }
       else {
         $row['actions'] = '';
