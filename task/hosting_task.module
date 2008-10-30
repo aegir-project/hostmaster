@@ -533,23 +533,36 @@ function hosting_task_list($filter_by = null, $filter_value = null) {
     $cond = ' AND t.' . $filter_by . ' = %d';
     $args[] = $filter_value;
   }
-  $result = pager_query(db_rewrite_sql("SELECT * FROM {node} n left join {hosting_task} t on n.vid=t.vid where type='%s'" . $cond . " ORDER BY n.nid DESC"), 5, 0, NULL, $args);
+  $result = pager_query(db_rewrite_sql("SELECT *, t.task_status FROM {node} n left join {hosting_task} t on n.vid=t.vid where type='%s'" . $cond . " ORDER BY n.nid DESC"), 5, 0, NULL, $args);
 
   if (!db_num_rows($result)) {
     return t('No tasks available');
   }
+  $header = array(t('Task'), t('Created'));
 
+  if (user_access('retry failed tasks')) {
+    $header[] = t('Actions');
+
+  }
   $rows = array();
   while ($node = db_fetch_object($result)) {
     $row = array();
     $row['type'] = array('data' => l(drupal_ucfirst($node->task_type), 'node/' . $node->nid), 'class' => 'hosting-status');
-#    $row['rid'] = _hosting_node_link($node->rid);
     $row['created'] = t("@interval ago", array('@interval' => format_interval(mktime() - $node->created, 1)));
-#    $row[] = format_interval(mktime() - $node->completed, 1);
+
+    $in_queue = _hosting_task_in_queue($node->nid); 
+    if (user_access('retry failed tasks')) {
+      if (!in_array($node->task_status, array(PROVISION_QUEUED, PROVISION_SUCCESS)) && !$in_queue) {
+        $row['actions'] = drupal_get_form('hosting_task_retry_form', $node->nid);
+      }
+      else {
+        $row['actions'] = '';
+      }
+    } 
     $rows[] = array('data' => $row, 'class' => _hosting_task_list_class($node->task_status));
   }
   
-  return theme('table', array(t('Task'), t('Created')), $rows, array('class' => 'hosting-table')) . theme('pager', NULL, 5, 0);
+  return theme('table', $header, $rows, array('class' => 'hosting-table')) . theme('pager', NULL, 5, 0);
 
 }
 
