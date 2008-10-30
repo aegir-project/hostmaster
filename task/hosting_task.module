@@ -75,7 +75,6 @@ function hosting_task_perm() {
 
 function hosting_task_log($vid, $type, $message, $severity = 0, $timestamp = null ) {
  $timestamp = ($timestamp) ? $timestamp : mktime();
- if (DRUSH_VERBOSE) print "$message\n";
  db_query("INSERT INTO {hosting_task_log} (vid, type, message, severity, timestamp) VALUES (%d, '%s', '%s', %d, %d)", $vid, $type, $message, $severity, $timestamp);
 }
 
@@ -93,6 +92,11 @@ function hosting_task_retry($task_id) {
   if ($status != PROVISION_SUCCESS) {
     db_query("UPDATE {hosting_task_queue} SET STATUS = %d WHERE nid =%d", PROVISION_QUEUED, $task_id);
   }
+  $node = node_load($task_id);
+  hosting_task_log($node->vid, 'queue', t("The task is being retried and has been added to the hosting queue again"));
+  $node->task_status = PROVISION_QUEUED;
+  $node->revision = FALSE;
+  node_save($node);
 
 }
 
