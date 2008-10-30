@@ -93,6 +93,7 @@ function hosting_task_retry($task_id) {
     db_query("UPDATE {hosting_task_queue} SET STATUS = %d WHERE nid =%d", PROVISION_QUEUED, $task_id);
   }
   $node = node_load($task_id);
+  drupal_set_message(t("The task is being retried and has been added to the hosting queue again"));
   hosting_task_log($node->vid, 'queue', t("The task is being retried and has been added to the hosting queue again"));
   $node->task_status = PROVISION_QUEUED;
   $node->revision = FALSE;
