@@ -212,7 +212,6 @@ function _hosting_get_new_tasks($limit = 5) {
 
 function _hosting_task_in_queue($nid) {
   return (db_result(db_query("SELECT nid FROM {hosting_task_queue} WHERE status=%d AND nid=%d", PROVISION_QUEUED, $nid))) ? TRUE : FALSE;
-
 }
 /**
  * Process the hosting task queue.
