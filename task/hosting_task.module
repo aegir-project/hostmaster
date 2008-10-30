@@ -388,7 +388,7 @@ function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
 
   if (user_access('retry failed tasks') 
     && !in_array($node->task_status, array(PROVISION_QUEUED, PROVISION_SUCCESS))
-    && !_hosting_task_queued($node->nid)) {
+    && !_hosting_task_in_queue($node->nid)) {
     $node->content['retry'] = array(
       '#type' => 'markup',
       '#value' => drupal_get_form('hosting_task_retry_form', $node->nid),
