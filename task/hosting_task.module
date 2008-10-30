@@ -88,7 +88,7 @@ function hosting_task_provision_args($node, $task = '') {
   return $values;
 }
 
-function hosting_task_retry_task($task_id) {
+function hosting_task_retry($task_id) {
   $status = db_query("SELECT status FROM {hosting_task_queue} WHERE nid=%d", $task_id);
   if ($status != PROVISION_SUCCESS) {
     db_query("UPDATE {hosting_task_queue} SET STATUS = %d WHERE nid =%d", PROVISION_QUEUED, $task_id);
@@ -314,6 +314,24 @@ function hosting_task_load($node) {
   return $additions;
 }
 
+function hosting_task_retry_form($nid) {
+  $form['#prefix'] = '<div class="hosting-task-retry">';
+  $form['task'] = array(
+    '#type' => 'value',
+    '#value' => $nid
+  );
+  $form['retry'] = array(
+    '#type' => 'submit',
+    '#value' => t('Retry failed task')
+  );
+  $form['#suffix'] = '</div>';
+  return $form;
+}
+
+function hosting_task_retry_form_submit($form_id, $edit) {
+  hosting_task_retry($edit['task']);
+}
+
 /**
  * Implementation of hook_view().
  */
@@ -324,15 +342,15 @@ function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
   $ref = node_load($node->rid);
 
   hosting_set_breadcrumb($node);
-  $node->content['#prefix'] = '<div id="hosting-task-info" class="clear-block">';
-  $node->content['reference'] = array(
+  $node->content['info']['#prefix'] = '<div id="hosting-task-info" class="clear-block">';
+  $node->content['info']['reference'] = array(
     '#type' => 'item',
     '#title' => drupal_ucfirst($ref->type),
     '#value' => _hosting_node_link($node->rid),
   );
   
   if ($node->executed) {
-    $node->content['executed'] = array(
+    $node->content['info']['executed'] = array(
       '#type' => 'item',
       '#title' => t('Executed'),
       '#value' => format_date($node->executed),
@@ -353,26 +371,36 @@ function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
       $date = format_date($next, 'medium');
     }
     $items = $queue['items'];
-    $node->content['notexecuted'] = array(
+    $node->content['info']['notexecuted'] = array(
       '#type' => 'item',
       '#title' => t('This task has not been processed yet'),
       '#value' => t('It will be processed around %date, if the queue is not too crowded. The queue is currently ran every %freq, was last ran %last and processes %items items at a time. Server time is %time.', array('%freq' => format_interval($freq), '%date' => $date, '%last' => hosting_format_interval($last), '%items' => $items, '%time' => format_date($now, 'custom', 'H:i:sO'))),
     );
   }
   if ($node->task_status) {
-    $node->content['status'] = array(
+    $node->content['info']['status'] = array(
       '#type' => 'item',
       '#title' => t('Status'),
       '#value' => implode(", ", _hosting_parse_error_code($node->task_status)),
+    );
+  }
+  $node->content['info']['#suffix'] = '</div>';
+
+  if (user_access('retry failed tasks') 
+    && !in_array($node->task_status, array(PROVISION_QUEUED, PROVISION_SUCCESS))
+    && !_hosting_task_queued($node->nid)) {
+    $node->content['retry'] = array(
+      '#type' => 'markup',
+      '#value' => drupal_get_form('hosting_task_retry_form', $node->nid),
+      '#weight' => 5,
     );
   }
 
   if (user_access('access task logs')) {
     if ($table = _hosting_task_log_table($node->vid)) { 
       $node->content['hosting_log'] = array(
-        '#weight' => 1,
+        '#weight' => 10,
         '#type' => 'item',
-        '#prefix' => '</div>',
         '#value' => $table
       );
     }

@@ -202,6 +202,19 @@ function _hosting_get_new_tasks($limit = 5) {
 }
 
 /**
+ * Check if a certain task is still in the queue
+ * 
+ * @param nid
+ *    The nid of the task being checked
+ * @return
+ *    A boolean depending on whether the task is still queued.
+ */
+
+function _hosting_task_in_queue($nid) {
+  return (db_result(db_query("SELECT nid FROM {hosting_task_queue} WHERE status=%d AND nid=%d", PROVISION_QUEUED, $nid))) ? TRUE : FALSE;
+
+}
+/**
  * Process the hosting task queue.
  *
  * Iterates through the list of outstanding tasks, and execute the commands on the back end.

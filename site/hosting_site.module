@@ -287,40 +287,40 @@ function hosting_site_load($node) {
 
 function hosting_site_view(&$node, $teaser = false) {
   hosting_set_breadcrumb($node);
-  $node->content['#theme'] = 'hosting_site_view';
+  $node->content['info']['#prefix'] = '<div id="hosting-site-info">';
   if (($node->site_status & HOSTING_SITE_ENABLED) && ($node->site_status & HOSTING_SITE_INSTALLED)) {
-    $node->content['link'] = array(
+    $node->content['info']['link'] = array(
       '#value' => l(t('Go to site'),
       'http://' . $node->title),
       '#weight' => -10
     );
   }
-  $node->content['client'] = array(
+  $node->content['info']['client'] = array(
     '#type' => 'item',
     '#title' => t('Client'),
     '#value' => _hosting_node_link($node->client),
     '#weight' => 5
   );
   
-  $node->content['platform'] = array(
+  $node->content['info']['platform'] = array(
     '#type' => 'item',
     '#title' => t('Platform'),
     '#value' => _hosting_node_link($node->platform),
   );
 
-  $node->content['profile'] = array(
+  $node->content['info']['profile'] = array(
     '#type' => 'item',
     '#title' => t('Install profile'),
     '#value' => _hosting_node_link($node->profile),
   );
 
-  $node->content['language'] = array(
+  $node->content['info']['language'] = array(
     '#type' => 'item',
     '#title' => t('Language'),
     '#value' => _hosting_language_name($node->language),
   );
 
-  $node->content['db_server'] = array(
+  $node->content['info']['db_server'] = array(
     '#type' => 'item',
     '#title' => t('Database server'),
     '#value' => _hosting_node_link($node->db_server),
@@ -331,11 +331,12 @@ function hosting_site_view(&$node, $teaser = false) {
   if ($install_status) {
     $site_status[] = $install_status;
   }
-  $node->content['status'] = array(
+  $node->content['info']['status'] = array(
     '#type' => 'item',
     '#title' => t('Status'),
     '#value' => join(', ', $site_status),
   );
+  $node->content['info']['#suffix'] = '</div>';
 
   if ($node->nid) { 
     $node->content['tasks_view'] = array(
@@ -348,23 +349,6 @@ function hosting_site_view(&$node, $teaser = false) {
   }
   return $node;
 }
-
-function theme_hosting_site_view(&$content) {
-  $output = '<div id="hosting-site-info">';
-  if (isset($content['link'])) {
-    $output .= drupal_render($content['link']);
-  }  
-  $output .= drupal_render($content['client']);
-  $output .= drupal_render($content['platform']);
-  $output .= drupal_render($content['profile']);
-  $output .= drupal_render($content['language']);
-  $output .= drupal_render($content['db_server']);
-  $output .= drupal_render($content['status']);
-  $output .= '</div>';
-  $output .= drupal_render($content); // Render the rest of the content
-  return $output;
-}
-
 
 /**
  * Add a site backup record.
