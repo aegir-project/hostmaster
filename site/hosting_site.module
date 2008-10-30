@@ -467,7 +467,7 @@ function hosting_site_list($filter_by = null, $filter_value = null) {
   }
 
   $header = array(
-    array('data' => t('Domain'), 'field' => 'title'),
+    array('data' => t('Site'), 'field' => 'title'),
     array('data' => t('Profile'), 'field' => 'profile'),
     array('data' => t('Language'), 'field' => 'language'),
     array('data' => t('Created'), 'field' => 'created', 'sort' => 'desc'));

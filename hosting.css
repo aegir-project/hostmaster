@@ -70,7 +70,6 @@ table.hosting-table td {
   margin:3px 2px;
   border-left:solid 1px #F1F1F1;
   border-bottom:solid 1px #F1F1F1;
-
 }
 
 .hosting-queue-frequency div ,.hosting-queue-frequency label{
@@ -130,6 +129,17 @@ tr.hosting-error td.hosting-status {
 
 tr.hosting-success td.hosting-status {
   background-image: url(ok.png);
+}
+
+.hosting-task-retry {
+  padding: 0 0 0 23px;
+  background:url(warning.png) 0 4px no-repeat;
+  margin:0;
+}
+
+.hosting-task-retry form, .hosting-task-retry form div, .hosting-task-retry form input {
+  margin:0;
+  padding:0;
 }
 
 .hosting-task-full { display: none }

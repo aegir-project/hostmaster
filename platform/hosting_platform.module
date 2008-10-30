@@ -102,13 +102,19 @@ function hosting_platform_form(&$node) {
     '#maxlength' => 255,
   );
 
-  $form['web_server'] = array(
-    '#type' => 'radios',
-    '#title' => t('Web server'),
-    '#description' => t('The web server the sites will be hosted on.'),
-    '#options' => _hosting_get_web_servers(),
-    '#default_value' => ($node->web_server) ? $node->web_server : HOSTING_DEFAULT_WEB_SERVER,
-  );
+  $servers = _hosting_get_web_servers();
+  if (sizeof($servers) > 1) {
+    $form['web_server'] = array(
+      '#type' => 'radios',
+      '#title' => t('Web server'),
+      '#description' => t('The web server the sites will be hosted on.'),
+      '#options' => $servers,
+      '#default_value' => ($node->web_server) ? $node->web_server : HOSTING_DEFAULT_WEB_SERVER,
+    );
+  }
+  else {
+    $form['web_server'] = array('#type' => 'hidden', '#value' => key($servers));
+  }
   
   return $form;
 }
@@ -200,7 +206,6 @@ function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
 
   $node->content['sites_view'] = array(
     '#type' => 'item',
-    '#title' => t("Site list"),
     '#value' => hosting_site_list("platform", $node->nid),
     '#prefix' => '<div id="hosting-site-list">',
     '#suffix' => '</div>',
