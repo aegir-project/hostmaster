@@ -52,8 +52,15 @@ function hosting_menu($may_cache = true) {
         ); 
       }
     }
-
-
+    
+    // Queue page & task lists
+    
+    $items[] = array(
+       'path' => 'hosting/queues',
+       'callback' => 'hosting_queues',
+       'type' => MENU_CALLBACK,
+       'access' => user_access('access task logs')
+      );
   }
   return $items;
 }
@@ -256,42 +263,46 @@ function hosting_block($op = 'list', $delta = 0, $edit = array()) {
 }
 
 function hosting_queue_summary_block() {
-  $queues = hosting_get_queues();
-  $output = '';
-  foreach ($queues as $queue => $info) {
-    foreach (array('description' => t('Description'), 'frequency' => t('Frequency'), 'items' => t('Items per run'), 'total_items' => t('Items in queue'), 'last_run' => t('Last run')) as $key => $title) {
+  if (user_access('administer hosting queues')) {
+    $queues = hosting_get_queues();
+    $output = '';
+    foreach ($queues as $queue => $info) {
       # special case
       if (!$info['enabled']) {
         $disp[] = t('Status: disabled');
         continue;
       }
       $disp[] = t('Status: enabled');
-      if ($key == 'last_run') {
-        $info[$key] = hosting_format_interval($info[$key]);
-      } elseif ($key == 'frequency') {
-        $info[$key] = t('every @interval', array('@interval' => format_interval($info[$key])));
+      foreach (array('description' => t('Description'), 'frequency' => t('Frequency'), 'items' => t('Items per run'), 'total_items' => t('Items in queue'), 'last_run' => t('Last run')) as $key => $title) {
+        if ($key == 'last_run') {
+          $info[$key] = hosting_format_interval($info[$key]);
+        } elseif ($key == 'frequency') {
+          $info[$key] = t('every @interval', array('@interval' => format_interval($info[$key])));
+        }
+        $disp[] = $title . ": " . $info[$key]; 
       }
-      $disp[] = $title . ": " . $info[$key]; 
-    }
-    $output .= theme('item_list', $disp, $info['name']);
-    /* to print all stats of the queue... */
-    #$lambda = create_function('$k,$v', 'return "$k: $v";');
-    #$output .= theme('item_list', array_map($lambda, array_keys($info), $info), $info['name']);
+      $output .= theme('item_list', $disp, $info['name']);
+      /* to print all stats of the queue... */
+      #$lambda = create_function('$k,$v', 'return "$k: $v";');
+      #$output .= theme('item_list', array_map($lambda, array_keys($info), $info), $info['name']);
     
+    }
+    return $output;
   }
-  return $output;
 }
 
 function hosting_queue_block() {
-  $queues = hosting_get_queues();
-  $output = '';
-  foreach ($queues as $queue => $info) {
-    $func = 'hosting_'.$info['singular'].'_list';
-    if (function_exists($func)) {
-      $output .= $func();
+  if (user_access('access task logs')) {
+    $queues = hosting_get_queues();
+    $output = '';
+    foreach ($queues as $queue => $info) {
+      $func = 'hosting_'.$info['singular'].'_summary';
+      if (function_exists($func)) {
+        $output .= $func();
+      }
     }
+    return $output;
   }
-  return $output;
 }
 
 function hosting_summary_block() {
@@ -449,6 +460,34 @@ function _hosting_node_add($type = '') {
   return $output;
 }
 
+/**
+ * List queues or tasks in a queue if a key is provided
+ */
+
+function hosting_queues($key='') {
+  $queues = hosting_get_queues();
+
+  if ($queues[$key]) {
+    if ($queues[$key]['name'])
+    {
+      $output .= "<h1>".$queues[$key]['name']."</h1>";
+    }
+  
+    $func = 'hosting_'.$queues[$key]['singular'].'_list';
+    if (function_exists($func)) {
+      $output .= $func();
+    }
+  }
+  else
+  {
+    foreach($queues as $key => $queue) {
+      $item[] = l($queue['name'], 'hosting/queues/'.$key);
+    }
+    $output .= theme('item_list', $item, t('Queues'));
+  }
+  
+  return $output;
+}
 
 /**
  * Generate context sensitive breadcrumbs
