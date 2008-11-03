@@ -483,7 +483,7 @@ function hosting_get_most_recent_task($rid, $type) {
  * Retrieve tasks with specified criterias
  */
 
-function hosting_get_tasks($filter_by = null, $filter_value = null, $element = 0) {
+function hosting_get_tasks($filter_by = null, $filter_value = null, $count = 5, $element = 0) {
   $node = array();
   $args[] = 'task';
   $cond = '';
@@ -492,7 +492,7 @@ function hosting_get_tasks($filter_by = null, $filter_value = null, $element = 0
     $cond = ' AND t.' . $filter_by . ' = %d';
     $args[] = $filter_value;
   }
-  $result = pager_query(db_rewrite_sql("SELECT *, t.task_status FROM {node} n left join {hosting_task} t on n.vid=t.vid where type='%s'" . $cond . " ORDER BY n.nid DESC"), 5, $element, NULL, $args);
+  $result = pager_query(db_rewrite_sql("SELECT *, t.task_status FROM {node} n left join {hosting_task} t on n.vid=t.vid where type='%s'" . $cond . " ORDER BY n.nid DESC"), $count, $element, NULL, $args);
   
   while ($row = db_fetch_object($result)) {
     $nodes[] = $row;
@@ -547,11 +547,15 @@ function hosting_task_status_output($filter_by, $filter_value, $type = 'install'
  */
  
 function hosting_task_list($filter_by = null, $filter_value = null) {
-  return theme("hosting_task_list", hosting_get_tasks($filter_by, $filter_value));
+  return _hosting_task_list($filter_by, $filter_value, 5, 2, 'title');
 }
-  
+
+function hosting_task_list_embedded($filter_by = null, $filter_value = null) {
+  return _hosting_task_list($filter_by, $filter_value, 5, 0, 'task_type', array('created'));
+} 
+
 function hosting_task_summary($filter_by = null, $filter_value = null) {
-  return theme("hosting_task_summary", hosting_get_tasks($filter_by, $filter_value,1));
+  return _hosting_task_list($filter_by, $filter_value, 5, 1, 'title', array('created', 'actions'));
 }
 
 function _hosting_task_list_class($status) {
@@ -568,27 +572,35 @@ function _hosting_task_list_class($status) {
  * Theme functions
  */
  
-function theme_hosting_task_list($nodes) {
- if (!$nodes) {
+function _hosting_task_list($filter_by, $filter_value, $count = 5, $element = 0, $field = 'title', $skip = array()) {
+  $nodes = hosting_get_tasks($filter_by, $filter_value, $count, $element);
+
+  if (!$nodes) {
    return t('No tasks available');
- }
- else {
-   $header = array(t('Task'), t('Created'));
-
-   if (user_access('retry failed tasks')) {
-     $header[] = t('Actions');
-
-   }
-   
+  }
+  else {
+   $headers[t('Task')] = '';
    foreach ($nodes as $node) {
      $row = array();
-     $row['type'] = array('data' => l(drupal_ucfirst($node->task_type), 'node/' . $node->nid), 'class' => 'hosting-status');
-     $row['created'] = t("@interval ago", array('@interval' => format_interval(mktime() - $node->created, 1)));
+     $row['type'] = array(
+       'data' => l(drupal_ucfirst($node->{$field}), 'node/' . $node->nid),
+       'class' => 'hosting-status'
+     );
 
-     $in_queue = _hosting_task_in_queue($node->nid); 
-     if (user_access('retry failed tasks')) {
-       if (!in_array($node->task_status, array(PROVISION_QUEUED, PROVISION_SUCCESS)) && !$in_queue) {
-         $row['actions'] = array('data' => drupal_get_form('hosting_task_retry_form', $node->nid), 'class' => 'hosting-task-retry');
+     if (!in_array('created', $skip)) {
+       $row['created'] = t("@interval ago", array('@interval' => format_interval(mktime() - $node->created, 1)));
+       $headers[t('Created')] = '';
+     }
+
+     if (!in_array('actions', $skip) && user_access('retry failed tasks')) {
+       $headers[t('Actions')] = '';
+       if (!in_array($node->task_status, array(PROVISION_QUEUED, PROVISION_SUCCESS))) {
+         if (!_hosting_task_in_queue($node->nid)) {
+           $row['actions'] = array(
+             'data' => drupal_get_form('hosting_task_retry_form', $node->nid),
+             'class' => 'hosting-task-retry'
+           );
+         }
        }
        else {
          $row['actions'] = '';
@@ -596,22 +608,9 @@ function theme_hosting_task_list($nodes) {
      } 
      $rows[] = array('data' => $row, 'class' => _hosting_task_list_class($node->task_status));
    }
-   
-  return theme('table', $header, $rows, array('class' => 'hosting-table')) . theme('pager', NULL, 5, 0); 
- }
-}
- 
-function theme_hosting_task_summary($nodes) {
- if (!$nodes) {
-   return t('No tasks available');
- }
- else {
-     foreach ($nodes as $node) {
-       $row = array();
-       $row['type'] = array('data' => l(drupal_ucfirst($node->title), 'node/' . $node->nid), 'class' => 'hosting-status');
-       $rows[] = array('data' => $row, 'class' => _hosting_task_list_class($node->task_status));
-     }
-   
-   return theme('table', array(t('Task')), $rows, array('class' => 'hosting-table')).l(t('Read more'),'hosting/queues/tasks'); 
- }
+
+   $output = theme('table', array_keys($headers), $rows, array('class' => 'hosting-table'));
+   $output .= theme('pager', NULL, $count, 0);
+   return $output;
+  }
 }
