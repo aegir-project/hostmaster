@@ -72,15 +72,6 @@ table.hosting-table td {
   border-bottom:solid 1px #F1F1F1;
 }
 
-.hosting-queue-frequency div ,.hosting-queue-frequency label{
-  display: inline;
-}
-
-.hosting-queue-frequency, .hosting-queue-frequency-head {
-  text-align: right;
-  padding-right: 2em;
-}
-
 /*
  *  Status icons
  */
@@ -131,22 +122,47 @@ tr.hosting-success td.hosting-status {
   background-image: url(ok.png);
 }
 
-.hosting-task-retry {
+tr.hosting-warning td, tr.hosting-info td, tr.hosting-error td, tr.hosting-queue td, tr.hosting-success td {
+  background-color:transparent !important;
+}
+
+/*
+ *  Retry button
+ */
+
+div.hosting-task-retry {
   padding: 0 0 0 23px;
   background:url(warning.png) 0 4px no-repeat;
+  margin:0 0 20px;
+  height:20px;
+  display:block;
+}
+
+td div.hosting-task-retry {
   margin:0;
 }
 
-.hosting-task-retry form, .hosting-task-retry form div, .hosting-task-retry form input {
+div.hosting-task-retry form, div.hosting-task-retry form input {
   margin:0;
   padding:0;
 }
 
-.hosting-task-full { display: none }
+/*
+ *  Unknown
+ */
 
-tr.hosting-warning td, tr.hosting-info td, tr.hosting-error td, tr.hosting-queue td, tr.hosting-success td {
-  background-color:transparent !important;
+
+.hosting-queue-frequency div ,.hosting-queue-frequency label{
+  display: inline;
 }
+
+.hosting-queue-frequency, .hosting-queue-frequency-head {
+  text-align: right;
+  padding-right: 2em;
+}
+
+
+.hosting-task-full { display: none }
 
 /*
 html.js input.form-autocomplete {
