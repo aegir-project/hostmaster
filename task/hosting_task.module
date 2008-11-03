@@ -547,16 +547,16 @@ function hosting_task_status_output($filter_by, $filter_value, $type = 'install'
  */
  
 function hosting_task_list($filter_by = null, $filter_value = null) {
-  return _hosting_task_list($filter_by, $filter_value, 5, 2, 'title');
+  return _hosting_task_list($filter_by, $filter_value, 25, 12, 'title');
+}
+
+function hosting_task_summary($filter_by = null, $filter_value = null) {
+  return _hosting_task_list($filter_by, $filter_value, 5, 11, 'title', array('created', 'actions'), l(t('More tasks'), 'hosting/queues/tasks'));
 }
 
 function hosting_task_list_embedded($filter_by = null, $filter_value = null) {
-  return _hosting_task_list($filter_by, $filter_value, 5, 0, 'task_type', array('created'));
+  return _hosting_task_list($filter_by, $filter_value, 5, 10, 'task_type', array('created'));
 } 
-
-function hosting_task_summary($filter_by = null, $filter_value = null) {
-  return _hosting_task_list($filter_by, $filter_value, 5, 1, 'title', array('created', 'actions'));
-}
 
 function _hosting_task_list_class($status) {
   if ($status == PROVISION_QUEUED) {
@@ -572,7 +572,7 @@ function _hosting_task_list_class($status) {
  * Theme functions
  */
  
-function _hosting_task_list($filter_by, $filter_value, $count = 5, $element = 0, $field = 'title', $skip = array()) {
+function _hosting_task_list($filter_by, $filter_value, $count = 5, $element = 0, $field = 'title', $skip = array(), $pager = TRUE) {
   $nodes = hosting_get_tasks($filter_by, $filter_value, $count, $element);
 
   if (!$nodes) {
@@ -610,7 +610,12 @@ function _hosting_task_list($filter_by, $filter_value, $count = 5, $element = 0,
    }
 
    $output = theme('table', array_keys($headers), $rows, array('class' => 'hosting-table'));
-   $output .= theme('pager', NULL, $count, 0);
+   if ($pager === TRUE) {
+     $output .= theme('pager', NULL, $count, $element);
+   }
+   elseif (is_string($pager)) {
+     $output .= $pager;
+   }
    return $output;
   }
 }

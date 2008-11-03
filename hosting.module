@@ -239,9 +239,12 @@ function _hosting_add_block($module, $delta, $theme, $status, $weight, $region, 
 function hosting_block($op = 'list', $delta = 0, $edit = array()) {
   switch ($op) {
     case 'list' :
-      $blocks['hosting_summary'] = array('info' => t('Hosting summary'));
-      $blocks['hosting_queues'] = array('info' => t('Hosting queues'));
-      $blocks['hosting_queues_summary'] = array('info' => t('Hosting queues summary'));
+      $blocks['hosting_summary'] = array('info' => t('Hosting summary'), 
+            'enabled' => 1, 'region' => 'left', 'weight' => 10);
+      $blocks['hosting_queues'] = array('info' => t('Hosting queues'),
+            'enabled' => 1, 'region' => 'right', 'weight' => 0);
+      $blocks['hosting_queues_summary'] = array('info' => t('Hosting queues summary'),
+            'enabled' => 1, 'region' => 'right', 'weight' => 1);
       return $blocks;
     case 'view' : 
       switch ($delta) {
