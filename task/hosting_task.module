@@ -214,7 +214,7 @@ function hosting_available_tasks($node) {
       $options['restore']['description'] = t('Restore this site to a previous backup. A new backup will be created before this is attempted.');
       $options['restore']['weight'] = 7;
 
-      $options['synch']['title'] = t('Regenerate');
+      $options['synch']['title'] = t('Synchronize');
       $options['synch']['description'] = t('Regenerate all configuration files on server.');
       $options['synch']['weight'] =  9;
 
@@ -233,6 +233,10 @@ function hosting_available_tasks($node) {
     }
   }
   elseif (($node->type == 'platform') & !hosting_task_outstanding($node->nid, 'verify')) {
+    $options['synch']['title'] = t('Synchronize');
+    $options['synch']['description'] = t('Regenerate all configuration files on server.');
+    $options['synch']['weight'] =  9;
+
     $options['verify']['title'] = t('Verify');
     $options['verify']['description'] = t('Verify that the platform is correctly installed and working.');
     $options['verify']['weight'] = 10;
