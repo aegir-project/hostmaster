@@ -325,7 +325,7 @@ function hosting_task_load($node) {
 function hosting_task_retry_form($nid) {
   $form['#prefix'] = '<div class="hosting-task-retry">';
   $form['task'] = array(
-    '#type' => 'value',
+    '#type' => 'hidden',
     '#value' => $nid
   );
   $form['retry'] = array(
