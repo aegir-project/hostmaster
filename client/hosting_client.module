@@ -155,8 +155,8 @@ function hosting_client_validate(&$node) {
     }
   }
   if (!$node->nid) {
-    if ($node->email != $node->email) {
-      form_set_error('email', t("Email addresses do not match"));
+    if ($node->email != $node->email_confirm) {
+      form_set_error('email_confirm', t("Email addresses do not match"));
     }
   }
   if (!valid_email_address($node->email)) {
@@ -239,7 +239,7 @@ function hosting_client_view($node, $teaser = FALSE, $page = FALSE) {
       '#value' => $node->organization,
     );
   }
-  if ( $node->name ) {
+  if ( $node->client_name ) {
     $node->content['name'] = array(
       '#type' => 'item',
       '#title' => t('Contact name'),
@@ -253,13 +253,14 @@ function hosting_client_view($node, $teaser = FALSE, $page = FALSE) {
       '#value' => $node->email,
     );
   }
-  
-  $node->content['sites_view'] = array(
-    '#type' => 'item',
-    '#title' => t("Sites"),
-    '#value' => hosting_site_list("client", $node->nid), 
-    '#weight' => 10
-  );
+  if ($page) {
+    $node->content['sites_view'] = array(
+      '#type' => 'item',
+      '#title' => t("Sites"),
+      '#value' => hosting_site_list("client", $node->nid), 
+      '#weight' => 10
+    );
+  }
   return $node;
 }
 
