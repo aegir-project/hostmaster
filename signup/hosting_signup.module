@@ -40,10 +40,32 @@ function hosting_signup_menu($may_cache) {
     'access' => TRUE
   );
 
+  $items[] = array(
+    'path' => 'hosting/signup/form_populate',
+    'callback' =>'_hosting_signup_form_populate',
+    'type' => MENU_CALLBACK,
+    'access' => TRUE,
+  );
+
+
   return $items; 
+}
+/**
+ * populate hosting site node form element with specified arguments
+ */
+function _hosting_signup_form_populate($element, $value, $value2 = null) {
+  $path = variable_get('hosting_signup_master_url', 'http://' . $_SERVER['HTTP_HOST']);
+  $path .= "/hosting/hosting_site_form_populate/$element/$value";
+  if ($value2) {
+    $path .= "/$value2";
+  }
+  $request = drupal_http_request($path);
+  print $request->data;
+  exit();
 }
 
 function hosting_signup_form() {
+  drupal_add_js(drupal_get_path('module', 'hosting_signup') . '/hosting_signup_form.js');
   $result = drupal_http_request('http://master.dev/hosting/signup/get_form');
   $form = unserialize($result->data);
   return $form;
@@ -56,10 +78,10 @@ function hosting_signup_get_form($server_key, $app_key) {
 
   $node = new stdClass();
   $form['site'] = drupal_retrieve_form('hosting_site_form',$node);
-  $form['site']['platform'] = array(
+/*  $form['site']['platform'] = array(
     '#type' => 'hidden',
     '#value' => HOSTING_DEFAULT_PLATFORM,
-  );
+  );*/
   unset($form['site']['client']);
 
   $node = new stdClass();
