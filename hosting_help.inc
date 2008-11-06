@@ -49,10 +49,6 @@ function hosting_help($section) {
       $output .= "</dl>";
       return $output;
 
-    case 'admin/settings/provision' :
-      $output = t("These settings will also change the settings of the platform, database server and web server that this site is running on.");
-    
-      return $output;
   }
 }
 

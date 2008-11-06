@@ -8,11 +8,13 @@ define('HOSTING_ALIAS_AUTOMATIC', 1);
  */
 function hosting_alias_menu($may_cache) {
   $items[] = array(
-    'path' => 'admin/settings/hosting_alias',
+    'path' => 'admin/hosting/aliases',
     'title' => t('Site aliases'),
     'description' => t('Configure aliases for hosted sites'),
     'callback' => 'drupal_get_form',
     'callback arguments' => array('hosting_alias_settings'),
+    'access' => user_access('administer hosting aliases'),
+    'type' => MENU_LOCAL_TASK
   );
   return $items;
 }
@@ -165,7 +167,7 @@ function hosting_alias_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
  * Implementation of hook_perm
  */
 function hosting_alias_perm() {
-  return array('create site aliases');
+  return array('create site aliases', 'administer hosting aliases');
 }
 
 /**

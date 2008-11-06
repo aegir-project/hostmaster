@@ -464,46 +464,29 @@ function hosting_wizard_hosting_import() {
 
   $sites = hosting_get_sites_by_status(HOSTING_OWN_PLATFORM, HOSTING_SITE_IMPORTED);
   if ($task->task_status & PROVISION_SUCCESS) {
-    $form['intro']['#value'] = t('<p>Below is a list of sites which were imported into the Hosting framework. Each of these pre-existing sites is now being managed
-      by Hosting, and has the same capabilities of sites that were created using the framework.</p>');
-    $rows = array();
-    foreach ($sites as $site) {
-      $own = '';
-      if (($site->title == 'default') && ($site->platform == HOSTING_OWN_PLATFORM)) {
-        $own = '*';
-      }
-      $rows[] = array( _hosting_node_link($site->nid) . $own, _hosting_node_link($site->platform), hosting_format_interval($site->created));
+    if ($list = hosting_site_list('platform', HOSTING_OWN_PLATFORM)) {
+      $form['intro']['#value'] = t('<p>Below is a list of sites which were imported into the Hosting framework. Each of these pre-existing sites is now being managed
+        by Hosting, and has the same capabilities of sites that were created using the framework.</p>');
+      $form['list']['#value'] = $list;
     }
-    $form['sites'] = array('#type' => 'item', '#title' => t('Imported sites'), '#value' => theme('table', array(t('Site'), t('Platform'), t('Imported')), $rows));
-    $form['own']['#value'] = t('* This is the site node for the Hosting site. This is the site that manages all the other sites, and should be regularly backed up.');
+    else {
+      $form['intro']['#value'] = t('<p>Hosting has not found any sites to import. You may try again by requesting an import task on any platform.</p>');
+    }
   }
   else {
-    $form['no_sites']['#value'] = t('<p>Provision has not imported any sites yet. You may wait a few moments and reload this page, or click on the button to complete your installation.</p>');
+    $form['no_sites']['#value'] = t('<p>There was an error importing sites. Do you want to retry?');
   }
   return hosting_wizard_form('hosting/import', $form);
 }
 
 function hosting_wizard_hosting_features() {
-  $features = module_invoke_all('hosting_features');
-  $form['features']['#tree'] = TRUE;
-  foreach ($features as $feature => $info) {
-    $form['features'][$feature] = array(
-      '#type' => 'checkbox',
-      '#title' => $info['title'],
-      '#description' => $info['description'],
-      '#default_value' => hosting_feature($feature),
-      '#required' => hosting_feature($feature) == HOSTING_FEATURE_REQUIRED,
-    );
-
-  }
+  $form = drupal_retrieve_form('hosting_features_form');
+  unset($form['buttons']);
   return hosting_wizard_form('hosting/features', $form);
 }
 
 function hosting_wizard_hosting_features_submit($form_id, $values) {
-  foreach ($values['features'] as $feature => $value) {
-    variable_set('hosting_feature_' . $feature, $value);
-  }
-  menu_rebuild();
+  hosting_features_form_submit($form_id, $values);
 }
 
 /**

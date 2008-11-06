@@ -30,11 +30,12 @@ function hosting_db_server_node_info() {
   return $types;
 }
 
-function hosting_db_server_hosting_features() {
+function hosting_db_server_hosting_feature() {
   $features['db_server'] = array(
-    'title' => t('Additional database servers (experimental)'),
-    'description' => t('Enable this feature if you need to install sites using database servers other than the server your hosting site is using. Users with the right permissions will be able to select which database server to install new sites on'),
-    'status' => HOSTING_FEATURE_DISABLED);
+    'title' => t('Database servers (experimental)'),
+    'description' => t('Configure and maintain multiple database servers.'),
+    'status' => HOSTING_FEATURE_DISABLED,
+    'node' => 'db_server');
   return $features;
 
 }

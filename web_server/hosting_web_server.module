@@ -13,11 +13,13 @@ function hosting_web_server_node_info() {
   return $types;
 }
 
-function hosting_web_server_hosting_features() {
-  return array('web_server' => array(
-      'title' => t('Manage multiple servers (experimental)'), 
+function hosting_web_server_hosting_feature() {
+  $features['web_server'] = array(
+      'title' => t('Web servers (experimental)'), 
       'description' => t('Allow for creation of multiple web server nodes, and for distributed management of sites.'),
-      'status' => HOSTING_FEATURE_DISABLED));
+      'status' => HOSTING_FEATURE_DISABLED,
+      'node' => 'web_server');
+  return $features;
 }
 
 function hosting_web_server_perm() {

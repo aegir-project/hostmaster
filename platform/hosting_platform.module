@@ -15,12 +15,13 @@ function hosting_platform_node_info() {
   return $types;
 }
 
-function hosting_platform_hosting_features() {
-  return array('platform' => array(
-      'title' => t('Multiple platforms (experimental)'), 
+function hosting_platform_hosting_feature() {
+  $features['platform'] = array(
+      'title' => t('Platforms (experimental)'), 
       'description' => t('Allow for management of multiple platforms, and migration between platforms.'),
-      'status' => HOSTING_FEATURE_DISABLED),
-      );
+      'status' => HOSTING_FEATURE_DISABLED,
+       'node' => 'platform');
+  return $features;
 }
 
 

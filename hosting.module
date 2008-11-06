@@ -23,15 +23,35 @@ function hosting_menu($may_cache = true) {
   hosting_wizard_menu($may_cache, $items);
   if ($may_cache) {
     $items[] = array(
-      'path' => 'admin/settings/queues',
-      'title' => t('Hosting queues'),
+      'path' => 'admin/hosting',
+      'title' => t('Hosting'),
+      'description' => t('Configure and manage the hosting system'),
+      'callback' => 'drupal_get_form',
+      'callback arguments' => array('hosting_features_form'),
+      'access' => user_access('administer hosting'),
+      'type' => MENU_NORMAL_ITEM
+    );
+
+    $items[] = array(
+      'path' => 'admin/hosting/features',
+      'title' => t('Features'),
+      'description' => t('Configure the exposed functionality of the Hosting system'),
+      'weight' => -100,
+      'callback' => 'drupal_get_form',
+      'callback arguments' => array('hosting_features_form'),
+      'type' => MENU_DEFAULT_LOCAL_TASK,
+      'access' => user_access('administer hosting features'),
+    );
+
+    $items[] = array(
+      'path' => 'admin/hosting/queues',
+      'title' => t('Queues'),
       'description' => t('Configure the frequency that cron, backup and task events are process'),
       'callback' => 'drupal_get_form',
       'callback arguments' => array('hosting_queues_configure'),
-      'type' => MENU_NORMAL_ITEM,
+      'type' => MENU_LOCAL_TASK,
       'access' => user_access('administer hosting queues'),
     );
-
     // Kludge : Replace node/add page to hide functionality.
     $items[] = array('path' => 'node/add',
       'title' => t('Create content'),
@@ -42,13 +62,13 @@ function hosting_menu($may_cache = true) {
     // Disable unsupported features.
     $features = module_invoke_all('hosting_features');
     $types = node_get_types();
-    foreach ($types as $type) {
-      if (isset($features[$type->type])) {
-        $type_url_str = str_replace('_', '-', $type->type);
+    foreach ($features as $type => $feature) {
+      if (isset($feature['node'])) {
+        $type_url_str = str_replace('_', '-', $feature['node']);
         $items[] = array(
           'path' => 'node/add/'. $type_url_str,
-          'title' => drupal_ucfirst($type->name),
-          'access' => (($user->uid == 1) || node_access('create', $type->type)) && (hosting_feature($type->type) !== HOSTING_FEATURE_DISABLED),
+          'title' => drupal_ucfirst($types[$feature['node']]->name),
+          'access' => (($user->uid == 1) || node_access('create', $feature['node'])) && (hosting_feature($type) !== HOSTING_FEATURE_DISABLED),
         ); 
       }
     }
@@ -131,7 +151,7 @@ function hosting_form_alter($form_id, &$form) {
  * Implementation of hook_perm
  */
 function hosting_perm() {
-  return array('access hosting wizard', 'administer hosting queues');
+  return array('access hosting wizard', 'administer hosting queues', 'administer hosting features', 'administer hosting');
 }
 
 /**
@@ -517,4 +537,65 @@ function hosting_set_breadcrumb($node) {
 function hosting_log($type, $message, $severity = 0) {
   if (DRUSH_VERBOSE) print "$message\n";
   if ($type) watchdog($type, $message, $severity);
+}
+
+function hosting_features_form() {
+  $form['features'] = array(
+    '#type' => 'item',
+    '#title' => t('Optional system features'),
+    '#value' => t('You may choose any of the additional system features from the list below.'),
+    '#description' => t('Features marked experimental have not been completed to a satisfactory level to be considered production ready, so use at your own risk.'),
+   );
+
+  $features = module_invoke_all('hosting_features');
+#  $features = hosting_get_features(TRUE);
+  $form['features']['#tree'] = TRUE;
+  foreach ($features as $feature => $info) {
+    $form['features'][$feature] = array(
+      '#type' => 'checkbox',
+      '#title' => $info['title'],
+      '#description' => $info['description'],
+      '#default_value' => hosting_feature($feature),
+      '#required' => hosting_feature($feature) == HOSTING_FEATURE_REQUIRED,
+    );
+
+  }
+
+  return system_settings_form($form);
+}
+
+function hosting_features_form_submit($form_id, $values) {
+  foreach ($values['features'] as $feature => $value) {
+    variable_set('hosting_feature_' . $feature, $value);
+  }
+  menu_rebuild();
+}
+
+function hosting_get_features($refresh = FALSE) {
+  $cache = cache_get('hosting_features');
+
+  if (!$cache->data || $refresh) {
+    ## include any optional hosting.feature.*.inc files
+    $files = drupal_system_listing("hosting\.feature\.[a-zA-Z_]*\.inc$", "modules");
+    if (sizeof($files)) {
+      foreach ($files as $name => $info) {
+        include_once($info->filename);
+      }
+    }
+    $functions = get_defined_functions();
+    foreach ($functions['user'] as $function) {
+      if (preg_match('/_hosting_feature$/', $function)) {
+        $hooks[] = $function;
+      }
+    }
+    $features = array();
+    foreach ($hooks as $func) {
+      $features = array_merge($features, $func());
+    }
+    cache_set('hosting_features', 'cache', serialize($features));
+    return $features;
+  }
+  else {
+    return unserialize($cache->data);
+  }
 }

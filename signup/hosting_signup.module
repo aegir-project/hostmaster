@@ -32,6 +32,10 @@ function hosting_signup_settings() {
   return system_settings_form($form);
 }
 
+function hosting_signup_perm() {
+  return array('administer hosting signup form');
+}
+
 function hosting_signup_menu($may_cache) {
   $items[] = array(
     'path' => 'hosting/signup',
@@ -42,12 +46,13 @@ function hosting_signup_menu($may_cache) {
     'access' => TRUE
   );
   $items[] = array(
-    'path' => 'admin/settings/hosting_signup',
-    'title' => t('Hosting signup form'),
+    'path' => 'admin/hosting/signup',
+    'title' => t('Signup form'),
     'description' => t('Configure the behaviour of the simplified hosting signup form'),
     'callback' => 'drupal_get_form',
     'callback arguments' => array('hosting_signup_settings'),
-    'access' => TRUE
+    'access' => user_access('administer hosting signup form'),
+    'type' => MENU_LOCAL_TASK,
   );
   $items[] = array(
     'path' => 'hosting/signup/get_form',
