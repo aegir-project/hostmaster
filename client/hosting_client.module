@@ -249,4 +249,35 @@ function hosting_client_view($node, $teaser = FALSE, $page = FALSE) {
   return $node;
 }
 
+/**
+ * Helper function to generate new client node during import
+ *
+ * @param email
+ *   Client email address - Required
+ * @param first_name
+ *   Client first name - Optional
+ * @param last_name
+ *   Client last name - Optional
+ * @param existing
+ *   Return an existing client registered for this email address, defaults to FALSE
+ * @return
+ *   The nid of the generated client
+ */
+function hosting_import_client($email, $first_name = '', $last_name = '', $organization = '', $existing = FALSE) {
+  if (!($client = hosting_get_client($email))) {
+    #todo : generate user account for client
+    $client = new stdClass();
+    $client->type = 'client';
+    $client->email = $email;
+    $client->first_name = $first_name;
+    $client->last_name = $last_name;
+    $client->organization = $organization;
+    $client->status = 1;
+    node_save($client);
+    return $client->nid;
+  } elseif ($existing) {
+    return $client->nid;
+  }
 
+  return FALSE;
+} 

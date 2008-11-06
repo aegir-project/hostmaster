@@ -91,20 +91,7 @@ function hosting_import_site($url, $data, $status, $platform = HOSTING_DEFAULT_P
   global $user;
 
   if ($data['client_email']) {
-    if (!($client = hosting_get_client($data['client_email']))) {
-      #todo : generate user account for client
-      $client = new stdClass();
-      $client->type = 'client';
-      $client->email = $data['client_email'];
-      $client->first_name = $data['client_first_name'];
-      $client->last_name = $data['client_last_name'];    
-      $client->organization = $data['client_organization'];
-      $client->status = 1;
-      node_save($client);
-    }
-  }
-  else {
-    $client = node_load(HOSTING_DEFAULT_CLIENT);
+    $client = hosting_import_client($data['client_email'], $data['client_first_name'], $data['client_last_name'], $data['client_organization'], TRUE);
   }
 
   $site = new stdClass();
@@ -113,7 +100,7 @@ function hosting_import_site($url, $data, $status, $platform = HOSTING_DEFAULT_P
   $site->title = $url;
   $site->status = 1;
   $site->platform = $platform;
-  $site->client = $client->nid;
+  $site->client = ($client) ? $client : HOSTING_DEFAULT_CLIENT;
   $db_server = hosting_get_db_server($data['db_id']);
   $site->db_server = ($db_server) ? $db_server->nid : HOSTING_DEFAULT_DB_SERVER;
   $site->language = $data['language'] ? $data['language'] : 'en';

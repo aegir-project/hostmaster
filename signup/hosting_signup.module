@@ -99,7 +99,16 @@ function hosting_signup_form() {
   return $form;
 }
 
-function hosting_signup_get_form($server_key, $post = array()) {
+function hosting_signup_form_submit() {
+  $path = variable_get('hosting_signup_uri', 'http://' . $_SERVER['HTTP_HOST']);
+  $path .= '/xmlrpc.php';
+  $key = variable_get('hosting_signup_server_key', '');
+
+  $form = xmlrpc($path, 'hosting_signup.getForm', $key, $_POST, TRUE);
+  return 'hosting/sites';
+}
+
+function hosting_signup_get_form($server_key, $post = array(), $process = FALSE) {
   if ($server_key != variable_get('hosting_signup_server_key', '')) {
     $form['error'] = array( '#type' => 'item',
       '#value' => t("The signup form has not been correctly configured"),
@@ -108,18 +117,19 @@ function hosting_signup_get_form($server_key, $post = array()) {
   else {
     global $user;
     $old_user = $user;
-    $user = node_load(1);
+    $user = node_load(0);
     $form = drupal_retrieve_form('_hosting_signup_form');
     unset($form['#token']);
     if (sizeof($post)) {
       $form['#post'] = $post;
-      drupal_process_form('_hosting_signup_form', $form);
+      drupal_prepare_form('_hosting_signup_form', $form);
+      if ($process && sizeof($post)) {
+        drupal_prepare_form('_hosting_process_form', $form);
+      }
     }
     $user = $old_user;
   }
   return $form; 
-  #serialize($form);
-  #exit();
 }
 
 function _hosting_signup_form() {
@@ -127,6 +137,7 @@ function _hosting_signup_form() {
   $form['site'] = hosting_site_form($node);
   $form['client'] = hosting_client_form($node);
   unset($form['client']['title']);
+  unset($form['site']['client']);
 
   $form['submit'] = array(
     '#type' => 'submit',
@@ -142,12 +153,12 @@ function _hosting_signup_form_validate($form_id, $values) {
 
   $site = (object) $values;
   $site->type = 'site';
+  $site->client = $client->nid;
   node_validate($site);
 
 } 
 
 function _hosting_signup_form_submit($form_id, $values) {
-  print_r($values); exit();
   $client = (object) $values;
   $client->type = 'client';
   $client->title = '';
