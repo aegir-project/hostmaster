@@ -290,6 +290,7 @@ function hosting_queue_summary_block() {
     $queues = hosting_get_queues();
     $output = '';
     foreach ($queues as $queue => $info) {
+      $disp = array();
       # special case
       if (!$info['enabled']) {
         $disp[] = t('Status: disabled');
