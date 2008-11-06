@@ -91,7 +91,7 @@ function hosting_import_site($url, $data, $status, $platform = HOSTING_DEFAULT_P
   global $user;
 
   if ($data['client_email']) {
-    $client = hosting_import_client($data['client_email'], $data['client_first_name'], $data['client_last_name'], $data['client_organization'], TRUE);
+    $client = hosting_import_client($data['client_email'], $data['client_name'], $data['client_organization'], TRUE);
   }
 
   $site = new stdClass();
@@ -109,7 +109,7 @@ function hosting_import_site($url, $data, $status, $platform = HOSTING_DEFAULT_P
   $site->aliases = $data['aliases'] ? $data['aliases'] : array();
 
   // need to build some error tolerance in here
-  $profile = hosting_get_package_instance($platform, $profile);
+  $profile = hosting_get_package_instance($platform, $data['profile']);
   if (!$profile) {
    $profile = hosting_get_package_instance($platform, 'default');
   }

@@ -334,7 +334,7 @@ function hosting_platform_hosting_post_import($task, $data) {
   if (sizeof($data['site']['sites'])) {
     foreach ($data['site']['sites'] as $url => $info) {
       if (!hosting_site_exists($url)) {
-        hosting_import_site($url, $info, HOSTING_SITE_ENABLED | HOSTING_SITE_INSTALLED | HOSTING_SITE_IMPORTED, $platform);
+        hosting_import_site($url, $info, HOSTING_SITE_ENABLED | HOSTING_SITE_INSTALLED | HOSTING_SITE_IMPORTED, $platform->nid);
       }
     }
   }
