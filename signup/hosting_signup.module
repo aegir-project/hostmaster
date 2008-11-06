@@ -55,11 +55,15 @@ function hosting_signup_get_form($server_key, $app_key) {
   $user = node_load(0);
 
   $node = new stdClass();
-  $form['client'] = drupal_retrieve_form('hosting_client_form',$node);
+  $form['site'] = drupal_retrieve_form('hosting_site_form',$node);
+  $form['site']['platform'] = array(
+    '#type' => 'hidden',
+    '#value' => HOSTING_DEFAULT_PLATFORM,
+  );
+  unset($form['site']['client']);
 
   $node = new stdClass();
-  $form['site'] = drupal_retrieve_form('hosting_site_form',$node);
-  unset($form['site']['client']);
+  $form['client'] = drupal_retrieve_form('hosting_client_form',$node);
   print serialize($form);
   $user = $old_user;
   exit();
