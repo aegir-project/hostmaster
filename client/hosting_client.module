@@ -110,7 +110,7 @@ function hosting_client_form(&$node) {
     '#required' => TRUE,
     '#size' => 40,
     '#default_value' => $node->email,
-    '#maxlength' => 255,
+    '#maxlength' => 100,
   ); 
 
   if (!$node->nid) {
@@ -119,7 +119,7 @@ function hosting_client_form(&$node) {
       '#title' => t('Confirm Email address'),
       '#required' => TRUE,
       '#size' => 40,
-      '#maxlength' => 255,
+      '#maxlength' => 100,
     ); 
   }
 
@@ -128,7 +128,7 @@ function hosting_client_form(&$node) {
     '#title' => t('Contact name'),
     '#size' => 40,
     '#default_value' => $node->client_name,
-    '#maxlength' => 255,
+    '#maxlength' => 50,
   );
 
   $form['organization'] = array(
@@ -136,7 +136,7 @@ function hosting_client_form(&$node) {
     '#title' => t('Organization'),
     '#size' => 40,
     '#default_value' => $node->organization,
-    '#maxlength' => 255,
+    '#maxlength' => 100,
   );
 
   
@@ -177,6 +177,7 @@ function hosting_client_set_title(&$node) {
   else {
     $node->title = $node->email;
   }
+  $node->title = filter_xss($node->title);
   db_query("UPDATE {node} SET title='%s' WHERE nid=%d", $node->title, $node->nid);
   db_query("UPDATE {node_revisions} SET title='%s' WHERE vid=%d", $node->title, $node->vid);
 }
@@ -236,21 +237,21 @@ function hosting_client_view($node, $teaser = FALSE, $page = FALSE) {
     $node->content['organization'] = array(
       '#type' => 'item',
       '#title' => t('Organization'),
-      '#value' => $node->organization,
+      '#value' => filter_xss($node->organization),
     );
   }
   if ( $node->client_name ) {
     $node->content['name'] = array(
       '#type' => 'item',
       '#title' => t('Contact name'),
-      '#value' => $node->client_name,
+      '#value' => filter_xss($node->client_name),
     );
   }
   if ($node->name || $node->email) {
     $node->content['email'] = array(
       '#type' => 'item',
       '#title' => t('Email'),
-      '#value' => $node->email,
+      '#value' => filter_xss($node->email),
     );
   }
   if ($page) {

@@ -240,33 +240,33 @@ function hosting_web_server_view($node, $teaser = FALSE, $page = FALSE) {
     $node->content['ip_address'] = array(
       '#type' => 'item',
       '#title' => t('IP address'),
-      '#value' => $node->ip_address,
+      '#value' => filter_xss($node->ip_address),
     );    
   }
   $node->content['script_user'] = array(
     '#type' => 'item',
     '#title' => t('Script user'),
-    '#value' => $node->script_user,
+    '#value' => filter_xss($node->script_user),
   );
   $node->content['web_group'] = array(
     '#type' => 'item',
     '#title' => t('Web server group'),
-    '#value' => $node->web_group,
+    '#value' => filter_xss($node->web_group),
   );
   $node->content['config_path'] = array(
     '#type' => 'item',
     '#title' => t('Configuration path'),
-    '#value' => $node->config_path,
+    '#value' => filter_xss($node->config_path),
   );
   $node->content['backup_path'] = array(
     '#type' => 'item',
     '#title' => t('Backup path'),
-    '#value' => $node->backup_path,
+    '#value' => filter_xss($node->backup_path),
   );
    $node->content['restart_cmd'] = array(
     '#type' => 'item',
     '#title' => t('Restart command'),
-    '#value' => $node->restart_cmd,
+    '#value' => filter_xss($node->restart_cmd),
   );
   
   return $node;

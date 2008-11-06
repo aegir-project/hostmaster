@@ -213,7 +213,7 @@ function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
   $node->content['info']['publish_path'] = array(
     '#type' => 'item',
     '#title' => t('Publish path'),
-    '#value' => $node->publish_path,
+    '#value' => filter_xss($node->publish_path),
     '#weight' => -8
   );
  

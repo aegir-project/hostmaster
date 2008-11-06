@@ -109,7 +109,7 @@ function hosting_signup_form_submit($form_id, $values) {
   $values['form_id'] =  '_hosting_signup_form';
 
   $return = xmlrpc($path, 'hosting_signup.submitForm', $key, $values);
-  $path = sprintf("hosting/signup/thanks/%s/%s/%s", $return['site']->title, $return['client']->url, $return['client']->client_name);
+  $path = sprintf("hosting/signup/thanks/%s/%s/%s", $return['site']['title'], $return['client']['email'], $return['client']['client_name']);
   drupal_goto($path);
 }
 
@@ -196,9 +196,7 @@ function _hosting_signup_form_submit($form_id, $values) {
 }
 
 function hosting_signup_thanks($url = '', $email = '', $name = '') {
-  return <<<EOF
- <h3>Thank you $name</h3>
- Your site ($url) has been requested, and the moment it is ready you will receive a mail at $email
- with instructions on how to log into it.
-EOF;
+  return t("<h3>Thank you @name</h3>
+    Your site (@url) has been requested, and the moment it is ready you will receive a mail at @email
+ with instructions on how to log into it.", array("@name" => $name, "@url" => $url, "@email" => $email));
 } 

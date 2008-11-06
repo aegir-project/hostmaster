@@ -166,13 +166,13 @@ function hosting_generate_command($system, $command, $ref, $args = array(), $opt
 
   $arg_str = '';
   foreach ($args as $key => $value) {
-    $arg_str .= ' ' . escapeshellarg($value);
+    $arg_str .= ' ' . escapeshellarg(filter_xss($value));
   }
 
   $option_str = '';
   foreach ($options as $key => $value) {
     if ($value !== TRUE) {
-      $option_str .= " --$key=" . escapeshellarg($value);
+      $option_str .= " --$key=" . escapeshellarg(filter_xss($value));
     }
     else {
       $option_str .= " --$key";

@@ -112,7 +112,7 @@ function hosting_db_server_form(&$node) {
     '#description' => t('The user that will be used to create users and databases for new sites.'),
     '#size' => 40,
     '#default_value' => $node->db_user,
-    '#maxlength' => 255,
+    '#maxlength' => 64,
     '#weight' => 5,
   );
   if ($node->db_passwd) {
@@ -203,7 +203,7 @@ function hosting_db_server_view($node, $teaser = FALSE, $page = FALSE) {
   $node->content['db_user'] = array(
     '#type' => 'item',
     '#title' => t('Database user'),
-    '#value' => $node->db_user,
+    '#value' => filter_xss($node->db_user),
   );
 
   $node->content['sites_view'] = array(

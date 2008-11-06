@@ -277,12 +277,12 @@ function hosting_package_view($node, $teaser = FALSE, $page = FALSE) {
   $node->content['package_type'] = array(
     '#type' => 'item',
     '#title' => t('Package Type'),
-    '#value' => $node->package_type,
+    '#value' => filter_xss($node->package_type),
   );
   $node->content['short_name'] = array(
     '#type' => 'item',
     '#title' => t('Project name'),
-    '#value' => $node->short_name,
+    '#value' => filter_xss($node->short_name),
   );
 
   if ($node->package_type == 'profile') {
@@ -475,9 +475,9 @@ function hosting_package_list($rid, $type = null) {
   $rows = array();
   while ($package = db_fetch_object($result)) {
     $row = array();
-    $row[] =  array('data' => l($package->short_name, 'node/' . $package->package), 'class'=> 'hosting-status');
-    $row[] =  l($package->version, 'node/' . $package->release);
-    $row[] = $package->package_type;
+    $row[] =  array('data' => l(filter_xss($package->short_name), 'node/' . $package->package), 'class'=> 'hosting-status');
+    $row[] =  l(filter_xss($package->version), 'node/' . $package->release);
+    $row[] = filter_xss($package->package_type);
     $rows[] = array('data' => $row, 'class' => 'hosting-info');
   }
   
