@@ -8,16 +8,10 @@ function hosting_signup_xmlrpc() {
     t("Retrieve the form to build")
     ),
      array(
-       'hosting_signup.validateSite',
-       'hosting_singup_validate_site',
-       array('boolean', 'string', 'struct'),
-       t('Validate a new site')
-     ),
-     array(
-      'hosting_signup.submitSite',
-      'hosting_signup_submit_site',
-      array('integer', 'string', 'struct'),
-      t('Create a new site'),
+      'hosting_signup.submitForm',
+      'hosting_signup_submit_form',
+      array('struct', 'string', 'struct'),
+      t('Submit your form'),
     ),
   );
 }
@@ -71,9 +65,17 @@ function hosting_signup_menu($may_cache) {
     'access' => TRUE,
   );
 
+  $items[] = array(
+    'path' => 'hosting/signup/thanks',
+    'callback' =>'hosting_signup_thanks',
+    'type' => MENU_CALLBACK,
+    'access' => TRUE,
+  );
+
 
   return $items; 
 }
+
 /**
  * populate hosting site node form element with specified arguments
  */
@@ -96,19 +98,22 @@ function hosting_signup_form() {
   drupal_add_js(drupal_get_path('module', 'hosting_signup') . '/hosting_signup_form.js');
   $form = xmlrpc($path, 'hosting_signup.getForm', $key, $_POST);
   $form['#action'] = '/hosting/signup';
+  $form['#submit'] = array('hosting_signup_form_submit' => array());
   return $form;
 }
 
-function hosting_signup_form_submit() {
+function hosting_signup_form_submit($form_id, $values) {
   $path = variable_get('hosting_signup_uri', 'http://' . $_SERVER['HTTP_HOST']);
   $path .= '/xmlrpc.php';
   $key = variable_get('hosting_signup_server_key', '');
+  $values['form_id'] =  '_hosting_signup_form';
 
-  $form = xmlrpc($path, 'hosting_signup.getForm', $key, $_POST, TRUE);
-  return 'hosting/sites';
+  $return = xmlrpc($path, 'hosting_signup.submitForm', $key, $values);
+  $path = sprintf("hosting/signup/thanks/%s/%s/%s", $return['site']->title, $return['client']->url, $return['client']->client_name);
+  drupal_goto($path);
 }
 
-function hosting_signup_get_form($server_key, $post = array(), $process = FALSE) {
+function hosting_signup_get_form($server_key, $post = array()) {
   if ($server_key != variable_get('hosting_signup_server_key', '')) {
     $form['error'] = array( '#type' => 'item',
       '#value' => t("The signup form has not been correctly configured"),
@@ -123,21 +128,38 @@ function hosting_signup_get_form($server_key, $post = array(), $process = FALSE)
     if (sizeof($post)) {
       $form['#post'] = $post;
       drupal_prepare_form('_hosting_signup_form', $form);
-      if ($process && sizeof($post)) {
-        drupal_prepare_form('_hosting_process_form', $form);
-      }
     }
     $user = $old_user;
   }
   return $form; 
 }
 
+// provide a simple non global way to store the created sites
+function hosting_signup_singleton($data = null) {
+  static $static = null;
+  if ($data) {
+    $static = $data;
+  }
+  return $static;
+}
+
+function hosting_signup_submit_form($server_key, $values = array()) {
+  $form = hosting_signup_get_form($server_key, $values);
+  drupal_process_form('_hosting_process_form', $form);
+  return hosting_signup_singleton();
+}
+
 function _hosting_signup_form() {
   $node = new stdClass();
   $form['site'] = hosting_site_form($node);
+  unset($form['site']['client']);
+/*  $form['site']['platform'] = array(
+    '#type' => 'hidden',
+    '#value' => HOSTING_DEFAULT_PLATFORM
+  );*/
+
   $form['client'] = hosting_client_form($node);
   unset($form['client']['title']);
-  unset($form['site']['client']);
 
   $form['submit'] = array(
     '#type' => 'submit',
@@ -149,11 +171,11 @@ function _hosting_signup_form() {
 function _hosting_signup_form_validate($form_id, $values) {
   $client = (object) $values;
   $client->type = 'client';
+  $client->title = '';
   node_validate($client);
 
   $site = (object) $values;
   $site->type = 'site';
-  $site->client = $client->nid;
   node_validate($site);
 
 } 
@@ -162,43 +184,21 @@ function _hosting_signup_form_submit($form_id, $values) {
   $client = (object) $values;
   $client->type = 'client';
   $client->title = '';
+  $client->status = 1;
   node_save($client);
 
   $site = (object) $values;
   $site->type = 'site';
+  $site->status = 1;
+  $site->client = $client->nid;
   node_save($site);
+  hosting_signup_singleton(array('client' => $client, 'site' => $site));
 }
 
-function hosting_signup_submit_site($username, $password, $form_values) {
-  $node = new stdClass();
-  $node->type = 'site';
-  $node_options = variable_get('node_options_'. $type_name, array('status'));
-  foreach ($node_options as $node_option) {
-    $node->$node_option = 1;
-  }
-  foreach ($form_values as $key => $item) {
-    $node->$key = $item;
-  }
-
-  $return =  FALSE;
-
-  node_validate($node);
-  $error = form_get_errors();
-  if (!$error) {
-    // Prepare the node for save and allow modules make changes
-    $node = node_submit($node);
-    // Save the node
-    if ($node->nid) {
-      if (node_access('update', $node)) {
-        node_save($node);
-      }
-    }
-    else {
-      if (node_access('create', $node)) {
-        node_save($node);
-      }
-    }
-  }
-  return $node->nid;
-}
-
+function hosting_signup_thanks($url = '', $email = '', $name = '') {
+  return <<<EOF
+ <h3>Thank you $name</h3>
+ Your site ($url) has been requested, and the moment it is ready you will receive a mail at $email
+ with instructions on how to log into it.
+EOF;
+} 
