@@ -115,7 +115,19 @@ function hosting_platform_form(&$node) {
   else {
     $form['web_server'] = array('#type' => 'hidden', '#value' => key($servers));
   }
-  
+
+  if ($node->nid != HOSTING_DEFAULT_PLATFORM) {
+    $form['default_platform'] = array(
+      '#type' => 'checkbox',
+      '#return_value' => 1,
+      '#title' => t('Make default platform for new sites'),
+    );
+  } else {
+    $form['default_platform'] = array(
+      '#type' => 'value', 
+      '#value' => 1
+    );
+  }
   return $form;
 }
 
@@ -125,6 +137,9 @@ function hosting_platform_form(&$node) {
  * Implementation of hook_insert().
  */
 function hosting_platform_insert($node) {
+  if ($node->default_platform == 1) {
+    variable_set('hosting_default_platform', $node->nid);
+  }
   hosting_add_task($node->nid, 'synch');
   hosting_add_task($node->nid, 'verify');
   hosting_add_task($node->nid, 'import');
@@ -144,6 +159,9 @@ function hosting_platform_update($node) {
     hosting_platform_insert($node);
   }
   else {
+    if ($node->default_platform == 1) {
+      variable_set('hosting_default_platform', $node->nid);
+    }
     db_query("UPDATE {hosting_platform} SET publish_path = '%s', web_server = %d, release_id = %d, verified = %d WHERE nid=%d",
               $node->publish_path, $node->web_server, $node->release_id, $node->verified, $node->nid);
   }
@@ -172,9 +190,11 @@ function hosting_platform_load($node) {
  * Implementation of hook_view().
  */
 function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
-  $node->content['#theme'] = 'hosting_platform_view';
-
-  $node->content['verified'] = array(
+  $node->content['info'] = array(
+    '#prefix' => '<div id="hosting-platform-info">',
+    '#suffix' => '</div>'
+  );
+  $node->content['info']['verified'] = array(
     '#type' => 'item',
     '#title' => t('Verified'),
     '#value' => hosting_format_interval($node->verified),
@@ -182,7 +202,7 @@ function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
   );
 
   if ($node->release_id) {
-    $node->content['release'] = array(
+    $node->content['info']['release'] = array(
       '#type' => 'item',
       '#title' => t('Release'),
       '#value' => _hosting_node_link($node->release_id),
@@ -190,19 +210,26 @@ function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
     );
   }
 
-  $node->content['publish_path'] = array(
+  $node->content['info']['publish_path'] = array(
     '#type' => 'item',
     '#title' => t('Publish path'),
     '#value' => $node->publish_path,
     '#weight' => -8
   );
  
-  $node->content['web_server'] = array(
+  $node->content['info']['web_server'] = array(
     '#type' => 'item',
     '#title' => t('Web server'),
     '#value' => _hosting_node_link($node->web_server),
     '#weight' => -7
   );
+
+  if ($node->nid == HOSTING_DEFAULT_PLATFORM) {
+    $node->content['info']['default_platform'] = array(
+      '#type' => 'item',
+      '#description' => t('This platform is the default platform for new sites'),
+    );
+  }
 
   $node->content['sites_view'] = array(
     '#type' => 'item',
@@ -223,17 +250,6 @@ function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
   }
 
   return $node;
-}
-
-function theme_hosting_platform_view(&$content) {
-  $output = '<div id="hosting-platform-info">';
-  $output .= drupal_render($content['verified']);
-  $output .= drupal_render($content['release']);
-  $output .= drupal_render($content['publish_path']);
-  $output .= drupal_render($content['web_server']);
-  $output .= '</div>';
-  $output .= drupal_render($content); // Render the rest of the content
-  return $output;
 }
 
 /**
@@ -318,7 +334,7 @@ function hosting_platform_hosting_post_import($task, $data) {
   if (sizeof($data['site']['sites'])) {
     foreach ($data['site']['sites'] as $url => $info) {
       if (!hosting_site_exists($url)) {
-        hosting_import_site($url, $platform->nid, $info, HOSTING_SITE_ENABLED | HOSTING_SITE_INSTALLED | HOSTING_SITE_IMPORTED);
+        hosting_import_site($url, $info, HOSTING_SITE_ENABLED | HOSTING_SITE_INSTALLED | HOSTING_SITE_IMPORTED, $platform);
       }
     }
   }

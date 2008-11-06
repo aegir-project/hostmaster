@@ -87,7 +87,7 @@ function hosting_get_sites_by_status($platform, $status) {
 /**
  * Helper function to generate new site node during import
  */
-function hosting_import_site($url, $platform, $data, $status) {
+function hosting_import_site($url, $data, $status, $platform = HOSTING_DEFAULT_PLATFORM) {
   global $user;
 
   if ($data['client_email']) {
