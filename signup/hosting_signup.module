@@ -2,10 +2,21 @@
 
 function hosting_signup_xmlrpc() {
   return array(
+    array('hosting_signup.getForm',
+    'hosting_signup_get_form',
+    array('struct', 'string', 'struct'),
+    t("Retrieve the form to build")
+    ),
+     array(
+       'hosting_signup.validateSite',
+       'hosting_singup_validate_site',
+       array('boolean', 'string', 'struct'),
+       t('Validate a new site')
+     ),
      array(
       'hosting_signup.submitSite',
       'hosting_signup_submit_site',
-      array('integer', 'string', 'string', 'struct'),
+      array('integer', 'string', 'struct'),
       t('Create a new site'),
     ),
   );
@@ -79,18 +90,16 @@ function _hosting_signup_form_populate($element, $value, $value2 = null) {
 
 function hosting_signup_form() {
   $path = variable_get('hosting_signup_uri', 'http://' . $_SERVER['HTTP_HOST']);
-  $path .= '/hosting/signup/get_form';
-  if ($key = variable_get('hosting_signup_server_key', '')) {
-    $path .= "/$key";
-  }
+  $path .= '/xmlrpc.php';
+  $key = variable_get('hosting_signup_server_key', '');
 
   drupal_add_js(drupal_get_path('module', 'hosting_signup') . '/hosting_signup_form.js');
-  $result = drupal_http_request($path);
-  $form = unserialize($result->data);
+  $form = xmlrpc($path, 'hosting_signup.getForm', $key, $_POST);
+  $form['#action'] = '/hosting/signup';
   return $form;
 }
 
-function hosting_signup_get_form($server_key) {
+function hosting_signup_get_form($server_key, $post = array()) {
   if ($server_key != variable_get('hosting_signup_server_key', '')) {
     $form['error'] = array( '#type' => 'item',
       '#value' => t("The signup form has not been correctly configured"),
@@ -99,24 +108,55 @@ function hosting_signup_get_form($server_key) {
   else {
     global $user;
     $old_user = $user;
-    $user = node_load(0);
-
-    $node = new stdClass();
-    $form['site'] = drupal_retrieve_form('hosting_site_form',$node);
-  /*  $form['site']['platform'] = array(
-      '#type' => 'hidden',
-      '#value' => HOSTING_DEFAULT_PLATFORM,
-    );*/
-    unset($form['site']['client']);
-
-    $node = new stdClass();
-    $form['client'] = drupal_retrieve_form('hosting_client_form',$node);
+    $user = node_load(1);
+    $form = drupal_retrieve_form('_hosting_signup_form');
+    unset($form['#token']);
+    if (sizeof($post)) {
+      $form['#post'] = $post;
+      drupal_process_form('_hosting_signup_form', $form);
+    }
     $user = $old_user;
   }
-  print serialize($form);
-  exit();
+  return $form; 
+  #serialize($form);
+  #exit();
 }
 
+function _hosting_signup_form() {
+  $node = new stdClass();
+  $form['site'] = hosting_site_form($node);
+  $form['client'] = hosting_client_form($node);
+  unset($form['client']['title']);
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t("Sign up"),
+  );
+  return $form;
+}
+
+function _hosting_signup_form_validate($form_id, $values) {
+  $client = (object) $values;
+  $client->type = 'client';
+  node_validate($client);
+
+  $site = (object) $values;
+  $site->type = 'site';
+  node_validate($site);
+
+} 
+
+function _hosting_signup_form_submit($form_id, $values) {
+  print_r($values); exit();
+  $client = (object) $values;
+  $client->type = 'client';
+  $client->title = '';
+  node_save($client);
+
+  $site = (object) $values;
+  $site->type = 'site';
+  node_save($site);
+}
 
 function hosting_signup_submit_site($username, $password, $form_values) {
   $node = new stdClass();
