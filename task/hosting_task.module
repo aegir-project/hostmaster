@@ -543,7 +543,12 @@ function hosting_task_status($filter_by, $filter_value, $type = 'install') {
 }
 
 function hosting_task_status_output($filter_by, $filter_value, $type = 'install') {
-  return join(', ', _hosting_parse_error_code(hosting_task_status($filter_by, $filter_value, $type)));
+  $status = hosting_task_status($filter_by, $filter_value, $type);
+  if (is_int($status)) {
+    return join(', ', _hosting_parse_error_code($status));
+  } else {
+    return $status; # should be NULL
+  }
 }
 
 /**
