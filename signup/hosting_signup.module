@@ -1,0 +1,101 @@
+<?php
+
+function hosting_signup_xmlrpc() {
+  return array(
+     array(
+      'hosting_signup.submitSite',
+      'hosting_signup_submit_site',
+      array('integer', 'string', 'string', 'struct'),
+      t('Create a new site'),
+    ),
+   
+
+  );
+}
+
+function hosting_signup_settings() {
+  $form['server_key'] = array(
+    '#type' => 'textfield',
+    '#default_value' => 123,
+  );
+
+  return $form;
+}
+
+function hosting_signup_menu($may_cache) {
+  $items[] = array(
+    'path' => 'hosting/signup',
+    'title' => t('Sign up for a site'),
+    'description' => t('Create your own hosted site'),
+    'callback' => 'drupal_get_form',
+    'callback arguments' => array('hosting_signup_form'),
+    'access' => TRUE
+  );
+  $items[] = array(
+    'path' => 'hosting/signup/get_form',
+    'title' => t('Sign up for a site'),
+    'description' => t('Create your own hosted site'),
+    'callback' => 'hosting_signup_get_form',
+    'type' => MENU_CALLBACK,
+    'access' => TRUE
+  );
+
+  return $items; 
+}
+
+function hosting_signup_form() {
+  $result = drupal_http_request('http://master.dev/hosting/signup/get_form');
+  $form = unserialize($result->data);
+  return $form;
+}
+
+function hosting_signup_get_form($server_key, $app_key) {
+  global $user;
+  $old_user = $user;
+  $user = node_load(0);
+
+  $node = new stdClass();
+  $form['client'] = drupal_retrieve_form('hosting_client_form',$node);
+
+  $node = new stdClass();
+  $form['site'] = drupal_retrieve_form('hosting_site_form',$node);
+  unset($form['site']['client']);
+  print serialize($form);
+  $user = $old_user;
+  exit();
+}
+
+
+function hosting_signup_submit_site($username, $password, $form_values) {
+  $node = new stdClass();
+  $node->type = 'site';
+  $node_options = variable_get('node_options_'. $type_name, array('status'));
+  foreach ($node_options as $node_option) {
+    $node->$node_option = 1;
+  }
+  foreach ($form_values as $key => $item) {
+    $node->$key = $item;
+  }
+
+  $return =  FALSE;
+
+  node_validate($node);
+  $error = form_get_errors();
+  if (!$error) {
+    // Prepare the node for save and allow modules make changes
+    $node = node_submit($node);
+    // Save the node
+    if ($node->nid) {
+      if (node_access('update', $node)) {
+        node_save($node);
+      }
+    }
+    else {
+      if (node_access('create', $node)) {
+        node_save($node);
+      }
+    }
+  }
+  return $node->nid;
+}
+
