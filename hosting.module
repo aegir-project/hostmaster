@@ -547,7 +547,7 @@ function hosting_features_form() {
     '#description' => t('Features marked experimental have not been completed to a satisfactory level to be considered production ready, so use at your own risk.'),
    );
 
-  $features = module_invoke_all('hosting_features');
+  $features = module_invoke_all('hosting_feature');
 #  $features = hosting_get_features(TRUE);
   $form['features']['#tree'] = TRUE;
   foreach ($features as $feature => $info) {
