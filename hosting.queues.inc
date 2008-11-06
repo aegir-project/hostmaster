@@ -171,7 +171,12 @@ function hosting_generate_command($system, $command, $ref, $args = array(), $opt
 
   $option_str = '';
   foreach ($options as $key => $value) {
-    $option_str .= " --$key=" . escapeshellarg($value);
+    if ($value !== TRUE) {
+      $option_str .= " --$key=" . escapeshellarg($value);
+    }
+    else {
+      $option_str .= " --$key";
+    }
   } 
   $drush_path = sprintf("%s/drush.php", $data['publish_path']); 
   // @TODO: Implement proper multi platform / multi server support.

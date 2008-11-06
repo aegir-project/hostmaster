@@ -1,5 +1,13 @@
 <?php
 
+function hosting_stats_provision_args($node, $task) {
+  $args = array();
+  if ($task == 'stats') {
+    $args['load-provision-stats'] = TRUE;
+  }
+  return $args;
+}
+
 function hosting_stats_hosting_queues() {
   $queue['stats'] = array(
     'name' => t('Statistics queue'),
@@ -21,8 +29,8 @@ function hosting_stats_queue($count) {
   $sites = hosting_stats_get_sites($count);
   foreach ($sites as $site) {
 
-    $cmd = hosting_generate_command("provision", "stats", array(), array('backend' => TRUE), $site);
-#    exec($cmd, $code, $return);
+    $cmd = hosting_generate_command("provision", "stats", $site, array(), array('backend' => TRUE));
+    exec($cmd, $code, $return);
     
     $data = unserialize(implode("\n", $return));
     $site->revision = false;
@@ -46,9 +54,10 @@ function hosting_stats_nodeapi(&$node, $op, $a3 = null) {
         $node->last_stats = db_result(db_query("SELECT last_stats FROM {hosting_site_stats} WHERE nid=%d", $node->nid));
       case 'view':
         if (!$a3) {
-          $node->content['last_stats'] = array(
+          $node->content['info']['last_stats'] = array(
             '#type' => 'item',
             '#title' => t('Statistics generated'),
+            '#weight' => 20,
             '#value' => hosting_format_interval($node->last_stats)
           );
         }
@@ -60,7 +69,6 @@ function hosting_stats_nodeapi(&$node, $op, $a3 = null) {
 function hosting_stats_get_sites($limit = 5) {
   $result = db_query("SELECT n.nid FROM {node} n LEFT JOIN {hosting_site_stats} s ON n.nid=s.nid WHERE n.type='site' ORDER BY s.last_stats ASC, n.nid ASC limit %d", $limit);
   while ($nid = db_fetch_object($result)) {
-    print $nid;
     $sites[$nid->nid] = node_load($nid->nid);
   }
   return $sites;

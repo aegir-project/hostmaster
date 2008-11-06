@@ -113,6 +113,16 @@ function hosting_client_form(&$node) {
     '#maxlength' => 255,
   ); 
 
+  if (!$node->nid) {
+    $form['email_confirm'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Confirm Email address'),
+      '#required' => TRUE,
+      '#size' => 40,
+      '#maxlength' => 255,
+    ); 
+  }
+
   $form['client_name'] = array(
     '#type' => 'textfield',
     '#title' => t('Contact name'),
@@ -129,7 +139,6 @@ function hosting_client_form(&$node) {
     '#maxlength' => 255,
   );
 
-
   
   return $form;
 }
@@ -143,6 +152,11 @@ function hosting_client_validate(&$node) {
   if ($nid) {
     if ($node->nid != $nid) {
       form_set_error('email', t("Email address already exists."));
+    }
+  }
+  if (!$node->nid) {
+    if ($node->email != $node->email) {
+      form_set_error('email', t("Email addresses do not match"));
     }
   }
   if (!valid_email_address($node->email)) {

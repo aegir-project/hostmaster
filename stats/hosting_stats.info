@@ -1,4 +1,4 @@
 name = Hosting Statistics
 description = Allow the hosting system to maintain statistics of hosted sites.
 package = Hosting
-dependencies = hosting provision_stats
+dependencies = hosting

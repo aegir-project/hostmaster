@@ -1,5 +1,13 @@
 <?php
 
+function hosting_cron_provision_args($node, $task) {
+  $args = array();
+  if ($task == 'cron') {
+    $args['load-provision-cron'] = TRUE;
+  }
+  return $args;
+}
+
 function hosting_cron_hosting_queues() {
   $items['cron'] = array(
     'type' => 'batch',
@@ -20,7 +28,7 @@ function hosting_cron_queue($count) {
   $sites = hosting_cron_get_sites($count);
 
   foreach ($sites as $site) {
-    $cmd = hosting_generate_command("provision", "cron", array(), array('background' => true), $site);
+    $cmd = hosting_generate_command("provision", "cron", $site, array(), array('backend' => TRUE));
     system($cmd);
     $site->revision = false;
     $site->no_synch = true; // do not generate synch task
@@ -35,9 +43,10 @@ function hosting_cron_nodeapi(&$node, $op, $a3 = null) {
       case 'view':
         if (!$a3) {
           // @todo : turn it into x minutes ago
-          $node->content['last_cron'] = array(
+          $node->content['info']['last_cron'] = array(
             '#type' => 'item',
             '#title' => t('Cron run'),
+            '#weight' => 20,
             '#value' => ($node->last_cron) ? format_date($node->last_cron, "large") : t('Never') );
         }
         break;
