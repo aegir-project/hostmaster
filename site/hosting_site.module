@@ -192,7 +192,7 @@ function hosting_site_form($node) {
   // We need to define form elements for the node's title and body.
   $form['title'] = array(
     '#type' => 'textfield',
-    '#title' => check_plain($type->title_label),
+    '#title' => t('Domain name'),
     '#required' => TRUE,
     '#default_value' => $node->title,
     '#weight' => -5

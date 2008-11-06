@@ -8,18 +8,23 @@ function hosting_signup_xmlrpc() {
       array('integer', 'string', 'string', 'struct'),
       t('Create a new site'),
     ),
-   
-
   );
 }
 
 function hosting_signup_settings() {
-  $form['server_key'] = array(
+  $form['hosting_signup_uri'] = array(
     '#type' => 'textfield',
-    '#default_value' => 123,
+    '#title' => t('Server URI'),
+    '#description' => t('The address of the hostmaster system, in the format http://masterdomain.com'),
+    '#default_value' => variable_get('hosting_signup_master_url', 'http://' . $_SERVER['HTTP_HOST']),
   );
-
-  return $form;
+  $form['hosting_signup_server_key'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Server key'),
+    '#description' => t('A unique identifier used when communicating with the server'),
+    '#default_value' => variable_get('hosting_signup_server_key', ''),
+  );
+  return system_settings_form($form);
 }
 
 function hosting_signup_menu($may_cache) {
@@ -29,6 +34,14 @@ function hosting_signup_menu($may_cache) {
     'description' => t('Create your own hosted site'),
     'callback' => 'drupal_get_form',
     'callback arguments' => array('hosting_signup_form'),
+    'access' => TRUE
+  );
+  $items[] = array(
+    'path' => 'admin/settings/hosting_signup',
+    'title' => t('Hosting signup form'),
+    'description' => t('Configure the behaviour of the simplified hosting signup form'),
+    'callback' => 'drupal_get_form',
+    'callback arguments' => array('hosting_signup_settings'),
     'access' => TRUE
   );
   $items[] = array(
@@ -54,7 +67,7 @@ function hosting_signup_menu($may_cache) {
  * populate hosting site node form element with specified arguments
  */
 function _hosting_signup_form_populate($element, $value, $value2 = null) {
-  $path = variable_get('hosting_signup_master_url', 'http://' . $_SERVER['HTTP_HOST']);
+  $path = variable_get('hosting_signup_uri', 'http://' . $_SERVER['HTTP_HOST']);
   $path .= "/hosting/hosting_site_form_populate/$element/$value";
   if ($value2) {
     $path .= "/$value2";
@@ -65,29 +78,42 @@ function _hosting_signup_form_populate($element, $value, $value2 = null) {
 }
 
 function hosting_signup_form() {
+  $path = variable_get('hosting_signup_uri', 'http://' . $_SERVER['HTTP_HOST']);
+  $path .= '/hosting/signup/get_form';
+  if ($key = variable_get('hosting_signup_server_key', '')) {
+    $path .= "/$key";
+  }
+
   drupal_add_js(drupal_get_path('module', 'hosting_signup') . '/hosting_signup_form.js');
-  $result = drupal_http_request('http://master.dev/hosting/signup/get_form');
+  $result = drupal_http_request($path);
   $form = unserialize($result->data);
   return $form;
 }
 
-function hosting_signup_get_form($server_key, $app_key) {
-  global $user;
-  $old_user = $user;
-  $user = node_load(0);
+function hosting_signup_get_form($server_key) {
+  if ($server_key != variable_get('hosting_signup_server_key', '')) {
+    $form['error'] = array( '#type' => 'item',
+      '#value' => t("The signup form has not been correctly configured"),
+     );
+  }
+  else {
+    global $user;
+    $old_user = $user;
+    $user = node_load(0);
 
-  $node = new stdClass();
-  $form['site'] = drupal_retrieve_form('hosting_site_form',$node);
-/*  $form['site']['platform'] = array(
-    '#type' => 'hidden',
-    '#value' => HOSTING_DEFAULT_PLATFORM,
-  );*/
-  unset($form['site']['client']);
+    $node = new stdClass();
+    $form['site'] = drupal_retrieve_form('hosting_site_form',$node);
+  /*  $form['site']['platform'] = array(
+      '#type' => 'hidden',
+      '#value' => HOSTING_DEFAULT_PLATFORM,
+    );*/
+    unset($form['site']['client']);
 
-  $node = new stdClass();
-  $form['client'] = drupal_retrieve_form('hosting_client_form',$node);
+    $node = new stdClass();
+    $form['client'] = drupal_retrieve_form('hosting_client_form',$node);
+    $user = $old_user;
+  }
   print serialize($form);
-  $user = $old_user;
   exit();
 }
 
