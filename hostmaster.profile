@@ -141,6 +141,11 @@ function hostmaster_profile_final() {
   // This is saved because the config generation script is running via drush, and does not have access to this value
   variable_set('install_url' , $GLOBALS['base_url']);
 
+  // add default blocks
+  hostmaster_install_add_block('hosting', 'hosting_summary', 'garland', 1, 10, 'left');
+  hostmaster_install_add_block('hosting', 'hosting_queues', 'garland', 1, 0, 'right');
+  hostmaster_install_add_block('hosting', 'hosting_queues_summary', 'garland', 1, 2, 'right');
+
   // @todo create proper roles, and set up views to be role based
   hostmaster_install_set_permissions(hostmaster_install_get_rid('anonymous user'), array('access content', 'access all views'));
   hostmaster_install_set_permissions(hostmaster_install_get_rid('authenticated user'), array('access content', 'access all views'));
@@ -165,3 +170,17 @@ function hostmaster_install_set_permissions($rid, $perms) {
 function hostmaster_install_get_rid($name) {
   return db_result(db_query("SELECT rid FROM {role} WHERE name ='%s' LIMIT 1", $name));
 }
+
+/**
+ * Creates a new block.
+ */
+function hostmaster_install_add_block($module, $delta, $theme, $status, $weight, $region, $visibility = 0, $pages = '', $custom = 0, $throttle = 0, $title = '') {
+  db_query("INSERT INTO {blocks} (module, delta, theme, status, weight, region, visibility, pages, custom, throttle, title) 
+     VALUES ('%s', '%s', '%s', %d, %d, '%s', %d, '%s', %d, %d, '%s')", 
+     $module, $delta, $theme, $status, $weight, $region, $visibility, $pages, $custom, $throttle, $title);
+  if ($module == 'block') {
+    $box = db_fetch_object(db_query('SELECT * FROM {boxes} WHERE bid=%d', $delta));
+    db_query("INSERT INTO {boxes} (bid, body, info, format) VALUES (%d, '%s', '%s', '%s')", $box->bid, $box->body, $box->info, $box->format);
+  }
+}
+
