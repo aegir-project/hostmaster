@@ -91,7 +91,6 @@ function hosting_alias_insert($node) {
     }
   }
   $automatic = hosting_alias_automatic_aliases($node->title);
-  drupal_debug($automatic);
   if (sizeof($automatic)) {
     foreach ($automatic as $alias) {
       db_query("INSERT INTO {hosting_site_alias} (vid, nid, alias, automatic) VALUES (%d, %d, '%s', %d)", $node->vid, $node->nid, $alias, HOSTING_ALIAS_AUTOMATIC);
