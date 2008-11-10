@@ -149,6 +149,7 @@ function hostmaster_profile_final() {
   // @todo create proper roles, and set up views to be role based
   hostmaster_install_set_permissions(hostmaster_install_get_rid('anonymous user'), array('access content', 'access all views'));
   hostmaster_install_set_permissions(hostmaster_install_get_rid('authenticated user'), array('access content', 'access all views'));
+  hostmaster_install_create_role('aegir client');
   // @todo we may need to have a hook here to consider plugins
   hostmaster_install_set_permissions(hostmaster_install_get_rid('aegir client'), array('access content', 'access all views', 'edit own client', 'create site', 'delete site', 'view site', 'create backup task', 'create delete task', 'create disable task', 'create enable task', 'create restore task', 'view own tasks'));
   menu_rebuild();
@@ -169,6 +170,14 @@ function hostmaster_install_set_permissions($rid, $perms) {
  */
 function hostmaster_install_get_rid($name) {
   return db_result(db_query("SELECT rid FROM {role} WHERE name ='%s' LIMIT 1", $name));
+}
+
+
+/**
+ * Create a role
+ */
+function hostmaster_install_create_role($role_name) {
+  db_query("INSERT INTO {role} (name) VALUES ('%s')", $role_name);
 }
 
 /**
