@@ -63,6 +63,13 @@ function hostingSitePopulate(option) {
     $('div#hm-processing').remove();
   }
   // prepare url params
-  params = (option == 'profile') ? $(obj).val() : ($(obj).val() + '/' + $('input[@name=platform]:checked').val());
+  if (option == 'profile') {
+    params = $(obj).val();
+  }
+  else if (option == 'language') {
+    hPlatform = 'input[@name=platform]';
+    params = $(obj).val() + '/' + ($(hPlatform).attr('type') == 'radio' ? $(hPlatform + ':checked').val() : $(hPlatform).val());
+  }
+  
   $.get('/hosting/signup/form_populate/' + option + '/' + params, null, resultOptions);
 }
