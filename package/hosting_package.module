@@ -275,7 +275,7 @@ function hosting_package_update($node) {
   }
   else {
     db_query("UPDATE {hosting_package} SET package_type = '%s', short_name = '%s', description = '%s' WHERE nid=%d",
-      $node->package_type, $node->short_name, $node->description, $node->vid, $node->nid);
+      $node->package_type, $node->short_name, $node->description, $node->nid);
   }
 }
 
@@ -383,7 +383,7 @@ function hosting_package_release_update($node) {
   }
   else {
     db_query("UPDATE {hosting_package_release} SET package = %d, schema_version = %d, version = '%s' WHERE nid=%d",
-              $node->package, $node->schema_version, $node->version, $node->vid, $node->nid);
+              $node->package, $node->schema_version, $node->version, $node->nid);
   }
   hosting_package_release_set_title($node);
 }
