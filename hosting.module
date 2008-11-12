@@ -238,7 +238,7 @@ function hosting_map_values($node) {
 function _hosting_node_link($nid) {
   $node = node_load($nid);
   if ($node->nid) {
-    return l(filter_xss($node->title), "node/" . $node->nid);
+    return node_access('view', $node) ? l(filter_xss($node->title), "node/" . $node->nid) : filter_xss($node->title);
   }
 }
 

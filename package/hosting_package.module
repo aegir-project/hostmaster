@@ -80,11 +80,41 @@ function hosting_package_menu($may_cache) {
 
 
 function hosting_package_access($op, $node) {
-  return hosting_access($op, $node);
+  switch ($op) {
+  case 'create':
+    return user_access('create package');
+    break;
+  case 'view':
+    return user_access('view package');
+    break;
+  case 'update':
+    return user_access('edit package');
+    break;
+  case 'delete':
+    return user_access('delete package');
+    break;
+  default:
+    break;
+  }
 }
 
 function hosting_package_release_access($op, $node) {
-  return hosting_access($op, $node);
+  switch ($op) {
+  case 'create':
+    return user_access('create package release');
+    break;
+  case 'view':
+    return user_access('view package release');
+    break;
+  case 'update':
+    return user_access('edit package release');
+    break;
+  case 'delete':
+    return user_access('delete package release');
+    break;
+  default:
+    break;
+  }
 }
 
 function hosting_get_profiles($platform = NULL) {
