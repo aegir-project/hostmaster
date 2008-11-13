@@ -19,3 +19,17 @@ function hosting_update_2() {
   $ret[] = update_sql("DROP TABLE {hosting_config_template}");
   return $ret;
 }
+
+/**
+ * Hide hostmaster and hostslave profiles
+ */
+function hosting_update_3() {
+  $ret = array();
+  $result = db_query("select n.nid from {node} n left join hosting_package p on n.nid = p.nid where short_name in ('hostslave', 'hostmaster')");
+  while ($obj = db_fetch_object($result)) {
+    $in[] = (int) $obj->nid;
+  }
+  $in = implode(", ", $in);
+  $ret[] = update_sql("UPDATE {node} SET status = 0 WHERE nid IN (" .$in. ")", $values);
+  return $ret;
+}

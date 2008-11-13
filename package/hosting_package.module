@@ -123,7 +123,7 @@ function hosting_get_profiles($platform = NULL) {
                                        LEFT JOIN {hosting_package_release} hpr ON hp.nid = hpr.package 
                                        LEFT JOIN {hosting_package_instance} hpi ON hpr.nid = hpi.release_id 
                                        LEFT JOIN {hosting_platform} l ON hpi.rid = l.nid 
-                                       WHERE '. ($platform ? ' l.nid = %d AND ' : '') .' hp.package_type = "profile"';
+                                       WHERE '. ($platform ? ' l.nid = %d AND ' : '') .' hp.package_type = "profile" AND n.status = 1';
   $query .= ' ORDER BY hp.short_name ASC';
 
   // if there is no result, provide results from default platform
@@ -443,7 +443,13 @@ function hosting_package_import_packages($rid, $type, $default_version, $data) {
       $node->title = ($info->info['name']) ? $info->info['name'] : "$short_name $type $version";
       $node->package_type = $type;
       $node->short_name = $short_name;
-      $node->status = 1;
+      // Kludge to hide the hostmaster and hostslave profiles
+      if (($type == 'profile') && in_array($short_name, array('hostslave', 'hostmaster'))) {
+        $node->status = 0;
+      }
+      else {
+        $node->status = 1;
+      }
       node_save($node);
       $package = $node;
     }
