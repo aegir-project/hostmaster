@@ -123,7 +123,7 @@ function hosting_import_site($url, $data, $status, $platform = HOSTING_DEFAULT_P
  * implementation of the hosting_post_install hook
  */
 function hosting_site_hosting_post_install($task, $data) {
-  db_query("UPDATE {hosting_site} SET status=status|%d WHERE nid=%d", HOSTING_SITE_INSTALLED, $task->rid);
+  db_query("UPDATE {hosting_site} SET status=(status|%d|%d)&~%d WHERE nid=%d", HOSTING_SITE_INSTALLED, HOSTING_SITE_ENABLED, HOSTING_SITE_DELETED, $task->rid);
 }
 
 /**
