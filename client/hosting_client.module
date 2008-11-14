@@ -295,4 +295,32 @@ function hosting_import_client($email, $name = '', $organization = '', $existing
   }
 
   return FALSE;
-} 
+}
+
+/**
+ * Implementation of hook_menu()
+ */
+function hosting_client_menu() {
+  if (!$may_cache) {
+    if (arg(0) == 'node' && is_numeric(arg(1))) {
+      $node = node_load(arg(1));
+      if ($node->type == 'client') {
+        $site = new stdClass();
+        $site->type = 'site';
+        $site->client = arg(1);
+        $items[] = array(
+          'path' => 'node/'. $node->nid .'/site/add',
+          'title' => t('Add site'),
+          'description' => t('Add a site to the current client'),
+          'callback' => 'drupal_get_form',
+          'callback arguments' => array('site_node_form', $site),
+          'type' => MENU_LOCAL_TASK,
+          'weight' => 5,
+        );
+      }
+    }
+  }
+  return $items;
+}
+
+

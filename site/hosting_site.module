@@ -184,18 +184,24 @@ function hosting_site_form($node) {
     '#default_value' => $node->title,
     '#weight' => -5
   );
-  $clients = _hosting_get_clients();
-  if (sizeof($clients) > 1) {
-    $form['client'] = array(
-      '#type' => 'radios',
-      '#title' => t('Client'),
-      '#description' => t('The client who this site belongs to.'),
-      '#options' => $clients,
-      '#default_value' => $node->client,
-    );
+
+  if ($node->client) {
+    $form['client'] = array('#type' => 'value', '#value' => $node->client);
   }
   else {
-    $form['client'] = array('#type' => 'hidden', '#value' => key($clients));
+    $clients = _hosting_get_clients();
+    if (sizeof($clients) > 1) {
+      $form['client'] = array(
+        '#type' => 'radios',
+        '#title' => t('Client'),
+        '#description' => t('The client who this site belongs to.'),
+        '#options' => $clients,
+        '#default_value' => $node->client,
+      );
+    }
+    else {
+      $form['client'] = array('#type' => 'hidden', '#value' => key($clients));
+    }
   }
 
   $platforms = _hosting_get_platforms();
