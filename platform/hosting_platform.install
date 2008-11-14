@@ -17,3 +17,18 @@ function hosting_platform_install() {
       break;
    }
 }
+
+/**
+ * Re-synch all platform to correctly set up the
+ * master url, so redirects on disabled sites will
+ * work correctly.
+ */
+function hosting_platform_update_1() {
+  include_once(drupal_get_path('module', 'hosting_task') . '/hosting_task.module');
+  $ret = array();
+  $result = db_query("SELECT nid FROM {node} WHERE type='platform' AND status=1");
+  while ($platform = db_fetch_object($result)) {
+    hosting_add_task($platform->nid, 'synch');
+  }
+  return $ret;
+}

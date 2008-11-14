@@ -73,6 +73,9 @@ function hosting_platform_provision_args($node, $task = '') {
     case 'platform' : 
       $values['platform'] = $node->nid;
       $values['publish_path'] = $node->publish_path;
+      if ($task == 'synch') {
+        $values['master_url'] = variable_get('install_url', $GLOBALS['base_url']);
+      }
       break;
   }
   return $values;
