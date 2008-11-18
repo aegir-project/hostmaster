@@ -32,10 +32,11 @@ function hosting_client_node_info() {
  */
 function hosting_client_hosting_feature() {
   $features['client'] = array(
-      'title' => t('Clients (experimental)'), 
+      'title' => t('Clients'), 
       'description' => t('Track and manage ownership of hosted.'),
       'status' => HOSTING_FEATURE_DISABLED,
-      'node' => 'client');
+      'node' => 'client',
+    'group' => 'experimental');
   return $features;
 }
 

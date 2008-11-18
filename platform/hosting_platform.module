@@ -17,10 +17,11 @@ function hosting_platform_node_info() {
 
 function hosting_platform_hosting_feature() {
   $features['platform'] = array(
-      'title' => t('Platforms (experimental)'), 
+      'title' => t('Platforms'), 
       'description' => t('Allow for management of multiple platforms, and migration between platforms.'),
       'status' => HOSTING_FEATURE_DISABLED,
-       'node' => 'platform');
+      'node' => 'platform',
+    'group' => 'experimental');
   return $features;
 }
 

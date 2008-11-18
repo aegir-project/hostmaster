@@ -43,8 +43,11 @@ function hosting_wizard_steps($step = null) {
     $steps['hosting'] = array( 'title' => t('Hosting'), 'heading' => t('Set up your hosting framework'), 
       'message' => t("Finalize your setup by ensuring communication between the front end and back end."));
 
-    $steps['hosting/init'] = array('title' => t('Initialize'), 'heading' => t('Initialize the hosting system'),
+    $steps['hosting/features'] = array('title' => t('Features'), 'heading' => t('Enable hosting features'),
       'type' => MENU_DEFAULT_LOCAL_TASK,
+      'message' => t("Enable or disable any of the features available."));
+
+    $steps['hosting/init'] = array('title' => t('Initialize'), 'heading' => t('Initialize the hosting system'),
       'message' => t("Finalize your setup by ensuring communication between the front end and back end."));
 
     $steps['hosting/verify'] = array('title' => t('Verify platform'), 'heading' => t('Verify platform settings'),
@@ -52,10 +55,6 @@ function hosting_wizard_steps($step = null) {
 
     $steps['hosting/import'] = array('title' => t('Import sites'), 'heading' => t('Import your existing sites'),
       'message' => t("Details of any existing sites found and imported into Hostmaster."));
-
-    $steps['hosting/features'] = array('title' => t('Features'), 'heading' => t('Enable hosting features'),
-      'message' => t("Enable or disable any of the features available."));
-
 
     $steps['complete'] = array('title' => t("Complete"), 'heading' => t('Complete your installation'),
     'message' => t("Congratulations, you have finished installation of hostmaster. If you have any questions, go to groups.drupal.org/hm2."));

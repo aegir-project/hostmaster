@@ -32,10 +32,11 @@ function hosting_db_server_node_info() {
 
 function hosting_db_server_hosting_feature() {
   $features['db_server'] = array(
-    'title' => t('Database servers (experimental)'),
+    'title' => t('Database servers'),
     'description' => t('Configure and maintain multiple database servers.'),
     'status' => HOSTING_FEATURE_DISABLED,
-    'node' => 'db_server');
+    'node' => 'db_server',
+  'group' => 'experimental');
   return $features;
 
 }

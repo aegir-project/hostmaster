@@ -1,4 +1,5 @@
 <?php
+// $Id$
 /**
  * @file Hosting module
  *
@@ -13,6 +14,7 @@
 include_once('hosting_help.inc');
 include_once('hosting.wizard.inc');
 include_once('hosting.queues.inc');
+include_once('hosting.features.inc');
 
 /**
  * Implementation of hook_menu()
@@ -122,32 +124,6 @@ function hosting_drush_command() {
   }
   
   return $items;
-}
-
-define('HOSTING_FEATURE_DISABLED', 0);
-define('HOSTING_FEATURE_ENABLED', 1);
-define('HOSTING_FEATURE_REQUIRED', 2);
-
-function hosting_feature($feature) {
-  static $features = array();
-
-  if (!sizeof($features)) {
-    $features = hosting_get_features();
-  }
-  $return = variable_get('hosting_feature_' . $feature, $features[$feature]['status']);
-
-  return $return;
-}
-
-/**
- * Implementation of hook_form_alter
- */
-function hosting_form_alter($form_id, &$form) {
-  // Replace configuration form submit handler
-  if ($form_id == 'provision_configure') {
-    $form['#submit'] = array('hosting_configure_provision' => array());
-  }
-
 }
 
 /**
@@ -530,63 +506,3 @@ function hosting_log($type, $message, $severity = 0) {
   if ($type) watchdog($type, $message, $severity);
 }
 
-function hosting_features_form() {
-  $form['features'] = array(
-    '#type' => 'item',
-    '#title' => t('Optional system features'),
-    '#value' => t('You may choose any of the additional system features from the list below.'),
-    '#description' => t('Features marked experimental have not been completed to a satisfactory level to be considered production ready, so use at your own risk.'),
-   );
-
-  $features = module_invoke_all('hosting_feature');
-#  $features = hosting_get_features(TRUE);
-  $form['features']['#tree'] = TRUE;
-  foreach ($features as $feature => $info) {
-    $form['features'][$feature] = array(
-      '#type' => 'checkbox',
-      '#title' => $info['title'],
-      '#description' => $info['description'],
-      '#default_value' => hosting_feature($feature),
-      '#required' => hosting_feature($feature) == HOSTING_FEATURE_REQUIRED,
-    );
-
-  }
-
-  return system_settings_form($form);
-}
-
-function hosting_features_form_submit($form_id, $values) {
-  foreach ($values['features'] as $feature => $value) {
-    variable_set('hosting_feature_' . $feature, $value);
-  }
-  menu_rebuild();
-}
-
-function hosting_get_features($refresh = FALSE) {
-  $cache = cache_get('hosting_features');
-
-  if (!$cache->data || $refresh) {
-    ## include any optional hosting.feature.*.inc files
-    $files = drupal_system_listing("hosting\.feature\.[a-zA-Z_]*\.inc$", "modules");
-    if (sizeof($files)) {
-      foreach ($files as $name => $info) {
-        include_once($info->filename);
-      }
-    }
-    $functions = get_defined_functions();
-    foreach ($functions['user'] as $function) {
-      if (preg_match('/_hosting_feature$/', $function)) {
-        $hooks[] = $function;
-      }
-    }
-    $features = array();
-    foreach ($hooks as $func) {
-      $features = array_merge($features, $func());
-    }
-    cache_set('hosting_features', 'cache', serialize($features));
-    return $features;
-  }
-  else {
-    return unserialize($cache->data);
-  }
-}

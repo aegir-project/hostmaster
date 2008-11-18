@@ -15,10 +15,11 @@ function hosting_web_server_node_info() {
 
 function hosting_web_server_hosting_feature() {
   $features['web_server'] = array(
-      'title' => t('Web servers (experimental)'), 
+      'title' => t('Web servers'), 
       'description' => t('Allow for creation of multiple web server nodes, and for distributed management of sites.'),
       'status' => HOSTING_FEATURE_DISABLED,
-      'node' => 'web_server');
+      'node' => 'web_server',
+    'group' => 'experimental');
   return $features;
 }
 
