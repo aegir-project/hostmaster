@@ -208,6 +208,7 @@ function hosting_site_form($node) {
     $form['platform'] = array(
       '#type' => 'radios',
       '#title' => t('Platform'),
+      '#required' => TRUE,
       '#description' => t('The platform you want the site to be hosted on.'),
       '#options' => $platforms,
       '#default_value' => $node->platform ? $node->platform : HOSTING_DEFAULT_PLATFORM,
@@ -553,6 +554,7 @@ function _hosting_site_form_profile($platform = NULL) {
       '#description' => t('The type of site to install.'),
       '#options' => $profiles,
       '#default_value' => $node->profile,
+      '#required' => TRUE,
       '#attributes' => array('class' => "hosting-site-form-profile-options"),
     );
   }
@@ -573,6 +575,7 @@ function _hosting_site_form_language($profile = NULL, $platform = null) {
       '#title' => t('Language'),
       '#description' => t('The type of site to install.'),
       '#options' => $languages,
+      '#required' => TRUE,
       '#default_value' => ($node->language) ? $node->language : 'en',
       '#attributes' => array('class' => "hosting-site-form-language-options"),
     );
