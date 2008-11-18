@@ -493,14 +493,7 @@ function hosting_wizard_hosting_features_submit($form_id, $values) {
  * When clicking on the button you will be forwarded to your site.
  */
 function hosting_wizard_complete() {
-  $form['configure']['#value'] .= 
-    t('<p><strong>Configure your website</strong>
-               Once logged in, visit the <a href="@admin">administration section</a>,
-               where you can <a href="@config">customize and configure</a> all aspects
-               of your website.</p>', 
-               array('@admin' => url('admin'), '@config' => url('admin/settings'))) ;
-
-  $form['create_site']['#value'] = t('<p><strong>Create your first hosted site.</strong> This system uses special site posts to store information about your sites, so you can simply <a href="@create_site">create a site post</a> to get your first hosted site running.</p>', array('@create_site' => url('node/add/site')));
+  $form['configure']['#value'] .= _hosting_introduction();
 
   return hosting_wizard_form('complete', $form, t('Go to your site'));
 }

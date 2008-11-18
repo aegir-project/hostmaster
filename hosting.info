@@ -1,4 +1,4 @@
 name = Hosting
 description = Allow this Drupal site to deploy hosted sites.
 package = Hosting
-dependencies = provision views views_ui hosting_task hosting_client hosting_db_server hosting_package hosting_platform hosting_site hosting_web_server
+dependencies = provision hosting_task hosting_client hosting_db_server hosting_package hosting_platform hosting_site hosting_web_server

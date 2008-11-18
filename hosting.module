@@ -59,20 +59,7 @@ function hosting_menu($may_cache = true) {
       'access' => user_access('access content'),
       'type' => MENU_ITEM_GROUPING,
       'weight' => 1);
-    // Disable unsupported features.
-    $features = module_invoke_all('hosting_features');
-    $types = node_get_types();
-    foreach ($features as $type => $feature) {
-      if (isset($feature['node'])) {
-        $type_url_str = str_replace('_', '-', $feature['node']);
-        $items[] = array(
-          'path' => 'node/add/'. $type_url_str,
-          'title' => drupal_ucfirst($types[$feature['node']]->name),
-          'access' => (($user->uid == 1) || node_access('create', $feature['node'])) && (hosting_feature($type) !== HOSTING_FEATURE_DISABLED),
-        ); 
-      }
-    }
-    
+   
     // Queue page & task lists
     
     $items[] = array(
@@ -81,6 +68,21 @@ function hosting_menu($may_cache = true) {
        'type' => MENU_CALLBACK,
        'access' => user_access('access task logs')
       );
+    // Disable unsupported features.
+    $features = hosting_get_features();
+    $types = node_get_types();
+    foreach ($features as $type => $feature) {
+      if (isset($feature['node'])) {
+        $type_url_str = str_replace('_', '-', $feature['node']);
+        
+        $items[] = array(
+          'path' => 'node/add/'. $type_url_str,
+          'title' => drupal_ucfirst($types[$feature['node']]->name),
+          'access' => (($user->uid == 1) || node_access('create', $feature['node'])) && (hosting_feature($type) != HOSTING_FEATURE_DISABLED),
+        ); 
+      }
+    }
+
   }
   return $items;
 }
@@ -130,10 +132,11 @@ function hosting_feature($feature) {
   static $features = array();
 
   if (!sizeof($features)) {
-    $features = module_invoke_all("hosting_features");
+    $features = hosting_get_features();
   }
+  $return = variable_get('hosting_feature_' . $feature, $features[$feature]['status']);
 
-  return variable_get('hosting_feature_' . $feature, $features[$feature]['status']);
+  return $return;
 }
 
 /**

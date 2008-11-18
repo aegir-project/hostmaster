@@ -51,7 +51,6 @@ function hosting_site_provision_args($node, $task = '') {
   $values = array();
   if ($node->type == 'site') {
     $values['#1'] = $node->title;
-#    $values['#url'] = $node->title;
     $values['site_id'] = $node->nid;
     $values['language'] = $node->language;
   }
@@ -518,7 +517,9 @@ function hosting_sites() {
   if ($list = hosting_site_list()) {
     return $list;
   }
-  return _hosting_introduction();
+  $create_site_link = l(t('Create a site now?'), 'node/add/site');
+  return t("No sites have been created yet. !link", array(
+    '!link' => $create_site_link));
 }
 
 function hosting_site_menu($may_cache = false) {
