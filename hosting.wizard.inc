@@ -431,10 +431,10 @@ function hosting_wizard_hosting_verify() {
   else {
     $form['provision']['#status'] = PROVISION_STATUS_ERROR;
     $form['provision']['#message'] = t('One of more errors has occurred during platform verification.');
+    $form['retry_id'] = array('#type' => 'hidden', '#value' => $node->nid);
     $form['log_tip']['#value'] = t('Underneath is the log output and status of your verification task.
       Check your settings on the previous pages of the wizard, and follow the applicable examples from the configuration
-      tips. Dispatch will continue attempting to run the verification task until it succeeds, so clicking on the Check again button
-      or just reloading the page will update the information below');
+      tips.');
     $view = hosting_task_view($node);
     $form['task_status'] = $view->content['status'];
     $form['task_status']['#title'] = t('Errors');
@@ -464,11 +464,23 @@ function hosting_wizard_hosting_import() {
       $form['list']['#value'] = $list;
     }
     else {
-      $form['intro']['#value'] = t('<p>Hosting has not found any sites to import. You may try again by requesting an import task on any platform.</p>');
+      $form['intro']['#value'] = t('<p>Hosting has not found any sites to import.</p>')
+        . t('<p>In the future, any additional platforms you create will also automatically have existing sites imported, and at any time you can request an import task on any existing platform</p>');
     }
   }
   else {
-    $form['no_sites']['#value'] = t('<p>There was an error importing sites. Do you want to retry?');
+    $node = hosting_get_most_recent_task(HOSTING_OWN_PLATFORM, 'import');
+    $form['retry_id'] = array('#type' => 'hidden', '#value' => $node->nid);
+    $form['no_sites']['#value'] = t('<p>There was an error importing sites.');
+    $form['log_tip']['#value'] = t('Underneath is the log output and status of your import task.
+      Check your settings on the previous pages of the wizard, and follow the applicable examples from the configuration
+      tips.');
+    $view = hosting_task_view($node);
+    $form['task_status'] = $view->content['status'];
+    $form['task_status']['#title'] = t('Errors');
+    $form['last_attempt'] = array('#type' => 'item', '#title' => t('Last attempt'), '#value' => hosting_format_interval($node->changed));
+    $form['log'] = $view->content['hosting_log'];
+    $next = t('Check again');
   }
   return hosting_wizard_form('hosting/import', $form);
 }
