@@ -20,7 +20,6 @@ function hosting_wizard_steps($step = null) {
   global $user;
 
   if (!sizeof($steps)) {
-    // todo: perhaps add a hook to allow modules to add features into the system
     $steps['intro'] = array( 'title' => t("Introduction"), 'heading' => t("Welcome to your new hosting system"), 'type' => MENU_DEFAULT_LOCAL_TASK);
 
     if ($user->uid == 1) {
@@ -30,12 +29,13 @@ function hosting_wizard_steps($step = null) {
     $steps['provision'] = array('title' => t("Provisioning"), 'heading' => t("Configure your provisioning framework"),
       'message' => t('To be able to create sites using Hostmaster, we need some information about your server.'), );
 
-    $steps['provision/paths'] = array('title' => t("Paths"), 'heading' => t("Configure where to store provisioning data"),
+    $steps['provision/web'] = array('title' => t("Web server"), 'heading' => t("Configure your web server"),
       'type' => MENU_DEFAULT_LOCAL_TASK,
+      'message' => t("You will need somewhere to server your files from."));
+
+    $steps['provision/paths'] = array('title' => t("Paths"), 'heading' => t("Configure where to store provisioning data"),
       'message' => t('To be able to create sites using Hostmaster, provisioning needs access to the file system.'), );
 
-    $steps['provision/web'] = array('title' => t("Web server"), 'heading' => t("Configure your web server"),
-      'message' => t("You will need somewhere to server your files from."));
 
     $steps['provision/db'] = array('title' => t('Database server'), 'heading' => t('Configure your database server'),
       'message' => t("You need to be able to create databases and database users."));
@@ -60,8 +60,6 @@ function hosting_wizard_steps($step = null) {
     $steps['complete'] = array('title' => t("Complete"), 'heading' => t('Complete your installation'),
     'message' => t("Congratulations, you have finished installation of hostmaster. If you have any questions, go to groups.drupal.org/hm2."));
 
-    // @todo: figure out what would go on a features page.
-    // $steps['features'] = array('title' => t("Features"), 'message' => t("."));
    }
 
   if ($step && $steps[$step]) {
@@ -209,7 +207,8 @@ function hosting_wizard_provision() {
   $form = array();
   $form['introduction']['#value'] = 
     t("<p>The Provisioning framework provides the back end of the system. It does all the nitty gritty server level things, so that you don't have to.</p>
-    <p>Provision is very careful about security, and as such has been designed to run under the absolute minimum permissions it needs to accomplish it's job. For the security of your data, Hostmaster will not run unless it is running in this optimally secure configuration.</p>    <p>Because of these stringently enforced security requirements, it takes a bit longer to set up than would be ideal, however we feel it is a fair tradeoff.</p>");
+    <p>Provision is very careful about security, and as such has been designed to run under the absolute minimum permissions it needs to accomplish it's job. For the security of your data, Hostmaster will not run unless it is running in this optimally secure configuration.</p>
+    <p>Because of these stringently enforced security requirements, it takes a bit longer to set up than would be ideal, however we feel it is a fair tradeoff.</p>");
   t("<p>We have tried to collect as much data about our current environment as we can, and provide these as defaults for server configuration. For a lot of cases this works adequately, however we will perform checks on every item, to ensure that it is in working order.</p>
     <p>In some cases, such as file permissions, we are incapable of testing items until the hosting front end has been succesfully configured. If we do find a problem, you will be directed back to this section to modify your configuration.</p>");
 
@@ -231,23 +230,28 @@ function hosting_wizard_provision_paths() {
 
   $form['script_user']['#type'] = 'value';
   $form['web_group']['#type'] = 'value';
-  /*
-  $form['introduction']['#weight'] = -45;
-  $form['introduction']['#value'] = 
-    t('<p>This form is actually the !edit_page for the !own_server web server node, which has been heavily annotated and a number of fields removed for simplicity.</p>
-    <p>It is recommended to use the !own_server page to manage this information in the future.</p>
-        ', 
-        array('!own_server' => $own_link, '!edit_page' => l(t("edit page"), 'node/' . HOSTING_OWN_WEB_SERVER . '/edit' )));*/
 
   $form['title']['#type'] = 'value';
   $form['ip_address']['#type'] = 'value';
   $form['restart_cmd']['#type'] = 'value';
 
-  $form['config_path_help'] = array('#type' => 'requirement_help', '#requirement' => 'config_path', '#weight' => 9, '#summary' => PROVISION_HELP_ENABLED, '#configuration' => PROVISION_HELP_COLLAPSED);
+  $form['config_path_help'] = array(
+    '#type' => 'requirement_help', '#requirement' => 'config_path', 
+    '#weight' => 9, '#summary' => PROVISION_HELP_ENABLED, 
+    '#configuration' => PROVISION_HELP_COLLAPSED);
   $form['config_path']['#weight'] = 10;
 
-  $form['backup_path_help'] = array('#type' => 'requirement_help', '#requirement' => 'backup_path', '#weight' => 14, '#summary' => PROVISION_HELP_ENABLED, '#configuration' => PROVISION_HELP_COLLAPSED);
+  $form['backup_path_help'] = array(
+    '#type' => 'requirement_help', '#requirement' => 'backup_path', 
+    '#weight' => 14, '#summary' => PROVISION_HELP_ENABLED, 
+    '#configuration' => PROVISION_HELP_COLLAPSED);
   $form['backup_path']['#weight'] = 15;  
+
+  $form['httpd_conf'] = array(
+    '#type' => 'requirement_help', '#requirement' => 'httpd_conf',
+    '#summary' => PROVISION_HELP_ENABLED, '#configuration' => PROVISION_HELP_ENABLED,
+    '#weight' => 20,);
+
 
   // remove all the things i don't want from the node form.
   return hosting_wizard_form('provision/paths', $form);
@@ -276,43 +280,41 @@ function hosting_wizard_provision_web() {
 
   $own_link = _hosting_node_link(HOSTING_OWN_WEB_SERVER);
 
-  /*
-  $form['introduction']['#weight'] = -45;
-  $form['introduction']['#value'] = 
-    t('<p>You need to have one fully working web server configured to be able to create sites. The web server can run into problems with file permissions quite easily, and these are unfortunately undetectable to us until the hosting back end is configured.</p>
-    <p>Like the database configuration, this form is actually the !edit_page for the !own_server database server node, which has been heavily annotated and a number of fields removed for simplicity.</p>
-    <p>It is recommended to use the !own_server page to manage this server during daily use.</p>
-        ', 
-        array('!own_server' => $own_link, '!edit_page' => l(t("edit page"), 'node/' . HOSTING_OWN_WEB_SERVER . '/edit' ))); */
-
-  $form['httpd_conf'] = array(
-    '#type' => 'requirement_help', '#requirement' => 'httpd_conf',
-    '#summary' => PROVISION_HELP_ENABLED, '#configuration' => PROVISION_HELP_ENABLED,
-    /*    '#status' => PROVISION_STATUS_WARNING, '#message' => t('This needs to be configured for Apache to pick up new sites. We can not confirm that this is working correctly yet, so if your sites are installed but do not work from a web browser, please confirm that you have completed this step'),*/
-    '#weight' => -1,);
-
   $form['title']['#type'] = 'value';
   $form['ip_address']['#type'] = 'value';
   $form['backup_path']['#type'] = 'value';  
   $form['config_path']['#type'] = 'value';  
-  $form['acc_details'] = array(
-    '#type' => 'fieldset',
-    '#collapsed' => false,
-    '#title' => t('System account details'),
-    '#weight' => 0 
-  );
-  $form['acc_details']['acc_help'] = array('#type' => 'requirement_help', '#requirement' => 'group', '#weight' => -20, '#summary' => PROVISION_HELP_ENABLED, '#configuration' => PROVISION_HELP_COLLAPSED);
-  $form['acc_details']['script_user'] = $form['script_user'];
-  unset($form['script_user']);
-  $form['acc_details']['web_group'] = $form['web_group'];
-  unset($form['web_group']);
 
+  $form['user_help'] = array(
+    '#type' => 'requirement_help', '#requirement' => 'user',
+    '#weight' => 0, '#summary' => PROVISION_HELP_ENABLED, 
+    '#configuration' => PROVISION_HELP_COLLAPSED);
+  $form['script_user']['#weight'] = 1;
 
-  $form['restart_cmd_help'] = array('#type' => 'requirement_help', '#requirement' => 'visudo', '#weight' => 19, '#summary' => PROVISION_HELP_ENABLED, '#configuration' => PROVISION_HELP_COLLAPSED);
+  $form['group_help'] = array(
+    '#type' => 'requirement_help', '#requirement' => 'group',
+    '#weight' => 10, '#summary' => PROVISION_HELP_ENABLED, 
+    '#configuration' => PROVISION_HELP_COLLAPSED);
+  $form['web_group']['#weight'] = 11;
+
+  $form['restart_cmd_help'] = array(
+    '#type' => 'requirement_help', '#requirement' => 'visudo', 
+    '#weight' => 19, '#summary' => PROVISION_HELP_ENABLED, 
+    '#configuration' => PROVISION_HELP_COLLAPSED);
   $form['restart_cmd']['#weight'] = 20;
 
   // remove all the things i don't want from the node form.
   return hosting_wizard_form('provision/web', $form);
+}
+
+function hosting_wizard_provision_web_validate($form_id, $values) {
+  $node = node_load(HOSTING_OWN_WEB_SERVER);
+  $node->title = $values['title'];
+  $node->ip_address = $values['ip_address'];
+  $node->script_user = $values['script_user'];
+  $node->web_group = $values['web_group'];
+  $node->restart_cmd = $values['restart_cmd'];
+  node_validate($node);
 }
 
 /**
@@ -350,12 +352,6 @@ function hosting_wizard_provision_db() {
         this site is running on.</p>', 
         array('!own_server' => $own_link, '!edit_page' => l(t("edit page"), 'node/' . HOSTING_OWN_DB_SERVER . '/edit' )));
 
-#  $form['host_help']['#weight'] = -8;
-/**
- * not going to use this field on this form, but i might need this help text another time
-  $form['title']['#description'] = t('<strong>A database server to connect to</strong>
-    <p>You will need the hostname or ip address of the database server you are connecting to. Unless you are using an external database server, or managing multiple database servers, this will just be "localhost". This information is very reliably retrieved from the configuration of the main hosting site. So you should only need to modify this in special cases</p>');
- */
 
   $form['title']['#type'] = 'value';
   
@@ -419,8 +415,7 @@ function hosting_wizard_hosting_init() {
 
 function hosting_wizard_hosting_init_validate() {
   if (!variable_get('hosting_dispatch_last_run', false)) {
-  drupal_goto('hosting/wizard/hosting');
-  #  form_set_error('cron', t("The hosting setup command has not been run yet"));
+    drupal_goto('hosting/wizard/hosting');
   }
 }
 

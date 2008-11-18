@@ -132,7 +132,6 @@ function hosting_web_server_form(&$node) {
     '#default_value' => ($node->web_group) ? $node->web_group : PROVISION_WEB_GROUP,
     '#size' => 20,
     '#maxlength' => 75,
-    '#validate' => array('hosting_validate_web_group' => array()),
     '#weight' => -10,
   );
   
@@ -164,21 +163,25 @@ function hosting_web_server_form(&$node) {
   return $form;
 }
 
-function hosting_validate_web_group($element) {
-  $user = $element['#post']['script_user'];
-  $group = $element['#post']['web_group'];
+/**
+ * Implementation of hook_validate().
+  */
+function hosting_web_server_validate(&$node) {
+  $user = $node->script_user;
+  $group = $node->web_group;
+  if (!posix_getpwnam($user)) {
+    form_set_error('script_user', t('The system account you have entered does not exist. Please create the account, or change the account name to an existing user.  
+      For information on how to fix this, please check the !link.', array('!link' => l(t("provisioning requirements"), "admin/help/provision/requirements") )));
+  }
   if ($user && $group) {
     if (!provision_user_in_group($user, $group)) {
        form_set_error('web_group', t("The %user user is not in the %group group. For information on how to fix this, please check the !link.", 
          array('%user' => $user, '%group' =>  $group, '!link' => l(t("provisioning requirements"), "admin/help/provision/requirements") )));
     }
   }
-}
-
-/**
- * Implementation of hook_validate().
-  */
-function hosting_web_server_validate(&$node) {
+  if ($node->script_user == 'root') {
+    form_set_error('script_user', t('For security reasons, you should not run drush commands as the root user. Please choose a different system account name.'));
+  }
   # TODO : check paths. kind of tricky actually, due to multiple servers etc.
 }
 
