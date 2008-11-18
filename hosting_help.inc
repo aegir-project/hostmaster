@@ -113,22 +113,13 @@ function _hosting_introduction() {
   $default_message = t('<p>Please follow these steps to set up and start using your website:</p>');
   $default_message .= '<ol>';
 
-  if (!$admin) {
-    $default_message .= '<li>'. t('<strong>Create your administrator account</strong> To begin, <a href="@register">create the first account</a>. This account will have full administration rights and will allow you to configure your website.', array('@register' => url('user/register'))) .'</li>';
-  }
   $default_message .= '<li>'. t('<strong>Configure your website</strong>
                   Once logged in, visit the <a href="@admin">administration section</a>,
                   where you can <a href="@config">customize and configure</a> all aspects of your website.', 
                   array('@admin' => url('admin'), '@config' => url('admin/settings'))) .'</li>';
-  $default_message .= '<li>'. t('<p><strong>Configure the Provisioning framework.</strong>
-                  Before you configure the Provisioning framework, it is highly recommended that you first read the <a href="@requirements">Provision Requirement documentation</a>.
-                  It provides a step by step guide for configuring your server to use the framework.</p>
-                  <p>You will then need to complete the <a href="@provision">provisioning section</a> to configure the framework.</p>', 
-                  array('@provision' => url('admin/settings/provision'), 
-                  '@requirements' => url('admin/help/provision/requirements'))) .'</li>';
   $default_message .= '<li>'. t('<strong>Configure the Hosting framework.</strong>
-    Most of the configuration for the system is configured for provisioning, but there are a number of small configuration changes that need to set.
-    For all the information you will need, please follow the instructions in the <a href="@hosting_help">Hosting help section</a>.', array('@hosting_help' => url('admin/help/hosting/requirements'))) .'</li>';
+    You now have a configured provisioning framework, but there are some additional configuration options for the hosting framework that can be set.
+    Please visit the <a href="@hosting_admin">hosting administration</a> section for more information.', array('@hosting_help' => url('admin/hosting'))) .'</li>';
   $default_message .= '<li>'. t('<strong>Create your first hosted site.</strong> This system uses special site posts to store information about your sites, so you can simple <a href="@create_site">create a site post</a> to get your first hosted site running.', array('@create_site' => url('node/add/site'))) .'</li>';
   $default_message .= '</ol>';
   $default_message .= '<p>'. t('For more information, please refer to the <a href="@help">help section</a>, or the <a href="@handbook">online Drupal handbooks</a>. You may also post at the <a href="@forum">Drupal forum</a>, or view the wide range of <a href="@support">other support options</a> available.', array('@help' => url('admin/help'), '@handbook' => 'http://drupal.org/handbooks', '@forum' => 'http://drupal.org/forum', '@support' => 'http://drupal.org/support')) .'</p>';
