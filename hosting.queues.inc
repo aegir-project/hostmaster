@@ -250,7 +250,7 @@ function hosting_tasks_queue($count) {
     hosting_task_log($task->vid, 'command', 'Running:' . escapeshellcmd("$cmd"));
 
     if (!is_array($data)) {
-      hosting_task_log($task->vid, 'error', t("The command could not be executed succesfully (returned: %return, code: %code)", array("%return" => _hosting_queues_clean_output($return), "%code" =>  $code)));
+      hosting_task_log($task->vid, 'error', t("The command could not be executed succesfully (returned: !return, code: %code)", array("!return" => $return, "%code" =>  $code)));
       $code = PROVISION_FRAMEWORK_ERROR;
     }
 
