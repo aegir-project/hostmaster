@@ -170,19 +170,26 @@ function hosting_site_hosting_post_delete($task, $data) {
  * TODO: additional nested logic. Certain profiles are available only on certain platforms, and certain languages on certain profiles.
  */
 function hosting_site_form($node) {
+  drupal_set_html_head('<script type="text/javascript"> document.write("<style type=\"text/css\"> div.form-item {display:none} </style>"); </script>');
   drupal_add_js(drupal_get_path('module', 'hosting_site') . '/hosting_site_form.js');
   drupal_add_css(drupal_get_path('module', 'hosting_site') . '/hosting_site_form.css');
 
   $type = node_get_types('type', $node);
   
   // We need to define form elements for the node's title and body.
-  $form['title'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Domain name'),
-    '#required' => TRUE,
-    '#default_value' => $node->title,
-    '#weight' => -5
-  );
+  if (!$node->nid) {
+    $form['title'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Domain name'),
+      '#required' => TRUE,
+      '#default_value' => $node->title,
+      '#weight' => -5
+    );
+  }
+  else {
+    $form['title'] = array('#type' => 'hidden', '#value' => $node->title);
+  }
+
 
   $client = node_load($node->client ? $node->client: HOSTING_DEFAULT_CLIENT);
   if (!$node->client || $node->nid) {
@@ -199,23 +206,29 @@ function hosting_site_form($node) {
     $form['client'] = array('#type' => 'hidden', '#value' => $client->title);
   }
 
-  $platforms = _hosting_get_platforms();
-  if (sizeof($platforms) > 1) {
-    $form['platform'] = array(
-      '#type' => 'radios',
-      '#title' => t('Platform'),
-      '#required' => TRUE,
-      '#description' => t('The platform you want the site to be hosted on.'),
-      '#options' => $platforms,
-      '#default_value' => $node->platform ? $node->platform : HOSTING_DEFAULT_PLATFORM,
-    );
+  if (!$node->nid) {
+    $platforms = _hosting_get_platforms();
+    if (sizeof($platforms) > 1) {
+      $form['platform'] = array(
+        '#type' => 'radios',
+        '#title' => t('Platform'),
+        '#required' => TRUE,
+        '#description' => t('The platform you want the site to be hosted on.'),
+        '#options' => $platforms,
+        '#default_value' => $node->platform ? $node->platform : HOSTING_DEFAULT_PLATFORM,
+      );
+    }
+    else {
+      $form['platform'] = array('#type' => 'hidden', '#value' => key($platforms));
+    }
+    $form['profile'] = _hosting_site_form_profile();
+    $form['language'] = _hosting_site_form_language();
   }
   else {
-    $form['platform'] = array('#type' => 'hidden', '#value' => key($platforms));
+    $form['platform'] = array('#type' => 'hidden', '#value' => $node->platform);
+    $form['profile'] = array('#type' => 'hidden', '#value' => $node->profile);
+    $form['language'] = array('#type' => 'hidden', '#value' => $node->language);
   }
-
-  $form['profile'] = _hosting_site_form_profile();
-  $form['language'] = _hosting_site_form_language();
 
   $db_servers = _hosting_get_db_servers();
   if (sizeof($db_servers) > 1) {
@@ -231,7 +244,7 @@ function hosting_site_form($node) {
   else {
     $form['db_server'] = array('#type' => 'hidden', '#value' => key($db_servers));
   } 
-  
+ 
   return $form;
 }
 
@@ -249,8 +262,15 @@ function hosting_site_validate(&$node) {
     form_set_error('title', t("The domain name you have specified is not unique."));
   }
   if (!$node->new_client && !hosting_get_client($node->client)) {
-    form_set_error('client', 'Please fill in a valid client');
+    form_set_error('client', t('Please fill in a valid client'));
   }
+  if (!array_key_exists($node->profile, hosting_get_profiles($node->platform))) {
+    form_set_error('profile', t('Please fill in a valid profile'));
+  }
+  if (!array_key_exists($node->language, hosting_get_profile_languages($node->profile, $node->platform))) {
+    form_set_error('language', t('Please fill in a valid language'));
+  }
+
 }
 
 function hosting_site_insert(&$node) {
