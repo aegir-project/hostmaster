@@ -79,8 +79,14 @@ function hosting_client_access($op, $node) {
   }
 }
 
-function hosting_get_client($email) {
-  $result = db_result(db_query("SELECT nid FROM {hosting_client} WHERE email='%s'", $email));
+function hosting_get_client($client) {
+  if ((int) $client) {
+    $result = db_result(db_query("SELECT nid FROM {hosting_client} WHERE nid = %d", $client['nid']));
+  }
+  else {
+    $result = db_result(db_query("SELECT c.nid FROM {hosting_client} c JOIN {node} n ON c.nid = n.nid WHERE (n.title = '%s' OR c.email = '%s') AND n.type = 'client'", $client));
+  }
+
   if ($result) {
     return node_load($result);
   }
@@ -281,7 +287,7 @@ function hosting_client_view($node, $teaser = FALSE, $page = FALSE) {
  *   The nid of the generated client
  */
 function hosting_import_client($email, $name = '', $organization = '', $existing = FALSE) {
-  if (!($client = hosting_get_client($email))) {
+  if (!($client = hosting_get_client(array('email' => $email)))) {
     #todo : generate user account for client
     $client = new stdClass();
     $client->type = 'client';
@@ -320,8 +326,33 @@ function hosting_client_menu() {
         );
       }
     }
+    $items[] = array(
+      'path' => 'hosting_client/autocomplete', 
+      'title' => t('hosting client get client autocomplete'),
+      'callback' => 'hosting_client_autocomplete', 
+      'access' => TRUE, 
+      'type' => MENU_CALLBACK
+    );
+
   }
   return $items;
+}
+
+/**
+ * Retrieve autocomplete suggestions
+ */
+function hosting_client_autocomplete($type, $keyword) {
+  $matches = array();
+  
+  if ($type == 'client') {
+    $query = db_query('SELECT *FROM {node} WHERE type = "%s" AND title LIKE "%s"', $type, $keyword. "%");
+    while ($result = db_fetch_object($query)) {
+      $matches[$result->title] = $result->title;
+    }
+  }
+ 
+  print drupal_to_js($matches);
+  exit();
 }
 
 

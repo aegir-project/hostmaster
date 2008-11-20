@@ -184,23 +184,19 @@ function hosting_site_form($node) {
     '#weight' => -5
   );
 
-  if ($node->client) {
-    $form['client'] = array('#type' => 'value', '#value' => $node->client);
+  $client = node_load($node->client ? $node->client: HOSTING_DEFAULT_CLIENT);
+  if (!$node->client || $node->nid) {
+    $form['client'] = array(
+      '#type' => 'textfield',
+      '#required' => TRUE,
+      '#title' => t('Client'),
+      '#default_value' => $client->title,
+      '#description' => t('The client who this site belongs to.'),
+      '#autocomplete_path' => 'hosting_client/autocomplete/client',
+    );
   }
   else {
-    $clients = _hosting_get_clients();
-    if (sizeof($clients) > 1) {
-      $form['client'] = array(
-        '#type' => 'radios',
-        '#title' => t('Client'),
-        '#description' => t('The client who this site belongs to.'),
-        '#options' => $clients,
-        '#default_value' => $node->client,
-      );
-    }
-    else {
-      $form['client'] = array('#type' => 'hidden', '#value' => key($clients));
-    }
+    $form['client'] = array('#type' => 'hidden', '#value' => $client->title);
   }
 
   $platforms = _hosting_get_platforms();
@@ -252,14 +248,18 @@ function hosting_site_validate(&$node) {
   if (hosting_site_exists($node->title, $node->nid)) {
     form_set_error('title', t("The domain name you have specified is not unique."));
   }
-
+  if (!$node->new_client && !hosting_get_client($node->client)) {
+    form_set_error('client', 'Please fill in a valid client');
+  }
 }
-
 
 function hosting_site_insert(&$node) {
   if (!($node->site_status & HOSTING_SITE_IMPORTED)) {
     $node->site_status = HOSTING_SITE_ENABLED; # HOSTING_SITE_NOTINSTALLED implicit
   }
+  
+  $client = hosting_get_client($node->client);
+  $node->client = $client->nid;
   $node->language = ($node->language) ? $node->language : 'en';
 
   db_query("INSERT INTO {hosting_site} (vid, nid, client, db_server, platform, profile, language, last_cron, status) VALUES (%d, %d, %d, %d, %d, %d, '%s', %d, %d)",
@@ -278,8 +278,10 @@ function hosting_site_update(&$node) {
     hosting_site_insert($node);
   }
   else {
+    $client = hosting_get_client($node->client);
+    $node->client = $client->nid;
     db_query("UPDATE {hosting_site} SET client = %d, db_server = %d, platform = %d, last_cron = %d, status = %d, profile = %d, language = '%s' WHERE vid=%d",
-              $node->publish_path, $node->web_server, $node->vid, $node->site_status, $node->language, $node->vid);
+              $node->client, $node->db_server, $node->platform, $node->last_cron, $node->site_status, $node->profile, $node->language, $node->vid);
   }
   if (!$node->no_synch) {
     hosting_add_task($node->nid, 'synch');

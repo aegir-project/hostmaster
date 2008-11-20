@@ -285,6 +285,7 @@ function _hosting_signup_form() {
   );
 
   $form['client'] = hosting_client_form($node);
+  $form['new_client'] = array('#type' => 'value', '#value' => TRUE);
   unset($form['client']['title']);
 
   $form['submit'] = array(
