@@ -81,7 +81,7 @@ function hosting_client_access($op, $node) {
 
 function hosting_get_client($client) {
   if ((int) $client) {
-    $result = db_result(db_query("SELECT nid FROM {hosting_client} WHERE nid = %d", $client['nid']));
+    $result = db_result(db_query("SELECT nid FROM {hosting_client} WHERE nid = %d", $client));
   }
   else {
     $result = db_result(db_query("SELECT c.nid FROM {hosting_client} c JOIN {node} n ON c.nid = n.nid WHERE (n.title = '%s' OR c.email = '%s') AND n.type = 'client'", $client));
