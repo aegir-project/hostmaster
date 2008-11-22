@@ -119,7 +119,7 @@ function _hosting_introduction() {
                   array('@admin' => url('admin'), '@config' => url('admin/settings'))) .'</li>';
   $default_message .= '<li>'. t('<strong>Configure the Hosting framework.</strong>
     You now have a configured provisioning framework, but there are some additional configuration options for the hosting framework that can be set.
-    Please visit the <a href="@hosting_admin">hosting administration</a> section for more information.', array('@hosting_help' => url('admin/hosting'))) .'</li>';
+    Please visit the <a href="@hosting_admin">hosting administration</a> section for more information.', array('@hosting_admin' => url('admin/hosting'))) .'</li>';
   $default_message .= '<li>'. t('<strong>Create your first hosted site.</strong> This system uses special site posts to store information about your sites, so you can simple <a href="@create_site">create a site post</a> to get your first hosted site running.', array('@create_site' => url('node/add/site'))) .'</li>';
   $default_message .= '</ol>';
   $default_message .= '<p>'. t('For more information, please refer to the <a href="@help">help section</a>, or the <a href="@handbook">online Drupal handbooks</a>. You may also post at the <a href="@forum">Drupal forum</a>, or view the wide range of <a href="@support">other support options</a> available.', array('@help' => url('admin/help'), '@handbook' => 'http://drupal.org/handbooks', '@forum' => 'http://drupal.org/forum', '@support' => 'http://drupal.org/support')) .'</p>';
