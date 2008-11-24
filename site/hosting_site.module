@@ -170,7 +170,6 @@ function hosting_site_hosting_post_delete($task, $data) {
  * TODO: additional nested logic. Certain profiles are available only on certain platforms, and certain languages on certain profiles.
  */
 function hosting_site_form($node) {
-  drupal_set_html_head('<script type="text/javascript"> document.write("<style type=\"text/css\"> div.form-item {display:none} </style>"); </script>');
   drupal_add_js(drupal_get_path('module', 'hosting_site') . '/hosting_site_form.js');
   drupal_add_css(drupal_get_path('module', 'hosting_site') . '/hosting_site_form.css');
 

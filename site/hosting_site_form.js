@@ -4,7 +4,6 @@ if (Drupal.jsEnabled) {
     * initialize the form
     */
     hostingSitePopulate('profile');
-    $('div.form-item').show();
     $('div.hosting-site-form-language-options').parent().hide();
     $('input[@name=platform]').change(function() {
       hostingSitePopulate('profile');
