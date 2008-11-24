@@ -110,7 +110,7 @@ function hosting_hosting_queues() {
     'description' => t('Process the queue of outstanding hosting tasks.'),
     'type' => 'serial',  # run queue sequentially. always with the same parameters.
     'frequency' => strtotime("1 minute", 0),  # run queue every minute.
-    'items' => 5, # process 5 queue items per execution.
+    'items' => 20, # process 20 queue items per execution.
     'total_items' => hosting_task_count(),
     'singular' => t('task'),
     'plural' => t('tasks'),
@@ -197,9 +197,9 @@ function hosting_generate_command($system, $command, $ref, $args = array(), $opt
  * @return
  *   An associative array containing task nodes, indexed by node id.
  */
-function _hosting_get_new_tasks($limit = 5) {
+function _hosting_get_new_tasks($limit = 20) {
   $return = array();
-  $result = db_query("SELECT nid FROM {hosting_task_queue} WHERE status=%d ORDER BY timestamp ASC LIMIT %d", PROVISION_QUEUED, $limit);
+  $result = db_query("SELECT nid FROM {hosting_task_queue} WHERE status=%d ORDER BY timestamp, nid ASC LIMIT %d", PROVISION_QUEUED, $limit);
   while ($node = db_fetch_object($result)) {
     $return[$node->nid] =  node_load($node->nid);
   }
@@ -223,7 +223,7 @@ function _hosting_task_in_queue($nid) {
  *
  * Iterates through the list of outstanding tasks, and execute the commands on the back end.
  */
-function hosting_tasks_queue($count) {
+function hosting_tasks_queue($count = 20) {
   global $provision_errors;
 
   hosting_log('hosting_tasks', t("Running tasks queue"));

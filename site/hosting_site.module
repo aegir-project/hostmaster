@@ -52,7 +52,9 @@ function hosting_site_provision_args($node, $task = '') {
   if ($node->type == 'site') {
     $values['#1'] = $node->title;
     $values['site_id'] = $node->nid;
-    $values['language'] = $node->language;
+    if ($task != 'import') {
+      $values['language'] = $node->language;
+    }
   }
   if ($node->type == 'task' && $task == 'restore') {
     $backup = hosting_site_get_backup($node->task_args['bid']);
@@ -86,17 +88,14 @@ function hosting_get_sites_by_status($platform, $status) {
 /**
  * Helper function to generate new site node during import
  */
-function hosting_import_site($url, $data, $status, $platform = HOSTING_DEFAULT_PLATFORM) {
+function hosting_import_site($site_id, $data, $status, $platform = HOSTING_DEFAULT_PLATFORM) {
   global $user;
-
   if ($data['client_email']) {
     $client = hosting_import_client($data['client_email'], $data['client_name'], $data['client_organization'], TRUE);
   }
 
-  $site = new stdClass();
-  $site->type = 'site';
+  $site = node_load($site_id);
   $site->uid = $client->uid;
-  $site->title = $url;
   $site->status = 1;
   $site->platform = $platform;
   $site->client = ($client) ? $client : HOSTING_DEFAULT_CLIENT;
@@ -283,11 +282,13 @@ function hosting_site_insert(&$node) {
 
   db_query("INSERT INTO {hosting_site} (vid, nid, client, db_server, platform, profile, language, last_cron, status) VALUES (%d, %d, %d, %d, %d, %d, '%s', %d, %d)",
     $node->vid, $node->nid, $node->client, $node->db_server, $node->platform, $node->profile, $node->language, $node->last_cron, $node->site_status);
-  if ((!$node->old_vid) && !($node->site_status & HOSTING_SITE_IMPORTED)) {
-    hosting_add_task($node->nid, 'install');
-  }
-  if (($node->platform == HOSTING_OWN_PLATFORM) && ($node->title == PROVISION_DOMAIN)) {
-    variable_set('HOSTING_OWN_SITE', $node->nid);
+  if ((!$node->old_vid)) {
+    if ($node->site_status & HOSTING_SITE_IMPORTED) {
+      hosting_add_task($node->nid, 'import');
+    }
+    else {
+      hosting_add_task($node->nid, 'install');
+    }
   }
 }
  
@@ -335,24 +336,27 @@ function hosting_site_view(&$node, $teaser = false) {
     '#value' => _hosting_node_link($node->platform),
   );
 
-  $node->content['info']['profile'] = array(
-    '#type' => 'item',
-    '#title' => t('Install profile'),
-    '#value' => _hosting_node_link($node->profile),
-  );
-
-  $node->content['info']['language'] = array(
-    '#type' => 'item',
-    '#title' => t('Language'),
-    '#value' => _hosting_language_name($node->language),
-  );
-
-  $node->content['info']['db_server'] = array(
-    '#type' => 'item',
-    '#title' => t('Database server'),
-    '#value' => _hosting_node_link($node->db_server),
-  );
-
+  if ($node->profile) {
+    $node->content['info']['profile'] = array(
+      '#type' => 'item',
+      '#title' => t('Install profile'),
+      '#value' => _hosting_node_link($node->profile),
+    );
+  }
+  if ($node->language) {
+    $node->content['info']['language'] = array(
+      '#type' => 'item',
+      '#title' => t('Language'),
+      '#value' => _hosting_language_name($node->language),
+    );
+  }
+  if ($node->db_server) {
+    $node->content['info']['db_server'] = array(
+      '#type' => 'item',
+      '#title' => t('Database server'),
+      '#value' => _hosting_node_link($node->db_server),
+    );
+  }
   $site_status = array(hosting_site_status_output($node->site_status));
   $install_status = hosting_site_task_status($node->nid);
   if ($install_status) {
@@ -512,8 +516,8 @@ function hosting_site_list($filter_by = null, $filter_value = null) {
   while ($node = db_fetch_object($result)) {
     $row = array();
     $row[] =  array('data' => l($node->title, 'node/' . $node->nid), 'class'=> 'hosting-status');
-    $row[] = _hosting_node_link($node->profile);
-    $row[] = _hosting_language_name($node->language);
+    $row[] = ($node->profile) ? _hosting_node_link($node->profile) : t('n/a');
+    $row[] = ($node->language) ? _hosting_language_name($node->language) : t('n/a');
     $row[] = t("@interval ago", array('@interval' => format_interval(mktime() - $node->created, 1)));
     $rows[] = array('data' => $row, 'class' => _hosting_site_list_class($node));
   }
@@ -522,7 +526,7 @@ function hosting_site_list($filter_by = null, $filter_value = null) {
 }
 
 function _hosting_site_list_class($node) {
-  $task_status = hosting_task_status('rid', $node->nid, 'install');
+  $task_status = hosting_task_status('rid', $node->nid, ($node->status & HOSTING_SITE_IMPORTED) ? 'import' : 'install');
   if ($node->status & HOSTING_SITE_DELETED || ($task_status != PROVISION_QUEUED && $task_status != PROVISION_SUCCESS)) {
     return 'hosting-error';
   }
@@ -597,7 +601,7 @@ function _hosting_site_form_language($profile = NULL, $platform = null) {
       '#description' => t('The type of site to install.'),
       '#options' => $languages,
       '#required' => TRUE,
-      '#default_value' => ($node->language) ? $node->language : 'en',
+      '#default_value' => 'en',
       '#attributes' => array('class' => "hosting-site-form-language-options"),
     );
   }
@@ -621,4 +625,10 @@ function _hosting_site_form_populate($element, $value, $value2 = null) {
     )
   );
   exit();
+}
+
+function hosting_site_hosting_post_import($task, $data) {
+  $site = node_load($task->rid);
+  
+  hosting_import_site($site->nid, $data['site'], HOSTING_SITE_ENABLED | HOSTING_SITE_INSTALLED | HOSTING_SITE_IMPORTED, $site->platform);
 }

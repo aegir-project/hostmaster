@@ -414,7 +414,7 @@ function hosting_wizard_hosting_init() {
 
 function hosting_wizard_hosting_init_validate() {
   if (!variable_get('hosting_dispatch_last_run', false)) {
-    drupal_goto('hosting/wizard/hosting');
+    drupal_goto('hosting/wizard/hosting/init');
   }
 }
 
@@ -454,33 +454,15 @@ function hosting_wizard_hosting_verify_validate() {
 
 function hosting_wizard_hosting_import() {
   $form = array();
-  $task = hosting_get_most_recent_task(HOSTING_OWN_PLATFORM, 'import');
 
   $sites = hosting_get_sites_by_status(HOSTING_OWN_PLATFORM, HOSTING_SITE_IMPORTED);
-  if ($task->task_status & PROVISION_SUCCESS) {
-    if ($list = hosting_site_list('platform', HOSTING_OWN_PLATFORM)) {
-      $form['intro']['#value'] = t('<p>Below is a list of sites which were imported into the Hosting framework. Each of these pre-existing sites is now being managed
-        by Hosting, and has the same capabilities of sites that were created using the framework.</p>');
-      $form['list']['#value'] = $list;
-    }
-    else {
-      $form['intro']['#value'] = t('<p>Hosting has not found any sites to import.</p>')
-        . t('<p>In the future, any additional platforms you create will also automatically have existing sites imported, and at any time you can request an import task on any existing platform</p>');
-    }
+  if ($list = hosting_site_list('platform', HOSTING_OWN_PLATFORM)) {
+    $form['intro']['#value'] = t('<p>Below is a list of sites which were imported into the Hosting framework. Each of these pre-existing sites have had an import task created for them, and will be imported by the task queue.</p>');
+    $form['list']['#value'] = $list;
   }
   else {
-    $node = hosting_get_most_recent_task(HOSTING_OWN_PLATFORM, 'import');
-    $form['retry_id'] = array('#type' => 'hidden', '#value' => $node->nid);
-    $form['no_sites']['#value'] = t('<p>There was an error importing sites.');
-    $form['log_tip']['#value'] = t('Underneath is the log output and status of your import task.
-      Check your settings on the previous pages of the wizard, and follow the applicable examples from the configuration
-      tips.');
-    $view = hosting_task_view($node);
-    $form['task_status'] = $view->content['status'];
-    $form['task_status']['#title'] = t('Errors');
-    $form['last_attempt'] = array('#type' => 'item', '#title' => t('Last attempt'), '#value' => hosting_format_interval($node->changed));
-    $form['log'] = $view->content['hosting_log'];
-    $next = t('Check again');
+    $form['intro']['#value'] = t('<p>Hosting has not found any sites to import.</p>')
+      . t('<p>In the future, any additional platforms you create will also automatically have existing sites imported, and at any time you can request an verify task on any existing platform to find and import any sites that may have been added manually.</p>');
   }
   return hosting_wizard_form('hosting/import', $form);
 }

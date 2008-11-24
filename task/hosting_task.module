@@ -88,7 +88,7 @@ function hosting_task_provision_args($node, $task = '') {
 
 function hosting_task_retry($task_id) {
   $status = db_query("SELECT status FROM {hosting_task_queue} WHERE nid=%d", $task_id);
-  if ($status != PROVISION_SUCCESS) {
+  if (!($status & PROVISION_SUCCESS)) {
     db_query("UPDATE {hosting_task_queue} SET STATUS = %d WHERE nid =%d", PROVISION_QUEUED, $task_id);
     $node = node_load($task_id);
     drupal_set_message(t("The task is being retried and has been added to the hosting queue again"));
@@ -220,6 +220,10 @@ function hosting_available_tasks($node) {
       $options['disable']['title'] =  t('Disable');      
       $options['disable']['description'] =  t('Disabling this site will stop it from being accessible. It can be enabled again later.');      
       $options['disable']['weight'] =  4;      
+
+/*      $options['import']['title'] = t('Import');
+      $options['import']['description'] = t('Import information about this site.');
+      $options['import']['weight'] = 11;*/
     }
     else {
       $options['enable']['title'] = t('Enable');
@@ -239,10 +243,6 @@ function hosting_available_tasks($node) {
     $options['verify']['title'] = t('Verify');
     $options['verify']['description'] = t('Verify that the platform is correctly installed and working.');
     $options['verify']['weight'] = 10;
-
-    $options['import']['title'] = t('Import');
-    $options['import']['description'] = t('Import any sites running on this platform.');
-    $options['import']['weight'] = 11;
   }
   return $options;
 }
