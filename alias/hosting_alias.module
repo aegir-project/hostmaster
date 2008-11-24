@@ -21,7 +21,7 @@ function hosting_alias_menu($may_cache) {
 
 function hosting_alias_help($path) {
   switch($path) {
-    case 'admin/settings/hosting_alias' :
+    case 'admin/hosting/aliases' :
       $output = t('Site aliases allow you to let sites be available through multiple domain addresses.<br /> The most common use of this functionality is to provide automatic aliasing for www.mysite.com and mysite.com variants of the domain name<br /> ');
       $output .= t('This module will also allow you to provide a "temporary url" that sites will always be accessible from, in case of DNS problems.<br />');
       break;
@@ -78,22 +78,27 @@ function hosting_alias_get_aliases($node, $type = null) {
   while ($obj = db_fetch_object($result)) {
     $alias[] = $obj->alias;
   }
-  return $alias;
+  if (sizeof($alias)) {
+    return $alias;
+  }
+  return array();
 }
 
 function hosting_alias_insert($node) {
-  $aliases = explode("\n", $node->aliases);
-  if (is_array($aliases)) {
-    foreach ($aliases as $alias) {
-      if ($alias = trim($alias)) {
-        db_query("INSERT INTO {hosting_site_alias} (vid, nid, alias, automatic) VALUES (%d, %d, '%s', %d)", $node->vid, $node->nid, $alias, HOSTING_ALIAS_CUSTOM);
+  $automatic = hosting_alias_automatic_aliases($node->title);
+  if ($node->aliases || sizeof($automatic)) {
+    $aliases = (is_array($node->aliases)) ? $node->aliases : explode("\n", $node->aliases);
+    if (is_array($aliases)) {
+      foreach ($aliases as $alias) {
+        if (($alias = trim($alias)) && !in_array($alias, $automatic)) {
+          db_query("INSERT INTO {hosting_site_alias} (vid, nid, alias, automatic) VALUES (%d, %d, '%s', %d)", $node->vid, $node->nid, $alias, HOSTING_ALIAS_CUSTOM);
+        }
       }
     }
-  }
-  $automatic = hosting_alias_automatic_aliases($node->title);
-  if (sizeof($automatic)) {
-    foreach ($automatic as $alias) {
-      db_query("INSERT INTO {hosting_site_alias} (vid, nid, alias, automatic) VALUES (%d, %d, '%s', %d)", $node->vid, $node->nid, $alias, HOSTING_ALIAS_AUTOMATIC);
+    if (sizeof($automatic)) {
+      foreach ($automatic as $alias) {
+        db_query("INSERT INTO {hosting_site_alias} (vid, nid, alias, automatic) VALUES (%d, %d, '%s', %d)", $node->vid, $node->nid, $alias, HOSTING_ALIAS_AUTOMATIC);
+      }
     }
   }
 }
@@ -138,8 +143,7 @@ function hosting_alias_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
         foreach ($aliases as $alias) {
           if ($alias = trim($alias)) {
             if (hosting_site_exists($alias, $node->nid)) {
-              print "yes";
-#              form_set_error('aliases', t('The domain name @alias is already in use by another site', array('@alias' => $alias)));
+              form_set_error('aliases', t('The domain name @alias is already in use by another site', array('@alias' => $alias)));
             }
           }
         }
