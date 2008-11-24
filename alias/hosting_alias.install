@@ -19,3 +19,12 @@ function hosting_alias_uninstall() {
   db_query("DROP TABLE {hosting_site_alias}");
 }
 
+/**
+ * This removes dodgy data created by an import bug
+ */
+function hosting_alias_update_1() {
+  $ret = array();
+  $ret[] = update_sql("DELETE FROM {hosting_site_alias} WHERE alias='Alias'");
+  return $ret;
+}
+
