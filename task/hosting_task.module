@@ -87,7 +87,7 @@ function hosting_task_provision_args($node, $task = '') {
 }
 
 function hosting_task_retry($task_id) {
-  $status = db_query("SELECT status FROM {hosting_task_queue} WHERE nid=%d", $task_id);
+  $status = db_result(db_query("SELECT status FROM {hosting_task_queue} WHERE nid=%d", $task_id));
   if (!($status & PROVISION_SUCCESS)) {
     db_query("UPDATE {hosting_task_queue} SET STATUS = %d WHERE nid =%d", PROVISION_QUEUED, $task_id);
     $node = node_load($task_id);
