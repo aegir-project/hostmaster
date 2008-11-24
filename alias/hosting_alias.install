@@ -24,7 +24,7 @@ function hosting_alias_uninstall() {
  */
 function hosting_alias_update_1() {
   $ret = array();
-  $ret[] = update_sql("DELETE FROM {hosting_site_alias} WHERE alias='Alias'");
+  $ret[] = update_sql("DELETE FROM {hosting_site_alias} WHERE alias='Array'");
   return $ret;
 }
 
