@@ -9,7 +9,7 @@
  */
 function hostmaster_profile_modules() {
   return array(
-    /* core */ 'block', 'color', 'filter', 'help', 'menu', 'node', 'system', 'user',
+    /* core */ 'block', 'color', 'filter', 'help', 'menu', 'node', 'system', 'user', 'watchdog',
     /* contrib */ 'drush', 'cvs_deploy', //'ahah_forms', 'dynamic_subform',
     /* custom */ 'provision', 'provision_apache', 'provision_mysql', 'provision_drupal', 'hosting', 'hosting_task', 'hosting_client', 'hosting_db_server', 'hosting_package', 'hosting_platform', 'hosting_site', 'hosting_web_server');
 }
