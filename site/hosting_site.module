@@ -364,7 +364,7 @@ function hosting_site_view(&$node, $teaser = false) {
   }
   $node->content['info']['status'] = array(
     '#type' => 'item',
-    '#title' => t('Site status'),
+    '#title' => t('Status'),
     '#value' => join(', ', $site_status),
   );
   $node->content['info']['#suffix'] = '</div>';
