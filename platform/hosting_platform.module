@@ -15,6 +15,27 @@ function hosting_platform_node_info() {
   return $types;
 }
 
+/**
+ * Implementation of hook_hosting_tasks
+ */
+function hosting_platform_hosting_tasks($node) {
+  $options = array();
+  if (($node->type == 'platform') & !hosting_task_outstanding($node->nid, 'verify')) {
+    $options['synch'] = array(
+      'title' => t('Synchronize'),
+      'description' => t('Regenerate all configuration files on server.'),
+      'weight' =>  9,
+    );
+    $options['verify'] = array(
+      'title' => t('Verify'),
+      'description' => t('Verify that the platform is correctly installed and working.'),
+      'weight' => 10,
+    );
+  }
+  return $options;
+}
+
+
 function hosting_platform_hosting_feature() {
   $features['platform'] = array(
       'title' => t('Platforms'), 

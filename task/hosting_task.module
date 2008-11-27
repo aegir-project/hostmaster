@@ -199,52 +199,7 @@ function hosting_task_count() {
 }
 
 function hosting_available_tasks($node) {
-  $options = array();
-  if ($node->type == 'site') {
-    if (hosting_task_outstanding($node->nid, 'delete') || ($node->site_status & HOSTING_SITE_DELETED)) {
-      return $options;
-    }
-    if (hosting_task_outstanding($node->nid, 'enable') || ($node->site_status & HOSTING_SITE_ENABLED)) {
-      $options['backup']['title'] = t('Backup');
-      $options['backup']['description'] = t('Generate a backup of this site that can be restored to at any time');
-      $options['backup']['weight'] = 7;
-
-      $options['restore']['title'] = t('Restore');
-      $options['restore']['description'] = t('Restore this site to a previous backup. A new backup will be created before this is attempted.');
-      $options['restore']['weight'] = 7;
-
-      $options['synch']['title'] = t('Synchronize');
-      $options['synch']['description'] = t('Regenerate all configuration files on server.');
-      $options['synch']['weight'] =  9;
-
-      $options['disable']['title'] =  t('Disable');      
-      $options['disable']['description'] =  t('Disabling this site will stop it from being accessible. It can be enabled again later.');      
-      $options['disable']['weight'] =  4;      
-
-/*      $options['import']['title'] = t('Import');
-      $options['import']['description'] = t('Import information about this site.');
-      $options['import']['weight'] = 11;*/
-    }
-    else {
-      $options['enable']['title'] = t('Enable');
-      $options['enable']['description'] = t('Enabling this site will allow it to be accesible again. It may be disabled again if needed.');
-      $options['enable']['weight'] =  4;      
-
-      $options['delete']['title'] = t('Delete');
-      $options['delete']['description'] = t('Deleting this site will completely remove it from the hosting system, but will keep the last backup available. This process can not be undone. Are you really sure you want to delete this site?');
-      $options['delete']['weight'] = 10;
-    }
-  }
-  elseif (($node->type == 'platform') & !hosting_task_outstanding($node->nid, 'verify')) {
-    $options['synch']['title'] = t('Synchronize');
-    $options['synch']['description'] = t('Regenerate all configuration files on server.');
-    $options['synch']['weight'] =  9;
-
-    $options['verify']['title'] = t('Verify');
-    $options['verify']['description'] = t('Verify that the platform is correctly installed and working.');
-    $options['verify']['weight'] = 10;
-  }
-  return $options;
+  return module_invoke_all('hosting_tasks', $node);
 }
 
 
