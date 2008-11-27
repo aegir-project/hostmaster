@@ -18,11 +18,11 @@ global $hosting_site_status;
  * bitmask => string translation map. this will be iterated upon to figure out what flags are set in a status field
  */
 $hosting_site_status = array(
-  HOSTING_SITE_UNKNOWN => "Unknown status",
-  HOSTING_SITE_INSTALLED => "Site installed",
-  HOSTING_SITE_ENABLED => "Site enabled",
-  HOSTING_SITE_DELETED => "Site deleted",
-  HOSTING_SITE_IMPORTED => "Site Imported",
+  HOSTING_SITE_UNKNOWN => "Unknown",
+  HOSTING_SITE_INSTALLED => "Installed",
+  HOSTING_SITE_ENABLED => "Enabled",
+  HOSTING_SITE_DELETED => "Deleted",
+  HOSTING_SITE_IMPORTED => "Imported",
 );
 
 global $hosting_site_antistatus;
@@ -35,8 +35,8 @@ global $hosting_site_antistatus;
  * iterate ($i*=2) through the bitmasks instead of going through the array
  */
 $hosting_site_antistatus = array(
-  HOSTING_SITE_NOTINSTALLED => "Site not installed yet",
-  HOSTING_SITE_DISABLED => "Site disabled",
+  HOSTING_SITE_NOTINSTALLED => "Not installed",
+  HOSTING_SITE_DISABLED => "Disabled",
 );
 
 /**
