@@ -154,11 +154,16 @@ function hosting_alias_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
         return $additions;
         break;
       case 'view':
-        if ($custom = implode(', ', hosting_alias_get_aliases($node))) {
+        $aliases = hosting_alias_get_aliases($node);
+
+        if (sizeof($aliases)) {
+          foreach ($aliases as $link) {
+            $links[] = l($link, "http://$link");
+          }
           $node->content['info']['aliases'] = array(
             '#type' => 'item',
             '#title' => t('Domain aliases'),
-            '#value' => $custom, 
+            '#value' => implode(', ', $links), 
             '#weight' => 10,
           );
         }
