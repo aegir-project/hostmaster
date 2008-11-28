@@ -571,7 +571,12 @@ function hosting_site_list($filter_by = null, $filter_value = null) {
     array('data' => t('Site'), 'field' => 'title'),
     array('data' => t('Profile'), 'field' => 'profile'),
     array('data' => t('Language'), 'field' => 'language'),
-    array('data' => t('Created'), 'field' => 'created', 'sort' => 'desc'));
+    array('data' => t('Created'), 'field' => 'created', 'sort' => 'desc'),
+  );
+  $platforms = _hosting_get_platforms();
+  if (sizeof($platforms) > 1) {
+    $header[] .= array('data' => t('Platform'), 'field' => 'platform');
+  }
 
   $sql = "SELECT * FROM {node} n left join {hosting_site} s on n.nid=s.nid where type='%s'" . $cond;
   $sql .= tablesort_sql($header);
@@ -589,6 +594,9 @@ function hosting_site_list($filter_by = null, $filter_value = null) {
     $row[] = ($node->profile) ? _hosting_node_link($node->profile) : t('n/a');
     $row[] = ($node->language) ? _hosting_language_name($node->language) : t('n/a');
     $row[] = t("@interval ago", array('@interval' => format_interval(mktime() - $node->created, 1)));
+    if (sizeof($platforms) > 1) {
+      $row[] = ($node->platform) ? _hosting_node_link($node->platform) : t('n/a');
+    }
     $rows[] = array('data' => $row, 'class' => _hosting_site_list_class($node));
   }
   
