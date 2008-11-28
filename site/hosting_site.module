@@ -180,6 +180,17 @@ function hosting_site_hosting_post_install($task, $data) {
 }
 
 /**
+ * Implementation of the hosting_failed_install hook
+ */
+function hosting_site_hosting_failed_install($task, $data, $code) {
+  if ($code & PROVISION_SITE_INSTALLED) {
+    // Site has already been installed. Try to import instead.
+    hosting_task_log($task->vid, 'notice', t("This site appears to be installed already. Generating an import task."));
+    hosting_add_task($task->rid, 'import');
+  }
+}
+
+/**
  * implementation of hook_hosting_post_disable
  * I am not very fond of the use of bitwise operators with negatives.
  */
@@ -691,3 +702,4 @@ function hosting_site_hosting_post_import($task, $data) {
   
   hosting_import_site($site->nid, $data['site'], HOSTING_SITE_ENABLED | HOSTING_SITE_INSTALLED | HOSTING_SITE_IMPORTED, $site->platform);
 }
+

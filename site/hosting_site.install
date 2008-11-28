@@ -40,3 +40,15 @@ function hosting_site_update_1() {
   return $ret;
 }
 
+/**
+ * Retry all failed site installs, to evaluate where they might be successfully imported instead
+ */
+function hosting_site_update_2() {
+  include_once( drupal_get_path('module', 'hosting_task') . '/hosting_task.module');
+  $ret = array();
+  $result = db_query("select n.nid from {node} n left join {hosting_task} t on n.vid = t.vid where t.task_type = 'install' and t.task_status > 1 and n.type='task'");
+  while ($obj = db_fetch_object($result)) {
+    hosting_task_retry($obj->nid);
+  }
+  return $ret;
+}

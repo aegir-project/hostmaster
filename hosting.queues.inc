@@ -277,6 +277,9 @@ function hosting_tasks_queue($count = 20) {
       # The task has been successful. Run the post hook.
       module_invoke_all("hosting_post_" . $task->task_type, $task, $data);
     }
+    else {
+      module_invoke_all("hosting_failed_". $task->task_type, $task, $data, $code);
+    }
     // remove from queue
     hosting_task_log($task->vid, "queue", t("Removing task from hosting queue"), 0);
     db_query("UPDATE {hosting_task_queue} SET status=%d WHERE nid=%d", $code, $task->nid);
