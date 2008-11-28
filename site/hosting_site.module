@@ -559,7 +559,11 @@ function hosting_site_list($filter_by = null, $filter_value = null) {
   $cond = '';
 
   if ($filter_by && $filter_value) {
-    $cond = ' AND s.' . $filter_by . ' = %d';
+    if ($filter_by == 'status') {
+      $cond = ' AND s.' . $filter_by . ' & %d';
+    } else {
+      $cond = ' AND s.' . $filter_by . ' = %d';
+    }
     $args[] = $filter_value;
   }
 
@@ -614,7 +618,7 @@ function _hosting_site_list_class($node) {
  * Page handler for displaying list of hosted sites on front page
  */
 function hosting_sites() {
-  if ($list = hosting_site_list('status', (HOSTING_SITE_INSTALLED | HOSTING_SITE_ENABLED))) {
+  if ($list = hosting_site_list('status', (HOSTING_SITE_INSTALLED) & ~HOSTING_SITE_DELETED)) {
     return $list;
   }
   $create_site_link = l(t('Create a site now?'), 'node/add/site');
