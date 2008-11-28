@@ -67,7 +67,8 @@ function hosting_task_perm() {
     'create delete task',
     'create verify task',
     'view own tasks',
-    'access task logs'
+    'access task logs',
+    'retry failed tasks'
   );
 }
 
