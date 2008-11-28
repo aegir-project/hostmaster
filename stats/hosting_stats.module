@@ -35,7 +35,7 @@ function hosting_stats_queue($count) {
     $data = unserialize(implode("\n", $return));
     $site->revision = false;
     $site->last_stats = mktime();
-    $site->no_synch = true;
+    $site->no_verify = true;
     node_save($site);
     foreach (module_implements("hosting_stats") as $module) {
       module_invoke("hosting_stats", $site->nid, $data['stats']);

@@ -55,7 +55,7 @@ function hosting_web_server_provision_args($node, $task = '') {
     $values['web_id'] = $web->nid;
     $values['web_host'] = $web->title;
     $values['web_ip'] = $web->ip_address;
-    if ($task == 'synch' && $node->type == 'platform') {
+    if ($task == 'verify' && $node->type == 'platform') {
         $values['script_user'] = $web->script_user;
         $values['web_group'] = $web->web_group;
         $values['config_path'] = $web->config_path;

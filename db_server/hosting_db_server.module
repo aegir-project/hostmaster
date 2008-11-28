@@ -83,7 +83,7 @@ function _hosting_get_db_servers() {
 
 function hosting_db_server_provision_args($node, $task = '') {
   $values = array();
-  if ($node->type == 'platform' && $task == 'synch') {
+  if ($node->type == 'platform' && $task == 'verify') {
     $values['master_db'] = hosting_db_server_as_url(HOSTING_DEFAULT_DB_SERVER);
   }
   if ($node->type == 'site') {
