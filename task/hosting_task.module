@@ -62,7 +62,6 @@ function hosting_task_perm() {
     'administer tasks',
     'create backup task',
     'create restore task',
-    'create synch task',
     'create disable task',
     'create enable task',
     'create delete task',

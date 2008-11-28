@@ -21,11 +21,6 @@ function hosting_platform_node_info() {
 function hosting_platform_hosting_tasks($node) {
   $options = array();
   if (($node->type == 'platform') & !hosting_task_outstanding($node->nid, 'verify')) {
-    $options['synch'] = array(
-      'title' => t('Synchronize'),
-      'description' => t('Regenerate all configuration files on server.'),
-      'weight' =>  9,
-    );
     $options['verify'] = array(
       'title' => t('Verify'),
       'description' => t('Verify that the platform is correctly installed and working.'),
@@ -95,7 +90,7 @@ function hosting_platform_provision_args($node, $task = '') {
     case 'platform' : 
       $values['platform'] = $node->nid;
       $values['publish_path'] = $node->publish_path;
-      if ($task == 'synch') {
+      if ($task == 'verify') {
         $values['master_url'] = variable_get('install_url', $GLOBALS['base_url']);
       }
       break;
@@ -166,7 +161,6 @@ function hosting_platform_insert($node) {
   if ($node->default_platform == 1) {
     variable_set('hosting_default_platform', $node->nid);
   }
-  hosting_add_task($node->nid, 'synch');
   hosting_add_task($node->nid, 'verify');
   db_query("INSERT INTO {hosting_platform} (vid, nid, publish_path, release_id, verified, web_server) VALUES (%d, %d, '%s', %d, %d, %d)",
     $node->vid, $node->nid, $node->publish_path, $node->release_id, $node->verified, $node->web_server);

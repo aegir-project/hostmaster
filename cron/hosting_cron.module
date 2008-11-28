@@ -31,7 +31,7 @@ function hosting_cron_queue($count) {
     $cmd = hosting_generate_command("provision", "cron", $site, array(), array('backend' => TRUE));
     system($cmd);
     $site->revision = false;
-    $site->no_synch = true; // do not generate synch task
+    $site->no_verify = true; // do not generate verify task
     $site->last_cron = mktime();
     node_save($site);
   }

@@ -51,7 +51,7 @@ function hosting_alias_form_alter($form_id, &$form) {
 
 function hosting_alias_provision_args($node, $task = '') {
   $values = array();
-  if (($node->type == 'site') && (in_array($task, array('install', 'synch')))) {
+  if (($node->type == 'site') && (in_array($task, array('install', 'verify')))) {
     $values['aliases'] = implode(",", hosting_alias_get_aliases($node));
   }
   return $values;

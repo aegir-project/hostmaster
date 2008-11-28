@@ -38,9 +38,9 @@ function hosting_site_hosting_tasks($node) {
         'weight' => 7,
       );
 
-      $options['synch'] = array(
-        'title' => t('Synchronize'),
-        'description' => t('Regenerate all configuration files on server.'),
+      $options['verify'] = array(
+        'title' => t('Verify'),
+        'description' => t('Confirm that the site has been correctly installed and regenerate all configuration files to match the hosting front end.'),
         'weight' =>  9,
       );
 
@@ -369,8 +369,8 @@ function hosting_site_update(&$node) {
     db_query("UPDATE {hosting_site} SET client = %d, db_server = %d, platform = %d, last_cron = %d, status = %d, profile = %d, language = '%s' WHERE vid=%d",
               $node->client, $node->db_server, $node->platform, $node->last_cron, $node->site_status, $node->profile, $node->language, $node->vid);
   }
-  if (!$node->no_synch) {
-    hosting_add_task($node->nid, 'synch');
+  if (!$node->no_verify) {
+    hosting_add_task($node->nid, 'verify');
   }
 }
 
