@@ -1,0 +1,5 @@
+; $Id$
+name = Apache-ITK hosting frontend
+description = "Configures a Apache ITK backend with proper permissions."
+dependencies = hosting
+package = Hosting
