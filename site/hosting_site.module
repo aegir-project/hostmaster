@@ -571,7 +571,7 @@ function hosting_site_list($filter_by = null, $filter_value = null) {
   );
   $platforms = _hosting_get_platforms();
   if (sizeof($platforms) > 1) {
-    $header[] .= array('data' => t('Platform'), 'field' => 'platform');
+    $header[] = array('data' => t('Platform'), 'field' => 'platform');
   }
 
   $sql = "SELECT * FROM {node} n left join {hosting_site} s on n.nid=s.nid where type='%s'" . $cond;
