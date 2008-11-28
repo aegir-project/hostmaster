@@ -48,6 +48,7 @@ function hosting_web_server_access($op, $node) {
       break;
   }
 }
+
 function hosting_web_server_provision_args($node, $task = '') {
   $values = array();
   if (in_array($node->type, array('site', 'platform'))) {
