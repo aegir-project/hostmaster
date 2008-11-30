@@ -45,16 +45,6 @@ function hosting_task_access($op, $node) {
   if(user_access('administer tasks')) {
     return TRUE;
   }
-  else {
-    switch ($op) {
-// waiting for the node access to accomplish different view permissions for same node type
-      case 'view':
-        return TRUE;
-        break;
-      default:
-        break;
-    }
-  }
 }
 
 function hosting_task_perm() {
@@ -67,6 +57,7 @@ function hosting_task_perm() {
     'create delete task',
     'create verify task',
     'view own tasks',
+    'view task',
     'access task logs',
     'retry failed tasks'
   );
@@ -450,7 +441,7 @@ function hosting_get_tasks($filter_by = null, $filter_value = null, $count = 5, 
     $cond = ' AND t.' . $filter_by . ' = %d';
     $args[] = $filter_value;
   }
-  $result = pager_query(db_rewrite_sql("SELECT *, t.task_status FROM {node} n left join {hosting_task} t on n.vid=t.vid where type='%s'" . $cond . " ORDER BY n.nid DESC"), $count, $element, NULL, $args);
+  $result = pager_query(db_rewrite_sql("SELECT *, t.task_status FROM {node} n left join {hosting_task} t on n.vid=t.vid WHERE type='%s'" . $cond . " ORDER BY n.nid DESC"), $count, $element, NULL, $args);
   
   while ($row = db_fetch_object($result)) {
     $nodes[] = $row;
@@ -492,7 +483,7 @@ function hosting_task_status($filter_by, $filter_value, $type = 'install') {
     $cond = ' AND t.' . $filter_by . ' = %d';
     $args[] = $filter_value;
   }
-  $result = db_fetch_array(db_query("SELECT q.status AS status FROM {node} n left join {hosting_task_queue} q on n.nid=q.nid left join {hosting_task} t on n.vid=t.vid where n.type='%s' AND t.task_type='%s' " . $cond, $args));
+  $result = db_fetch_array(db_query("SELECT q.status AS status FROM {node} n left join {hosting_task_queue} q on n.nid=q.nid left join {hosting_task} t on n.vid=t.vid WHERE n.type='%s' AND t.task_type='%s' " . $cond, $args));
   return $result['status'];
 }
 

@@ -29,7 +29,7 @@ function hosting_features_form() {
     '#type' => 'item',
     '#title' => t('Optional system features'),
     '#value' => t('You may choose any of the additional system features from the list below.'),
-      );
+  );
 
   $experimental = array(
     '#type' => 'fieldset',
@@ -37,8 +37,7 @@ function hosting_features_form() {
     '#collapsed' => TRUE,
     '#collapsible' => TRUE,
      '#description' => t('Features marked experimental have not been completed to a satisfactory level to be considered production ready, so use at your own risk.'),
-
-    );
+  );
   $features = hosting_get_features(TRUE);
   foreach ($features as $feature => $info) {
     $element = array(
@@ -67,18 +66,26 @@ function hosting_features_form_submit($form_id, $values) {
     $value = $values[$feature];
     $current = hosting_feature($feature);
     variable_set('hosting_feature_' . $feature, $value);
-    if ($module = $features[$feature]['module']) {
-      if ((!$current) && $value) {
+    if ((!$current) && $value) {
+      if ($module = $features[$feature]['module']) {
         include_once('includes/install.inc');
         // turn on module
         drupal_set_message(t("Enabling %module module", array('%module' => $module)));
         drupal_install_modules(array($module));
         module_enable(array($module));
       }
-      if ($current && !$value) {
+      if (function_exists($callback = $features[$feature]['enable'])) {
+        $callback();
+      }
+    }
+    if ($current && !$value) {
+      if ($module = $features[$feature]['module']) {
         drupal_set_message(t("Disabling %module module", array('%module' => $module)));
         // turn off module
         module_disable(array($module));
+      }
+      if (function_exists($callback = $features[$feature]['disable'])) {
+        $callback();
       }
     }
     #print("$feature $current $value $module <br />");
@@ -113,4 +120,18 @@ function hosting_get_features($refresh = FALSE) {
   else {
     return unserialize($cache->data);
   }
+}
+
+function hosting_feature_node_types($refresh = FALSE) {
+  static $types;
+
+  if (!is_array($types) || $refresh) {
+    $features = hosting_get_features($refresh);
+    foreach ($features as $feature => $info) {
+      if ($info['node']) {
+        $types[] = $info['node'];
+      }
+    }
+  }
+  return $types;
 }

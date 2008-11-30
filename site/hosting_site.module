@@ -74,7 +74,7 @@ function hosting_site_hosting_tasks($node) {
  * Implementation of hook_perm
  */
 function hosting_site_perm() {
-  return array('create site', 'view site', 'edit site', 'delete site');
+  return array('create site nodes', 'view site', 'edit site', 'delete site', 'administer sites');
 }
 
 /**
@@ -84,9 +84,6 @@ function hosting_site_access($op, $node) {
   switch ($op) {
     case 'create':
       return user_access('create site');
-      break;
-    case 'view':
-      return user_access('view site');
       break;
     case 'update':
       return user_access('edit site');
@@ -259,7 +256,7 @@ function hosting_site_form($node) {
 
 
   $client = node_load($node->client ? $node->client: HOSTING_DEFAULT_CLIENT);
-  if (!$node->client || $node->nid) {
+  if ((!$node->client || $node->nid) && user_access('administer site')) {
     $form['client'] = array(
       '#type' => 'textfield',
       '#required' => TRUE,
@@ -581,7 +578,7 @@ function hosting_site_list($filter_by = null, $filter_value = null) {
     $header[] = array('data' => t('Platform'), 'field' => 'platform');
   }
 
-  $sql = "SELECT * FROM {node} n left join {hosting_site} s on n.nid=s.nid where type='%s'" . $cond;
+  $sql = "SELECT n.nid, n.title, n.created, s.status, profile, language, platform FROM {node} n left join {hosting_site} s ON n.nid=s.nid WHERE type='%s'" . $cond;
   $sql .= tablesort_sql($header);
 
   // @TODO hide deleted sites

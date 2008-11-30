@@ -55,9 +55,6 @@ function hosting_platform_access($op, $node) {
     case 'create':
       return user_access('create platform');
       break;
-    case 'view': 
-      return user_access('view platform');
-      break;
     case 'update':
       return user_access('edit platform');
       break;

@@ -52,9 +52,6 @@ function hosting_db_server_access($op, $node) {
     case 'create':
       return user_access('create database server');
       break;
-    case 'view':
-      return user_access('view database server');
-      break;
     case 'update':
       return user_access('edit database server');
       break;

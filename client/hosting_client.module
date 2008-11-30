@@ -3,6 +3,7 @@
  * @file Client node type is defined here.
  */
 
+include('hosting_client.access.inc');
 
 function hosting_client_provision_args($node, $task = '') {
   $values = array();
@@ -36,13 +37,14 @@ function hosting_client_hosting_feature() {
       'description' => t('Track and manage ownership of hosted.'),
       'status' => HOSTING_FEATURE_DISABLED,
       'node' => 'client',
-    'group' => 'experimental');
+      'group' => 'experimental',
+    );
   return $features;
 }
 
 
 function hosting_client_perm() {
-  return array('create client','view client', 'edit own client', 'delete own client', 'administer clients');
+  return array('create client','view client', 'edit own client', 'delete own client', 'administer clients', 'administer client users');
 }
 
 function hosting_client_access($op, $node) {
@@ -99,18 +101,6 @@ function hosting_get_client_by_email($email) {
     return node_load($result);
   }
   return false;
-}
-
-/**
- * Small helper function to get clients.
-*/ 
-function _hosting_get_clients() {
-  $return = array();
-  $result = db_query("SELECT nid, title FROM {node} WHERE type='client' AND status=1");
-  while($client = db_fetch_object($result)) {
-    $return[$client->nid] = $client->title;
-  }
-  return $return;
 }
 
 /**
@@ -207,6 +197,22 @@ function hosting_client_insert($node) {
   db_query("INSERT INTO {hosting_client} (vid, nid, name, organization, email) VALUES (%d, %d, '%s', '%s', '%s' )",
     $node->vid, $node->nid, $node->client_name, $node->organization, $node->email);
   hosting_client_set_title($node);
+  if ($node->register_user) {
+    hosting_client_register_user($node);
+  }
+}
+
+function hosting_client_register_user($node) {
+  //register a new user account for the client
+  $user = new stdClass();
+  $user->name = $node->client_name;
+  $user->hosting_client = $node->nid;
+  $user->email = $node->email;
+  $user->pass = user_password();
+  user_save($user, $edit);
+  if ($node->send_welcome) {
+    # @TODO: send welcome mail on new user registration
+  }
 }
 
 /**
@@ -355,5 +361,4 @@ function hosting_client_autocomplete($type, $keyword) {
   print drupal_to_js($matches);
   exit();
 }
-
 

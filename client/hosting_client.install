@@ -13,6 +13,13 @@ function hosting_client_install() {
         PRIMARY KEY  (vid)
       ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
       db_query("CREATE UNIQUE INDEX hosting_client_email_idx ON hosting_client (email)");
+
+      db_query("CREATE TABLE {hosting_client_user} (
+         user int(10) unsigned NOT NULL default '0',
+         client int(10) unsigned NOT NULL default '0',
+         PRIMARY KEY (user)
+       ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
+      db_query("INSERT INTO {hosting_client_user} VALUES (1, 1)");
       break;
    }
 
@@ -55,3 +62,18 @@ function hosting_client_update_1() {
   return $ret;
 }
 
+/**
+ * Create the hosting_client_user relationship table
+ */
+function hosting_client_update_2() {
+  $ret = array();
+  $ret[] = update_sql("CREATE TABLE {hosting_client_user} (
+         user int(10) unsigned NOT NULL default '0',
+         client int(10) unsigned NOT NULL default '0',
+         PRIMARY KEY (user)
+       ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
+  // Insert the uid 1 user into the admin client record.
+  $ret[] = update_sql("INSERT INTO {hosting_client_user} VALUES (1, 1)");
+  node_access_rebuild();
+  return $ret;
+}
