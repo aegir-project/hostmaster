@@ -145,19 +145,22 @@ function hosting_get_sites_by_status($platform, $status) {
  */
 function hosting_import_site($site_id, $data, $status, $platform = HOSTING_DEFAULT_PLATFORM) {
   global $user;
+  $client = node_load(HOSTING_DEFAULT_CLIENT);
+
   if ($data['client_email']) {
-    $client = hosting_import_client($data['client_email'], $data['client_name'], $data['client_organization'], TRUE);
+    if (!($client = hosting_get_client_by_email($data['client_email']))) {
+      $client = hosting_import_client($data['client_email'], $data['client_name'], $data['client_organization']);
+    }
   }
 
   $site = node_load($site_id);
   $site->uid = $client->uid;
   $site->status = 1;
   $site->platform = $platform;
-  $site->client = ($client) ? $client : HOSTING_DEFAULT_CLIENT;
+  $site->client = $client->nid;
   $db_server = hosting_get_db_server($data['db_id']);
   $site->db_server = ($db_server) ? $db_server->nid : HOSTING_DEFAULT_DB_SERVER;
   $site->language = $data['language'] ? $data['language'] : 'en';
-
   // This should really be handled via a hook system, to allow hosting_alias to see these fields, but later.
   $site->aliases = $data['aliases'] ? $data['aliases'] : array();
 

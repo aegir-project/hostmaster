@@ -80,13 +80,21 @@ function hosting_client_access($op, $node) {
 }
 
 function hosting_get_client($client) {
-  if ((int) $client) {
+  if (is_numeric($client)) {
     $result = db_result(db_query("SELECT nid FROM {hosting_client} WHERE nid = %d", $client));
   }
   else {
     $result = db_result(db_query("SELECT c.nid FROM {hosting_client} c JOIN {node} n ON c.nid = n.nid WHERE (n.title = '%s' OR c.email = '%s') AND n.type = 'client'", $client));
   }
 
+  if ($result) {
+    return node_load($result);
+  }
+  return false;
+}
+
+function hosting_get_client_by_email($email) {
+  $result = db_result(db_query("SELECT c.nid FROM {hosting_client} c  WHERE c.email = '%s'", $email));
   if ($result) {
     return node_load($result);
   }
@@ -286,22 +294,15 @@ function hosting_client_view($node, $teaser = FALSE, $page = FALSE) {
  * @return
  *   The nid of the generated client
  */
-function hosting_import_client($email, $name = '', $organization = '', $existing = FALSE) {
-  if (!($client = hosting_get_client(array('email' => $email)))) {
-    #todo : generate user account for client
-    $client = new stdClass();
-    $client->type = 'client';
-    $client->email = $email;
-    $client->contact_name = trim($name);
-    $client->organization = $organization;
-    $client->status = 1;
-    node_save($client);
-    return $client->nid;
-  } elseif ($existing) {
-    return $client->nid;
-  }
-
-  return FALSE;
+function hosting_import_client($email, $name = '', $organization = '') {
+  $client = new stdClass();
+  $client->type = 'client';
+  $client->email = $email;
+  $client->contact_name = trim($name);
+  $client->organization = $organization;
+  $client->status = 1;
+  node_save($client);
+  return $client;
 }
 
 /**
