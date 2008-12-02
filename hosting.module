@@ -24,6 +24,16 @@ function hosting_menu($may_cache = true) {
   $items = array();
   hosting_wizard_menu($may_cache, $items);
   if ($may_cache) {
+
+    $items[] = array(
+      'path' => 'admin/help/provision/requirements',
+      'title' => t('Provisioning requirements'),
+      'description' => t("Information of how to configure the provisioning system."),
+      'callback' => 'hosting_help_requirements',
+      'type' => MENU_CALLBACK
+    );
+
+
     $items[] = array(
       'path' => 'admin/hosting',
       'title' => t('Hosting'),

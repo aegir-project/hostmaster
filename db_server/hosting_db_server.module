@@ -1,4 +1,41 @@
 <?php
+
+function hosting_db_server_hosting_service() {
+  return array("db_server" => t("Mysql database server"));
+}
+
+/**
+  * Implementation of hook_help().
+  */
+ function hosting_db_server_help($section) {
+   switch ($section) {
+     case 'admin/help/provision#requirements':
+
+       $output .= _hosting_requirements('mysql_user');
+       return $output;
+       break;
+   }
+ }
+
+function _hosting_mysql_user_requirements() {
+   $username = PROVISION_SCRIPT_USER;
+   $command = <<<EOF
+     mysql -uroot -pXXXXXXXXX mysql
+
+     mysql> GRANT ALL PRIVILEGES ON *.* TO 'username_here'@'%' IDENTIFIED BY 'mypassword' WITH GRANT OPTION;
+     Query OK, 0 rows affected (0.00 sec)
+
+EOF;
+   $help['title'] = t('Mysql user account capable of creating new databases.');
+   $help['summary'] = t('To be able to create new sites, the provisioning framework will need to be able
+     to create new databases and users. It is not recommended using the mysql root password for this, 
+     but any account with the correct permissions will do.');
+   $help['configuration'] = t('Log in to your mysql server as root, and type in the following command:
+     <pre>@command_text</pre>', array('@command_text' => $command));     
+
+  return $help;
+}
+
 function hosting_get_db_server($hostname, $web_server = null) {
   if (_hosting_valid_ip($hostname)) {
     $ip = $hostname;
