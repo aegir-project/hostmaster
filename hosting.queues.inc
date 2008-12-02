@@ -243,27 +243,25 @@ function hosting_tasks_queue($count = 20) {
     // @todo Allow multiple commands to be run. 
     // For now tasks just map to one backend command, but that might need to change with additional complexity.
     $cmd = hosting_generate_command("provision", $task->task_type, $task, array(), array('backend' => TRUE));
-    exec($cmd, $return, $code);
-    $return = join("", $return);
-    $data = unserialize($return);
     hosting_task_log($task->vid, 'command', 'Running:' . escapeshellcmd("$cmd"));
-
-    if (!is_array($data)) {
-      hosting_task_log($task->vid, 'error', t("The command could not be executed succesfully (returned: !return, code: %code)", array("!return" => $return, "%code" =>  $code)));
+    exec($cmd, $return, $code);
+    if (!$data = provision_parse_output($return)) {
+      hosting_task_log($task->vid, 'error', t("The command could not be executed succesfully (returned: !return, code: %code)", array("!return" => implode('', $return), "%code" =>  $code)));
       $code = PROVISION_FRAMEWORK_ERROR;
     }
-
-    foreach ((array) $data['log'] as $log) {
-      hosting_task_log($task->vid, $log['type'], $log['message'], $log['severity'], $log['timestamp']);
-    }
-    
-    # Drupal message errors.
-    foreach ((array) $data['messages']['error'] as $error) {
-      if (preg_match("/^warning:/", $error)) {
-        hosting_task_log($task->vid, "warning", ereg_replace("/^warning: /", '', $error), 0, $log['timestamp']);  
+    else {
+      foreach ((array) $data['log'] as $log) {
+        hosting_task_log($task->vid, $log['type'], $log['message'], $log['severity'], $log['timestamp']);
       }
-      elseif (preg_match("/^user warning:/", $error)) {
-        hosting_task_log($task->vid, "warning", ereg_replace("/^user warning: /", '', $error), 0, $log['timestamp']);  
+      
+      # Drupal message errors.
+      foreach ((array) $data['messages']['error'] as $error) {
+        if (preg_match("/^warning:/", $error)) {
+          hosting_task_log($task->vid, "warning", ereg_replace("/^warning: /", '', $error), 0, $log['timestamp']);  
+        }
+        elseif (preg_match("/^user warning:/", $error)) {
+          hosting_task_log($task->vid, "warning", ereg_replace("/^user warning: /", '', $error), 0, $log['timestamp']);  
+        }
       }
     }
     // record status 
