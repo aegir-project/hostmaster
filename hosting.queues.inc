@@ -153,7 +153,7 @@ function hosting_generate_command($system, $command, $ref, $args = array(), $opt
   $data = array_merge($data, $options);
 
   foreach ($data as $key => $value) {
-    if (!is_array($value) && !is_object($value) && !is_null($value)) {
+    if (!is_array($value) && !is_object($value) && !is_null($value) && ($value != '')) {
       if (substr($key, 0, 1) == '#') {
         $args[$key] = $value;
       }
