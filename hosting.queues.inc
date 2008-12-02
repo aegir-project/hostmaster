@@ -153,7 +153,7 @@ function hosting_generate_command($system, $command, $ref, $args = array(), $opt
   $data = array_merge($data, $options);
 
   foreach ($data as $key => $value) {
-    if (!is_array($value) && !is_object($value) && !is_bool($value) && $value) {
+    if (!is_array($value) && !is_object($value) && !is_null($value)) {
       if (substr($key, 0, 1) == '#') {
         $args[$key] = $value;
       }
@@ -168,7 +168,6 @@ function hosting_generate_command($system, $command, $ref, $args = array(), $opt
   foreach ($args as $key => $value) {
     $arg_str .= ' ' . escapeshellarg(filter_xss($value));
   }
-
   $option_str = '';
   foreach ($options as $key => $value) {
     if ($value !== TRUE) {

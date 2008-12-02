@@ -72,7 +72,7 @@ function hosting_task_provision_args($node, $task = '') {
   $values = array();
   if ($node->type == 'task') {
     $values['task_id'] = $node->nid;
-    $values = array_merge($values, module_invoke_all('provision_args', node_load($node->rid), $task));    
+    $values = array_merge($values, module_invoke_all('provision_args', node_load($node->rid), $task));
   }
   return $values;
 }

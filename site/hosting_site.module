@@ -578,7 +578,7 @@ function hosting_site_list($filter_by = null, $filter_value = null) {
     $header[] = array('data' => t('Platform'), 'field' => 'platform');
   }
 
-  $sql = "SELECT n.nid, n.title, n.created, s.status, profile, language, platform FROM {node} n left join {hosting_site} s ON n.nid=s.nid WHERE type='%s'" . $cond;
+  $sql = "SELECT n.nid, n.title, n.created, s.status, profile, language, platform FROM {node} n left join {hosting_site} s ON n.vid=s.vid WHERE type='%s'" . $cond;
   $sql .= tablesort_sql($header);
 
   // @TODO hide deleted sites
