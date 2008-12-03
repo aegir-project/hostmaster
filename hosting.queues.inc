@@ -164,6 +164,11 @@ function hosting_generate_command($system, $command, $ref, $args = array(), $opt
   } 
   ksort($args);
 
+  if ($options['backend']) {
+    $backend = " --backend ";
+    unset($options['backend']);
+  }
+
   $arg_str = '';
   foreach ($args as $key => $value) {
     $arg_str .= ' ' . escapeshellarg(filter_xss($value));
@@ -181,6 +186,10 @@ function hosting_generate_command($system, $command, $ref, $args = array(), $opt
   // @TODO: Implement proper multi platform / multi server support.
   $cmd = sprintf(escapeshellcmd("%s %s %s %s --root=%s %s"), escapeshellcmd($drush_path) ,
     escapeshellarg($system), escapeshellarg($command), $arg_str, escapeshellarg($data['publish_path']), $option_str);
+
+  if ($backend) {
+    $cmd .= $backend;
+  }
 
   if ($options['background']) {
     $cmd .= " &";
@@ -244,6 +253,8 @@ function hosting_tasks_queue($count = 20) {
     // For now tasks just map to one backend command, but that might need to change with additional complexity.
     $cmd = hosting_generate_command("provision", $task->task_type, $task, array(), array('backend' => TRUE));
     hosting_task_log($task->vid, 'command', 'Running:' . escapeshellcmd("$cmd"));
+    $return = null;
+    $code = null;
     exec($cmd, $return, $code);
     if (!$data = provision_parse_output($return)) {
       hosting_task_log($task->vid, 'error', t("The command could not be executed succesfully (returned: !return, code: %code)", array("!return" => implode('', $return), "%code" =>  $code)));
