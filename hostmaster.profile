@@ -39,9 +39,12 @@ function hostmaster_profile_final() {
   $types =  node_types_rebuild();
 
   //set up needed PROVISION_CONSTANTS
- if (function_exists('provision_init')) {
+  if (function_exists('provision_init')) {
    provision_init();
- }
+  }
+  // Initialize the hosting defines
+  hosting_init();
+
   /**
   * Generate administrator account
   */
@@ -130,6 +133,7 @@ function hostmaster_profile_final() {
   variable_set('hosting_default_platform', $node->nid);
   variable_set('hosting_own_platform', $node->nid);
 
+
   #initial configuration of hostmaster - todo
   variable_set('site_name', t('Hostmaster'));
   variable_set('site_frontpage', 'hosting/sites');
@@ -151,9 +155,10 @@ function hostmaster_profile_final() {
   hostmaster_install_set_permissions(hostmaster_install_get_rid('authenticated user'), array('access content', 'access all views'));
   hostmaster_install_create_role('aegir client');
   // @todo we may need to have a hook here to consider plugins
-  hostmaster_install_set_permissions(hostmaster_install_get_rid('aegir client'), array('access content', 'access all views', 'edit own client', 'create site', 'delete site', 'view site', 'create backup task', 'create delete task', 'create disable task', 'create enable task', 'create restore task', 'view own tasks'));
+  hostmaster_install_set_permissions(hostmaster_install_get_rid('aegir client'), array('access content', 'access all views', 'edit own client', 'create site', 'delete site', 'view site', 'create backup task', 'create delete task', 'create disable task', 'create enable task', 'create restore task', 'view own tasks', 'view task'));
   menu_rebuild();
 
+  node_access_rebuild();
   drupal_goto('hosting/wizard');
 }
 
