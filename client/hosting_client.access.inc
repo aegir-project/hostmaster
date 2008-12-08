@@ -155,6 +155,9 @@ function hosting_client_node_access_records($node) {
     case 'client' :
       $base_grant['gid'] = $node->nid;
       break;
+    case 'package' :
+    case 'package_release' : 
+      $base_grant['grant_update'] = FALSE;
     default :
       // The rest of the node types are configuration, so only admin should see them. 
       $base_grant['gid'] = HOSTING_DEFAULT_CLIENT;
