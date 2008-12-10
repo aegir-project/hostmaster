@@ -366,3 +366,9 @@ function hosting_web_server_view($node, $teaser = FALSE, $page = FALSE) {
   return $node;
 }
 
+function hosting_web_server_hosting_summary() {
+  $summary = array();
+  $web_servers = _hosting_get_web_servers();
+  $summary['web_servers'] = theme('item_list', array_map('_hosting_node_link', array_keys($web_servers)), t('Web servers'));
+  return $summary;
+}

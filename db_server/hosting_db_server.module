@@ -265,3 +265,12 @@ function _hosting_generate_database_config_file($node) {
   $path = _provision_config_path();
   
 }
+
+
+function hosting_db_server_hosting_summary() {
+  $summary = array();
+  $db_servers = _hosting_get_db_servers();
+  $summary['db_servers'] = theme('item_list', array_map('_hosting_node_link', array_keys($db_servers)), t('Database servers'));
+  return $summary;
+}
+

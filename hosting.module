@@ -306,17 +306,13 @@ function hosting_queue_block() {
 }
 
 function hosting_summary_block() {
-  $db_servers = _hosting_get_db_servers();
-  $platforms = _hosting_get_platforms();
-  $web_servers = _hosting_get_web_servers();
-  
-  return theme('hosting_summary_block', array_map('_hosting_node_link', array_keys($platforms)), array_map('_hosting_node_link', array_keys($web_servers)), array_map('_hosting_node_link', array_keys($db_servers)));
+  return theme('hosting_summary_block', module_invoke_all('hosting_summary'));
 }
 
-function theme_hosting_summary_block($platforms, $web_servers, $db_servers) {
-  $output .= theme("item_list", $platforms, t('Platforms'));
-  $output .= theme("item_list", $web_servers, t('Web servers'));
-  $output .= theme("item_list", $db_servers, t('Database servers'));
+function theme_hosting_summary_block($components) {
+  foreach ($components as $component) {
+    $output .= $component;
+  }
   return $output;
 }
 
