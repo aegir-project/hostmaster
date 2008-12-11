@@ -27,7 +27,7 @@ function hosting_client_user($op, &$edit, &$user, $category = NULL) {
     return hosting_client_user_form_submit($edit, $user);
 
   case 'delete':
-    db_query('DELETE FROM {hosting_client_user} WHERE uid = %d', $user->uid);
+    db_query('DELETE FROM {hosting_client_user} WHERE user = %d', $user->uid);
   }
 }
 
