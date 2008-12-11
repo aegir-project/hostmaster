@@ -253,11 +253,13 @@ function hosting_tasks_queue($count = 20) {
     // For now tasks just map to one backend command, but that might need to change with additional complexity.
     $cmd = hosting_generate_command("provision", $task->task_type, $task, array(), array('backend' => TRUE));
     hosting_task_log($task->vid, 'command', 'Running:' . escapeshellcmd("$cmd"));
-    $return = null;
-    $code = null;
-    exec($cmd, $return, $code);
+    $proc = null;
+    $proc = provision_proc_open($cmd);
+    $code = $proc['code'];
+    $return = $proc['output'];
+
     if (!$data = provision_parse_output($return)) {
-      hosting_task_log($task->vid, 'error', t("The command could not be executed succesfully (returned: !return, code: %code)", array("!return" => implode('', $return), "%code" =>  $code)));
+      hosting_task_log($task->vid, 'error', t("The command could not be executed succesfully (returned: !return, code: %code)", array("!return" => $return, "%code" =>  $code)));
       $code = PROVISION_FRAMEWORK_ERROR;
     }
     else {
