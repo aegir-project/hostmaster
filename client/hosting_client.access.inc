@@ -158,10 +158,16 @@ function hosting_client_node_access_records($node) {
     case 'package' :
     case 'package_release' : 
       $base_grant['grant_update'] = FALSE;
-    default :
+    case 'task' :
+    case 'platform' :
+    case 'web_server' :
+    case 'db_server' :
       // The rest of the node types are configuration, so only admin should see them. 
       $base_grant['gid'] = HOSTING_DEFAULT_CLIENT;
       break;
+    default :
+      //Not hosting node, don't change access.
+      return;
   }
 
   if ($base_grant['gid']) {

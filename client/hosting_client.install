@@ -77,3 +77,12 @@ function hosting_client_update_2() {
   node_access_rebuild();
   return $ret;
 }
+
+/**
+ * Rebuild node access table
+ */
+function hosting_client_update_3() {
+  $ret = array();
+  node_access_rebuild();
+  return $ret;
+}
