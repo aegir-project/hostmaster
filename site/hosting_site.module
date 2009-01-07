@@ -633,7 +633,7 @@ function hosting_site_menu($may_cache = false) {
     'description' => t('Display a list of sites'),
     'callback' => 'hosting_sites',
     'type' => MENU_CALLBACK,
-    'access' => user_access('create site node') 
+    'access' => user_access('create site nodes') 
   );
 
   $items[] = array(
