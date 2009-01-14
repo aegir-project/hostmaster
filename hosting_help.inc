@@ -558,23 +558,3 @@ function _hosting_basic_unix_requirements() {
   return $help;
 }
 
-
-function _hosting_provision_setup_requirements() {
-  $docroot = PROVISION_DOCROOT_PATH;
-  $uri = PROVISION_BASE_URL;
-  $drush_path = rtrim(drupal_get_path('module', 'drush'), '/') . '/drush.php';
-  $username = PROVISION_SCRIPT_USER;
-  $setup_cmd = <<<EOF
-    cd $docroot
-    $drush_path provision setup
-EOF;
-  $help['title'] = t('Generate your configuration file using the <code>Provision Setup</code> command');
-
-  $help['summary'][] = t('The provision setup command inspects your environment and creates an initial configuration file in <code>sites/default/provision.settings.php</code>.<br />This configuration file stores important settings such as paths, binary locations and database credentials.');
-
-  $help['summary'][] = t('<strong>If you are using this platform as the back end to an existing Hostmaster installation: </strong><br /> you need to run this command before adding the platform node to your hosting site, to allow the hosting site to communicate with this platform.');
-  $help['configuration'] = t('Ensure that you are logged into the shell as %script_user, and then execute the following commands :<pre>@setup_cmd</pre>', 
-     array('%script_user' => $username, '@setup_cmd' => $setup_cmd));
-
-  return $help;
-}
