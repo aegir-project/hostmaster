@@ -1,0 +1,59 @@
+<?php
+// $Id$
+
+function hosting_dns_install() {
+  switch ($GLOBALS['db_type']) {
+    case 'mysql':
+    case 'mysqli':
+      # This one keeps track of the dns_server node's fields
+      db_query("CREATE TABLE {hosting_dns_server} (
+        vid int(10) unsigned NOT NULL default '0',
+        nid int(10) unsigned NOT NULL default '0',
+        engine longtext NOT NULL, 
+        default_ip char(15) NOT NULL,
+        ns text NOT NULL,
+        mbox char(255) NOT NULL,
+        refresh int(10) unsigned NOT NULL default '7200',
+        retry int(10) unsigned NOT NULL default '300',
+        expire int(10) unsigned NOT NULL default '604800',
+        minimum int(10) unsigned NOT NULL default '86400',
+        ttl int(10) unsigned NOT NULL default '86400',
+        xfer CHAR(255) NOT NULL,
+        PRIMARY KEY  (vid)
+      ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
+
+      # This one is a join table against platform nodes, to track the DNS
+      # server nodes associated with them.
+      db_query("CREATE TABLE {hosting_dns_platform} (
+       vid int(10) unsigned NOT NULL default '0',
+       nid int(10) unsigned NOT NULL default '0',
+       dns_server int(10) unsigned NOT NULL default '0',
+       key (vid, dns_server) 
+      ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
+      break;
+  }
+}
+
+function hosting_dns_uninstall() {
+  db_query("DROP TABLE {hosting_dns_server}");
+  db_query("DROP TABLE {hosting_dns_server_platform}");
+}
+
+function hosting_dns_update_1() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE {hosting_dns_server} CHANGE ns1 ns text NOT NULL AFTER default_ip");
+  $ret[] = update_sql("ALTER TABLE {hosting_dns_server} DROP ns2");
+  $ret[] = update_sql("CREATE TABLE {hosting_dns_server_platform} (
+			 vid int(10) unsigned NOT NULL default '0',
+			 nid int(10) unsigned NOT NULL default '0',
+			 dns_server int(10) unsigned NOT NULL default '0',
+			 key (vid, dns_server) 
+                       ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
+  return $ret;
+}
+
+function hosting_dns_update_2() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE {hosting_dns_server_platform} RENAME TO {hosting_dns_platform}");
+  return $ret;
+}

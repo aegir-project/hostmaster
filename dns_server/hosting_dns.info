@@ -1,0 +1,4 @@
+name = DNS Server 
+description = Allow Hostmaster to configure DNS servers.
+package = Hosting
+dependencies = hosting
