@@ -150,16 +150,18 @@ function hosting_import_site($site_id, $data, $status, $platform = HOSTING_DEFAU
     }
   }
 
-  $site = node_load($site_id);
+  $site = new stdClass();
+  $site->nid = $site_id;
   $site->uid = $client->uid;
   $site->status = 1;
   $site->platform = $platform;
   $site->client = $client->nid;
   $db_server = hosting_get_db_server($data['db_id']);
   $site->db_server = ($db_server) ? $db_server->nid : HOSTING_DEFAULT_DB_SERVER;
-  $site->language = $data['language'] ? $data['language'] : 'en';
+
+  #$site->language = $data['language'] ? $data['language'] : 'en';
   // This should really be handled via a hook system, to allow hosting_alias to see these fields, but later.
-  $site->aliases = $data['aliases'] ? $data['aliases'] : array();
+  #$site->aliases = $data['aliases'] ? $data['aliases'] : array();
 
   // need to build some error tolerance in here
   $profile = hosting_get_package_instance($platform, $data['profile']);
@@ -167,8 +169,24 @@ function hosting_import_site($site_id, $data, $status, $platform = HOSTING_DEFAU
    $profile = hosting_get_package_instance($platform, 'default');
   }
   $site->profile = $profile->nid;
-
   $site->site_status = $status;
+
+  // cast site object to array, will be using various array_* functions on the data.
+  $site = (array) $site;
+
+  // Protect the fields already in the site object.
+  foreach (array_keys($site) as $key) {
+    unset($data[$key]);
+  }
+
+  // Load all the original node fields.
+  $site = array_merge( (array) node_load($site_id), $site);
+
+  // Map the imported fields onto the node object.
+  $site = array_merge($site, $data);
+
+  // Cast back to object.
+  $site = (object) $site;
   node_save($site);
 }
 

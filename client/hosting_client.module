@@ -333,6 +333,7 @@ function hosting_client_menu($may_cache) {
         );
       }
     }
+
     $items[] = array(
       'path' => 'hosting_client/autocomplete', 
       'title' => t('hosting client get client autocomplete'),
