@@ -314,7 +314,7 @@ function hosting_import_client($email, $name = '', $organization = '') {
 /**
  * Implementation of hook_menu()
  */
-function hosting_client_menu() {
+function hosting_client_menu($may_cache) {
   if (!$may_cache) {
     if (arg(0) == 'node' && is_numeric(arg(1))) {
       $node = node_load(arg(1));
