@@ -15,7 +15,7 @@ Install instructions
 
  5. add a line to your named.conf to include aegir-generated configurations:
 
-    include "/var/hostmaster/conf/named/named.conf.drupal";
+    include "/var/hostmaster/conf/named.conf";
 
 Note that slave DNS configuration is not yet automated, so if you want more
 than one DNS server for your zones (which is obviously strongly encouraged,
