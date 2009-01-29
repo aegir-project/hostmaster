@@ -366,7 +366,7 @@ function hosting_dns_form_alter($form_id, &$form) {
 	'#title' => t('DNS Server'),
 	'#description' => t('The DNS server the site domains will be hosted on.'),
 	'#options' => $dns_servers,
-	'#default_value' => ($node->dns_server) ? $node->dns_server : HOSTING_DEFAULT_DNS_SERVER,
+	'#default_value' => ($form['#node']->dns_server) ? $form['#node']->dns_server : HOSTING_DEFAULT_DNS_SERVER,
       );
     } else {
       $dns_nid = key($dns_servers);
@@ -449,8 +449,7 @@ function hosting_dns_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
       case 'validate':
         break;
       case 'load':
-        $additions['dns_server'] = hosting_get_dns_server($node);
-        return $additions;
+        return array('dns_server' => hosting_get_dns_server($node));
         break;
       case 'view':
         $dns_server = hosting_get_dns_server($node);
