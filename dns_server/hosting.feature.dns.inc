@@ -5,7 +5,7 @@
  * Defines the DNS server feature
  **/
 function hosting_dns_hosting_feature() {
-  $features['dns'] = array(
+  $features['dns_server'] = array(
     'title' => t('DNS servers'),
     'description' => t('Configure and maintain multiple DNS servers.'),
     'status' => HOSTING_FEATURE_DISABLED,
