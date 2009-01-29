@@ -407,13 +407,16 @@ function hosting_site_view(&$node, $teaser = false) {
       '#weight' => -10
     );
   }
-  $node->content['info']['client'] = array(
-    '#type' => 'item',
-    '#title' => t('Client'),
-    '#value' => _hosting_node_link($node->client),
-    '#weight' => 5
-  );
-  
+
+  if (is_int($node->client)) {
+    $node->content['info']['client'] = array(
+      '#type' => 'item',
+      '#title' => t('Client'),
+      '#value' => _hosting_node_link($node->client),
+      '#weight' => 5
+    );
+  }
+
   $node->content['info']['platform'] = array(
     '#type' => 'item',
     '#title' => t('Platform'),
@@ -441,16 +444,20 @@ function hosting_site_view(&$node, $teaser = false) {
       '#value' => _hosting_node_link($node->db_server),
     );
   }
-  $site_status = array(hosting_site_status_output($node->site_status));
-  $install_status = hosting_site_task_status($node->nid);
-  if ($install_status) {
-    $site_status[] = $install_status;
+
+  if ($node->nid) { 
+    $site_status = array(hosting_site_status_output($node->site_status));
+    $install_status = hosting_site_task_status($node->nid);
+    if ($install_status) {
+      $site_status[] = $install_status;
+    }
+    $node->content['info']['status'] = array(
+      '#type' => 'item',
+      '#title' => t('Status'),
+      '#value' => join(', ', $site_status),
+    );
   }
-  $node->content['info']['status'] = array(
-    '#type' => 'item',
-    '#title' => t('Status'),
-    '#value' => join(', ', $site_status),
-  );
+
   $node->content['info']['#suffix'] = '</div>';
 
   if ($node->nid) { 
