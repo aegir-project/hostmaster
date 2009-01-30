@@ -304,7 +304,7 @@ function hosting_import_client($email, $name = '', $organization = '') {
   $client = new stdClass();
   $client->type = 'client';
   $client->email = $email;
-  $client->contact_name = trim($name);
+  $client->client_name = trim($name);
   $client->organization = $organization;
   $client->status = 1;
   node_save($client);
