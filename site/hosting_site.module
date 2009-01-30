@@ -408,7 +408,7 @@ function hosting_site_view(&$node, $teaser = false) {
     );
   }
 
-  if (is_int($node->client)) {
+  if (is_numeric($node->client)) {
     $node->content['info']['client'] = array(
       '#type' => 'item',
       '#title' => t('Client'),
