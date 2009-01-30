@@ -258,7 +258,7 @@ function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
   if ($node->nid) {
     $node->content['tasks_view'] = array(
       '#type' => 'item',
-      '#value' => hosting_task_list("rid", $node->nid),
+      '#value' => hosting_task_list_embedded("rid", $node->nid),
       '#prefix' => '<div id="hosting-task-list">',
       '#suffix' => '</div>',
       '#weight' => -6
