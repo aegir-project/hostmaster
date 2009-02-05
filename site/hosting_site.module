@@ -74,7 +74,7 @@ function hosting_site_hosting_tasks($node) {
  * Implementation of hook_perm
  */
 function hosting_site_perm() {
-  return array('create site nodes', 'view site', 'edit site', 'delete site', 'administer sites');
+  return array('create site', 'view site', 'edit site', 'delete site', 'administer site');
 }
 
 /**
@@ -83,7 +83,7 @@ function hosting_site_perm() {
 function hosting_site_access($op, $node) {
   switch ($op) {
     case 'create':
-      return user_access('create site nodes');
+      return user_access('create site');
       break;
     case 'update':
       return user_access('edit site');
@@ -274,7 +274,7 @@ function hosting_site_form($node) {
 
 
   $client = node_load($node->client ? $node->client: HOSTING_DEFAULT_CLIENT);
-  if ((!$node->client || $node->nid) && user_access('administer sites')) {
+  if ((!$node->client || $node->nid) && user_access('administer site')) {
     $form['client'] = array(
       '#type' => 'textfield',
       '#required' => TRUE,
@@ -658,7 +658,7 @@ function hosting_site_menu($may_cache = false) {
     'description' => t('Display a list of sites'),
     'callback' => 'hosting_sites',
     'type' => MENU_CALLBACK,
-    'access' => user_access('create site nodes') 
+    'access' => user_access('create site') 
   );
 
   $items[] = array(
