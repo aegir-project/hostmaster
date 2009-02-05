@@ -34,11 +34,10 @@ function hosting_client_user($op, &$edit, &$user, $category = NULL) {
 
 function hosting_client_user_view($user) {
   if ($user->client_id) {
-    $client = hosting_get_client($user->client_id);
 
     $items['client'] = array(
       'title' => t('Hosting client'),
-      'value' => $client->title,
+      'value' => _hosting_node_link($user->client_id),
       'class' => 'client',
     );
 

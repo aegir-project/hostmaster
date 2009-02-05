@@ -53,7 +53,7 @@ function hosting_client_access($op, $node) {
     return FALSE;
   }
 
-  if (user_access('administer_clients')) {
+  if (user_access('administer clients')) {
     return TRUE;
   }
   else {
