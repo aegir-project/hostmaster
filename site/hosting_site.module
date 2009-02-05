@@ -83,7 +83,7 @@ function hosting_site_perm() {
 function hosting_site_access($op, $node) {
   switch ($op) {
     case 'create':
-      return user_access('create site');
+      return user_access('create site nodes');
       break;
     case 'update':
       return user_access('edit site');
