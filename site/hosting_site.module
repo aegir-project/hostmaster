@@ -274,7 +274,7 @@ function hosting_site_form($node) {
 
 
   $client = node_load($node->client ? $node->client: HOSTING_DEFAULT_CLIENT);
-  if ((!$node->client || $node->nid) && user_access('administer site')) {
+  if ((!$node->client || $node->nid) && user_access('administer sites')) {
     $form['client'] = array(
       '#type' => 'textfield',
       '#required' => TRUE,
