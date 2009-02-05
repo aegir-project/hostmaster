@@ -273,7 +273,19 @@ function hosting_site_form($node) {
   }
 
 
-  $client = node_load($node->client ? $node->client: HOSTING_DEFAULT_CLIENT);
+  # find the right client
+  if ($node->client) {
+    $client = node_load($node->client);
+  } else {
+    global $user;
+    # default to the user' client if available
+    if ($user->hosting_client) {
+      $client = hosting_get_client($user->hosting_client);
+    } else {
+      $client = node_load(HOSTING_DEFAULT_CLIENT);
+    }
+  }
+
   if ((!$node->client || $node->nid) && user_access('administer site')) {
     $form['client'] = array(
       '#type' => 'textfield',
