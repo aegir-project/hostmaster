@@ -55,7 +55,7 @@ function hosting_cron_nodeapi(&$node, $op, $a3 = null) {
 }
 
 function hosting_cron_get_sites($limit = 5) {
-  $result = db_query("SELECT n.nid FROM {node} n LEFT JOIN {hosting_site} s ON n.nid=s.nid WHERE n.type='site' ORDER BY s.last_cron ASC, n.nid ASC limit %d", $limit);
+  $result = db_query("SELECT n.nid FROM {node} n LEFT JOIN {hosting_site} s ON n.nid=s.nid WHERE n.type='site' and s.status = %d ORDER BY s.last_cron ASC, n.nid ASC limit %d", HOSTING_SITE_INSTALLED, $limit);
   while ($nid = db_fetch_object($result)) {
     $sites[$nid->nid] = node_load($nid->nid);
   }
