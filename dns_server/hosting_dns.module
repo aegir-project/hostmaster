@@ -10,6 +10,16 @@
  * system.
  **/
 
+include_once(drupal_get_path('module', 'hosting_dns') . '/hosting_dns.admin.inc');
+
+# DNS API split off to a separate file for clarity
+# This should handle the abstract DB api and triggering drush tasks..
+#include_once('hosting_dns.api.inc');
+
+function hosting_dns_hosting_service() {
+  return array("dns_server" => t("DNS Server"));
+}
+
 /**
  * Implementation of hook_init()
  **/
@@ -27,6 +37,22 @@ function hosting_dns_help($section) {
       break;
   }
 }
+
+## Not sure if this is necessary (stolen from db_server)
+#function hosting_get_dns_server($hostname, $web_server = null) {
+#  if (_hosting_valid_ip($hostname)) {
+#    $ip = $hostname;
+#    $hostname = gethostbyaddr($hostname);
+#  } else {
+#    $ip = gethostbyname($hostname);
+#  }
+#  $result = db_result(db_query("SELECT nid FROM {node} WHERE title in ('%s', '%s') and type='dns_server'", $ip, $hostname));
+#  if ($result) {
+#    return node_load($result);
+#  }
+#
+#  return false;
+#}
 
 /**
  * Implementation of hook_node_info
@@ -80,6 +106,7 @@ function hosting_dns_provision_args($node, $task = '') {
   $values = array();
   if ($task == 'verify' || $task == 'install') {
     $values['load-provision-dns'] = TRUE;
+    $values['load-provision-bind'] = TRUE;
     if ($node->type == 'site') {
       $platform = node_load($node->platform);
       $dns = node_load($platform->dns_server);
@@ -319,20 +346,21 @@ function hosting_dns_view($node, $teaser = FALSE, $page = FALSE) {
   $node->content['defaults']['ttl'] = array(
     '#type' => 'item',
     '#title' => t('TTL'),
-    '#value' => $node->ttl
+    '#value' => $node->ttl,
   );
   $node->content['defaults']['xfer'] = array(
     '#type' => 'item',
     '#title' => t('Zone Transfer Access List'),
-    '#value' => $node->xfer
+    '#value' => $node->xfer,
   );
   
 # This should show a table of all sites that use this DNS server to host their domain?
+# Needs entries in hosting_site table to work properly..
 #  $node->content['sites_view'] = array(
 #    '#type' => 'item',
 #    '#title' => t("Sites"),
 #    '#value' => hosting_site_list("dns_server", $node->nid), 
-#    '#weight' => 10
+#    '#weight' => 10,
 #  );
   
   return $node;
