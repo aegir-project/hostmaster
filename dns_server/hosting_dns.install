@@ -105,7 +105,7 @@ function hosting_dns_update_2() {
 }
 
 function hosting_dns_update_3() {
-  $ret = arra();
+  $ret = array();
   $ret[] = update_sql("CREATE TABLE {hosting_dns_server_zone} (
         vid int NOT NULL DEFAULT '0',
         nid int(10) unsigned NOT NULL DEFAULT '0',
