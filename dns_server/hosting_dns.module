@@ -10,7 +10,7 @@
  * system.
  **/
 
-include_once(drupal_get_path('module', 'hosting_dns') . '/hosting_dns.admin.inc');
+#include_once(drupal_get_path('module', 'hosting_dns') . '/hosting_dns.admin.inc');
 
 # DNS API split off to a separate file for clarity
 # This should handle the abstract DB api and triggering drush tasks..
