@@ -7,9 +7,9 @@ function hosting_dns_install() {
     case 'mysqli':
       # This one keeps track of the dns_server node's fields
       db_query("CREATE TABLE {hosting_dns_server} (
-        vid int(10) unsigned NOT NULL default '0',
+        vid int(10) unsigned NOT NULL,
         nid int(10) unsigned NOT NULL default '0',
-        engine longtext NOT NULL, 
+        engine char(128)NOT NULL, 
         default_ip char(15) NOT NULL,
         ns text NOT NULL,
         mbox char(255) NOT NULL,
@@ -20,6 +20,16 @@ function hosting_dns_install() {
         ttl int(10) unsigned NOT NULL default '86400',
         xfer CHAR(255) NOT NULL,
         PRIMARY KEY  (vid)
+      ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
+
+      # This table is intended to keep track of "per-engine" configuration
+      # details, specific to the particular backend (BIND, myDNS, etc)
+      db_query("CREATE TABLE {hosting_dns_server_config} (
+	vid int(10) unsigned NOT NULL,
+	nid int(10) unsigned NOT NULL default '0',
+	engine char(128) NOT NULL,
+	data longtext NOT NULL default '',
+	PRIMARY KEY (vid,engine),
       ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
 
       # This one is a join table against platform nodes, to track the DNS
@@ -144,3 +154,21 @@ function hosting_dns_update_3() {
       ) /*!40100 DEFAULT CHARACTER SET UTF8 */");
   return $ret;
 }
+
+/* This changes the 'engine' field to a unique 128 chars, and installs a new
+ * server_config table, for data variables related to a particular dns_server
+ * node and it's corresponding backend 
+ */
+function hosting_dns_update_4() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE {hosting_dns_server} CHANGE engine engine char(128) NOT NULL");
+  $ret[] = update_sql("CREATE TABLE {hosting_dns_server_config} (
+        vid int(10) unsigned NOT NULL,
+        nid int(10) unsigned NOT NULL default '0',
+        engine char(128) NOT NULL,
+        data longtext NOT NULL default '',
+        PRIMARY KEY (vid,engine)
+      ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
+  return $ret;
+}
+
