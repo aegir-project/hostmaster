@@ -1,3 +1,6 @@
+<?php
+// $Id$
+
 /**
  * Query status of a DNS entry (zone or RR)
  *
