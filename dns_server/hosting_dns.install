@@ -142,4 +142,5 @@ function hosting_dns_update_3() {
         PRIMARY KEY (rid),
         UNIQUE KEY rr (zid,name,type,data)
       ) /*!40100 DEFAULT CHARACTER SET UTF8 */");
+  return $ret;
 }

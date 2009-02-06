@@ -71,7 +71,7 @@ function hosting_dns_node_info() {
  * Implementation of hook_perm
  **/
 function hosting_dns_perm() {
-  return array('create DNS server','view DNS server', 'edit DNS server', 'delete DNS server');
+  return array('create DNS server','view DNS server', 'edit DNS server', 'delete DNS server', 'administer DNS provisioning');
 }
 
 /**
