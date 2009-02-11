@@ -346,6 +346,40 @@ function hosting_client_menu($may_cache) {
   return $items;
 }
 
+
+function _hosting_get_clients() {
+  $return = array();
+  $result = pager_query('SELECT nid,name from hosting_client', 25);
+  while ($client = db_fetch_object($result)) {
+    $return[$client->nid] = $client->name;
+  }
+  return $return;
+}
+
+function hosting_client_list() {
+  $summary = array();
+  $clients = _hosting_get_clients();
+  return theme('item_list', array_map('_hosting_node_link', array_keys($clients)));
+}
+
+function hosting_client_block($op = 'list', $delta = 0, $edit = array()) {
+  $blocks = array();
+  if (user_access('view client')) {
+    switch ($op) {
+      case 'list' :
+        $blocks['hosting_clients'] = array('info' => t('Hosting clients'), 
+                                           'enabled' => 1, 'region' => 'left', 'weight' => 10);
+      case 'view' : 
+        switch ($delta) {
+          case 'hosting_clients':
+            $blocks['title'] = t('Clients');
+            $blocks['content'] = hosting_client_list();
+        }
+    }
+  }
+  return $blocks;
+}
+
 /**
  * Retrieve autocomplete suggestions
  */
