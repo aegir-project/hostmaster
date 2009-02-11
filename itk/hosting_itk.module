@@ -31,3 +31,30 @@ function hosting_itk_provision_args($node, $task = '') {
   }
   return $values;
 }
+
+function hosting_itk_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+  if ($node->type == 'client') {
+    $user = posix_getpwnam(PROVISION_SCRIPT_USER);
+    switch ($op) {
+    case 'insert':
+      db_quer("INSERT INTO {hosting_client_user} SET client=%d, user=%d", $node->nid, $user['uid']);
+      break;
+    case 'update':
+      // nothing to do?
+      break;
+    case 'delete' :
+      db_query("DELETE FROM {hosting_client_user} WHERE client=%d AND user=%d", $node->nid, $user['uid']);
+      break;
+    }
+  }
+}
+
+function hosting_itk_form_alter($form_id, &$form) {
+
+  if ($form_id == 'web_server_node_form') { 
+    $user = posix_getpwnam(PROVISION_SCRIPT_USER);
+    $form['script_user']['#description'] .= t("<br/ >ITK WARNING: Please note that this user should be assigned user ID %uid", array('%uid' => $user['uid']));
+    $form['web_group']['#disabled'] = TRUE;
+    $form['web_group']['#description'] .= t("<br/ >ITK WARNING: This group will be the client name and will therefore vary according to the site.");
+  }
+}
