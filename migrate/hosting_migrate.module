@@ -1,0 +1,67 @@
+<?php
+
+function hosting_migrate_provision_args($node, $task) {
+  $values = array();
+  if ($node->type == 'task') {
+    if ($task == 'migrate') {
+      $platform = node_load($node->task_args['target_platform']);
+      $values['#2'] = $platform->publish_path;
+    }
+  }
+  return $values;
+}
+
+
+function hosting_migrate_hosting_tasks($node) {
+  $options = array();
+
+  if ($node->type == 'site') {
+    if (hosting_task_outstanding($node->nid, 'enable') || ($node->site_status & HOSTING_SITE_ENABLED)) {
+      $options['migrate'] = array(
+        'title' => t('Migrate'),
+        'description' => t('Move the site to a new platform.'),
+        'weight' => 7
+      );
+    }
+  }
+  return $options;
+}
+
+function hosting_task_migrate_form($node) {
+  $my_platform = node_load($node->platform);
+  $my_release = node_load($my_platform->release_id);
+  $result = db_query("select p.nid, n.title, version  from {hosting_platform} p left join {node} n on n.nid=p.nid left join {hosting_package_release} r on p.release_id = r.nid order by r.version asc;");
+  if ($result) {
+    while ($platform = db_fetch_object($result)) {
+      if ($platform->nid != $node->platform) {
+        if (version_compare($my_release->version, $platform->version, '<=')) {
+          $options[$platform->nid] = "<strong>$platform->title</strong> - " . $platform->version;
+        }
+      }
+    }
+
+  }
+  if (sizeof($options)) {
+    $form['target_platform'] = array(
+      '#type' => 'radios',
+      '#title' => t('Migrate to'),
+      '#options' => $options,
+      '#required' => TRUE
+    );
+  }
+  else {
+    $form['target_text'] = array('#type' => 'item',
+      '#value' => t('<strong>No valid platforms to migrate to.</strong>')
+    );
+  }
+  return $form;
+}
+
+function hosting_migrate_hosting_post_migrate($task, $data) {
+  $ref = node_load($task->rid);
+  if ($ref->type == 'site') {
+    $target = $task->task_args['target_platform'];
+    $ref->platform = $target;
+    node_save($ref);
+  }
+}

@@ -1,0 +1,4 @@
+name = Site migration
+description = Migrate sites between platforms, performing upgrades when necessary.
+package = Hosting
+dependencies = hosting
