@@ -14,9 +14,18 @@ function hosting_web_server_install() {
         config_path longtext,
         backup_path longtext,
         restart_cmd longtext,
+        drush_path longtext,
         PRIMARY KEY  (vid)
       ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
       break;
   }
 }
 
+/**
+ * Add package description to hosting_package table
+ */
+function hosting_web_server_update_1() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE {hosting_web_server} ADD COLUMN drush_path longtext NOT NULL default ''");
+  return $ret;
+}

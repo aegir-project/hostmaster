@@ -151,7 +151,6 @@ function hosting_generate_command($system, $command, $ref, $args = array(), $opt
 
   $data = module_invoke_all('provision_args', $ref, $command); 
   $data = array_merge($data, $options);
-
   foreach ($data as $key => $value) {
     if (!is_array($value) && !is_object($value) && !is_null($value) && ($value != '')) {
       if (substr($key, 0, 1) == '#') {
@@ -182,9 +181,8 @@ function hosting_generate_command($system, $command, $ref, $args = array(), $opt
       $option_str .= " --$key";
     }
   } 
-  $drush_path = sprintf("%s/drush.php", $data['publish_path']); 
   // @TODO: Implement proper multi platform / multi server support.
-  $cmd = sprintf(escapeshellcmd("%s %s %s %s --root=%s %s"), escapeshellcmd($drush_path) ,
+  $cmd = sprintf(escapeshellcmd("%s %s %s %s --root=%s %s"), escapeshellcmd($data['drush_path']) ,
     escapeshellarg($system), escapeshellarg($command), $arg_str, escapeshellarg($data['publish_path']), $option_str);
 
   if ($backend) {
@@ -193,6 +191,10 @@ function hosting_generate_command($system, $command, $ref, $args = array(), $opt
 
   if ($options['background']) {
     $cmd .= " &";
+  }
+
+  if (isset($data['web_id']) && ($data['web_id'] != HOSTING_OWN_WEB_SERVER)) {
+    $cmd = sprintf("ssh %s@%s %s", escapeshellarg($data['script_user']), escapeshellarg($data['web_host']), escapeshellarg($cmd));
   }
   return $cmd;
 }
@@ -300,114 +302,6 @@ function _hosting_queues_clean_output($return) {
   return filter_xss($return, array());
 }
 
-/**
- * Page callback
- *
- * Configure the frequency of tasks.
- */
-function hosting_queues_configure() {
-  drupal_add_css(drupal_get_path('module', 'hosting') . '/hosting.css');
-  $units = array(
-    strtotime("1 second", 0) => t("Seconds"),
-    strtotime("1 minute", 0) => t("Minutes"),
-    strtotime("1 hour", 0) => t("Hours"),
-    strtotime("1 day", 0) => t("Days"),
-    strtotime("1 week", 0) => t("Weeks"),
-  );
-  
-  $queues = hosting_get_queues();
-  $form['#tree'] = TRUE;
-
-  foreach ($queues as $queue => $info) {
-    $form[$queue]['description'] = array(
-      '#type' => 'item',
-      '#value' => $info['name'],
-      '#description' => $info['description']
-    );
-
-    $form[$queue]["enabled"] = array(
-      '#type' => 'checkbox',
-      '#default_value' => $info['enabled']
-    );
-
-    $form[$queue]["last_run"] = array(
-      '#value' => hosting_format_interval(variable_get('hosting_queue_' . $queue . '_last_run', false))
-    );
-    $form[$queue]['frequency']['#prefix'] = "<div class='hosting-queue-frequency'>";
-    $form[$queue]['frequency']['#suffix'] = "</div>";
-    
-    if ($info['type'] == 'batch') {
-      $form[$queue]['frequency']['items'] = array(
-        '#value' => t('%count %items every ', array("%count" => $info['total_items'], "%items" => format_plural($info['total_items'], $info['singular'], $info['plural']))),
-      ); 
-    }
-    else {
-      $form[$queue]['frequency']['items'] = array(
-        '#type' => 'textfield',
-        '#size' => 3,
-        '#maxlength' => 3,
-        '#default_value' => $info['items'],
-        '#suffix' => t(' %items every ', array('%items' => $info['plural'])),
-      );
-    }
-    foreach (array_reverse(array_keys($units)) as $length) {
-      $unit = $units[$length];
-      
-      if (!($info['frequency'] % $length)) {
-        $frequency_ticks = $info['frequency'] / $length;
-        $frequency_length = $length;
-        break;
-      }
-    }
-    $form[$queue]['frequency']["ticks"] = array(
-      '#type' => 'textfield',
-      '#default_value' => $frequency_ticks,
-      '#maxlength' => 5,
-      '#size' => 5
-    );
-    $form[$queue]['frequency']["unit"] = array(
-      '#type' => 'select',
-      '#options' => $units,
-      '#default_value' => $frequency_length,
-    );
-  }
-  $form['submit'] = array('#type' => 'submit', '#value' => t('Save changes'));
-  return $form;
-}
-
-function theme_hosting_queues_configure($form) {
-  $queues = hosting_get_queues();
-
-  $rows = array();
-  $header = array('', t('Description'), 
-    array('data' => t('Frequency'), 'class' => 'hosting-queue-frequency-head'),
-    t('Last run'),);
-  foreach ($queues as $key => $info) {
-    $row = array();
-    $row[] = drupal_render($form[$key]['enabled']); 
-    $row[] = drupal_render($form[$key]['description']); 
-    $row[] = drupal_render($form[$key]['frequency']);
-    $row[] = drupal_render($form[$key]['last_run']); 
-    $rows[] = $row;
-  }
-  $output = theme('table', $header, $rows);
-  $output .= drupal_render($form['submit']);
-  $output .= drupal_render($form);
-  return $output;
-}
-
-function hosting_queues_configure_submit($form_id, $values) {
-  foreach (hosting_get_queues() as $queue => $info) {
-    if ($values[$queue]) {
-      variable_set("hosting_queue_" . $queue . "_enabled", $values[$queue]['enabled']);
-      variable_set("hosting_queue_" . $queue . "_frequency", $values[$queue]['frequency']['ticks'] * $values[$queue]['frequency']['unit']);
-      if ($info['type'] == 'serial') {
-        variable_set("hosting_queue_" . $queue . "_items", $values[$queue]['items']);
-      }
-
-    }
-  }
-}
 
 function _hosting_dispatch_cmd() {
   $drush_path = sprintf("%s/drush.php", PROVISION_DOCROOT_PATH);

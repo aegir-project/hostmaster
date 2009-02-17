@@ -173,7 +173,6 @@ function hosting_db_server_validate(&$node) {
     $old = node_load($node->nid);
     $node->db_passwd = $old->db_passwd;
   }
-  # TODO : check paths. kind of tricky actually, due to multiple servers etc.
 }
 
 /**
@@ -252,19 +251,6 @@ function hosting_db_server_view($node, $teaser = FALSE, $page = FALSE) {
   return $node;
 }
 
-
-/**
- * Create the configuration file containing the master database credentials
- *
- * Outside of web root. not readable by web server. _important_
- */
-function _hosting_generate_database_config_file($node) {
-  if ($node->type != "db_server") {
-    return null;
-  }
-  $path = _provision_config_path();
-  
-}
 
 
 function hosting_db_server_hosting_summary() {

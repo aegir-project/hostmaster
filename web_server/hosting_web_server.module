@@ -139,12 +139,19 @@ function hosting_web_server_access($op, $node) {
 function hosting_web_server_provision_args($node, $task = '') {
   $values = array();
   if (in_array($node->type, array('site', 'platform'))) {
-    $web = node_load($node->web_server);
+    if ($node->type == 'site') {
+      $platform = node_load($node->platform);
+      $web = node_load($platform->web_server);
+    }
+    else {
+      $web = node_load($node->web_server);
+    }
+    $values['drush_path'] = $web->drush_path;
     $values['web_id'] = $web->nid;
     $values['web_host'] = $web->title;
     $values['web_ip'] = $web->ip_address;
+    $values['script_user'] = $web->script_user;
     if ($task == 'verify' && $node->type == 'platform') {
-        $values['script_user'] = $web->script_user;
         $values['web_group'] = $web->web_group;
         $values['config_path'] = $web->config_path;
         $values['backup_path'] = $web->backup_path;
@@ -180,6 +187,18 @@ function hosting_web_server_form(&$node) {
     '#description' => t('The host name of the server. This is the address that will be used by Hostmaster to connect to the web server to issue commands.'),
     '#weight' => -5
   );
+
+  $form['drush_path'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Drush path'),
+    '#required' => TRUE,
+    '#size' => 40,
+    '#default_value' => ($node->drush_path) ? $node->drush_path : '',
+    '#description' => t("The full path to the drush.php script on this server."),
+    '#maxlength' => 255,
+    '#weight' => -2,
+  );
+
   #TODO : rename to db_ip_address, to avoid confusion
   $form['ip_address'] = array(
     '#type' => 'textfield',
@@ -258,29 +277,18 @@ function hosting_web_server_form(&$node) {
 function hosting_web_server_validate(&$node) {
   $user = $node->script_user;
   $group = $node->web_group;
-  if (!posix_getpwnam($user)) {
-    form_set_error('script_user', t('The system account you have entered does not exist. Please create the account, or change the account name to an existing user.  
-      For information on how to fix this, please check the !link.', array('!link' => l(t("provisioning requirements"), "admin/help/provision/requirements") )));
-  }
-  if ($user && $group) {
-    if (!provision_user_in_group($user, $group)) {
-       form_set_error('web_group', t("The %user user is not in the %group group. For information on how to fix this, please check the !link.", 
-         array('%user' => $user, '%group' =>  $group, '!link' => l(t("provisioning requirements"), "admin/help/provision/requirements") )));
-    }
-  }
   if ($node->script_user == 'root') {
     form_set_error('script_user', t('For security reasons, you should not run drush commands as the root user. Please choose a different system account name.'));
   }
-  # TODO : check paths. kind of tricky actually, due to multiple servers etc.
 }
 
 /**
  * Implementation of hook_insert().
  */
 function hosting_web_server_insert($node) {
-  db_query("INSERT INTO {hosting_web_server} (vid, nid, ip_address, script_user, web_group, config_path, backup_path, restart_cmd) 
-      VALUES (%d, %d, '%s', '%s', '%s', '%s', '%s', '%s')", 
-        $node->vid, $node->nid, $node->ip_address, $node->script_user, $node->web_group, $node->config_path, $node->backup_path, $node->restart_cmd);
+  db_query("INSERT INTO {hosting_web_server} (vid, nid, ip_address, script_user, web_group, config_path, backup_path, restart_cmd, drush_path) 
+      VALUES (%d, %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s')", 
+        $node->vid, $node->nid, $node->ip_address, $node->script_user, $node->web_group, $node->config_path, $node->backup_path, $node->restart_cmd, $node->drush_path);
 }
 
 /**
@@ -297,11 +305,13 @@ function hosting_web_server_update($node) {
   else {
     db_query("UPDATE {hosting_web_server} SET 
                   ip_address = '%s', script_user = '%s', web_group = '%s', 
-                  config_path = '%s', backup_path = '%s', restart_cmd = '%s'
+                  config_path = '%s', backup_path = '%s', restart_cmd = '%s',
+                  drush_path = '%s'
               WHERE 
                   vid = %d", 
                   $node->ip_address, $node->script_user, $node->web_group,
                   $node->config_path, $node->backup_path, $node->restart_cmd, 
+                  $node->drush_path,
                   $node->vid);
   }
 }
@@ -321,7 +331,7 @@ function hosting_web_server_delete($node) {
  * Implementation of hook_load().
  */
 function hosting_web_server_load($node) {
-  $additions = db_fetch_object(db_query('SELECT ip_address, script_user, web_group, config_path, backup_path, restart_cmd FROM {hosting_web_server} WHERE vid = %d', $node->vid));
+  $additions = db_fetch_object(db_query('SELECT ip_address, script_user, web_group, config_path, backup_path, restart_cmd, drush_path FROM {hosting_web_server} WHERE vid = %d', $node->vid));
   return $additions;
 }
 
@@ -337,6 +347,11 @@ function hosting_web_server_view($node, $teaser = FALSE, $page = FALSE) {
       '#value' => filter_xss($node->ip_address),
     );    
   }
+  $node->content['drush_path'] = array(
+    '#type' => 'item',
+    '#title' => t('Drush path'),
+    '#value' => filter_xss($node->drush_path),
+  );
   $node->content['script_user'] = array(
     '#type' => 'item',
     '#title' => t('Script user'),
