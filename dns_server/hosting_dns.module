@@ -13,24 +13,17 @@
 include_once(drupal_get_path('module', 'hosting_dns') . '/hosting_dns.admin.inc');
 include_once(drupal_get_path('module', 'hosting_dns') . '/hosting_dns.api.inc');
 
-# DNS API split off to a separate file for clarity
-# This should handle the abstract DB api and triggering drush tasks..
-#include_once('hosting_dns.api.inc');
-
 function hosting_dns_hosting_service() {
   return array("dns_server" => t("DNS Server"));
 }
 
-/**
- * Implementation of hook_init()
- **/
-function hosting_dns_init() {
-  define('HOSTING_DEFAULT_DNS_SERVER', variable_get('hosting_default_dns_server', 0));
-  define('HOSTING_OWN_DNS_SERVER', variable_get('hosting_own_dns_server', 0));
-}
-
 function hosting_dns_help($section) {
   switch ($section) {
+    case 'admin/help/provision#requirements':
+      $output .= _hosting_requirements('config_dns_path');
+      $output .= _hosting_requirements('visudo_dns');
+      return $output;
+      break;
     case 'dns_server' :
       return t("<strong>The DNS server which defines sites and their domains.</strong>
                 Most sites will have a primary and secondary DNS server, at least one of which is usually 
@@ -38,6 +31,45 @@ function hosting_dns_help($section) {
       break;
   }
 }
+
+function _hosting_config_dns_path_requirements() {
+  $username = PROVISION_SCRIPT_USER;
+  $group = PROVISION_WEB_GROUP;
+  $path = PROVISION_CONFIG_PATH;
+  $mkdir_cmd['@named_path'] = $path;
+  $mkdir_cmd['@provision_link'] = url('admin/settings/provision');
+  $mkdir_cmd['@mkdir_cmd'] = <<<EOF
+    mkdir -p $path
+    chown $username:$username $path
+    chmod 0700 $path
+EOF;
+
+  $help['title'] = t('Write access to a directory to store configuration information');
+  $help['summary'] = t('The Provision framework takes special care to make sure that the file permissions of the 
+                        hosted sites are always as safe as can be, especially to make sure that the web server does 
+			not have the ability to modify the code of the site, therefore this information is required 
+			to assure that safety while keeping the sites accessible. 
+			The recommended path is directly above your platform path, but it can be anywhere.');
+  
+  $help['configuration'][] = t('Based on your server configuration we have determined that your path should be <code>@named_path</code>,
+  but you can change it in the <a href="@provision_link">provision_section</a>', $mkdir_cmd);
+  $help['configuration'][] = t('Please enter the following commands : <pre>@mkdir_cmd</pre>', $mkdir_cmd);
+
+  return $help;
+}
+
+function _hosting_visudo_dns_requirements() {
+#  $username = PROVISION_SCRIPT_USER;
+#  $cmd = trim(str_replace("sudo", '', PROVISION_RESTART_CMD));
+#  $cmd = substr($cmd, 0, strpos($cmd, " "));
+#  $visudo['@visudo_cmd'] = <<<EOF
+#    sudo visudo
+#EOF;
+#  $visudo['@visudo_line'] = <<<EOF
+#    $username = ALL=NOPASSWD: $cmd
+#EOF;
+}
+
 
 ## Not sure if this is necessary (stolen from db_server)
 #function hosting_get_dns_server($hostname, $web_server = null) {
@@ -130,9 +162,9 @@ function hosting_dns_provision_args($node, $task = '') {
     # Engine specific stuff..
     $values['dns_zonedata'] = $dns->zonedata;
     $values['dns_named_conf'] = $dns->named_conf;
-    $values['dns_named_checkconf'] = $dns_named_checkconf;
-    $values['dns_named_checkzone'] = $dns_named_checkzone;
-    $values['dns_named_rndc'] = $dns_named_rndc;
+    $values['dns_named_checkconf'] = $dns->named_checkconf;
+    $values['dns_named_checkzone'] = $dns->named_checkzone;
+    $values['dns_named_rndc'] = $dns->named_rndc;
   }
   return $values;
 }
@@ -329,7 +361,6 @@ function hosting_dns_insert($node) {
       $node->vid, $node->nid, $node->engine, $node->default_ip, $node->ns, $node->mbox, $node->refresh, $node->retry, $node->expire, $node->minimum, $node->ttl, $node->xfer);
 
    if ($node->engine == 'bind') {
-drupal_set_message("Storing BIND config details");
      # prepare the data and serialize as array
      # zonedata and named_conf
      # named_checkconf, named_checkzone, and rndc
@@ -365,7 +396,7 @@ function hosting_dns_update($node) {
        'named_checkzone' => $node->named_checkzone,
        'rndc' => $node->rndc,
      );
-      db_query("UPDATE {hosting_dns_server_config} SET engine = '%s', data = '%s' WHERE vid = %d", $node->engine, serialize($data), $node->vid);
+     db_query("UPDATE {hosting_dns_server_config} SET engine = '%s', data = '%s' WHERE vid = %d", $node->engine, serialize($data), $node->vid);
     }
   }
 }
@@ -393,6 +424,7 @@ function hosting_dns_load($node) {
 
   if ($additions->engine == 'bind') {
     $bind_settings = unserialize($config_obj->data);
+
     $additions->zonedata = $bind_settings['zonedata'];
     $additions->named_conf = $bind_settings['named_conf'];
     $additions->named_checkconf = $bind_settings['named_checkconf'];
@@ -524,8 +556,9 @@ function hosting_dns_hosting_summary() {
 /**
  * Implementation of hook_form_alter.
  *
- * Add a radio buttons field to select a DNS server. This field is hidden if 
- * only one DNS server is available.
+ * Add a radio button field to select a DNS server on platforms. This field is
+ * hidden if only one DNS server is available.
+ * Also adds a select field to site nodes to determine the primary DNS server for the site.
  **/
 function hosting_dns_form_alter($form_id, &$form) {
   
@@ -549,6 +582,15 @@ function hosting_dns_form_alter($form_id, &$form) {
         '#description' => t('The default DNS server has been chosen for this platform, as there are no others to choose from.'),
       );
     }
+  }
+  if ($form_id == 'site_node_form') {
+    $form['dns_server'] = array(
+      '#type' => 'select',
+      '#title' => t('DNS Server'),
+      '#description' => t('Select a primary DNS server on which to provision this site\'s domain.'),
+      '#options' => _hosting_get_dns_servers(),
+      '#default_value' => $form['#node']->dns_server,
+    );
   }
 }
 
@@ -582,25 +624,32 @@ function hosting_get_dns_server($node) {
  * Also manage inserts, updates, and deletions of DNS servers when platform nodes change.
  **/
 function hosting_dns_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
-  if ($node->type == 'site' && $node->engine == 'bind') {
+  if ($node->type == 'site') {
     switch($op) {
-      case 'delete':
-        # remove the RR (which triggers removal of the zone, if empty)
-        break;
-      case 'validate': # This one gets $a3 as $form
-        # check the form of the site name for url-ness
-        break;
       case 'insert':
         # create the zone, if necessary
         # add the RR
         # create the node association:
         #db_query("INSERT INTO {hosting_dns_server_zone} (vid,nid,zid,rid)" 
+        hosting_dns_insert($node);
         break;
       case 'update':
         #
+        hosting_dns_update($node);
+        break;
+      case 'delete':
+        # remove the RR (which triggers removal of the zone, if empty)
+        hosting_dns_delete($node);
+        break;
+      case 'delete revision':
+        hosting_dns_delete_revision($node);
+        break;
+      case 'validate': # This one gets $a3 as $form
+        # check the form of the site name for url-ness
         break;
       case 'load':
         # add the $zone object and $rid to the $node
+#       $additions['dns_server'] = hosting_dns_get_
         break;
       case 'view': # This one gets $a3 = $teaser, and $a4 = $path
         if (user_access('administer DNS provisioning')) {
@@ -609,21 +658,21 @@ function hosting_dns_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
         break;
     }
   }
-  if ($op == 'validate' && $node->type == 'site') {
-    $tlds = split("\n", variable_get('provision_dns_tlds', ''));
-    $matched_tld = FALSE;
-    foreach ($tlds as $tld) {
-      $tld = trim($tld);
-      $pat = "/".$tld."$/";
-      if (preg_match($pat, $node->title)) {
-        $matched_tld = TRUE;
-        break;
-      }
-    }
-    if (!$matched_tld) {
-      form_set_error('title', t("The URL you have provided is not within a valid Top-Level Domain to be provisioned."));
-    }
-  }
+#  if ($op == 'validate' && $node->type == 'site') {
+#    $tlds = split("\n", variable_get('provision_dns_tlds', ''));
+#    $matched_tld = FALSE;
+#    foreach ($tlds as $tld) {
+#      $tld = trim($tld);
+#      $pat = "/".$tld."$/";
+#      if (preg_match($pat, $node->title)) {
+#        $matched_tld = TRUE;
+#        break;
+#      }
+#    }
+#    if (!$matched_tld) {
+#      form_set_error('title', t("The URL you have provided is not within a valid Top-Level Domain to be provisioned."));
+#    }
+#  }
   if ($node->type == 'platform') {
     switch ($op) {
       case 'insert':
