@@ -174,10 +174,11 @@ function hosting_help($section) {
 }
 
 function _hosting_hosting_setup_requirements() {
-  $docroot = PROVISION_DOCROOT_PATH;
-  $uri = PROVISION_BASE_URL;
-  $drush_path = rtrim(drupal_get_path('module', 'drush'), '/') . '/drush.php';
-  $username = PROVISION_SCRIPT_USER;
+  $node = node_load(HOSTING_OWN_WEB_SERVER);
+  $drush_path = $node->drush_path;
+  $docroot = HOSTING_DEFAULT_DOCROOT_PATH;
+  $uri = HOSTING_DEFAULT_BASE_URL;
+  $username = HOSTING_DEFAULT_SCRIPT_USER;
   $setup_cmd = <<<EOF
     cd $docroot
     $drush_path hosting setup
@@ -197,7 +198,6 @@ EOF;
 }
 
 function _hosting_cron_requirements() {
-  $username = PROVISION_SCRIPT_USER;
   $cron_cmd['!queueconf'] = l(t("Queue administration"), "admin/settings/queues");
   $cron_cmd['@cron_line'] = hosting_queues_cron_cmd();
   $help['title'] = t('A cron entry for queue dispatcher.');
@@ -353,9 +353,9 @@ function hosting_get_requirement($req) {
 }
 
 function _hosting_backup_path_requirements() {
-    $username = PROVISION_SCRIPT_USER;
-    $group = PROVISION_WEB_GROUP;
-    $backup_path = PROVISION_BACKUP_PATH;
+    $username = HOSTING_DEFAULT_SCRIPT_USER;
+    $group = HOSTING_DEFAULT_WEB_GROUP;
+    $backup_path = HOSTING_DEFAULT_BACKUP_PATH;
     $mkdir_cmd['@backup_path'] = $backup_path;      
     $mkdir_cmd['@mkdir_cmd'] = <<<EOF
     mkdir $backup_path
@@ -374,8 +374,8 @@ EOF;
 
 
 function _hosting_user_requirements() {
-  $username = PROVISION_SCRIPT_USER;
-  $path = PROVISION_DOCROOT_PATH;
+  $username = HOSTING_DEFAULT_SCRIPT_USER;
+  $path = HOSTING_DEFAULT_DOCROOT_PATH;
   $add_cmd = <<<EOF
     sudo adduser $username
 EOF;
@@ -386,7 +386,7 @@ EOF;
   $help['summary'] = t('The provision framework requires that the scripts run as a non-root system account, to ensure that
     it can correctly set the file permissions on the hosted files. All existing files need to be changed to belong to this
     new system account.');
-  $help['suggestion'] = t('Based on your server configuration, we have determined that your user account should be <code>@script_user</code>', array('@script_user' => PROVISION_SCRIPT_USER));
+  $help['suggestion'] = t('Based on your server configuration, we have determined that your user account should be <code>@script_user</code>', array('@script_user' => HOSTING_DEFAULT_SCRIPT_USER));
   $help['configuration'][] = t('If your system supports it, run the adduser command (if this command is unavailable, please consult your operating system documentation on how to add new system accounts) : <pre>@cmd</pre>', array('@cmd' => $add_cmd));
   $help['configuration'][] = t('Once you have created the user account, you need to modify the ownership of the files. Use the following command : <pre>@cmd</pre>', array('@cmd' => $chmod_cmd));
   return $help;
@@ -394,8 +394,8 @@ EOF;
 
 function _hosting_group_requirements() {
 
-    $username = PROVISION_SCRIPT_USER;
-    $group = PROVISION_WEB_GROUP;
+    $username = HOSTING_DEFAULT_SCRIPT_USER;
+    $group = HOSTING_DEFAULT_WEB_GROUP;
       
 
     $vigr_cmd = <<<EOF

@@ -18,7 +18,7 @@ function hosting_db_server_hosting_service() {
  }
 
 function _hosting_mysql_user_requirements() {
-   $username = PROVISION_SCRIPT_USER;
+   $username = HOSTING_DEFAULT_SCRIPT_USER;
    $command = <<<EOF
      mysql -uroot -pXXXXXXXXX mysql
 

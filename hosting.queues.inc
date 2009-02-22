@@ -31,7 +31,7 @@ function hosting_dispatch() {
   } else {
     hosting_log('hosting_dispatch', t("dispatching disabled"));
   }
-  exit(PROVISION_SUCCESS);
+  exit(DRUSH_SUCCESS);
 }
 
 /**
@@ -139,7 +139,7 @@ function hosting_run_queue() {
   }
 
   variable_del('hosting_queue_' . $queue . '_running');
-  exit(PROVISION_SUCCESS);
+  exit(DRUSH_SUCCESS);
 }
 
 /**
@@ -209,7 +209,7 @@ function hosting_generate_command($system, $command, $ref, $args = array(), $opt
  */
 function _hosting_get_new_tasks($limit = 20) {
   $return = array();
-  $result = db_query("SELECT nid FROM {hosting_task_queue} WHERE status=%d ORDER BY timestamp, nid ASC LIMIT %d", PROVISION_QUEUED, $limit);
+  $result = db_query("SELECT nid FROM {hosting_task_queue} WHERE status=%d ORDER BY timestamp, nid ASC LIMIT %d", DRUSH_NOT_COMPLETED, $limit);
   while ($node = db_fetch_object($result)) {
     $return[$node->nid] =  node_load($node->nid);
   }
@@ -226,7 +226,7 @@ function _hosting_get_new_tasks($limit = 20) {
  */
 
 function _hosting_task_in_queue($nid) {
-  return (db_result(db_query("SELECT nid FROM {hosting_task_queue} WHERE status=%d AND nid=%d", PROVISION_QUEUED, $nid))) ? TRUE : FALSE;
+  return (db_result(db_query("SELECT nid FROM {hosting_task_queue} WHERE status=%d AND nid=%d", DRUSH_NOT_COMPLETED, $nid))) ? TRUE : FALSE;
 }
 /**
  * Process the hosting task queue.
@@ -262,7 +262,7 @@ function hosting_tasks_queue($count = 20) {
 
     if (!$data = provision_parse_output($return)) {
       hosting_task_log($task->vid, 'error', t("The command could not be executed succesfully (returned: !return, code: %code)", array("!return" => $return, "%code" =>  $code)));
-      $code = PROVISION_FRAMEWORK_ERROR;
+      $code = DRUSH_FRAMEWORK_ERROR;
     }
     else {
       foreach ((array) $data['log'] as $log) {
@@ -285,7 +285,7 @@ function hosting_tasks_queue($count = 20) {
     $task->revision = false;
     node_save($task);
 
-    if ($code == PROVISION_SUCCESS) {
+    if ($code == DRUSH_SUCCESS) {
       # The task has been successful. Run the post hook.
       module_invoke_all("hosting_post_" . $task->task_type, $task, $data);
     }
@@ -304,9 +304,9 @@ function _hosting_queues_clean_output($return) {
 
 
 function _hosting_dispatch_cmd() {
-  $drush_path = sprintf("%s/drush.php", PROVISION_DOCROOT_PATH);
-  $cmd = sprintf("php %s hosting dispatch --root=%s", escapeshellarg($drush_path), 
-      escapeshellarg(PROVISION_DOCROOT_PATH));
+  $node = node_load(HOSTING_OWN_WEB_SERVER);
+  $cmd = sprintf("php %s hosting dispatch --root=%s", escapeshellarg($node->drush_path), 
+      escapeshellarg(HOSTING_DEFAULT_DOCROOT_PATH));
   return $cmd;
 }
 

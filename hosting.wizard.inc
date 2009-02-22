@@ -264,6 +264,7 @@ function hosting_wizard_provision_paths_submit($form_id, $values) {
   $node->config_path = $values['config_path'];
   $node->restart_cmd = $values['restart_cmd'];
   $node->backup_path = $values['backup_path'];
+  $node->drush_path = $values['drush_path'];
   node_save($node);
 }
 
@@ -283,6 +284,8 @@ function hosting_wizard_provision_web() {
   $form['ip_address']['#type'] = 'value';
   $form['backup_path']['#type'] = 'value';  
   $form['config_path']['#type'] = 'value';  
+  $form['drush_path']['#type'] = 'value';  
+  $form['drush_path']['#required'] = FALSE;  
 
   $form['user_help'] = array(
     '#type' => 'requirement_help', '#requirement' => 'user',
@@ -422,7 +425,7 @@ function hosting_wizard_hosting_verify() {
   $form = array();
   $node = hosting_get_most_recent_task(HOSTING_OWN_PLATFORM, 'verify');
   $form['provision'] = array('#type' => 'requirement_help', '#requirement' => 'platform');
-  if ($node->task_status & PROVISION_SUCCESS) {
+  if ($node->task_status & DRUSH_SUCCESS) {
     $form['provision']['#status'] = HOSTING_STATUS_SUCCESS;
     $form['provision']['#message'] = t('Your platform has been succesfully configured. You can now create sites.');
 
@@ -447,7 +450,7 @@ function hosting_wizard_hosting_verify() {
 
 function hosting_wizard_hosting_verify_validate() {
   $node = hosting_get_most_recent_task(HOSTING_OWN_PLATFORM, 'verify');
-  if (!($node->task_status & PROVISION_SUCCESS)) {
+  if (!($node->task_status & DRUSH_SUCCESS)) {
     drupal_goto('/hosting/wizard/hosting/verify');
   }
 }

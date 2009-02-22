@@ -134,7 +134,51 @@ function hosting_init() {
   define('HOSTING_OWN_DB_SERVER', variable_get('hosting_own_db_server', 2));
   define('HOSTING_OWN_WEB_SERVER', variable_get('hosting_own_web_server', 3));
   define('HOSTING_OWN_PLATFORM', variable_get('hosting_own_platform', 6)); 
+
+
+  // These defaults could be temporary.
+  $info = posix_getgrgid(posix_getgid());
+  define('HOSTING_DEFAULT_WEB_GROUP', $info['name']);
+  define('HOSTING_DEFAULT_SCRIPT_USER', get_current_user());
+
+  define('HOSTING_DEFAULT_RESTART_CMD', _hosting_default_restart_cmd());
+
+  $path =  ($_SERVER['PWD']) ? $_SERVER['PWD'] : $_SERVER['DOCUMENT_ROOT'];
+  define('HOSTING_DEFAULT_DOCROOT_PATH',rtrim($path, '/')); 
+
+  $parts = explode("/", rtrim($path, '/'));
+  array_pop($parts);
+  define('HOSTING_DEFAULT_PARENT_PATH', rtrim(implode("/" , $parts), '/'));
+  define('HOSTING_DEFAULT_BACKUP_PATH', HOSTING_DEFAULT_PARENT_PATH . '/backups');
+  define('HOSTING_DEFAULT_CONFIG_PATH', HOSTING_DEFAULT_PARENT_PATH .'/config');
+  define('HOSTING_DEFAULT_VHOST_PATH', HOSTING_DEFAULT_CONFIG_PATH .'/vhost.d');
 }
+
+
+/**
+ * This function should not have to be duplicated between hosting/provision
+ */
+function _hosting_default_restart_cmd() {
+  $command = '/usr/sbin/apachectl'; # a proper default for most of the world
+  foreach (explode(':', $_SERVER['PATH']) as $path) {
+    $options[] = "$path/apache2ctl";
+    $options[] = "$path/apachectl";
+  }
+  # try to detect the apache restart command
+  $options[] = '/usr/local/sbin/apachectl'; # freebsd
+  $options[] = '/usr/sbin/apache2ctl'; # debian + apache2
+  $options[] = $command;
+
+  foreach ($options as $test) {
+    if (is_executable($test)) {
+      $command = $test;
+      break;
+    }
+  }
+
+  return "sudo $command graceful";
+}
+
 
 /**
  * Replacement submit handler for the admin/settings/provision page
@@ -323,32 +367,26 @@ function hosting_format_interval($ts) {
 
 function hosting_setup() {
   variable_set('hosting_dispatch_enabled', FALSE);
-  if (_provision_setup()) {
     ## attempting to run the dispatch command, to make sure it runs without the queue being
-    ## enabled.
+  ## enabled.
+  variable_set('hosting_dispatch_enabled', TRUE);
+  print (_hosting_dispatch_cmd());
+  exec(_hosting_dispatch_cmd(), $return, $code);
+  variable_set('hosting_dispatch_enabled', FALSE);
+  $return = join("\n", $return);
+  $data = unserialize($return);
+  if ($code == DRUSH_SUCCESS) {
     variable_set('hosting_dispatch_enabled', TRUE);
-    exec(_hosting_dispatch_cmd(), $return, $code);
-    variable_set('hosting_dispatch_enabled', FALSE);
-    $return = join("\n", $return);
-    $data = unserialize($return);
-    if ($code == PROVISION_SUCCESS) {
-      variable_set('hosting_dispatch_enabled', TRUE);
-      provision_log("message", t("Dispatch command was run successfully"));
-      _hosting_setup_cron();
-    }
-    else {
-      provision_log("error", t("Dispatch command could not be run. Returned: \n@return", array('@return' => $return))); 
-      provision_set_error(PROVISION_FRAMEWORK_ERROR);
-    }
+    provision_log("message", t("Dispatch command was run successfully"));
+    _hosting_setup_cron();
+  }
+  else {
+    drush_log(dt("Dispatch command could not be run. Returned: \n@return", array('@return' => $return)), 'error'); 
+    drush_set_error(DRUSH_FRAMEWORK_ERROR);
   }
   
-  // @TODO use provision_output for this, but we need pretty print first.
-  $logs = provision_get_log();
-  foreach ($logs as $log) {
-    print "$log[message]\n";
-  }
 
-  if (provision_get_error()) {
+  if (drush_get_error()) {
     print "\nThe command did not complete successfully, please fix the issues and re-run this script.";
   }
 }

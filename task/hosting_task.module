@@ -79,12 +79,12 @@ function hosting_task_provision_args($node, $task = '') {
 
 function hosting_task_retry($task_id) {
   $status = db_result(db_query("SELECT status FROM {hosting_task_queue} WHERE nid=%d", $task_id));
-  if (!($status & PROVISION_SUCCESS)) {
-    db_query("UPDATE {hosting_task_queue} SET STATUS = %d WHERE nid =%d", PROVISION_QUEUED, $task_id);
+  if (!($status & DRUSH_SUCCESS)) {
+    db_query("UPDATE {hosting_task_queue} SET STATUS = %d WHERE nid =%d", DRUSH_NOT_COMPLETED, $task_id);
     $node = node_load($task_id);
     drupal_set_message(t("The task is being retried and has been added to the hosting queue again"));
     hosting_task_log($node->vid, 'queue', t("The task is being retried and has been added to the hosting queue again"));
-    $node->task_status = PROVISION_QUEUED;
+    $node->task_status = DRUSH_NOT_COMPLETED;
     $node->revision = FALSE;
     node_save($node);
   }
@@ -105,7 +105,7 @@ function hosting_add_task($nid, $type, $args = null) {
  #todo: make this pretty
  $task->title = t("!type !title", array('!type' => $type, '!title' => $node->title) );
  $task->task_type = $type;
- $task->task_status = PROVISION_QUEUED;
+ $task->task_status = DRUSH_NOT_COMPLETED;
  $task->rid = $node->nid;
 
  #arguments, such as which backup to restore.
@@ -209,7 +209,7 @@ function hosting_task_insert($node) {
   }
   hosting_task_set_title($node); 
   if ($node->is_new) {
-    db_query("INSERT INTO {hosting_task_queue} (nid, timestamp, status) VALUES (%d, %d, %d)", $node->nid, mktime(), PROVISION_QUEUED);
+    db_query("INSERT INTO {hosting_task_queue} (nid, timestamp, status) VALUES (%d, %d, %d)", $node->nid, mktime(), DRUSH_NOT_COMPLETED);
   }
 }
 
@@ -341,7 +341,7 @@ function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
   $node->content['info']['#suffix'] = '</div>';
 
   if (user_access('retry failed tasks') 
-    && !in_array($node->task_status, array(PROVISION_QUEUED, PROVISION_SUCCESS))
+    && !in_array($node->task_status, array(DRUSH_NOT_COMPLETED, DRUSH_SUCCESS))
     && !$in_queue) {
     $node->content['retry'] = array(
       '#type' => 'markup',
@@ -455,41 +455,28 @@ function hosting_get_tasks($filter_by = null, $filter_value = null, $count = 5, 
 * @name Error status definitions
 * @{
 * Bitmask values used to generate the error code to return.
-* @see provision_set_error(), provision_get_error(), provision_cmp_error()
+* @see drush_set_error(), drush_get_error(), drush_cmp_error()
 */
 
-/** Queue not run */
-define('PROVISION_QUEUED', 0);
-/** Succesful **/
-define('PROVISION_SUCCESS', 1);
-/** Drupal was unable to complete it's installation */
-define('PROVISION_INSTALL_ERROR', 2);
-/** Could not create files due to permission error - potentially less severe */ 
-define('PROVISION_PERM_ERROR', 4); 
-/** Web server could not be restarted, or other server related issues - less severe */
-define('PROVISION_WEB_ERROR', 8);
-/** To be used while testing if the provision framework is actually working. */
-define('PROVISION_FRAMEWORK_ERROR', 16);
-/** When the site is not available on this platform, or has not been installed. */
-define('PROVISION_SITE_NOT_FOUND', 32);
-/** When the site is already installed, ie: there is a conflict. */
-define('PROVISION_SITE_INSTALLED', 64);
-/** Database could not be accessed, or configured */
-define('PROVISION_DB_ERROR', 128);
 
-//List of provisioning errors. This is a global so that other modules can reference it.
-global $provision_errors;
-$provision_errors = array(
-  PROVISION_SUCCESS => t("Successful"),
-  PROVISION_QUEUED => t("Queued"),
-  PROVISION_DB_ERROR => t("Database error"),
-  PROVISION_INSTALL_ERROR => t("Drupal installation error"),
-  PROVISION_PERM_ERROR => t("File permission error"),
-  PROVISION_WEB_ERROR => t("Web server error"),
-  PROVISION_FRAMEWORK_ERROR => t("Provision framework error"),
-  PROVISION_SITE_NOT_FOUND => t("Site not found"),
-  PROVISION_SITE_INSTALLED => t("Site has already been installed"),  
-  );
+if (!defined('DRUSH_SUCCESS')) {
+  /** The command was not successfully completed. This is the default error status. */
+  define('DRUSH_NOT_COMPLETED', 0);
+  /** The command completed succesfully. */
+  define('DRUSH_SUCCESS', 1);
+  /** The command was not found. **/
+  define('DRUSH_COMMAND_NOT_FOUND', 2);
+  /** Drupal was unable to bootstrap. */
+  define('DRUSH_DRUPAL_BOOTSTRAP_ERROR', 4);
+  /** The Drupal database API exited due to unsuccesful connection. */ 
+  define('DRUSH_DRUPAL_DB_ERROR', 8);
+  /** Web server could not be restarted, or other server related issues - less severe. */
+  define('DRUSH_PERM_ERROR', 16);
+  /** The command could not be completed because the framework has specified errors that have occured. */
+  define('DRUSH_FRAMEWORK_ERROR', 32);
+}
+
+
 /**
  * @} End of "name Error status defintions".
  */
@@ -498,17 +485,19 @@ $provision_errors = array(
  * Turn bitmask integer error code into associative array
  */
 function _hosting_parse_error_code($code) {
+  return array('// FIX ME');
+
   global $provision_errors;
   switch ($code) {
-    case PROVISION_QUEUED : 
-      return array(PROVISION_QUEUED => $provision_errors[PROVISION_QUEUED]);
+    case DRUSH_NOT_COMPLETED : 
+      return array(DRUSH_NOT_COMPLETED => $provision_errors[DRUSH_NOT_COMPLETED]);
       break;
-    case PROVISION_SUCCESS : 
-      return array(PROVISION_SUCCESS => $provision_errors[PROVISION_SUCCESS]);
+    case DRUSH_SUCCESS : 
+      return array(DRUSH_SUCCESS => $provision_errors[DRUSH_SUCCESS]);
       break;
     default:
       foreach ($provision_errors as $error => $message) {
-        if (!in_array($error, array(PROVISION_QUEUED, PROVISION_SUCCESS))) {
+        if (!in_array($error, array(DRUSH_NOT_COMPLETED, DRUSH_SUCCESS))) {
           if ($code & $error) {
             $return[$error] = $message;
           }        
@@ -557,10 +546,10 @@ function hosting_task_list_embedded($filter_by = null, $filter_value = null) {
 } 
 
 function _hosting_task_list_class($status) {
-  if ($status == PROVISION_QUEUED) {
+  if ($status == DRUSH_NOT_COMPLETED) {
     return 'hosting-queue';
   }
-  if ($status & PROVISION_SUCCESS) {
+  if ($status & DRUSH_SUCCESS) {
     return 'hosting-success';
   }
   return 'hosting-error';
@@ -592,7 +581,7 @@ function _hosting_task_list($filter_by, $filter_value, $count = 5, $element = 0,
 
      if (!in_array('actions', $skip) && user_access('retry failed tasks')) {
        $headers[t('Actions')] = '';
-       if (!in_array($node->task_status, array(PROVISION_QUEUED, PROVISION_SUCCESS))) {
+       if (!in_array($node->task_status, array(DRUSH_NOT_COMPLETED, DRUSH_SUCCESS))) {
          if (!_hosting_task_in_queue($node->nid)) {
            $row['actions'] = array(
              'data' => drupal_get_form('hosting_task_retry_form', $node->nid),
