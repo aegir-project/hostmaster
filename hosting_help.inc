@@ -129,12 +129,6 @@ function hosting_help($section) {
       $output .= _hosting_requirements('group');
       $output .=  _hosting_requirements('backup_path');
       return $output;
-
-  }
-}
-
-function provision_help($section) {
-  switch ($section) {
     case 'admin/help#provision':
       $output .= t('<p>The Provision framework is a powerful set of modules that lets you to accomplish a lot of maintenance tasks through the unix command line such as installing new sites, backing them up, rolling back to previous backups and facilitating upgrades.</p>');
       $output .= t('<p>Additionally, the Provision framework is one component of the distributed hosting infrastructure provided by the <code>hostmaster</code> install profile. 
@@ -173,6 +167,7 @@ function provision_help($section) {
       }
       $output .= "</dl>";
       return $output;
+
 
 
   }
@@ -362,7 +357,6 @@ function _hosting_backup_path_requirements() {
     $group = PROVISION_WEB_GROUP;
     $backup_path = PROVISION_BACKUP_PATH;
     $mkdir_cmd['@backup_path'] = $backup_path;      
-    $mkdir_cmd['@provision_link'] = url('admin/settings/provision');
     $mkdir_cmd['@mkdir_cmd'] = <<<EOF
     mkdir $backup_path
     chown $username:$username $backup_path
@@ -453,7 +447,7 @@ EOF;
  * Defines a number of form elements that are used for formatting the contextual help
  * in forms.
  */
-function provision_elements() {
+function hosting_elements() {
   $type['requirement_help'] = array(
     '#requirement' => NULL,
     '#status' => HOSTING_STATUS_NONE,

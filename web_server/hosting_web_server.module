@@ -26,7 +26,6 @@ function _hosting_config_path_requirements() {
   $group = PROVISION_WEB_GROUP;
   $vhost_path = PROVISION_CONFIG_PATH;
   $mkdir_cmd['@vhost_path'] = $vhost_path;
-  $mkdir_cmd['@provision_link'] = url('admin/settings/provision');
   $mkdir_cmd['@mkdir_cmd'] = <<<EOF
     mkdir -p $vhost_path
     chown $username:$username $vhost_path
@@ -40,8 +39,7 @@ EOF;
                        to assure that safety while keeping the sites accessible. 
                        The recommended path is directly above your platform path, but it can be anywhere.');
 
-  $help['configuration'][] = t('Based on your server configuration we have determined that your path should be <code>@vhost_path</code>, 
-    but you can change it change them in the <a href="@provision_link">provisioning section</a>.', $mkdir_cmd);
+  $help['configuration'][] = t('Based on your server configuration we have determined that your path should be <code>@vhost_path</code>.', $mkdir_cmd);
   $help['configuration'][] = t(' please enter the following commands : <pre>@mkdir_cmd</pre>', $mkdir_cmd);
 
   return $help;
