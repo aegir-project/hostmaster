@@ -172,3 +172,10 @@ function hosting_dns_update_4() {
   return $ret;
 }
 
+function hosting_dns_update_5() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE {hosting_dns_soa} CHANGE active active ENUM('Y', 'N') NOT NULL default 'Y'");
+  # $ret[] = site -> zone map table
+  # $ret[] = zone -> client map table
+  return $ret;
+}

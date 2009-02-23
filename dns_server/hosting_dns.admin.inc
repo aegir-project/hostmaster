@@ -224,13 +224,13 @@ function hosting_dns_zone_form_validate($form_id, $form_values) {
 function hosting_dns_zone_form_submit($form_id, $form_values) {
 # update db (soa table)
   if ($form_values['zid']) { # Update an existing zone
+    hosting_dns_zone('update', $form_values);   
 # schedule task
-    #provision_dns_zone('update', $form_values);   
   } else {                   # Create a new zone
+    hosting_dns_zone('add', $form_values);
 # schedule task
-    #provision_dns_zone('add', $form_values);
   } 
-  return 'admin/build/provision_dns';
+  return 'admin/build/hosting_dns';
 }
 
 function hosting_dns_zone_delete_confirm($zid) {
@@ -313,11 +313,11 @@ function hosting_dns_record_form_validate($form_id, $form_values) {
 
 function hosting_dns_record_form_submit($form_id, $form_values) {
   if ($form_values['rid']) {  # Update an existing zone
+    hosting_dns_rr('update', $form_values['zid'], $form_values);
 # schedule a task to commit update
-    #hosting_dns_rr('update', $form_values['zid'], $form_values);
   } else {
+    hosting_dns_rr('add', $form_values['zid'], $form_values);
 # schedule a task to commit update
-    #hosting_dns_rr('add', $form_values['zid'], $form_values);
   }
   return 'admin/build/hosting_dns/'. $form_values['zid'] .'/records';
 }

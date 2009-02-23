@@ -143,6 +143,7 @@ function hosting_dns_provision_args($node, $task = '') {
     if ($node->type == 'site') {
       $platform = node_load($node->platform);
       $dns = node_load($platform->dns_server);
+# Load zone/RR info here as well..
     } elseif ($node->type == 'platform') {
       $dns = node_load($node->dns_server);
     }
@@ -616,6 +617,26 @@ function hosting_get_dns_server($node) {
   }
 }
 
+function hosting_dns_site_insert($node) {
+  $url_parts = _hosting_dns_split_url($node->title);
+  if (!isset($url_parts['zone'])) { 
+    #provision_set_error(HOSTING_FRAMEWORK_ERROR);
+drupal_set_message("no ZONE identified by _hosting_dns_split_url for ".$node->title);
+    return;
+  }
+
+  $dns = node_load($node->dns_server);
+drupal_set_message("loaded DNS server node ".$dns->title." for new site node ".$node->title);
+  $zone = hosting_dns_create_zone($url_parts['zone'], $dns);   # initialize zone for this domain 
+								 # (if it doesn't exist)
+ob_start(); print_r($zone);
+drupal_set_message("retrieved zone for new site: ".ob_get_contents());
+ob_end_clean();
+  $data['type'] = 'A';
+  $data['dns_ip'] = $dns->default_ip;
+  hosting_dns_create_record($url_parts['host'], $zone, $data);    # creates the RR for the (sub)domain
+}
+
 
 /**
  * Implementation of hook_nodeapi
@@ -631,18 +652,22 @@ function hosting_dns_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
         # add the RR
         # create the node association:
         #db_query("INSERT INTO {hosting_dns_server_zone} (vid,nid,zid,rid)" 
-        hosting_dns_insert($node);
+        # should also track the site node ID mapped to the zone/record id..
+drupal_set_message("site node inserted: creating zone/RR records for ".$node->title);
+        hosting_dns_site_insert($node);
+
         break;
       case 'update':
-        #
-        hosting_dns_update($node);
+        # update the node, or insert it, if it doesn't already exist..
+        # This will never happen? 
+        # hosting_dns_site_update($node);
         break;
       case 'delete':
         # remove the RR (which triggers removal of the zone, if empty)
-        hosting_dns_delete($node);
+        hosting_dns_site_delete($node);
         break;
       case 'delete revision':
-        hosting_dns_delete_revision($node);
+        hosting_dns_site_delete_revision($node);
         break;
       case 'validate': # This one gets $a3 as $form
         # check the form of the site name for url-ness
@@ -650,10 +675,32 @@ function hosting_dns_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
       case 'load':
         # add the $zone object and $rid to the $node
 #       $additions['dns_server'] = hosting_dns_get_
+        if (user_access('administer DNS provisioning')) {
+drupal_set_message("loading DNS info for site: ".$node->title);
+          $data = _hosting_dns_split_url($node->title);
+          $zid = _hosting_dns_get_zid($data['zone']);
+          $additions['zone'] = hosting_dns_status('zone', array('zid' => $zid));
+          $additions['rr'] = hosting_dns_status('rr', array('zid' => $zid, 'name' => $data['host'], 'type' => 'A'));
+          return $additions;
+        }
         break;
       case 'view': # This one gets $a3 = $teaser, and $a4 = $path
         if (user_access('administer DNS provisioning')) {
           # show the zone/rr details?
+          
+          $node->content['info']['zone'] = array(
+            '#type' => 'item',
+            '#title' => t('Zone'),
+            '#weight' => 21,
+            '#value' => $node->zone->origin . " (zid:".$node->zone->zid.")",
+          );
+          $node->content['info']['record'] = array(
+            '#type' => 'item',
+            '#title' => t('Resource Record'),
+            '#weight' => 22,
+            '#value' => $node->rr->name . " (type:".$node->rr->type.")",
+          );
+
         }
         break;
     }
@@ -713,39 +760,3 @@ function hosting_dns_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
 
 // Utility functions
 
-/**
- * Helper function to get the zid for a given zone
- *
- * @param $origin
- *   The name (or origin) of the zone/domain **/
-function _hosting_dns_get_zid($origin) {
-  return db_result(db_query("SELECT zid FROM {hosting_dns_soa} WHERE origin LIKE '%%%s%%'", $origin));
-}   
-
-/**
- * Need to modify this to use an admin-generated list of TLDs, and return the * domain as the TLD plus one other component
- * Examples:
- *  domain.tld
- *  www.domain.tld
- *  sub.domain.tld
- *  www.sub.domain.tld
- *  sub.multi.domain.tld (domain has multiple parts before TLD, but after host?)
- **/
-function _hosting_dns_split_url($url) {
-  $tlds = split("\n", variable_get('hosting_dns_tlds', ''));
-  $first_dot = strpos($url, '.');
-
-  # Strip off the first part
-  $host = substr($url, 0, $first_dot);
-  $zone = substr($url, $first_dot);
-  # If the remaining hostname is a TLD  
-  if (in_array($zone, $tlds)) {
-    # Add the first part back, and that's the zone (the host is @)    $zone = $host . $zone;
-    $host = '@';
-  } else {
-    # that's the zone (and the host is the first part)
-    $zone = substr($zone, 1); # strip the leading .
-  }
-
-  return array('host' => $host, 'zone' => $zone);
-}
