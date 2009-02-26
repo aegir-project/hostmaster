@@ -1,14 +1,16 @@
+#! /bin/sh
+
 mysql -e 'drop database hostmaster; create database hostmaster;'
 
 cd /var/hostmaster
 rm config/vhost.d/*
 
-cd webroot 
+cd drupal-5.x
 grep '^\$db_url' sites/default/settings.php
 rm sites/default/settings.php 
 cvs up sites/default 
 chmod 666 sites/default/settings.php
-rm -rf sites/test*
-cd profiles/hostmaster; cvs up -C
-(cd modules/provision;  cvs up -C)
+rm -rf sites/[^d]* ; echo removed all sites but: sites/d*
+(cd .drush/provision;  cvs up )
+cd profiles/hostmaster; cvs up
 (cd modules/hosting;  cvs up -C )
