@@ -33,20 +33,21 @@ function hosting_itk_provision_args($node, $task = '') {
 }
 
 function hosting_itk_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
-  if ($node->type == 'client') {
-    $user = posix_getpwnam(HOSTING_DEFAULT_SCRIPT_USER);
-    switch ($op) {
-    case 'insert':
-      db_quer("INSERT INTO {hosting_client_user} SET client=%d, user=%d", $node->nid, $user['uid']);
-      break;
-    case 'update':
-      // nothing to do?
-      break;
-    case 'delete' :
-      db_query("DELETE FROM {hosting_client_user} WHERE client=%d AND user=%d", $node->nid, $user['uid']);
-      break;
-    }
-  }
+//   if ($node->type == 'client') {
+//     $user = posix_getpwnam(PROVISION_SCRIPT_USER);
+//     switch ($op) {
+//     case 'insert':
+//       db_query("INSERT INTO {hosting_client_user} SET client=%d, user=%d", $node->nid, $user['uid'] - GID_BASE);
+//        break;
+//     case 'update':
+//      // nothing to do?
+//       db_query("INSERT INTO {hosting_client_user} SET client=%d, user=%d", $node->nid, $user['uid'] - GID_BASE);
+//       break;
+//     case 'delete' :
+//       db_query("DELETE FROM {hosting_client_user} WHERE client=%d AND user=%d", $node->nid, $user['uid'] - GID_BASE);
+//       break;
+//     }
+//   }
 }
 
 function hosting_itk_form_alter($form_id, &$form) {
