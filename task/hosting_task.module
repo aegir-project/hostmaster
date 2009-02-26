@@ -485,23 +485,24 @@ if (!defined('DRUSH_SUCCESS')) {
  * Turn bitmask integer error code into associative array
  */
 function _hosting_parse_error_code($code) {
-  return array('// FIX ME');
-
-  global $provision_errors;
   switch ($code) {
     case DRUSH_NOT_COMPLETED : 
-      return array(DRUSH_NOT_COMPLETED => $provision_errors[DRUSH_NOT_COMPLETED]);
+      return array(DRUSH_NOT_COMPLETED => t('Queued'));
       break;
     case DRUSH_SUCCESS : 
-      return array(DRUSH_SUCCESS => $provision_errors[DRUSH_SUCCESS]);
+      return array(DRUSH_SUCCESS => t('Succesful'));
       break;
     default:
-      foreach ($provision_errors as $error => $message) {
-        if (!in_array($error, array(DRUSH_NOT_COMPLETED, DRUSH_SUCCESS))) {
-          if ($code & $error) {
-            $return[$error] = $message;
-          }        
-        }
+      $errors[DRUSH_COMMAND_NOT_FOUND] = t('Command not found');
+      $errors[DRUSH_DRUPAL_BOOTSTRAP_ERROR] = t('Drupal bootstrap error');
+      $errors[DRUSH_DRUPAL_DB_ERROR] = t('Could not connect to database');
+      $errors[DRUSH_PERM_ERROR] = t('File permission error');
+      $errors[DRUSH_FRAMEWORK_ERROR] = t('Framework error');
+
+      foreach ($errors as $error => $message) {
+        if ($code & $error) {
+          $return[$error] = $message;
+        }        
       }
       return $return;
       break;

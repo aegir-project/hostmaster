@@ -5,7 +5,7 @@ function hosting_migrate_provision_args($node, $task) {
   if ($node->type == 'task') {
     if ($task == 'migrate') {
       $platform = node_load($node->task_args['target_platform']);
-      $values['#2'] = $platform->publish_path;
+      $values['2'] = $platform->publish_path;
     }
   }
   return $values;

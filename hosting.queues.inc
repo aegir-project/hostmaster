@@ -12,13 +12,18 @@ function hosting_dispatch() {
   $now = mktime();
   variable_set("hosting_dispatch_last_run", $now);
   hosting_log('hosting_dispatch', t("dispatching queues"));
+  $platform = node_load(HOSTING_OWN_PLATFORM);
+  $root = $platform->publish_path;
+
   if (variable_get('hosting_dispatch_enabled', false)) {
     $queues = hosting_get_queues();
     foreach ($queues as $queue => $info) {
       if ($info['enabled']) {
         if (($now - $info["last"]) >= $info["calc_frequency"]) {
-          $cmd = hosting_generate_command("hosting", $queue, node_load(HOSTING_OWN_PLATFORM), array(),
-                 array('items' => $info['calc_items'], 'background' => TRUE));
+          $data = array('items' => $info['calc_items'], 'root' => $root, 'quiet' => TRUE);
+          $cmd = _drush_backend_generate_command("hosting " . $queue, $data);
+          $cmd .= ' &';
+
           hosting_log('hosting_dispatch', t("dispatching command !cmd", array('!cmd' => $cmd)));
           system($cmd);
         } else {
@@ -147,56 +152,7 @@ function hosting_run_queue() {
  *
  * Generates a drush command for either the provision or hosting system.
  */
-function hosting_generate_command($system, $command, $ref, $args = array(), $options = array()) {
-
-  $data = module_invoke_all('provision_args', $ref, $command); 
-  $data = array_merge($data, $options);
-  foreach ($data as $key => $value) {
-    if (!is_array($value) && !is_object($value) && !is_null($value) && ($value != '')) {
-      if (substr($key, 0, 1) == '#') {
-        $args[$key] = $value;
-      }
-      else {
-        $options[$key] = $value;
-      }
-    }
-  } 
-  ksort($args);
-
-  if ($options['backend']) {
-    $backend = " --backend ";
-    unset($options['backend']);
-  }
-
-  $arg_str = '';
-  foreach ($args as $key => $value) {
-    $arg_str .= ' ' . escapeshellarg(filter_xss($value));
-  }
-  $option_str = '';
-  foreach ($options as $key => $value) {
-    if ($value !== TRUE) {
-      $option_str .= " --$key=" . escapeshellarg(filter_xss($value));
-    }
-    else {
-      $option_str .= " --$key";
-    }
-  } 
-  // @TODO: Implement proper multi platform / multi server support.
-  $cmd = sprintf(escapeshellcmd("%s %s %s %s --root=%s %s"), escapeshellcmd($data['drush_path']) ,
-    escapeshellarg($system), escapeshellarg($command), $arg_str, escapeshellarg($data['publish_path']), $option_str);
-
-  if ($backend) {
-    $cmd .= $backend;
-  }
-
-  if ($options['background']) {
-    $cmd .= " &";
-  }
-
-  if (isset($data['web_id']) && ($data['web_id'] != HOSTING_OWN_WEB_SERVER)) {
-    $cmd = sprintf("ssh %s@%s %s", escapeshellarg($data['script_user']), escapeshellarg($data['web_host']), escapeshellarg($cmd));
-  }
-  return $cmd;
+function hosting_generate_command($task) {
 }
 
 /**
@@ -240,45 +196,53 @@ function hosting_tasks_queue($count = 20) {
   $tasks = _hosting_get_new_tasks($count);
 
   foreach ($tasks as $task) {
+    hosting_process_task($task);
+  }
+}
+
+function hosting_process_task($task) {
+  if (is_numeric($task)) {
+    $task = node_load($task);
+  }
+  if (($task->type == 'task') && ($task->task_status != DRUSH_SUCCESS)) {
     // create a new revision
     $task->changed = mktime();
     $task->executed = mktime();
     $task->revision = true;
     node_save($task);
-
     hosting_task_log($task->vid, "queue", t("Task starts processing"));
 
     // execute the hosting_pre_${task_type} hook.
     module_invoke_all("hosting_pre_" . $task->task_type, $task);
 
-    // @todo Allow multiple commands to be run. 
-    // For now tasks just map to one backend command, but that might need to change with additional complexity.
-    $cmd = hosting_generate_command("provision", $task->task_type, $task, array(), array('backend' => TRUE));
-    hosting_task_log($task->vid, 'command', 'Running:' . escapeshellcmd("$cmd"));
-    $proc = null;
-    $proc = provision_proc_open($cmd);
-    $code = $proc['code'];
-    $return = $proc['output'];
+    $data = module_invoke_all('provision_args', $task, $task->task_type); 
 
-    if (!$data = provision_parse_output($return)) {
-      hosting_task_log($task->vid, 'error', t("The command could not be executed succesfully (returned: !return, code: %code)", array("!return" => $return, "%code" =>  $code)));
+    $hostname = null;
+    $username = null;
+
+    if (isset($data['web_id']) && ($data['web_id'] != HOSTING_OWN_WEB_SERVER)) {
+      $username = $data['script_user'];
+      $hostname = $data['web_host'];
+    }
+    $drush_path = $data['drush_path'];
+    $data['root'] = $data['publish_path'];
+
+    $cmd = _drush_backend_generate_command("provision " . $task->task_type, $data, 'GET', $drush_path, $hostname, $username);
+    hosting_task_log($task->vid, 'command', 'Running:' . escapeshellcmd("$cmd"));
+
+    $output = _drush_backend_invoke($cmd, $data, FALSE);
+
+    if (!is_array($output)) {
+      hosting_task_log($task->vid, 'error', t("The command could not be executed succesfully"));
+      hosting_task_log($task->vid, 'notice', $output);
       $code = DRUSH_FRAMEWORK_ERROR;
     }
     else {
-      foreach ((array) $data['log'] as $log) {
-        hosting_task_log($task->vid, $log['type'], $log['message'], $log['severity'], $log['timestamp']);
-      }
-      
-      # Drupal message errors.
-      foreach ((array) $data['messages']['error'] as $error) {
-        if (preg_match("/^warning:/", $error)) {
-          hosting_task_log($task->vid, "warning", ereg_replace("/^warning: /", '', $error), 0, $log['timestamp']);  
-        }
-        elseif (preg_match("/^user warning:/", $error)) {
-          hosting_task_log($task->vid, "warning", ereg_replace("/^user warning: /", '', $error), 0, $log['timestamp']);  
-        }
-      }
+      $code = $output['error_status'];
     }
+
+    _hosting_backend_integrate($task, $output);
+
     // record status 
     $task->task_status = $code;
     // New revision is created at the beginning of function.
@@ -287,16 +251,46 @@ function hosting_tasks_queue($count = 20) {
 
     if ($code == DRUSH_SUCCESS) {
       # The task has been successful. Run the post hook.
-      module_invoke_all("hosting_post_" . $task->task_type, $task, $data);
+      module_invoke_all("hosting_post_" . $task->task_type, $task, $output);
     }
     else {
-      module_invoke_all("hosting_failed_". $task->task_type, $task, $data, $code);
+      module_invoke_all("hosting_failed_". $task->task_type, $task, $output, $code);
     }
     // remove from queue
     hosting_task_log($task->vid, "queue", t("Removing task from hosting queue"), 0);
     db_query("UPDATE {hosting_task_queue} SET status=%d WHERE nid=%d", $code, $task->nid);
   }
 }
+
+function _hosting_backend_integrate($task, $data = array()) {
+  if (is_array($data)) {
+    foreach ((array) $data['log'] as $log) {
+      hosting_task_log($task->vid, $log['type'], $log['message'], $log['timestamp']);
+    }
+    
+    # Drupal message errors.
+    foreach ((array) $data['messages']['error'] as $error) {
+      if (preg_match("/^warning:/", $error)) {
+        hosting_task_log($task->vid, "warning", ereg_replace("/^warning: /", '', $error), 0, $log['timestamp']);  
+      }
+      elseif (preg_match("/^user warning:/", $error)) {
+        hosting_task_log($task->vid, "warning", ereg_replace("/^user warning: /", '', $error), 0, $log['timestamp']);  
+      }
+    }
+
+    return $values; 
+  }
+}
+
+function _hosting_backend_invoke($cmd, $task) {
+  $proc = _drush_proc_open($cmd, FALSE);
+  if ($proc['output']) {
+    $values = drush_backend_parse_output($proc['output'], FALSE);
+
+  }
+  return FALSE;
+}
+
 
 function _hosting_queues_clean_output($return) {
   return filter_xss($return, array());

@@ -102,7 +102,7 @@ function hosting_site_access($op, $node) {
 function hosting_site_provision_args($node, $task = '') {
   $values = array();
   if ($node->type == 'site') {
-    $values['#1'] = $node->title;
+    $values['1'] = $node->title;
     $values['site_id'] = $node->nid;
     if ($task != 'import') {
       $values['language'] = $node->language;
@@ -110,7 +110,7 @@ function hosting_site_provision_args($node, $task = '') {
   }
   if ($node->type == 'task' && $task == 'restore') {
     $backup = hosting_site_get_backup($node->task_args['bid']);
-    $values['#2'] = $backup['filename'];
+    $values['2'] = $backup['filename'];
   }
   return $values;
 }
@@ -201,8 +201,9 @@ function hosting_site_hosting_post_install($task, $data) {
  * Implementation of the hosting_failed_install hook
  */
 function hosting_site_hosting_failed_install($task, $data, $code) {
+  print_r($data);
   // @TODO : we need to check the returned list of errors, not the code. 
-  if ($code & PROVISION_SITE_INSTALLED) {
+  if (array_key_exists('PROVISION_DRUPAL_SITE_INSTALLED', $data['error_log'])) {
     // Site has already been installed. Try to import instead.
     hosting_task_log($task->vid, 'notice', t("This site appears to be installed already. Generating an import task."));
     hosting_add_task($task->rid, 'import');
@@ -215,9 +216,9 @@ function hosting_site_hosting_failed_install($task, $data, $code) {
  */
 function hosting_site_hosting_post_disable($task, $data) {
   $ref = node_load($task->rid);
-  if ($data['site']['backup_file'] && $ref->type == 'site') {
+  if ($data['options']['backup_file'] && $ref->type == 'site') {
     $platform = node_load($ref->platform);
-    hosting_site_add_backup($ref->nid, $platform->web_server, $data['site']['backup_file'], t('Generated before being disabled'));
+    hosting_site_add_backup($ref->nid, $platform->web_server, $data['options']['backup_file'], t('Generated before being disabled'));
   }
   db_query("UPDATE {hosting_site} SET status=status&%d WHERE nid=%d", HOSTING_SITE_DISABLED, $task->rid);
 }
@@ -228,9 +229,9 @@ function hosting_site_hosting_post_disable($task, $data) {
  */
 function hosting_site_hosting_post_restore($task, $data) {
   $ref = node_load($task->rid);
-  if ($data['site']['backup_file'] && $ref->type == 'site') {
+  if ($data['options']['backup_file'] && $ref->type == 'site') {
     $platform = node_load($ref->platform);
-    hosting_site_add_backup($ref->nid, $platform->web_server, $data['site']['backup_file'], t('Generated before being restored to a previous version'));
+    hosting_site_add_backup($ref->nid, $platform->web_server, $data['options']['backup_file'], t('Generated before being restored to a previous version'));
   }
 }
 
@@ -536,9 +537,9 @@ function hosting_site_backup_list($site) {
  */
 function hosting_site_hosting_post_backup($task, $data) {
   $ref = node_load($task->rid);
-  if ($data['site']['backup_file'] && $ref->type == 'site') {
+  if ($data['options']['backup_file'] && $ref->type == 'site') {
     $platform = node_load($ref->platform);
-    hosting_site_add_backup($ref->nid, $platform->web_server, $data['site']['backup_file'], t('Generated on request'));
+    hosting_site_add_backup($ref->nid, $platform->web_server, $data['options']['backup_file'], t('Generated on request'));
   }
 }
 
@@ -747,6 +748,6 @@ function _hosting_site_form_populate($element, $value, $value2 = null) {
 function hosting_site_hosting_post_import($task, $data) {
   $site = node_load($task->rid);
   
-  hosting_import_site($site->nid, $data['site'], HOSTING_SITE_ENABLED | HOSTING_SITE_INSTALLED | HOSTING_SITE_IMPORTED, $site->platform);
+  hosting_import_site($site->nid, $data['options'], HOSTING_SITE_ENABLED | HOSTING_SITE_INSTALLED | HOSTING_SITE_IMPORTED, $site->platform);
 }
 
