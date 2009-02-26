@@ -10,8 +10,9 @@
 function hostmaster_profile_modules() {
   return array(
     /* core */ 'block', 'color', 'filter', 'help', 'menu', 'node', 'system', 'user', 'watchdog',
-    /* contrib */ 'drush', 'cvs_deploy', //'ahah_forms', 'dynamic_subform',
-    /* custom */ 'provision', 'provision_apache', 'provision_mysql', 'provision_drupal', 'hosting', 'hosting_task', 'hosting_client', 'hosting_db_server', 'hosting_package', 'hosting_platform', 'hosting_site', 'hosting_web_server');
+    /* contrib */ /* 'drush', 'cvs_deploy', */ //'ahah_forms', 'dynamic_subform',
+    /* custom */ 'hosting', 'hosting_task', 'hosting_client', 'hosting_db_server', 'hosting_package', 'hosting_platform', 'hosting_site', 'hosting_web_server');
+    /* 'provision', 'provision_apache', 'provision_mysql', 'provision_drupal', */
 }
 
 /**
@@ -76,14 +77,8 @@ function hostmaster_profile_final() {
   $node->type = 'db_server';
   $node->title = $url['host'];
   $node->db_type = $url['scheme'];
-  if (_provision_mysql_can_create_database()) {
-    $node->db_user = $url['user'];
-    $node->db_passwd = $url['pass'];
-  }
-  else {
-    $node->db_user = 'root';
-    $node->db_passwd = 'password';    
-  }
+  $node->db_user = $url['user'];
+  $node->db_passwd = $url['pass'];
   $node->status = 1;
 
   node_save($node);
@@ -94,8 +89,8 @@ function hostmaster_profile_final() {
   $node->uid = 1;
   $node->type = 'web_server';
   $node->title = $_SERVER['HTTP_HOST'];
-  $node->script_user = PROVISION_SCRIPT_USER;
-  $node->web_group = PROVISION_WEB_GROUP;
+  $node->script_user = 'aegir';
+  $node->web_group = 'www-data';
   $node->status = 1;
   node_save($node);
   variable_set('hosting_default_web_server', $node->nid);
