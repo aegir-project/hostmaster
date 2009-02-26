@@ -1,0 +1,48 @@
+-*-rst-*-
+
+This document is formatted using the ReST syntax.
+
+Aegir 0.2 upgrade instructions
+==============================
+
+This document describes briefly how to upgrade existing Aegir
+platforms.
+
+Upgrading Hostmaster from 0.1
+-----------------------------
+
+Upgrading hostmaster should be as simple as removing the provision and
+drush modules from your profiles/hostmaster/modules directory. You
+also need to create a new drush and provision checkout. Finally, you
+can remove the drush.php symlink.
+
+Shell commands::
+ cd /var/aegir
+ cvs co -d drush  contributions/modules/drush
+ mkdir .drush
+ cvs co -d .drush/provision  contributions/modules/provision
+ rm drupal-5.x/drush.php
+
+You will need to put the path to that new drush in the webserver node
+configuration. Rerunning the wizard will prompt you for that.
+
+Upgrading Hostslave platforms from 0.1
+--------------------------------------
+
+Provision has been migrated out of the platforms. It used to be
+installed in the profiles/hostslave/modules directory. It is now in
+~/.drush/provision. So you can simply cleanup the hostslave profile
+and the virtual host created for the hostslave profile. You can also
+remove the drush symlink.
+
+Shell commands::
+ cd /var/aegir
+ rm -r drupal-6.x/profiles/hostslave
+ rm config/vhost.d/hostslave
+ rm drupal-6.x/drush.php
+
+You should also delete the database created during the hostslave
+install:
+
+SQL commands::
+ DROP DATABASE hostslave;
