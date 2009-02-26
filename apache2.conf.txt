@@ -1,0 +1,27 @@
+# Default Aegir apache configuration file
+
+# Edit to your taste. Must be installed in
+# /var/aegir/config/vhost.d/aegir.example.com
+
+# Note that this file may eventually be automatically be managed by
+# aegir.
+
+NameVirtualHost *:80
+
+<VirtualHost *:80>
+    RewriteEngine On
+    ServerAdmin webmaster@localhost
+    ServerName aegir.example.com
+
+    DocumentRoot /var/aegir/drupal-5.x
+    <Directory />
+        Options FollowSymLinks
+        AllowOverride None
+    </Directory>
+    <Directory /var/aegir/drupal-5.x>
+        Options Indexes FollowSymLinks MultiViews
+        AllowOverride All
+        Order allow,deny
+        allow from all
+    </Directory>
+</VirtualHost>
