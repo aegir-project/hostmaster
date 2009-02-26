@@ -10,9 +10,7 @@
 function hostmaster_profile_modules() {
   return array(
     /* core */ 'block', 'color', 'filter', 'help', 'menu', 'node', 'system', 'user', 'watchdog',
-    /* contrib */ /* 'drush', 'cvs_deploy', */ //'ahah_forms', 'dynamic_subform',
     /* custom */ 'hosting', 'hosting_task', 'hosting_client', 'hosting_db_server', 'hosting_package', 'hosting_platform', 'hosting_site', 'hosting_web_server');
-    /* 'provision', 'provision_apache', 'provision_mysql', 'provision_drupal', */
 }
 
 /**
@@ -39,10 +37,6 @@ function hostmaster_profile_final() {
   /* Default node types and default node */
   $types =  node_types_rebuild();
 
-  //set up needed PROVISION_CONSTANTS
-  if (function_exists('provision_init')) {
-   provision_init();
-  }
   // Initialize the hosting defines
   hosting_init();
 
@@ -89,8 +83,8 @@ function hostmaster_profile_final() {
   $node->uid = 1;
   $node->type = 'web_server';
   $node->title = $_SERVER['HTTP_HOST'];
-  $node->script_user = 'aegir';
-  $node->web_group = 'www-data';
+  $node->script_user = HOSTING_DEFAULT_SCRIPT_USER;
+  $node->web_group = HOSTING_DEFAULT_WEB_GROUP;
   $node->status = 1;
   node_save($node);
   variable_set('hosting_default_web_server', $node->nid);
