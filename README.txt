@@ -1,7 +1,3 @@
--*-rst-*-
-
-This is a ReST document.
-
 The Aegir system
 ================
 
