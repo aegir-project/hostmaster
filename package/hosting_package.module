@@ -239,8 +239,8 @@ function hosting_add_package_instance($nid, $rid, $info) {
   db_query("INSERT INTO {hosting_package_instance} (iid, release_id, rid, path) VALUES (%d, %d, %d, '%s')", $iid, $nid, $rid, $info->filename);
 
   // Import other translations
-  if (sizeof($info->info['languages']) > 1) {
-    hosting_package_languages_insert($iid, $info->info['languages']); 
+  if (sizeof($info['info']['languages']) > 1) {
+    hosting_package_languages_insert($iid, $info['info']['languages']); 
   }
 } 
 

@@ -215,7 +215,8 @@ function hosting_process_task($task) {
     // execute the hosting_pre_${task_type} hook.
     module_invoke_all("hosting_pre_" . $task->task_type, $task);
 
-    $data = module_invoke_all('provision_args', $task, $task->task_type); 
+    $data = hosting_queues_get_arguments($task);
+
 
     $hostname = null;
     $username = null;
@@ -261,6 +262,18 @@ function hosting_process_task($task) {
     db_query("UPDATE {hosting_task_queue} SET status=%d WHERE nid=%d", $code, $task->nid);
   }
 }
+
+function hosting_queues_get_arguments($task) {
+  $data = module_invoke_all('provision_args', $task, $task->task_type); 
+  foreach ($data as $key => $value) {
+    if (substr($key, 0, 1) == '#') {
+      $data[str_replace('#', '', $key)] = $value;
+      unset($data[$key]);
+    }
+  }
+  return $data;
+}
+
 
 function _hosting_backend_integrate($task, $data = array()) {
   if (is_array($data)) {

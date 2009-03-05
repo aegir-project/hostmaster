@@ -102,7 +102,7 @@ function hosting_site_access($op, $node) {
 function hosting_site_provision_args($node, $task = '') {
   $values = array();
   if ($node->type == 'site') {
-    $values['1'] = $node->title;
+    $values['#1'] = $node->title;
     $values['site_id'] = $node->nid;
     if ($task != 'import') {
       $values['language'] = $node->language;
@@ -110,7 +110,7 @@ function hosting_site_provision_args($node, $task = '') {
   }
   if ($node->type == 'task' && $task == 'restore') {
     $backup = hosting_site_get_backup($node->task_args['bid']);
-    $values['2'] = $backup['filename'];
+    $values['#2'] = $backup['filename'];
   }
   return $values;
 }
