@@ -377,7 +377,7 @@ function hosting_setup() {
   $data = unserialize($return);
   if ($code == DRUSH_SUCCESS) {
     variable_set('hosting_dispatch_enabled', TRUE);
-    drush_log("message", t("Dispatch command was run successfully"));
+    drush_log(t("Dispatch command was run successfully"), 'success');
     _hosting_setup_cron();
   }
   else {
@@ -398,7 +398,7 @@ function _hosting_setup_cron() {
   if (sizeof($oldcron)) {
     foreach ($oldcron as $line => $entry) {
       if (preg_match('/hosting dispatch/', $entry)) {
-        drush_log("Notice", t("Existing hosting dispatch cron entry was found. Not replacing"));
+        drush_log(dt("Existing hosting dispatch cron entry was found. Not replacing"));
         $existing = TRUE;
         break;
       }

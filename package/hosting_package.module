@@ -436,11 +436,11 @@ function hosting_package_release_view($node, $teaser = FALSE, $page = FALSE) {
 function hosting_package_import_packages($rid, $type, $default_version, $data) {
   // Import install profiles as package and release nodes
   foreach ($data as $short_name => $info) {
-    $version = ($info->info['version']) ? $info->info['version'] : $default_version; // dirty hack. but ugh.
+    $version = ($info['info']['version']) ? $info['info']['version'] : $default_version; // dirty hack. but ugh.
     if (!$package = hosting_get_package($short_name)) {
       $node = new stdClass();
       $node->type = 'package';
-      $node->title = ($info->info['name']) ? $info->info['name'] : "$short_name $type $version";
+      $node->title = ($info['info']['name']) ? $info['info']['name'] : "$short_name $type $version";
       $node->package_type = $type;
       $node->short_name = $short_name;
       // Kludge to hide the hostmaster and hostslave profiles
