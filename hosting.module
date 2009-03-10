@@ -139,7 +139,11 @@ function hosting_init() {
   // These defaults could be temporary.
   $info = posix_getgrgid(posix_getgid());
   define('HOSTING_DEFAULT_WEB_GROUP', $info['name']);
-  define('HOSTING_DEFAULT_SCRIPT_USER', get_current_user());
+  $user = get_current_user();
+  if ($user == 'root') {
+    $user = 'aegir'; # a better default than root
+  }
+  define('HOSTING_DEFAULT_SCRIPT_USER', $user);
 
   define('HOSTING_DEFAULT_RESTART_CMD', _hosting_default_restart_cmd());
 
