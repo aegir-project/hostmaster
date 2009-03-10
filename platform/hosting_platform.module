@@ -34,10 +34,9 @@ function hosting_platform_hosting_tasks($node) {
 function hosting_platform_hosting_feature() {
   $features['platform'] = array(
       'title' => t('Platforms'), 
-      'description' => t('Allow for management of multiple platforms, and migration between platforms.'),
-      'status' => HOSTING_FEATURE_DISABLED,
-      'node' => 'platform',
-    'group' => 'experimental');
+      'description' => t('Allow for management of multiple platforms.'),
+      'status' => HOSTING_FEATURE_ENABLED,
+      'node' => 'platform');
   return $features;
 }
 
@@ -104,7 +103,7 @@ function hosting_platform_form(&$node) {
     '#type' => 'textfield',
     '#title' => t('Name'),
     '#required' => TRUE,
-    '#description' => t('Choose a descriptive name for your platform.'),
+    '#description' => t('Choose a descriptive name for your platform. You very likely want this to be something like "Drupal 6.10".'),
     '#size' => 40,
     '#default_value' => $node->title,
     '#maxlength' => 255,
@@ -114,7 +113,7 @@ function hosting_platform_form(&$node) {
     '#type' => 'textfield',
     '#title' => t('Publish path'),
     '#required' => TRUE,
-    '#description' => t('The path on the filesystem where the sites will be hosted.'),
+    '#description' => t('The path on the filesystem where the sites will be hosted. This needs to be created manually and initialized before your platform works properly. Use the following shell commands:<pre>%commands</pre>', array('%commands' => "cd /var/aegir\n./drush/drush.php dl drupal\ncd drupal-6.10 # or what the latest Drupal version is\n/var/aegir/drush/drush.php provision setup\n")),
     '#size' => 40,
     '#default_value' => $node->publish_path,
     '#maxlength' => 255,
