@@ -20,6 +20,10 @@ You will also need to update the hosting module and run update.php so
 that new changes to the database are taken into account. This will
 trigger platform verification and other cleanup tasks.
 
+Finally, you will need to put the path to that new drush in the
+webserver node configuration. Rerunning the wizard will prompt you for
+that. Make sure you also run the hosting setup command.
+
 Shell commands::
  cd /var/aegir
  cvs co -d drush  contributions/modules/drush
@@ -27,10 +31,7 @@ Shell commands::
  cvs co -d .drush/provision  contributions/modules/provision
  rm drupal-5.x/drush.php
  cvs up -A drupal-5.x/profiles/hostmaster/modules/hosting
-
-Finally, you will need to put the path to that new drush in the
-webserver node configuration. Rerunning the wizard will prompt you for
-that.
+ cd drupal-5.x && ./drush/drush.php hosting setup
 
 Upgrading Hostslave platforms from 0.1
 --------------------------------------
