@@ -73,14 +73,14 @@ The installer is going to complain about the permissions of
 settings.php, just fix the permissions:
 
 Shell commands::
- chmod a+w /var/aegir/drupal-5/sites/default/settings.php
+ chmod a+w /var/aegir/drupal-5.x/sites/default/settings.php
 
 Select the hostmaster install profile, enter the database credentials
 you setup above and then the installer will prompt you to secure the
 permissions on the settings.php file again:
 
 Shell commands::
- chmod a-w /var/aegir/drupal-5/sites/default/settings.php
+ chmod a-w /var/aegir/drupal-5.x/sites/default/settings.php
 
 Follow the wizard
 -----------------
