@@ -89,3 +89,20 @@ You should now be in the installation wizard. The wizard is usually
 self-documenting so you should just be able to follow the instructions
 in the wizard to configure Aegir to properly use the webserver and
 database server.
+
+Installing new platforms
+------------------------
+
+To deploy new platforms to provisions site to, you simply need to
+download the platform source code (which can be done with drush), use
+`provision setup' to initialise the new platform and then, on the
+hostmaster site, create a new Platform node which points to where the
+source was downloaded.
+
+Shell commands::
+ cd /var/aegir
+ ./drush/drush.php dl drupal
+ cd drupal-6.10/ # varies according to latest Drupal version
+ ~/drush/drush.php provision setup
+
+Use "drush dl drupal-5.x" to get the latest release of the 5.x branch.
