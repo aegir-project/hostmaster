@@ -10,6 +10,10 @@ single-server Aegir Drupal provisionning system. Those instructions
 limit themselves to getting you into the Aegir wizard, which will then
 give you further configuration instructions.
 
+This document assumes the Aegir home is in /var/aegir, adapt as desired,
+but make sure that the user you create (as suggested in the install
+wizard) has this directory configured as its home directory.
+
 Checking out the code
 ---------------------
 
@@ -39,6 +43,8 @@ another system you basically need to:
  3. include the Aegir apache configurations in Apache
  4. create a base configuration file for Aegir in /var/aegir/config/vhost.d/aegir.example.com
  5. restart apache
+
+So this needs to be ran as root too.
 
 Shell commands::
  cd /var/aegir
