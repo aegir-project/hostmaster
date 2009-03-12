@@ -113,7 +113,7 @@ function hosting_platform_form(&$node) {
     '#type' => 'textfield',
     '#title' => t('Publish path'),
     '#required' => TRUE,
-    '#description' => t('The path on the filesystem where the sites will be hosted. This needs to be created manually and initialized before your platform works properly. Use the following shell commands:<pre>%commands</pre>', array('%commands' => "cd /var/aegir\n./drush/drush.php dl drupal\ncd drupal-6.10 # or what the latest Drupal version is\n/var/aegir/drush/drush.php provision setup\n")),
+    '#description' => t('The path on the filesystem where the sites will be hosted. This needs to be created manually and initialized before your platform works properly. Use the following shell commands:<pre>%commands</pre>', array('%commands' => "cd /var/aegir\n./drush/drush.php dl drupal\n")),
     '#size' => 40,
     '#default_value' => $node->publish_path,
     '#maxlength' => 255,
