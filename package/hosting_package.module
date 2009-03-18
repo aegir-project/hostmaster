@@ -135,8 +135,11 @@ function hosting_get_profiles($platform = NULL) {
   while ($nid = db_fetch_object($result)) {
     $profiles[$nid->nid] = node_load(array('nid' => $nid->nid));
   }
-  foreach ($profiles as $profile) {
-    $return[$profile->nid] = $profile->title;
+  $return = array();
+  if (is_array($profiles)) {
+    foreach ($profiles as $profile) {
+      $return[$profile->nid] = $profile->title;
+    }
   }
   return $return;
 }
