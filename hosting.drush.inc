@@ -17,9 +17,15 @@ function hosting_drush_command() {
     $dispatch = t("Dispatched: @items items every @frequency minutes", array('@items' => $info['items'], '@frequency' => round($info['frequency'] / 60)));
     $items['hosting ' . $queue] = array(
       'callback' => 'hosting_run_queue', 
-      'description' => $info['description'] . " " . $dispatch
+      'description' => $info['description'] . " " . $dispatch,
+      'queue' => $queue,
     );
   }
+
+  $items['hosting task'] = array(
+    'callback' => 'hosting_process_task',
+    'description' => 'execute a specific queue item',
+  );
   
   return $items;
 }

@@ -130,8 +130,8 @@ function hosting_hosting_queues() {
  * functionality needed to ensure that the queues are running as scheduled.
  */
 function hosting_run_queue() {
-  global $args;
-  $queue = $args['commands'][1];
+  $cmd = drush_get_command(); 
+  $queue = $cmd['queue'];
   $count = drush_get_option(array('i', 'items'), 5); # process a default of 5 items at a time.
 
   variable_set('hosting_queue_' . $queue . '_last_run', $t = mktime());
@@ -194,7 +194,6 @@ function hosting_tasks_queue($count = 20) {
 
   hosting_log('hosting_tasks', t("Running tasks queue"));
   $tasks = _hosting_get_new_tasks($count);
-
   foreach ($tasks as $task) {
     hosting_process_task($task);
   }
@@ -230,7 +229,6 @@ function hosting_process_task($task) {
 
     $cmd = _drush_backend_generate_command("provision " . $task->task_type, $data, 'GET', $drush_path, $hostname, $username);
     hosting_task_log($task->vid, 'command', 'Running:' . escapeshellcmd("$cmd"));
-
     $output = _drush_backend_invoke($cmd, $data, FALSE);
 
     if (!is_array($output)) {
