@@ -111,6 +111,7 @@ function hosting_site_provision_args($node, $task = '') {
   if ($node->type == 'task' && $task == 'restore') {
     $backup = hosting_site_get_backup($node->task_args['bid']);
     $values['#2'] = $backup['filename'];
+    $values['uri'] = null;
   }
   return $values;
 }

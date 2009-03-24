@@ -36,7 +36,6 @@ function hosting_dispatch() {
   } else {
     hosting_log('hosting_dispatch', t("dispatching disabled"));
   }
-  exit(DRUSH_SUCCESS);
 }
 
 /**
@@ -144,7 +143,6 @@ function hosting_run_queue() {
   }
 
   variable_del('hosting_queue_' . $queue . '_running');
-  exit(DRUSH_SUCCESS);
 }
 
 /**
