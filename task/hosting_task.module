@@ -63,9 +63,9 @@ function hosting_task_perm() {
   );
 }
 
-function hosting_task_log($vid, $type, $message, $severity = 0, $timestamp = null ) {
+function hosting_task_log($vid, $type, $message, $error = '', $timestamp = null ) {
  $timestamp = ($timestamp) ? $timestamp : mktime();
- db_query("INSERT INTO {hosting_task_log} (vid, type, message, severity, timestamp) VALUES (%d, '%s', '%s', %d, %d)", $vid, $type, $message, $severity, $timestamp);
+ db_query("INSERT INTO {hosting_task_log} (vid, type, message, error, timestamp) VALUES (%d, '%s', '%s', '%s', %d)", $vid, $type, $message, $error, $timestamp);
 }
 
 function hosting_task_provision_args($node, $task = '') {
@@ -464,16 +464,8 @@ if (!defined('DRUSH_SUCCESS')) {
   define('DRUSH_NOT_COMPLETED', 0);
   /** The command completed succesfully. */
   define('DRUSH_SUCCESS', 1);
-  /** The command was not found. **/
-  define('DRUSH_COMMAND_NOT_FOUND', 2);
-  /** Drupal was unable to bootstrap. */
-  define('DRUSH_DRUPAL_BOOTSTRAP_ERROR', 4);
-  /** The Drupal database API exited due to unsuccesful connection. */ 
-  define('DRUSH_DRUPAL_DB_ERROR', 8);
-  /** Web server could not be restarted, or other server related issues - less severe. */
-  define('DRUSH_PERM_ERROR', 16);
   /** The command could not be completed because the framework has specified errors that have occured. */
-  define('DRUSH_FRAMEWORK_ERROR', 32);
+  define('DRUSH_FRAMEWORK_ERROR', 2);
 }
 
 
@@ -493,18 +485,7 @@ function _hosting_parse_error_code($code) {
       return array(DRUSH_SUCCESS => t('Succesful'));
       break;
     default:
-      $errors[DRUSH_COMMAND_NOT_FOUND] = t('Command not found');
-      $errors[DRUSH_DRUPAL_BOOTSTRAP_ERROR] = t('Drupal bootstrap error');
-      $errors[DRUSH_DRUPAL_DB_ERROR] = t('Could not connect to database');
-      $errors[DRUSH_PERM_ERROR] = t('File permission error');
-      $errors[DRUSH_FRAMEWORK_ERROR] = t('Framework error');
-
-      foreach ($errors as $error => $message) {
-        if ($code & $error) {
-          $return[$error] = $message;
-        }        
-      }
-      return $return;
+      return array(DRUSH_FRAMEWORK_ERROR => t('Framework error'));
       break;
   }
 }

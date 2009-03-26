@@ -214,7 +214,6 @@ function hosting_process_task($task) {
 
     $data = hosting_queues_get_arguments($task);
 
-
     $hostname = null;
     $username = null;
 
@@ -254,7 +253,7 @@ function hosting_process_task($task) {
       module_invoke_all("hosting_failed_". $task->task_type, $task, $output, $code);
     }
     // remove from queue
-    hosting_task_log($task->vid, "queue", t("Removing task from hosting queue"), 0);
+    hosting_task_log($task->vid, "queue", t("Removing task from hosting queue"));
     db_query("UPDATE {hosting_task_queue} SET status=%d WHERE nid=%d", $code, $task->nid);
   }
 }
@@ -274,19 +273,8 @@ function hosting_queues_get_arguments($task) {
 function _hosting_backend_integrate($task, $data = array()) {
   if (is_array($data)) {
     foreach ((array) $data['log'] as $log) {
-      hosting_task_log($task->vid, $log['type'], $log['message'], $log['timestamp']);
+      hosting_task_log($task->vid, $log['type'], $log['message'], $log['error'], $log['timestamp']);
     }
-    
-    # Drupal message errors.
-    foreach ((array) $data['messages']['error'] as $error) {
-      if (preg_match("/^warning:/", $error)) {
-        hosting_task_log($task->vid, "warning", ereg_replace("/^warning: /", '', $error), 0, $log['timestamp']);  
-      }
-      elseif (preg_match("/^user warning:/", $error)) {
-        hosting_task_log($task->vid, "warning", ereg_replace("/^user warning: /", '', $error), 0, $log['timestamp']);  
-      }
-    }
-
     return $values; 
   }
 }

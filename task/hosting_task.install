@@ -28,7 +28,7 @@ function hosting_task_install() {
       vid int NOT NULL default '0',
       type varchar(16) NOT NULL default '',
       message longtext NOT NULL,
-      severity tinyint unsigned NOT NULL default '0',
+      error longtext NOT NULL default '',
       timestamp int NOT NULL default '0',
       PRIMARY KEY (lid),
       KEY (type)
@@ -43,4 +43,19 @@ function hosting_task_install() {
     ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
     break;
   }
+}
+
+/**
+ * Add the error column to hosting_task_log, so we can extract the
+ * specific error codes, not just the messages.
+ */
+function hosting_task_update_1() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE {hosting_task_log} 
+    ADD COLUMN error longtext NOT NULL default ''");
+  $ret[] = update_sql("ALTER TABLE {hosting_task_log} 
+    DROP COLUMN severity");
+
+
+  return $ret;
 }

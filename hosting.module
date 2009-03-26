@@ -385,8 +385,7 @@ function hosting_setup() {
     _hosting_setup_cron();
   }
   else {
-    drush_log(dt("Dispatch command could not be run. Returned: \n@return", array('@return' => $return)), 'error'); 
-    drush_set_error(DRUSH_FRAMEWORK_ERROR);
+    drush_set_error('DRUSH_FRAMEWORK_ERROR', dt("Dispatch command could not be run. Returned: \n@return", array('@return' => $return))); 
   }
   
 
