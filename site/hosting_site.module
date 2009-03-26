@@ -350,11 +350,12 @@ function _hosting_site_validate_fqdn($fqdn) {
 }
 
 function hosting_site_validate(&$node) {
-  if (!_hosting_site_validate_fqdn($node->title)) {
+  $url = strtolower($node->title); // domain names are case-insensitive
+  if (!_hosting_site_validate_fqdn($url)) {
     form_set_error('title', t("You have not specified a valid url for this site."));
   }
   # TODO: maybe we should allow creation of sites that conflict with HOSTING_SITE_DISABLED (which would then need to be renamed before being re-enabled)
-  if (hosting_site_exists($node->title, $node->nid)) {
+  if (hosting_site_exists($url, $node->nid)) {
     form_set_error('title', t("The domain name you have specified is not unique."));
   }
   if (!$node->new_client && !hosting_get_client($node->client)) {
@@ -367,6 +368,10 @@ function hosting_site_validate(&$node) {
     form_set_error('language', t('Please fill in a valid language'));
   }
 
+}
+
+function hosting_site_submit(&$node) {
+  $node->title = strtolower($node->title); // domain names are case-insensitive
 }
 
 function hosting_site_insert(&$node) {
