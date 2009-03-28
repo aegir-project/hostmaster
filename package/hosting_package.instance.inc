@@ -29,7 +29,7 @@ function hosting_package_instance_sync($rid) {
       }
     }
     foreach ($merged as $name => $package) {
-      $iid = db_result(db_query("SELECT iid FROM {hosting_package_instance} WHERE rid=%d AND package_id=%d", $rid, $package['package_id']));
+      $iid = db_result(db_query("SELECT iid FROM {hosting_package_instance} WHERE iid=%d AND package_id=%d", $rid, $package['package_id']));
       if ($iid) {
         $instance = hosting_package_instance_load($iid);
       }
@@ -87,7 +87,7 @@ function hosting_package_instance_load($iid) {
     $languages = array('en' => 'en');
 
     // load language options: if argument is null, load all language options
-    $result = db_query("SELECT DISTINCT(language) FROM  {hosting_package_languages} WHERE rid = %d", $instance->iid);
+    $result = db_query("SELECT DISTINCT(language) FROM  {hosting_package_languages} WHERE iid = %d", $instance->iid);
     while ($language = db_fetch_object($result)) {
       $languages[$language->language] = _hosting_language_name($language->language);
     }

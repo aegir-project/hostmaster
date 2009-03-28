@@ -132,7 +132,7 @@ function hosting_get_profile_languages($profile = NULL, $platform = NULL) {
     $instance = hosting_package_instance_load($iid);
     return $instance->languages;
   }
-
+  /* 
   $result = db_query("SELECT DISTINCT(language) FROM {hosting_package_languages} l". ($profile ? "
                                                 LEFT JOIN {hosting_package_instance} hpi ON l.iid = hpi.iid
                                                 LEFT JOIN {hosting_package} hp ON hp.nid = hpi.package_id
@@ -140,7 +140,7 @@ function hosting_get_profile_languages($profile = NULL, $platform = NULL) {
   
   while ($language = db_fetch_object($result)) {
     $languages[$language->language] = _hosting_language_name($language->language);
-  }
+  }*/
   if (!is_array($languages)) {
     $languages = array('en' => 'en');
   }
@@ -354,7 +354,7 @@ function hosting_package_list($rid, $type = null) {
     $args[] = $type;
   }
 
-  $sql = "SELECT p.nid as 'package', p.short_name, i.version, p.package_type FROM {hosting_package} p
+  $sql = "SELECT i.status, p.nid as 'package', p.short_name, i.version, p.package_type FROM {hosting_package} p
     LEFT JOIN {hosting_package_instance} i ON i.package_id=p.nid WHERE i.rid=%d" . $cond;
   $sql .= tablesort_sql($header);
 
@@ -366,11 +366,12 @@ function hosting_package_list($rid, $type = null) {
   }
   $rows = array();
   while ($package = db_fetch_object($result)) {
+    $row_class = ($package->status == 1) ? 'hosting-success' : 'hosting-info';
     $row = array();
     $row[] =  array('data' => l(filter_xss($package->short_name), 'node/' . $package->package), 'class'=> 'hosting-status');
     $row[] =  $package->version;
     $row[] = filter_xss($package->package_type);
-    $rows[] = array('data' => $row, 'class' => 'hosting-info');
+    $rows[] = array('data' => $row, 'class' => $row_class);
   }
   
   return theme('table',  $header, $rows, array('class' => 'hosting-table')) . theme('pager', null, 25, 2);
