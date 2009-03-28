@@ -517,9 +517,6 @@ function hosting_set_breadcrumb($node) {
     case 'site' :
       $breadcrumbs[] = _hosting_node_link($node->platform);
       break;
-    case 'package_release' :
-      $breadcrumbs[] = _hosting_node_link($node->package);
-      break;
   }
   drupal_set_breadcrumb($breadcrumbs);
 }

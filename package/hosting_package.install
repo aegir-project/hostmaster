@@ -13,20 +13,13 @@ function hosting_package_install() {
         PRIMARY KEY (vid)
       ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
 
-      db_query("CREATE TABLE {hosting_package_release} (
-        vid int NOT NULL default '0',
-        nid int(10) unsigned NOT NULL default '0',
-        package int(11) NOT NULL default '0',
-        schema_version int(10) NOT NULL default '0',
-        version longtext NOT NULL default '',
-        PRIMARY KEY (vid)
-      ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
-
       db_query("CREATE TABLE {hosting_package_instance} (
         iid int NOT NULL DEFAULT '0',
-        release_id int(11) NOT NULL default '0',
         rid int(11) NOT NULL default '0',
-        path longtext,
+        package_id int(11) NOT NULL default '0',
+        filename longtext NOT NULL DEFAULT '',
+        schema_version int(10) NOT NULL default '0',
+        version longtext NOT NULL default '',
         PRIMARY KEY (iid)
       ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
 
@@ -90,4 +83,52 @@ function hosting_package_update_4() {
   return $ret;
 }
 
+/**
+ * Denormalize package and package release node types
+ */
+function hosting_package_update_5() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE {hosting_package_instance} ADD COLUMN package_id int(10) NOT NULL default '0'");
+  $ret[] = update_sql("ALTER TABLE {hosting_package_instance} ADD COLUMN version longtext NOT NULL default ''");
+  $ret[] = update_sql("ALTER TABLE {hosting_package_instance} ADD COLUMN filename longtext NOT NULL default ''");
+  $ret[] = update_sql("ALTER TABLE {hosting_package_instance} ADD COLUMN schema_version int(10) NOT NULL default '0'");
+  $ret[] = update_sql("ALTER TABLE {hosting_package_instance} ADD COLUMN status int(1) NOT NULL default '0'");
+
+  // Now we replace the release ID of platform node types with instance types.
+  // This needs to be done from the package module, even though it modifies the
+  // hosting_platform table, so we can be _SURE_ that the order of execution is correct.
+  $platforms = _hosting_get_platforms();
+  foreach ($platforms as $nid => $name) {
+    $platform = db_fetch_object(db_query("SELECT release_id FROM {hosting_platform} WHERE nid=%d", $nid));
+    $release = db_fetch_object(db_query("SELECT * FROM {hosting_package_release} WHERE nid = %d", 
+      $platform->release_id));
+
+    $instance = new stdClass();
+    $instance->rid = $nid;
+    $instance->package_id = $release->package;
+    $instance->version = $release->version;
+
+    // A future step will fill these in from the packages.
+    $instance->filename = '';
+    $instance->schema_version = 0;
+    
+    hosting_package_instance_save($instance);
+    hosting_add_task($nid, 'verify');
+  }
+
+  $ret[] = update_sql("ALTER TABLE {hosting_platform} DROP COLUMN release_id");
+
+  // Now we iterate through all the package
+  $result = db_query("SELECT * FROM {hosting_package_release}");
+  while ($release = db_fetch_object($result)) {
+    db_query("UPDATE {hosting_package_instance} SET version='%s', schema_version=%d, package_id=%d WHERE release_id=%d", $release->version, $release->schema_version, $release->package, $release->nid);
+  }
+
+  $ret[] = update_sql("DELETE FROM {node_revisions} WHERE nid IN (SELECT nid FROM {node} WHERE type='package_release')");
+  $ret[] = update_sql("DELETE FROM {node} WHERE type='package_release'");
+  $ret[] = update_sql("ALTER TABLE {hosting_package_instance} DROP COLUMN release_id");
+  $ret[] = update_sql("ALTER TABLE {hosting_package_instance} DROP COLUMN path");
+  $ret[] = update_sql("DROP TABLE {hosting_package_release}");
+  return $ret;
+}
 

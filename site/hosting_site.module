@@ -139,6 +139,17 @@ function hosting_get_sites_by_status($platform, $status) {
 }
 
 /**
+ * Retrieve a node based on the url
+ */
+function hosting_get_site_by_url($url) {
+  $nid = db_result(db_query("SELECT nid FROM {node} WHERE title='%s' AND type = 'site' AND status=1", $url));
+  if ($nid) {
+    return node_load($nid);
+  }
+  return false;
+}
+
+/**
  * Helper function to generate new site node during import
  */
 function hosting_import_site($site_id, $data, $status, $platform = HOSTING_DEFAULT_PLATFORM) {
@@ -755,4 +766,13 @@ function hosting_site_hosting_post_import($task, $data) {
   
   hosting_import_site($site->nid, $data['context'], HOSTING_SITE_ENABLED | HOSTING_SITE_INSTALLED | HOSTING_SITE_IMPORTED, $site->platform);
 }
+
+function hosting_site_hosting_post_verify($task, $data) {
+  $node = node_load($task->rid);
+  if ($node->type == 'site') {
+    $context = $data['context'];
+    $packages = $context['packages'];
+  }
+}
+
 

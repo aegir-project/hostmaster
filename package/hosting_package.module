@@ -5,22 +5,23 @@
  * Packages are somewhat analogous to Drupal.org projects. IE: components that can be installed onto Drupal sites.
  */
 
+require_once('hosting_package.instance.inc');
+
+function _hosting_package_types() {
+  return array(
+    'profile' => t('Installation Profiles'), 
+    'module' => t('Modules'), 
+    'theme' => t('Themes')
+  );
+}
+
 function hosting_package_node_info() {
   #package management
   $types["package"] =  array(
     "type" => 'package', "name" => 'Package',
     "module" => 'hosting_package',
     "has_title" => FALSE, "title_label" => '', 
-#    "description" => hosting_node_help("package"),
     "has_body" => 0, "body_label" => '', "min_word_count" => 0);
-
-  $types["package_release"] =  array(
-    "type" => 'package_release', "name" => 'Package release',
-    "module" => 'hosting_package_release',
-    "has_title" => FALSE, "title_label" => '', 
- #   "description" => hosting_node_help("package_release"),
-    "has_body" => 0, "body_label" => '', "min_word_count" => 0);
-
 
   return $types;
 }
@@ -42,7 +43,7 @@ function hosting_package_menu($may_cache) {
   if (!$may_cache) {
     if ( arg(0) == 'node' && is_numeric(arg(1))) {
       $node = node_load(arg(1));
-      if ($node->type == 'platform') {
+      if (in_array($node->type, array('site', 'platform', 'package'))) {
         $items[] = array(
           'path' => 'node/' . arg(1) . '/packages',
           'title' => t('Packages'),
@@ -98,30 +99,10 @@ function hosting_package_access($op, $node) {
   }
 }
 
-function hosting_package_release_access($op, $node) {
-  switch ($op) {
-  case 'create':
-    return user_access('create package release');
-    break;
-  case 'view':
-    return user_access('view package release');
-    break;
-  case 'update':
-    return user_access('edit package release');
-    break;
-  case 'delete':
-    return user_access('delete package release');
-    break;
-  default:
-    break;
-  }
-}
-
 function hosting_get_profiles($platform = NULL) {
   // load profile options: if argument is null, load all profile options
   $query = 'SELECT n.nid FROM {node} n LEFT JOIN {hosting_package} hp ON n.nid = hp.nid 
-                                       LEFT JOIN {hosting_package_release} hpr ON hp.nid = hpr.package 
-                                       LEFT JOIN {hosting_package_instance} hpi ON hpr.nid = hpi.release_id 
+                                       LEFT JOIN {hosting_package_instance} hpi ON hp.nid = hpi.package_id 
                                        LEFT JOIN {hosting_platform} l ON hpi.rid = l.nid 
                                        WHERE '. ($platform ? ' l.nid = %d AND ' : '') .' hp.package_type = "profile" AND n.status = 1';
   $query .= ' ORDER BY hp.short_name ASC';
@@ -146,10 +127,15 @@ function hosting_get_profiles($platform = NULL) {
 
 function hosting_get_profile_languages($profile = NULL, $platform = NULL) {
   // load language options: if argument is null, load all language options
+  if ($profile && $platform) {
+    $iid = db_result(db_query("SELECT iid FROM {hosting_package_instance} WHERE rid=%d AND package_id=%d", $platform, $profile));
+    $instance = hosting_package_instance_load($iid);
+    return $instance->languages;
+  }
+
   $result = db_query("SELECT DISTINCT(language) FROM {hosting_package_languages} l". ($profile ? "
                                                 LEFT JOIN {hosting_package_instance} hpi ON l.iid = hpi.iid
-                                                LEFT JOIN {hosting_package_release} hpr ON hpi.release_id = hpr.nid
-                                                LEFT JOIN {hosting_package} hp ON hp.nid = hpr.package
+                                                LEFT JOIN {hosting_package} hp ON hp.nid = hpi.package_id
                                                 WHERE hp.nid = %d AND hpi.rid = %d" : ""), $profile, $platform);
   
   while ($language = db_fetch_object($result)) {
@@ -196,9 +182,7 @@ function hosting_get_packages_by_type($type) {
   if ($nid = db_result($result)) {
     return node_load($nid);
   }
-  else {
-    return false;
-  }
+  return false;
 }
 
 
@@ -207,45 +191,8 @@ function hosting_get_package($short_name) {
   if ($nid = db_result($result)) {
     return node_load($nid);
   }
-  else {
-    return false;
-  }
+  return false;
 }
-
-function hosting_get_package_release($short_name, $version) {
-  $result = db_query("SELECT r.nid FROM {hosting_package} p LEFT JOIN {hosting_package_release} r ON p.nid = r.package WHERE p.short_name = '%s' AND r.version = '%s'", $short_name, $version);
-  if ($nid = db_result($result)) {
-    return node_load($nid);
-  }
-  else {
-    return false;
-  }
-}
-
-function hosting_get_package_instance($rid, $short_name) {
-  $result = db_query("SELECT p.nid FROM {hosting_package} p LEFT JOIN {hosting_package_release} r on p.nid = r.package left join {hosting_package_instance} i ON r.nid = i.release_id WHERE p.short_name = '%s' AND i.rid = '%s'", $short_name, $rid);
-  if ($nid = db_result($result)) {
-    return node_load($nid);
-  }
-  else {
-    return false;
-  }
-}
-
-
-function hosting_delete_package_instances($nid) {
-  db_query("DELETE FROM {hosting_package_instance} WHERE rid = %d", $nid);
-}
-
-function hosting_add_package_instance($nid, $rid, $info) {
-  $iid = db_next_id("{hosting_package_instance}_iid");
-  db_query("INSERT INTO {hosting_package_instance} (iid, release_id, rid, path) VALUES (%d, %d, %d, '%s')", $iid, $nid, $rid, $info->filename);
-
-  // Import other translations
-  if (sizeof($info['info']['languages']) > 1) {
-    hosting_package_languages_insert($iid, $info['info']['languages']); 
-  }
-} 
 
 /**
  * Implementation of hook_insert().
@@ -255,15 +202,6 @@ function hosting_package_insert($node) {
     $node->vid, $node->nid, $node->package_type, $node->short_name, $node->description );
 }
 
-/**
- * Insert translation of packages
- */
-function hosting_package_languages_insert($iid, $languages) {
-  db_query("DELETE FROM {hosting_package_languages} WHERE iid=%d", $iid);
-  foreach ($languages as $language) {
-    db_query("INSERT INTO {hosting_package_languages} (iid, language) VALUES (%d, '%s')", $iid, $language);
-  }
-}
 
 /**
  * Implementation of hook_update().
@@ -326,16 +264,6 @@ function hosting_package_view($node, $teaser = FALSE, $page = FALSE) {
       '#weight' => 10
     );
   }
-
-  /**
-  $view = views_get_view('package_release_embed');
-  $node->content['release_view'] = array(
-    '#type' => 'item',
-    '#title' => t("Releases"),
-    '#value' => views_build_view('embed', $view, array($node->nid)), 
-    '#weight' => 10
-  );
-  */
   return $node;
 }
 
@@ -357,129 +285,54 @@ function _hosting_language_name($language) {
   return $locales[$language][0] . (isset($locales[$language][1]) ? ' '. t('(@language)', array('@language' => $locales[$language][1])) : '');
 }
 
-function hosting_package_release_set_title(&$node) {
-  $package = node_load($node->package);
-  $node->title = $package->title . ' ' . $node->version;
-  db_query("UPDATE {node} SET title='%s' WHERE nid=%d", $node->title, $node->nid);
-  db_query("UPDATE {node_revisions} SET title='%s' WHERE vid=%d", $node->title, $node->vid);
+
+function _hosting_package_plural_map($key = null) {
+  static $plural_map = array(
+    'modules' => 'module',
+    'themes' => 'theme',
+    'profiles' => 'profile',
+    'engines' => 'engine',
+    'platforms' => 'platform'
+  );
+  if (is_null($key)) {
+    return $plural_map;
+  }
+  return (array_key_exists($key, $plural_map)) ? $plural_map[$key] : $key;
 }
 
 /**
- * Implementation of hook_insert().
- */
-function hosting_package_release_insert($node) {
-  db_query("INSERT INTO {hosting_package_release} (vid, nid, package, schema_version, version ) VALUES (%d, %d, %d, %d, '%s')",
-    $node->vid, $node->nid, $node->package, $node->schema_version, $node->version );
-  hosting_package_release_set_title($node);
-}
-
-/**
- * Implementation of hook_update().
+ * Synch the package and package release nodes with the information
+ * retrieved from the verify task
  *
- * As an existing node is being updated in the database, we need to do our own
- * database updates.
+ * @todo Make this prettier.
  */
-function hosting_package_release_update($node) {
-  // if this is a new node or we're adding a new revision,
-  if ($node->revision) {
-    hosting_package_release_insert($node);
-  }
-  else {
-    db_query("UPDATE {hosting_package_release} SET package = %d, schema_version = %d, version = '%s' WHERE nid=%d",
-              $node->package, $node->schema_version, $node->version, $node->nid);
-  }
-  hosting_package_release_set_title($node);
-}
-
-function hosting_nodeapi_package_release_delete_revision(&$node) {
-  db_query('DELETE FROM {hosting_package_release} WHERE vid = %d', $node->vid);
-}
-
-/**
- * Implementation of hook_delete().
- */
-function hosting_package_release_delete($node) {
-  db_query('DELETE FROM {hosting_package_release} WHERE nid = %d', $node->nid);
-}
-
-/**
- * Implementation of hook_load().
- */
-function hosting_package_release_load($node) {
-  $additions = db_fetch_object(db_query('SELECT package, schema_version, version FROM {hosting_package_release} WHERE vid = %d', $node->vid));
-  return $additions;
-}
-
-/**
- * Implementation of hook_view().
- */
-function hosting_package_release_view($node, $teaser = FALSE, $page = FALSE) {
-  hosting_set_breadcrumb($node);
-  $node->content['package'] = array(
-    '#type' => 'item',
-    '#title' => t('Package'),
-    '#value' => _hosting_node_link($node->package),
-    '#weight' => -1
-  );
-  $node->content['version'] = array(
-    '#type' => 'item',
-    '#title' => t('Version'),
-    '#value' => $node->version,
-  );
-  if ($node->schema_version) {
-    $node->content['schema_version'] = array(
-      '#type' => 'item',
-      '#title' => t('Schema Version'),
-      '#value' => $node->schema_version,
-    );
-  }
-  return $node;
-}
-
-function hosting_package_import_packages($rid, $type, $default_version, $data) {
-  // Import install profiles as package and release nodes
-  foreach ($data as $short_name => $file) {
-    $name = ($file['name']) ? $file['name'] : $short_name;
-    $version = ($file['version']) ? $file['version'] : $default_version; // dirty hack. but ugh.
-    if (!$package = hosting_get_package($name)) {
-      $node = new stdClass();
-      $node->type = 'package';
-      $node->title = $name;
-      $node->package_type = $type;
-      $node->short_name = $short_name;
+function hosting_package_sync(&$data) {
+  foreach ($data as $plural => $packages) {
+    $type = _hosting_package_plural_map($plural);
+    foreach ($packages as $short_name => $file) {
+      $name = ($file['name']) ? $file['name'] : $short_name;
+      if (!($package = hosting_get_package($name))) {
+        // Create a new package.
+        $package = new stdClass();
+        $package->type = 'package';
+        $package->title = $name;
+        $package->package_type = $type;
+        $package->short_name = $short_name;
+      }
+      $package->description = $file['description'];
       // Kludge to hide the hostmaster and hostslave profiles
-      if (($type == 'profile') && in_array($short_name, array('hostslave', 'hostmaster'))) {
-        $node->status = 0;
+      if (($type == 'profile') 
+        && in_array($short_name, array('hostslave', 'hostmaster'))) {
+        $package->status = 0;
       }
       else {
-        $node->status = 1;
+        $package->status = 1;
       }
-      node_save($node);
-      $package = $node;
+      node_save($package);
+      $data[$plural][$short_name]['package_id'] = $package->nid;
     }
-    if (!$release = hosting_get_package_release($name, $version)) {
-      $node = new stdClass();
-      $node->type = 'package_release';
-      $node->package = $package->nid;
-      $node->version = $version;
-      $node->schema_version = $file['schema_version'];
-      $node->status = 1;
-      node_save($node);
-      $release = $node;
-    }
-    hosting_add_package_instance($release->nid, $rid, $info); 
   }
-
 }
-
-function _hosting_package_types() {
-  return array(
-    'profile' => t('Installation Profiles'), 
-    'module' => t('Modules'), 
-    'theme' => t('Themes')
-  );
-}
-
 
 /**
  * Display a list of packages associated to a node
@@ -489,7 +342,6 @@ function _hosting_package_types() {
 function hosting_package_list($rid, $type = null) {
   $ref = node_load($rid);
   drupal_set_title(t('Packages on @reference', array('@reference' => $ref->title)));
-
 
   $header = array(
     array('data' => t('Package'), 'field' => 'short_name'),
@@ -502,9 +354,8 @@ function hosting_package_list($rid, $type = null) {
     $args[] = $type;
   }
 
-  $sql = "SELECT p.nid as 'package', p.short_name, r.nid as 'release', r.version, p.package_type FROM {hosting_package} p
-    LEFT JOIN {hosting_package_release} r ON r.package=p.nid
-    LEFT JOIN {hosting_package_instance} i ON i.release_id=r.nid WHERE i.rid=%d" . $cond;
+  $sql = "SELECT p.nid as 'package', p.short_name, i.version, p.package_type FROM {hosting_package} p
+    LEFT JOIN {hosting_package_instance} i ON i.package_id=p.nid WHERE i.rid=%d" . $cond;
   $sql .= tablesort_sql($header);
 
   // @TODO hide deleted sites
@@ -517,7 +368,7 @@ function hosting_package_list($rid, $type = null) {
   while ($package = db_fetch_object($result)) {
     $row = array();
     $row[] =  array('data' => l(filter_xss($package->short_name), 'node/' . $package->package), 'class'=> 'hosting-status');
-    $row[] =  l(filter_xss($package->version), 'node/' . $package->release);
+    $row[] =  $package->version;
     $row[] = filter_xss($package->package_type);
     $rows[] = array('data' => $row, 'class' => 'hosting-info');
   }

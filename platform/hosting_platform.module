@@ -60,8 +60,6 @@ function hosting_platform_access($op, $node) {
     case 'delete':
       return user_access('delete platform');
       break;
-    default:
-      break;
   }  
 }
 
@@ -158,8 +156,8 @@ function hosting_platform_insert($node) {
     variable_set('hosting_default_platform', $node->nid);
   }
   hosting_add_task($node->nid, 'verify');
-  db_query("INSERT INTO {hosting_platform} (vid, nid, publish_path, release_id, verified, web_server) VALUES (%d, %d, '%s', %d, %d, %d)",
-    $node->vid, $node->nid, $node->publish_path, $node->release_id, $node->verified, $node->web_server);
+  db_query("INSERT INTO {hosting_platform} (vid, nid, publish_path, verified, web_server) VALUES (%d, %d, '%s', %d, %d)",
+    $node->vid, $node->nid, $node->publish_path, $node->verified, $node->web_server);
 }
 
 /**
@@ -177,8 +175,8 @@ function hosting_platform_update($node) {
     if ($node->default_platform == 1) {
       variable_set('hosting_default_platform', $node->nid);
     }
-    db_query("UPDATE {hosting_platform} SET publish_path = '%s', web_server = %d, release_id = %d, verified = %d WHERE nid=%d",
-              $node->publish_path, $node->web_server, $node->release_id, $node->verified, $node->nid);
+    db_query("UPDATE {hosting_platform} SET publish_path = '%s', web_server = %d, verified = %d WHERE nid=%d",
+              $node->publish_path, $node->web_server, $node->verified, $node->nid);
   }
 }
 
@@ -197,7 +195,7 @@ function hosting_platform_delete($node) {
  * Implementation of hook_load().
  */
 function hosting_platform_load($node) {
-  $additions = db_fetch_object(db_query('SELECT publish_path, release_id, verified, web_server FROM {hosting_platform} WHERE vid = %d', $node->vid));
+  $additions = db_fetch_object(db_query('SELECT publish_path, verified, web_server FROM {hosting_platform} WHERE vid = %d', $node->vid));
   return $additions;
 }
 
@@ -215,15 +213,6 @@ function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
     '#value' => hosting_format_interval($node->verified),
     '#weight' => -10
   );
-
-  if ($node->release_id) {
-    $node->content['info']['release'] = array(
-      '#type' => 'item',
-      '#title' => t('Release'),
-      '#value' => _hosting_node_link($node->release_id),
-      '#weight' => -9
-    );
-  }
 
   $node->content['info']['publish_path'] = array(
     '#type' => 'item',
@@ -275,28 +264,30 @@ function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
  * Imports all the profiles and modules into package and package release nodes.
  */
 function hosting_platform_hosting_post_verify($task, $data) {
+  $context = $data['context'];
+  $packages = $context['packages'];
   $node = node_load($task->rid);
   if ($node->type == 'platform') {
     $node->verified = mktime(); // set verified flag on platform, to let it know it has been checked.
-    // set the platform of the site
-    if (is_array($data['context']['platform'])) {
-      $info = $data['context']['platform'];
-      hosting_package_import_packages($node->nid, 'platform', $info['version'], array($info['short_name'] => $info));
-      $release = hosting_get_package_release($info['short_name'], $info['version']);
-      $node->release_id = $release->nid;
-    }
+    // Save the platform being verified
     node_save($node);
-    $platform_release = node_load($node->release_id);
 
-    hosting_delete_package_instances($node->nid);
-    
-    hosting_package_import_packages($node->nid, 'profile', $platform_release->version, $data['context']['profiles']);
-    hosting_package_import_packages($node->nid, 'module', $platform_release->version, $data['context']['packages']['core']['modules']);
-    hosting_package_import_packages($node->nid, 'engine', $platform_release->version, $data['context']['engines']);
-    hosting_package_import_packages($node->nid, 'theme', $platform_release->version, $data['context']['themes']);
+    hosting_package_sync($packages['base']);
+    hosting_package_instance_sync($node->nid, $packages['base']);
 
-    foreach ($data['context']['sites'] as $url) {
-      if (!hosting_site_exists($url)) {
+    foreach ($context['profiles'] as $profile) {
+      hosting_package_sync($packages['profiles'][$profile]);
+      $package_id = $packages['base']['profiles'][$profile]->package_id;
+      hosting_package_instance_sync($package_id, $packages['base'], $packages['profiles'][$profile]);
+
+      // @todo : package instances of modules to profiles.
+    }
+
+    foreach ($context['sites'] as $url) {
+      hosting_package_sync($packages['sites'][$url]);
+
+      if (!($site = hosting_get_site_by_url($url))) {
+        // Import any sites that have not been created yet.
         $site = new StdClass();
         $site->type = 'site';
         $site->site_status = HOSTING_SITE_IMPORTED;
@@ -305,8 +296,10 @@ function hosting_platform_hosting_post_verify($task, $data) {
         $site->client = HOSTING_DEFAULT_CLIENT;
         node_save($site);
         hosting_task_log($task->vid, "notice", t("Imported existing site !domain", array('!domain' => _hosting_node_link($site->nid))));
-      } 
+      }
+      hosting_package_instance_sync($site->nid, $packages['base'], $packages['sites'][$url]);
     }
+
   }
 }
 

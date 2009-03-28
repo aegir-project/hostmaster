@@ -109,7 +109,7 @@ function hosting_client_disabling($set = NULL) {
 function hosting_node_grants($account, $op) {
   $account->client_id = hosting_get_client_from_user($account->uid);
   if ($account->client_id) {
-    $types = array_merge(hosting_feature_node_types(), array('site', 'task', 'package', 'package_release', 'client')); 
+    $types = array_merge(hosting_feature_node_types(), array('site', 'task', 'package', 'client')); 
     foreach ($types as $type) {
       if (user_access("$op $type")) {
         $grants['hosting ' . $type] = array($account->client_id);
@@ -155,7 +155,6 @@ function hosting_client_node_access_records($node) {
       $base_grant['gid'] = $node->nid;
       break;
     case 'package' :
-    case 'package_release' : 
       $base_grant['grant_update'] = FALSE;
     case 'task' :
     case 'platform' :
