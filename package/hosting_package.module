@@ -438,12 +438,13 @@ function hosting_package_release_view($node, $teaser = FALSE, $page = FALSE) {
 
 function hosting_package_import_packages($rid, $type, $default_version, $data) {
   // Import install profiles as package and release nodes
-  foreach ($data as $short_name => $info) {
-    $version = ($info['info']['version']) ? $info['info']['version'] : $default_version; // dirty hack. but ugh.
-    if (!$package = hosting_get_package($short_name)) {
+  foreach ($data as $short_name => $file) {
+    $name = ($file['name']) ? $file['name'] : $short_name;
+    $version = ($file['version']) ? $file['version'] : $default_version; // dirty hack. but ugh.
+    if (!$package = hosting_get_package($name)) {
       $node = new stdClass();
       $node->type = 'package';
-      $node->title = ($info['info']['name']) ? $info['info']['name'] : "$short_name $type $version";
+      $node->title = $name;
       $node->package_type = $type;
       $node->short_name = $short_name;
       // Kludge to hide the hostmaster and hostslave profiles
@@ -456,11 +457,12 @@ function hosting_package_import_packages($rid, $type, $default_version, $data) {
       node_save($node);
       $package = $node;
     }
-    if (!$release = hosting_get_package_release($short_name, $version)) {
+    if (!$release = hosting_get_package_release($name, $version)) {
       $node = new stdClass();
       $node->type = 'package_release';
       $node->package = $package->nid;
       $node->version = $version;
+      $node->schema_version = $file['schema_version'];
       $node->status = 1;
       node_save($node);
       $release = $node;
