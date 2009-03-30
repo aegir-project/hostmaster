@@ -28,19 +28,76 @@ function hosting_migrate_hosting_tasks($node) {
 }
 
 function hosting_task_migrate_form($node) {
-  $my_platform = node_load($node->platform);
-  $my_release = node_load($my_platform->release_id);
-  $result = db_query("select p.nid, n.title, version  from {hosting_platform} p left join {node} n on n.nid=p.nid left join {hosting_package_release} r on p.release_id = r.nid order by r.version asc;");
-  if ($result) {
-    while ($platform = db_fetch_object($result)) {
-      if ($platform->nid != $node->platform) {
-        if (version_compare($my_release->version, $platform->version, '<=')) {
-          $options[$platform->nid] = "<strong>$platform->title</strong> - " . $platform->version;
-        }
+  $site_instances = hosting_package_instances_load(
+    array('rid' => $node->nid, 'i.status' => 1));
+
+  $headers = array();
+  $headers[] = "Package";
+  $cols = array();
+
+  $packages = array();
+  $headers[] = t('Current');
+  foreach ($site_instances as $instance) {
+    $packages[$node->platform][$instance->package_id] = $instance;
+  }
+
+
+  $profile_platform_instances = hosting_package_instances_load(
+    array('r.type' => 'platform', 'n.nid' => $node->profile));
+  if (sizeof($profile_platform_instances) <= 1) {
+    $form['no_targets'] = array(
+      '#value' => t('<br />There are no platforms that can meet the depdendencies for this site'));
+    return $form;
+  }
+  foreach ($profile_platform_instances as $profile_instance) {
+    if ($profile_instance->rid != $node->platform) {
+      $platform = node_load($profile_instance->rid);
+      $headers[] = $platform->title;
+
+
+      $platform_instances = hosting_package_instances_load(
+        array('rid' => $profile_instance->iid));
+      foreach ($platform_instances as $instance) {
+        $packages[$platform->nid][$instance->package_id] = $instance;
       }
     }
-
   }
+
+  $rows = array();
+  foreach (array_keys($packages[$node->platform]) as $package) {
+    $row = array();
+    $row[] = array('class' => 'hosting-package-name', 'data' => $packages[$node->platform][$package]->title . ' ' . $packages[$node->platform][$package]->package_type);
+    foreach (array_keys($packages) as $platform) {
+      if (array_key_exists($package, $packages[$platform])) {
+        $comparison = hosting_package_instance_version_compare($packages[$node->platform][$package], $packages[$platform][$package]);
+        $display = $packages[$platform][$package]->version;
+        if ($packages[$platform][$package]->schema_version) {
+          $display .= " (" . $packages[$platform][$package]->schema_version . ")";
+        }
+        if ($comparison > 0) {
+          $row[] = array('class' => 'hosting-package-upgrade', 'data' => $display);
+        }
+        elseif ($comparison == 0) {
+          $row[] = array('class' => 'hosting-package-same', 'data' => $display);
+        }
+        else {
+          $row[] = array('class' => 'hosting-package-downgrade', 'data' => $display);
+        }
+      }
+      else {
+        $row[] = array('class' => 'hosting-package-missing', 'data' => t("Missing"));
+      }
+    }
+    $rows[] = $row;
+  }
+
+  $form['table'] = array(
+    '#prefix' => "<div class='hosting-package-comparison'>",
+    '#value' => theme('table', $headers, $rows),
+    '#suffix' => "</div>");
+  return $form;
+  $table = array();
+
   if (sizeof($options)) {
     $form['target_platform'] = array(
       '#type' => 'radios',

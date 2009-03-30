@@ -196,6 +196,8 @@ function hosting_platform_delete($node) {
  */
 function hosting_platform_load($node) {
   $additions = db_fetch_object(db_query('SELECT publish_path, verified, web_server FROM {hosting_platform} WHERE vid = %d', $node->vid));
+  $iid = db_result(db_query("SELECT iid FROM hosting_package_instance i left join hosting_package p on p.nid=i.package_id WHERE p.package_type='platform' AND i.rid=%d", $node->nid));
+  $additions->release = hosting_package_instance_load($iid);
   return $additions;
 }
 
@@ -207,6 +209,7 @@ function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
     '#prefix' => '<div id="hosting-platform-info">',
     '#suffix' => '</div>'
   );
+
   $node->content['info']['verified'] = array(
     '#type' => 'item',
     '#title' => t('Verified'),
@@ -227,6 +230,16 @@ function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
     '#value' => _hosting_node_link($node->web_server),
     '#weight' => -7
   );
+
+  if ($node->release) {
+    $release = sprintf("%s %s", $node->release->title, $node->release->version);
+     $node->content['info']['release'] = array(
+      '#type' => 'item',
+      '#title' => t('Release'),
+      '#value' => _hosting_node_link($node->release->nid, $release),
+      '#weight' => -6
+    );
+  }
 
   if ($node->nid == HOSTING_DEFAULT_PLATFORM) {
     $node->content['info']['default_platform'] = array(
@@ -274,15 +287,15 @@ function hosting_platform_hosting_post_verify($task, $data) {
 
     hosting_package_sync($packages['base']);
     hosting_package_instance_sync($node->nid, $packages['base']);
-
     foreach ($context['profiles'] as $profile) {
       hosting_package_sync($packages['profiles'][$profile]);
-      $package_id = $packages['base']['profiles'][$profile]->package_id;
-      hosting_package_instance_sync($package_id, $packages['base'], $packages['profiles'][$profile]);
+      $instance = hosting_package_instance_load(
+        array('short_name' => $profile, 'rid' => $node->nid, 'package_type' => 'profile'));
+      hosting_package_instance_sync($instance->iid, $packages['base'], $packages['profiles'][$profile]);
 
       // @todo : package instances of modules to profiles.
     }
-
+ 
     foreach ($context['sites'] as $url) {
       hosting_package_sync($packages['sites'][$url]);
 
@@ -299,7 +312,6 @@ function hosting_platform_hosting_post_verify($task, $data) {
       }
       hosting_package_instance_sync($site->nid, $packages['base'], $packages['sites'][$url]);
     }
-
   }
 }
 

@@ -21,6 +21,7 @@ function hosting_package_instance_sync($rid) {
   $map = _hosting_package_plural_map();
   $args = func_get_args();
   $rid = array_shift($args);
+
   foreach ($map as $plural => $key) {
     $merged = array();
     foreach ($args as $index => $arg) {
@@ -28,12 +29,12 @@ function hosting_package_instance_sync($rid) {
         $merged = array_merge($merged, $args[$index][$plural]);
       }
     }
+
     foreach ($merged as $name => $package) {
-      $iid = db_result(db_query("SELECT iid FROM {hosting_package_instance} WHERE iid=%d AND package_id=%d", $rid, $package['package_id']));
-      if ($iid) {
-        $instance = hosting_package_instance_load($iid);
-      }
-      else {
+      $instance = hosting_package_instance_load(array(
+        'rid' => $rid,
+        'package_id' => $package['package_id']));
+      if (!$instance) {
         $instance = new stdClass();
         $instance->rid = $rid;
         $instance->package_id = $package['package_id'];
@@ -42,7 +43,12 @@ function hosting_package_instance_sync($rid) {
       $instance->filename = $package['filename'];
       $instance->version = ($package['version']) ? $package['version'] : 'Unknown';
       $instance->schema_version = $package['schema_version'];
-      $instance->status = $package['status'];
+      if (array_key_exists('status', $package)) {
+        $instance->status = $package['status'];
+      }
+      else {
+        $instance->status = 0;
+      }
       hosting_package_instance_save($instance);
     }
   }
@@ -66,6 +72,7 @@ function hosting_package_instance_update(&$instance) {
     $instance->rid, $instance->package_id, $instance->filename, 
     $instance->schema_version, $instance->version, $instance->status,
     $instance->iid);
+
    _hosting_package_instance_languages($instance);
 
 }
@@ -78,24 +85,64 @@ function hosting_package_instance_create(&$instance) {
       VALUES (%d, %d, %d, '%s', %d, '%s', %d)", 
       $instance->iid, $instance->rid, $instance->package_id, $instance->filename, 
       $instance->schema_version, $instance->version, $instance->status);
+
       _hosting_package_instance_languages($instance);
 }
 
-function hosting_package_instance_load($iid) {
-  $result = db_query("SELECT * FROM {hosting_package_instance} WHERE iid=%d", $iid);
-  if ($instance = db_fetch_object($result)) {
+function hosting_package_instance_load($param) {
+  return _hosting_package_instances_load($param);
+}
+
+function hosting_package_instances_load($param) {
+  return _hosting_package_instances_load($param, TRUE);
+}
+
+function _hosting_package_instances_load($param, $multiple = FALSE) {
+  $arguments = array();
+  if (is_numeric($param)) {
+    $cond = 'iid = %d';
+    $arguments[] = $param;
+  }
+  elseif (is_array($param)) {
+    // Turn the conditions into a query.
+    foreach ($param as $key => $value) {
+      $cond[] = $key ." = '%s'";
+      $arguments[] = $value;
+    }
+    $cond = implode(' AND ', $cond);
+  }
+  else {
+    return FALSE;
+  }
+  $instances = array();
+  $result = db_query("SELECT 
+      n.title, r.type, p.package_type, p.nid,
+      i.iid, i.version, i.schema_version,
+      i.status, p.description, p.short_name, i.rid,
+      i.package_id
+      FROM {hosting_package_instance} i 
+        LEFT JOIN {hosting_package} p ON p.nid=i.package_id 
+        LEFT JOIN {node} n ON p.nid=n.nid
+        LEFT JOIN {node} r ON r.nid=i.rid
+      WHERE " . $cond, $arguments);
+
+  while ($instance = db_fetch_object($result)) {
     $languages = array('en' => 'en');
 
     // load language options: if argument is null, load all language options
-    $result = db_query("SELECT DISTINCT(language) FROM  {hosting_package_languages} WHERE iid = %d", $instance->iid);
-    while ($language = db_fetch_object($result)) {
+    $lang_result = db_query("SELECT DISTINCT(language) FROM {hosting_package_languages} WHERE iid = %d", $instance->iid);
+    while ($language = db_fetch_object($lang_result)) {
       $languages[$language->language] = _hosting_language_name($language->language);
     }
     $instance->languages = $languages;
-    return $instance;
+    if (!$multiple) {
+      return $instance;
+    }
+    $instances[$instance->iid] = $instance;
   }
-  return false;
+  return $instances;
 }
+
 
 function hosting_package_instance_save(&$instance) {
   if (!isset($instance->iid)) {
@@ -109,4 +156,46 @@ function hosting_package_instance_save(&$instance) {
 function hosting_package_instance_delete($instance) {
   db_query("DELETE FROM {hosting_package_languages} WHERE iid=%d", $instance->iid);
   db_query("DELETE FROM {hosting_package_instance} WHERE iid = %d", $instance->iid);
+}
+
+function hosting_package_instance_version_compare($from, $to) {
+  if ($from->version == $to->version) {
+    return 0;
+  }
+
+#  if (isset($from->schema_version)) {
+#    if ($to->schema_version > $from->schema_version) {
+#      return 1;
+#    }
+#  }
+
+  if (in_array($from->version, array('Unknown', 'HEAD'))) {
+    if (!in_array($to->version, array('Unknown', 'HEAD'))) {
+      return 1;
+    }
+  }
+  _hosting_version_info_extract($from);
+  _hosting_version_info_extract($to);
+  $compare = version_compare($to->drupal_version, $from->drupal_version);
+  if ($compare == 0) {
+    $compare = version_compare($to->project_version, $from->project_version);
+  }
+  return $compare;
+}
+
+function _hosting_version_info_extract(&$instance) {
+  $parts = explode('-', $instance->version);
+  switch (sizeof($parts)) {
+    case '3' :
+      $instance->project_version = str_replace(".x", ".0", $parts[1]) . "." . $parts[2];
+      $instance->drupal_version = str_replace(".x", ".0", $parts[0]);
+      break;
+    case '2' :
+      $instance->project_version = str_replace(".x", ".0", $parts[1]);
+      $instance->drupal_version = str_replace(".x", ".0", $parts[0]);
+      break;
+    case '1' :
+      $instance->drupal_version = str_replace(".x", ".0", $parts[0]);
+      break;
+  }
 }

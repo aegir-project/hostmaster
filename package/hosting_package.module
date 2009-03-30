@@ -236,7 +236,6 @@ function hosting_package_delete($node) {
  */
 function hosting_package_load($node) {
   $additions = db_fetch_object(db_query('SELECT package_type, short_name, description FROM {hosting_package} WHERE vid = %d', $node->vid));
-
   return $additions;
 }
 
@@ -311,7 +310,7 @@ function hosting_package_sync(&$data) {
     $type = _hosting_package_plural_map($plural);
     foreach ($packages as $short_name => $file) {
       $name = ($file['name']) ? $file['name'] : $short_name;
-      if (!($package = hosting_get_package($name))) {
+      if (!($package = hosting_get_package($short_name))) {
         // Create a new package.
         $package = new stdClass();
         $package->type = 'package';

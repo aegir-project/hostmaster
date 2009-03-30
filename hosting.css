@@ -127,6 +127,40 @@ tr.hosting-warning td, tr.hosting-info td, tr.hosting-error td, tr.hosting-queue
 }
 
 /*
+ * Package statuses
+ */
+td.hosting-package-name {
+}
+td.hosting-package-upgrade,
+td.hosting-package-downgrade,
+td.hosting-package-same,
+td.hosting-package-missing {
+  padding-left:30px !important;
+  background-position:10px 7px !important;
+  background-repeat:no-repeat !important;
+}
+
+td.hosting-package-upgrade {
+  background-image: url(ok.png) !important;
+  background-color: #DFD !important;
+}
+
+td.hosting-package-downgrade {
+  background-image: url(error.png) !important;
+  background-color: #FCC !important;
+}
+
+td.hosting-package-same {
+  background-image: url(queue.png) !important; 
+  background-color: #FFE6D5 !important;
+}
+
+td.hosting-package-missing {
+  background-image: url(warning.png) !important;
+  background-color: #FFD !important;
+}
+
+/*
  *  Retry button
  */
 

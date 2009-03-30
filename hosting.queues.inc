@@ -201,7 +201,7 @@ function hosting_process_task($task) {
   if (is_numeric($task)) {
     $task = node_load($task);
   }
-  if (($task->type == 'task') && ($task->task_status != DRUSH_SUCCESS)) {
+  if (($task->type == 'task') && (($task->task_status != DRUSH_SUCCESS) || (drush_get_option('force')))) {
     // create a new revision
     $task->changed = mktime();
     $task->executed = mktime();

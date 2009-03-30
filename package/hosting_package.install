@@ -132,3 +132,19 @@ function hosting_package_update_5() {
   return $ret;
 }
 
+// Rebuild the package instance database and re-verify all sites.
+function hosting_package_update_6() {
+  $ret = array();
+  $ret[] = update_sql("DELETE FROM {hosting_package_instance}");
+  $ret[] = update_sql("UPDATE {sequences} SET id=1 WHERE name='{hosting_package_instance}_iid'");
+  $result = db_query("SELECT nid FROM {node} WHERE type='platform' AND status=1");
+  while ($platform = db_fetch_object($result)) {
+    hosting_add_task($platform->nid, 'verify');
+  }
+  $result = db_query("SELECT nid FROM {node} WHERE type='site' AND status=1");
+  while ($site = db_fetch_object($result)) {
+    hosting_add_task($site->nid, 'verify');
+  }
+  return $ret;
+}
+
