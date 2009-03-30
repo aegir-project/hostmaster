@@ -343,9 +343,11 @@ function hosting_package_list($rid, $type = null) {
   drupal_set_title(t('Packages on @reference', array('@reference' => $ref->title)));
 
   $header = array(
+    array('data' => t('Status'), 'field' => 'status', 'sort' => 'DESC'),
     array('data' => t('Package'), 'field' => 'short_name'),
     array('data' => t('Release'), 'field' => 'version'),
-    array('data' => t('Package type'), 'field' => 'package_type'));
+    array('data' => t('Package type'), 'field' => 'package_type'),
+    );
   $args[] = $rid;
 
   if (!is_null($type)) {
@@ -353,7 +355,7 @@ function hosting_package_list($rid, $type = null) {
     $args[] = $type;
   }
 
-  $sql = "SELECT i.status, p.nid as 'package', p.short_name, i.version, p.package_type FROM {hosting_package} p
+  $sql = "SELECT i.status, p.nid as 'package', p.short_name, i.version, p.package_type, i.status FROM {hosting_package} p
     LEFT JOIN {hosting_package_instance} i ON i.package_id=p.nid WHERE i.rid=%d" . $cond;
   $sql .= tablesort_sql($header);
 
@@ -367,7 +369,8 @@ function hosting_package_list($rid, $type = null) {
   while ($package = db_fetch_object($result)) {
     $row_class = ($package->status == 1) ? 'hosting-success' : 'hosting-info';
     $row = array();
-    $row[] =  array('data' => l(filter_xss($package->short_name), 'node/' . $package->package), 'class'=> 'hosting-status');
+    $row[] =  array('data' => ($package->status) ? t('Enabled') : t('Available') , 'class'=> 'hosting-status');
+    $row[] =  array('data' => l(filter_xss($package->short_name), 'node/' . $package->package));
     $row[] =  $package->version;
     $row[] = filter_xss($package->package_type);
     $rows[] = array('data' => $row, 'class' => $row_class);

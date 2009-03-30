@@ -27,47 +27,22 @@ function hosting_migrate_hosting_tasks($node) {
   return $options;
 }
 
-function hosting_task_migrate_form($node) {
-  $site_instances = hosting_package_instances_load(
-    array('rid' => $node->nid, 'i.status' => 1));
-
+function theme_hosting_task_migrate_form(&$form) {
+  $node = $form['#node'];
+  $packages = $form['#packages'];
   $headers = array();
-  $headers[] = "Package";
-  $cols = array();
-
-  $packages = array();
-  $headers[] = t('Current');
-  foreach ($site_instances as $instance) {
-    $packages[$node->platform][$instance->package_id] = $instance;
-  }
-
-
-  $profile_platform_instances = hosting_package_instances_load(
-    array('r.type' => 'platform', 'n.nid' => $node->profile));
-  if (sizeof($profile_platform_instances) <= 1) {
-    $form['no_targets'] = array(
-      '#value' => t('<br />There are no platforms that can meet the depdendencies for this site'));
-    return $form;
-  }
-  foreach ($profile_platform_instances as $profile_instance) {
-    if ($profile_instance->rid != $node->platform) {
-      $platform = node_load($profile_instance->rid);
-      $headers[] = $platform->title;
-
-
-      $platform_instances = hosting_package_instances_load(
-        array('rid' => $profile_instance->iid));
-      foreach ($platform_instances as $instance) {
-        $packages[$platform->nid][$instance->package_id] = $instance;
-      }
-    }
-  }
-
   $rows = array();
+
+  $headers[] = t("Package");
+  $set_header = array();
   foreach (array_keys($packages[$node->platform]) as $package) {
     $row = array();
     $row[] = array('class' => 'hosting-package-name', 'data' => $packages[$node->platform][$package]->title . ' ' . $packages[$node->platform][$package]->package_type);
     foreach (array_keys($packages) as $platform) {
+      if (!in_array($platform, $set_header)) {
+        $set_header[] = $platform;
+        $headers[] = drupal_render($form['radios'][$platform]['target_platform']);
+      }
       if (array_key_exists($package, $packages[$platform])) {
         $comparison = hosting_package_instance_version_compare($packages[$node->platform][$package], $packages[$platform][$package]);
         $display = $packages[$platform][$package]->version;
@@ -90,11 +65,58 @@ function hosting_task_migrate_form($node) {
     }
     $rows[] = $row;
   }
+  $output .= "<div class='hosting-package-comparison'>" . theme('table', $headers, $rows) . "</div>";
 
-  $form['table'] = array(
-    '#prefix' => "<div class='hosting-package-comparison'>",
-    '#value' => theme('table', $headers, $rows),
-    '#suffix' => "</div>");
+  $output .= drupal_render($form);
+  return $output;
+}
+
+function hosting_task_migrate_form($node) {
+  $site_instances = hosting_package_instances_load(
+    array('rid' => $node->nid, 'i.status' => 1));
+
+  $cols = array();
+
+  $packages = array();
+  $form['radios']['#tree'] = false;
+  $form['radios'][$node->platform]['target_platform'] = array(
+    '#type' => 'radio',
+    '#title' => t('Current'),
+    '#default_value' => $node->platform,
+    '#disabled' => TRUE,
+    "#return_value" => $node->platform,
+  );
+  foreach ($site_instances as $instance) {
+    $packages[$node->platform][$instance->package_id] = $instance;
+  }
+
+
+  $profile_platform_instances = hosting_package_instances_load(
+    array('r.type' => 'platform', 'n.nid' => $node->profile));
+  if (sizeof($profile_platform_instances) <= 1) {
+    $form['no_targets'] = array(
+      '#value' => t('<br />There are no platforms that can meet the depdendencies for this site'));
+    return $form;
+  }
+  foreach ($profile_platform_instances as $profile_instance) {
+    if ($profile_instance->rid != $node->platform) {
+      $platform = node_load($profile_instance->rid);
+      $form['radios'][$platform->nid]['target_platform'] = array(
+        '#type' => 'radio',
+        '#title' => $platform->title,
+        "#return_value" => $platform->nid,
+      );
+
+      $platform_instances = hosting_package_instances_load(
+        array('rid' => $profile_instance->iid));
+      foreach ($platform_instances as $instance) {
+        $packages[$platform->nid][$instance->package_id] = $instance;
+      }
+    }
+  }
+  $form['#node'] = $node;
+  $form['#packages'] = $packages;
+  $form['#theme'] = 'hosting_task_migrate_form';
   return $form;
   $table = array();
 
@@ -113,6 +135,7 @@ function hosting_task_migrate_form($node) {
   }
   return $form;
 }
+
 
 function hosting_migrate_hosting_post_migrate($task, $data) {
   $ref = node_load($task->rid);
