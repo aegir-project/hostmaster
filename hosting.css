@@ -131,11 +131,13 @@ tr.hosting-warning td, tr.hosting-info td, tr.hosting-error td, tr.hosting-queue
  */
 div#hosting-package-comparison th {
   border-bottom: 2px solid black !important;
-  
 }
 div#hosting-package-comparison div.form-item {
   margin: 3px 0 !important;
   spacing : 0 0 !important;
+}
+div#hosting-package-comparison div.form-item label {
+  font-weight : bold;
 }
 th.hosting-package-upgrade, td.hosting-package-upgrade,
 th.hosting-package-downgrade, td.hosting-package-downgrade,
