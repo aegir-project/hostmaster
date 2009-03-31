@@ -434,6 +434,23 @@ function hosting_site_load($node) {
   return $additions;
 }
 
+
+function hosting_nodeapi_site_delete_revision(&$node) {
+  db_query('DELETE FROM {hosting_site} WHERE vid = %d', $node->vid);
+}
+
+/**
+ * Implementation of hook_delete().
+ */
+function hosting_site_delete($node) {
+  db_query('DELETE FROM {hosting_site} WHERE nid = %d', $node->nid);
+  db_query('DELETE FROM {hosting_package_instance} WHERE rid=%d', $node->nid);
+  $result = db_query("SELECT distinct nid FROM {hosting_task} WHERE rid=%d", $node->nid);
+  while ($nid = db_fetch_object($result)) {
+    node_delete($nid->nid);
+  }
+}
+
 function hosting_site_view(&$node, $teaser = false) {
   hosting_set_breadcrumb($node);
   $node->content['info']['#prefix'] = '<div id="hosting-site-info">';

@@ -74,12 +74,12 @@ function theme_hosting_task_migrate_form(&$form) {
     }
     elseif (array_key_exists($platform, $errors)) {
       $header['class'] = 'hosting-package-downgrade';
-      $form['radios'][$platform]['target_platform']['#attributes']['disabled'] = 'disabled';
+      $form['radios'][$platform]['parameters']['target_platform']['#attributes']['disabled'] = 'disabled';
     }
     elseif (array_key_exists($platform, $warnings)) {
       $header['class'] = 'hosting-package-missing';
     }
-    $header['data'] = drupal_render($form['radios'][$platform]['target_platform']);
+    $header['data'] = drupal_render($form['radios'][$platform]['parameters']['target_platform']);
     $headers[] = $header;
   }
 
@@ -92,11 +92,11 @@ function theme_hosting_task_migrate_form(&$form) {
 }
 
 function hosting_task_migrate_form_validate($form_id, $form_values, $form, $site) {
-  if (!$form_values['target_platform']) {
-    form_set_error('target_platform', t('You need to select a valid platform to migrate your site to.'));
+  if (!$form_values['parameters']['target_platform']) {
+    form_set_error('parameters][target_platform', t('You need to select a valid platform to migrate your site to.'));
   }
-  if ($form_values['target_platform'] == $site->platform) {
-    form_set_error('target_platform', t('You may not select your current platform to migrate your site to.'));
+  if ($form_values['parameters']['target_platform'] == $site->platform) {
+    form_set_error('parameters][target_platform', t('You may not select your current platform to migrate your site to.'));
   }
 }
 function hosting_task_migrate_form($node) {
@@ -107,7 +107,8 @@ function hosting_task_migrate_form($node) {
 
   $packages = array();
   $form['radios']['#tree'] = false;
-  $form['radios'][$node->platform]['target_platform'] = array(
+  $form['radios'][$node->platform]['parameters']['#tree'] = TRUE;
+  $form['radios'][$node->platform]['parameters']['target_platform'] = array(
     '#type' => 'radio',
     '#title' => t('Current'),
     '#default_value' => $node->platform,
@@ -129,7 +130,8 @@ function hosting_task_migrate_form($node) {
   foreach ($profile_platform_instances as $profile_instance) {
     if ($profile_instance->rid != $node->platform) {
       $platform = node_load($profile_instance->rid);
-      $form['radios'][$platform->nid]['target_platform'] = array(
+      $form['radios'][$platform->nid]['parameters']['#tree'] = TRUE;
+      $form['radios'][$platform->nid]['parameters']['target_platform'] = array(
         '#type' => 'radio',
         '#title' => $platform->title,
         "#return_value" => $platform->nid,

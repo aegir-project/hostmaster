@@ -156,9 +156,6 @@ function hosting_task_restore_form($node) {
   return $form;
 }
 
-function hosting_task_confirm_form_validate($form_id, $form_values, $form, $site) {
-
-}
 
 function hosting_task_confirm_form_submit($form_id, $values) {
   hosting_add_task($values['nid'], $values['task'], $values['parameters']);
@@ -259,6 +256,7 @@ function hosting_nodeapi_task_delete_revision(&$node) {
 function hosting_task_delete($node) {
   db_query('DELETE FROM {hosting_task} WHERE nid = %d', $node->nid);
   db_query('DELETE FROM {hosting_task_arguments} WHERE nid = %d', $node->nid);
+  db_query('DELETE FROM {hosting_task_queue} WHERE nid = %d', $node->nid);
 }
 
 /**
