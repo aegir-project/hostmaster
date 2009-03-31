@@ -128,8 +128,8 @@ function hosting_get_profiles($platform = NULL) {
 function hosting_get_profile_languages($profile = NULL, $platform = NULL) {
   // load language options: if argument is null, load all language options
   if ($profile && $platform) {
-    $iid = db_result(db_query("SELECT iid FROM {hosting_package_instance} WHERE rid=%d AND package_id=%d", $platform, $profile));
-    $instance = hosting_package_instance_load($iid);
+    $instance = hosting_package_instance_load(array(
+      'rid' => $platform, 'package_id' => $profile));
     return $instance->languages;
   }
   /* 
