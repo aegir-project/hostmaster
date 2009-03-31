@@ -162,9 +162,9 @@ th.hosting-package-downgrade, td.hosting-package-downgrade {
 }
 
 th.hosting-package-same, td.hosting-package-same {
-  background-image: url(notice.png) !important; 
-  background-color: #FFE6D5 !important;
-  border: 1px solid #DDC4B3;
+  background-image: url(same.png) !important; 
+  background-color: #D9E9FF !important;
+  border: 1px solid #B7C7DD;
 }
 
 th.hosting-package-missing, td.hosting-package-missing {

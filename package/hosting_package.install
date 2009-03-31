@@ -20,6 +20,7 @@ function hosting_package_install() {
         filename longtext NOT NULL DEFAULT '',
         schema_version int(10) NOT NULL default '0',
         version longtext NOT NULL default '',
+        status int(1) NOT NULL default '0',
         PRIMARY KEY (iid)
       ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
 
