@@ -78,14 +78,12 @@ function hosting_task_provision_args($node, $task = '') {
 }
 
 function hosting_task_retry($task_id) {
-  $status = db_result(db_query("SELECT status FROM {hosting_task_queue} WHERE nid=%d", $task_id));
-  if (!($status & DRUSH_SUCCESS)) {
-    db_query("UPDATE {hosting_task_queue} SET STATUS = %d WHERE nid =%d", DRUSH_NOT_COMPLETED, $task_id);
-    $node = node_load($task_id);
+  $node = node_load($task_id);
+  if (!$node->queued) {
     drupal_set_message(t("The task is being retried and has been added to the hosting queue again"));
     hosting_task_log($node->vid, 'queue', t("The task is being retried and has been added to the hosting queue again"));
-    $node->task_status = DRUSH_NOT_COMPLETED;
     $node->revision = FALSE;
+    $node->queued = 1;
     node_save($node);
   }
 }
@@ -107,6 +105,7 @@ function hosting_add_task($nid, $type, $args = null) {
  $task->task_type = $type;
  $task->task_status = DRUSH_NOT_COMPLETED;
  $task->rid = $node->nid;
+ $task->queued = 1;
 
  #arguments, such as which backup to restore.
  if (is_array($args)) {
@@ -180,7 +179,7 @@ function hosting_task_outstanding($nid, $type) {
          {hosting_task_queue} q LEFT JOIN {hosting_task} a ON a.nid=q.nid 
       WHERE 
         a.rid = %d 
-        AND q.status = 0 
+        AND q.status = 1 
         AND a.task_type = '%s' 
         LIMIT 1", $nid, $type));
   return $return;
@@ -190,8 +189,7 @@ function hosting_task_outstanding($nid, $type) {
  * Return the amount of items still in the queue
  */
 function hosting_task_count() {
-  return db_result(db_query("SELECT COUNT(q.nid) FROM {hosting_task_queue} q 
-    LEFT JOIN {hosting_task} a ON a.nid=q.nid WHERE q.status = 0"));
+  return db_result(db_query("SELECT COUNT(nid) FROM {hosting_task_queue} q WHERE q.status = 1"));
 }
 
 function hosting_available_tasks($node) {
@@ -214,7 +212,10 @@ function hosting_task_insert($node) {
   }
   hosting_task_set_title($node); 
   if ($node->is_new) {
-    db_query("INSERT INTO {hosting_task_queue} (nid, timestamp, status) VALUES (%d, %d, %d)", $node->nid, mktime(), DRUSH_NOT_COMPLETED);
+    db_query("INSERT INTO {hosting_task_queue} (nid, timestamp, status) VALUES (%d, %d, %d)", $node->nid, mktime(), 1);
+  }
+  else {
+    db_query("UPDATE {hosting_task_queue} SET status = %d WHERE nid=%d", $node->queued, $node->nid);
   }
 }
 
@@ -233,6 +234,7 @@ function hosting_task_update($node) {
     hosting_task_set_title($node);
     db_query("UPDATE {hosting_task} SET nid=%d, task_type = '%s', rid = %d, executed=%d, task_status=%d WHERE vid=%d",
       $node->nid, $node->task_type, $node->rid, $node->executed, $node->task_status, $node->vid);
+    db_query("UPDATE {hosting_task_queue} SET status=%d WHERE nid=%d", $node->queued, $node->nid);
     if (is_array($node->task_args)) {
       # Wipe out old arguments first, since arguments could theoretically be removed.
       db_query("DELETE FROM {hosting_task_arguments} WHERE vid=%d", $node->vid);
@@ -263,7 +265,7 @@ function hosting_task_delete($node) {
  * Implementation of hook_load().
  */
 function hosting_task_load($node) {
-  $additions = db_fetch_object(db_query('SELECT task_type, executed, task_status, rid FROM {hosting_task} WHERE vid = %d', $node->vid));
+  $additions = db_fetch_object(db_query('SELECT task_type, executed, task_status, rid, q.status as queued FROM {hosting_task} t LEFT JOIN {hosting_task_queue} q ON t.nid=q.nid WHERE vid = %d', $node->vid));
   $result = db_query("SELECT name, value FROM {hosting_task_arguments} WHERE vid=%d", $node->vid);
   if (db_num_rows($result)) {
     while ($arg = db_fetch_object($result)) {
@@ -308,8 +310,7 @@ function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
     '#value' => _hosting_node_link($node->rid),
   );
 
-  $in_queue = _hosting_task_in_queue($node->nid); 
-  if (!$in_queue) {
+  if (!$node->queued) {
     $node->content['info']['executed'] = array(
       '#type' => 'item',
       '#title' => t('Executed'),
@@ -346,9 +347,7 @@ function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
   }
   $node->content['info']['#suffix'] = '</div>';
 
-  if (user_access('retry failed tasks') 
-    && !in_array($node->task_status, array(DRUSH_NOT_COMPLETED, DRUSH_SUCCESS))
-    && !$in_queue) {
+  if (user_access('retry failed tasks') && !$node->queued && ($node->task_status != DRUSH_SUCCESS)) {
     $node->content['retry'] = array(
       '#type' => 'markup',
       '#value' => drupal_get_form('hosting_task_retry_form', $node->nid),
@@ -447,7 +446,7 @@ function hosting_get_tasks($filter_by = null, $filter_value = null, $count = 5, 
     $cond = ' AND t.' . $filter_by . ' = %d';
     $args[] = $filter_value;
   }
-  $result = pager_query(db_rewrite_sql("SELECT *, t.task_status FROM {node} n left join {hosting_task} t on n.vid=t.vid WHERE type='%s'" . $cond . " ORDER BY n.nid DESC"), $count, $element, NULL, $args);
+  $result = pager_query(db_rewrite_sql("SELECT *, t.task_status,q.status as queued FROM {node} n left join {hosting_task} t on n.vid=t.vid LEFT JOIN {hosting_task_queue} q ON t.nid=q.nid WHERE type='%s'" . $cond . " ORDER BY n.nid DESC"), $count, $element, NULL, $args);
   
   while ($row = db_fetch_object($result)) {
     $nodes[] = $row;
@@ -533,16 +532,6 @@ function hosting_task_list_embedded($filter_by = null, $filter_value = null) {
   return _hosting_task_list($filter_by, $filter_value, 5, 10, 'task_type', array('created'));
 } 
 
-function _hosting_task_list_class($status) {
-  if ($status == DRUSH_NOT_COMPLETED) {
-    return 'hosting-queue';
-  }
-  if ($status & DRUSH_SUCCESS) {
-    return 'hosting-success';
-  }
-  return 'hosting-error';
-}
-
 /**
  * Theme functions
  */
@@ -569,19 +558,29 @@ function _hosting_task_list($filter_by, $filter_value, $count = 5, $element = 0,
 
      if (!in_array('actions', $skip) && user_access('retry failed tasks')) {
        $headers[t('Actions')] = '';
-       if (!in_array($node->task_status, array(DRUSH_NOT_COMPLETED, DRUSH_SUCCESS))) {
-         if (!_hosting_task_in_queue($node->nid)) {
-           $row['actions'] = array(
-             'data' => drupal_get_form('hosting_task_retry_form', $node->nid),
-             'class' => 'hosting-task-retry'
-           );
-         }
+
+      if (($node->task_status != DRUSH_SUCCESS) && !$node->queued) {
+        $row['actions'] = array(
+          'data' => drupal_get_form('hosting_task_retry_form', $node->nid),
+          'class' => 'hosting-task-retry'
+        );
        }
        else {
          $row['actions'] = '';
        }
-     } 
-     $rows[] = array('data' => $row, 'class' => _hosting_task_list_class($node->task_status));
+     }
+
+     if ($node->queued) {
+       $class = 'hosting-queue';
+     }
+     elseif ($node->task_status == DRUSH_SUCCESS) {
+       $class = 'hosting-success';
+     }
+     else {
+       $class = 'hosting-error';
+     }
+
+     $rows[] = array('data' => $row, 'class' => $class);
    }
 
    $output = theme('table', array_keys($headers), $rows, array('class' => 'hosting-table'));

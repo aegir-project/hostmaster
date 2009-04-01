@@ -56,6 +56,25 @@ function hosting_task_update_1() {
   $ret[] = update_sql("ALTER TABLE {hosting_task_log} 
     DROP COLUMN severity");
 
+  return $ret;
+}
 
+/**
+ * Reset the task_status of all currently (according to us) in queue tasks
+ *
+ * This will force them to be re-evaluated if the queue status doesn't match the task status
+ */
+function hosting_task_update_2() {
+  $ret = array();
+  variable_set('hosting_dispatch_enabled', FALSE);
+  // Put the queued items separately for a bit.
+  db_query("UPDATE {hosting_task_queue} SET status = 100 WHERE status = 0");
+
+  // Remove all the other items from the queue.
+  db_query("UPDATE {hosting_task_queue} SET status = 0 WHERE status <> 100");
+
+  // Add all the queued items back into the queue.
+  db_query("UPDATE {hosting_task_queue} SET status = 1 WHERE status = 100");
+  variable_set('hosting_dispatch_enabled', TRUE);
   return $ret;
 }

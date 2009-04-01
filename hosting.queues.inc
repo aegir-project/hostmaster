@@ -11,7 +11,7 @@
 function hosting_dispatch() {
   $now = mktime();
   variable_set("hosting_dispatch_last_run", $now);
-  hosting_log('hosting_dispatch', t("dispatching queues"));
+  drush_log('hosting_dispatch', t("dispatching queues"));
   $platform = node_load(HOSTING_OWN_PLATFORM);
   $root = $platform->publish_path;
 
@@ -20,21 +20,16 @@ function hosting_dispatch() {
     foreach ($queues as $queue => $info) {
       if ($info['enabled']) {
         if (($now - $info["last"]) >= $info["calc_frequency"]) {
-          $data = array('items' => $info['calc_items'], 'root' => $root, 'quiet' => TRUE);
-          $cmd = _drush_backend_generate_command("hosting " . $queue, $data);
-          $cmd .= ' &';
-
-          hosting_log('hosting_dispatch', t("dispatching command !cmd", array('!cmd' => $cmd)));
-          system($cmd);
+          drush_backend_fork("hosting", array($queue, 'items' => $info['calc_items']));
         } else {
-          hosting_log(false, t("too early for queue @queue", array('@queue' => $queue)));
+          drush_log(dt("too early for queue @queue", array('@queue' => $queue)));
         }
       } else {
-        hosting_log(false, t("queue @queue disabled", array('@queue' => $queue)));
+        drush_log(dt("queue @queue disabled", array('@queue' => $queue)));
       }
     }
   } else {
-    hosting_log('hosting_dispatch', t("dispatching disabled"));
+    drush_log(dt("dispatching disabled"));
   }
 }
 
@@ -146,14 +141,6 @@ function hosting_run_queue() {
 }
 
 /**
- * Generate a drush command.
- *
- * Generates a drush command for either the provision or hosting system.
- */
-function hosting_generate_command($task) {
-}
-
-/**
  * Retrieve a list of outstanding tasks.
  *
  * @param limit
@@ -163,25 +150,13 @@ function hosting_generate_command($task) {
  */
 function _hosting_get_new_tasks($limit = 20) {
   $return = array();
-  $result = db_query("SELECT nid FROM {hosting_task_queue} WHERE status=%d ORDER BY timestamp, nid ASC LIMIT %d", DRUSH_NOT_COMPLETED, $limit);
+  $result = db_query("SELECT nid FROM {hosting_task_queue} WHERE status=1 ORDER BY timestamp, nid ASC LIMIT %d", $limit);
   while ($node = db_fetch_object($result)) {
     $return[$node->nid] =  node_load($node->nid);
   }
   return $return;
 }
 
-/**
- * Check if a certain task is still in the queue
- * 
- * @param nid
- *    The nid of the task being checked
- * @return
- *    A boolean depending on whether the task is still queued.
- */
-
-function _hosting_task_in_queue($nid) {
-  return (db_result(db_query("SELECT nid FROM {hosting_task_queue} WHERE status=%d AND nid=%d", DRUSH_NOT_COMPLETED, $nid))) ? TRUE : FALSE;
-}
 /**
  * Process the hosting task queue.
  *
@@ -190,10 +165,10 @@ function _hosting_task_in_queue($nid) {
 function hosting_tasks_queue($count = 20) {
   global $provision_errors;
 
-  hosting_log('hosting_tasks', t("Running tasks queue"));
+  drush_log(dt("Running tasks queue"));
   $tasks = _hosting_get_new_tasks($count);
   foreach ($tasks as $task) {
-    hosting_process_task($task);
+     drush_backend_fork("hosting task", array($task->nid));
   }
 }
 
@@ -201,7 +176,7 @@ function hosting_process_task($task) {
   if (is_numeric($task)) {
     $task = node_load($task);
   }
-  if (($task->type == 'task') && (($task->task_status != DRUSH_SUCCESS) || (drush_get_option('force')))) {
+  if ($task->type == 'task') {
     // create a new revision
     $task->changed = mktime();
     $task->executed = mktime();
@@ -227,7 +202,6 @@ function hosting_process_task($task) {
     $cmd = _drush_backend_generate_command("provision " . $task->task_type, $data, 'GET', $drush_path, $hostname, $username);
     hosting_task_log($task->vid, 'command', 'Running:' . escapeshellcmd("$cmd"));
     $output = _drush_backend_invoke($cmd, $data, FALSE);
-
     if (!is_array($output)) {
       hosting_task_log($task->vid, 'error', t("The command could not be executed succesfully"));
       hosting_task_log($task->vid, 'notice', $output);
@@ -236,11 +210,14 @@ function hosting_process_task($task) {
     else {
       $code = $output['error_status'];
     }
+    $code = ($code != DRUSH_SUCCESS) ? DRUSH_FRAMEWORK_ERROR : DRUSH_SUCCESS;
+    drush_log("Task returned $code");
 
     _hosting_backend_integrate($task, $output);
 
     // record status 
     $task->task_status = $code;
+    $task->queued = 0;
     // New revision is created at the beginning of function.
     $task->revision = false;
     node_save($task);
@@ -254,7 +231,6 @@ function hosting_process_task($task) {
     }
     // remove from queue
     hosting_task_log($task->vid, "queue", t("Removing task from hosting queue"));
-    db_query("UPDATE {hosting_task_queue} SET status=%d WHERE nid=%d", $code, $task->nid);
   }
 }
 

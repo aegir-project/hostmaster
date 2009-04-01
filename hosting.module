@@ -522,11 +522,6 @@ function hosting_set_breadcrumb($node) {
   drupal_set_breadcrumb($breadcrumbs);
 }
 
-function hosting_log($type, $message, $severity = 0) {
-  if (DRUSH_VERBOSE) print "$message\n";
-  if ($type) watchdog($type, $message, $severity);
-}
-
 /**
  * Page callback
  *
@@ -629,7 +624,7 @@ function hosting_queues_configure_submit($form_id, $values) {
       variable_set("hosting_queue_" . $queue . "_enabled", $values[$queue]['enabled']);
       variable_set("hosting_queue_" . $queue . "_frequency", $values[$queue]['frequency']['ticks'] * $values[$queue]['frequency']['unit']);
       if ($info['type'] == 'serial') {
-        variable_set("hosting_queue_" . $queue . "_items", $values[$queue]['items']);
+        variable_set("hosting_queue_" . $queue . "_items", $values[$queue]['frequency']['items']);
       }
 
     }

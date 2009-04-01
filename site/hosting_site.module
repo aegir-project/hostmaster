@@ -175,12 +175,16 @@ function hosting_import_site($site_id, $data, $status, $platform = HOSTING_DEFAU
   // This should really be handled via a hook system, to allow hosting_alias to see these fields, but later.
   #$site->aliases = $data['aliases'] ? $data['aliases'] : array();
 
-  // need to build some error tolerance in here
-  $profile = hosting_get_package_instance($platform, $data['profile']);
+  $profile = hosting_package_instance_load(array(
+    'rid' => $platform,
+    'short_name' => $data['profile']
+  ));
   if (!$profile) {
-   $profile = hosting_get_package_instance($platform, 'default');
+    $profile = hosting_package_instance_load(array(
+       'rid' => $platform,
+       'short_name' => 'default'));
   }
-  $site->profile = $profile->nid;
+  $site->profile = $profile->package_id;
   $site->site_status = $status;
 
   // cast site object to array, will be using various array_* functions on the data.
