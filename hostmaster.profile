@@ -101,26 +101,23 @@ function hostmaster_profile_final() {
 
   $node = new stdClass();
   $node->uid = 1;
-  $node->type = 'package_release';
-  $node->title = 'Drupal ' . VERSION;
-  $node->package = $package_id;
-  $node->version = VERSION;
-  $node->schema_version = drupal_get_installed_schema_version('system');
-  $node->status = 1;
-  node_save($node);
-  $release_id = $node->nid;
-
-  $node = new stdClass();
-  $node->uid = 1;
   $node->type = 'platform';
   $node->title = $_SERVER['HTTP_HOST'] . ' (Drupal ' . VERSION . ')';
   $node->publish_path = $_SERVER['DOCUMENT_ROOT'];
   $node->web_server = variable_get('hosting_default_web_server', 3);
-  $node->release_id = $release_id;
   $node->status = 1;
   node_save($node);
   variable_set('hosting_default_platform', $node->nid);
   variable_set('hosting_own_platform', $node->nid);
+
+
+  $instance = new stdClass();
+  $instance->rid = $node->nid;
+  $instance->version = VERSION;
+  $instance->schema_version = drupal_get_installed_schema_version('system');
+  $instance->package_id = $package_id;
+  $instance->status = 0;
+  hosting_package_instance_save($instance);
 
 
   #initial configuration of hostmaster - todo
