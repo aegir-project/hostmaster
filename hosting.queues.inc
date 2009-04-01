@@ -199,7 +199,7 @@ function hosting_process_task($task) {
     $drush_path = $data['drush_path'];
     $data['root'] = $data['publish_path'];
 
-    $cmd = _drush_backend_generate_command("provision " . $task->task_type, $data, 'GET', $drush_path, $hostname, $username);
+    $cmd = _drush_backend_generate_command("provision " . $task->task_type, $data, 'POST', $drush_path, $hostname, $username);
     hosting_task_log($task->vid, 'command', 'Running:' . escapeshellcmd("$cmd"));
     $output = _drush_backend_invoke($cmd, $data, FALSE);
     if (!is_array($output)) {
