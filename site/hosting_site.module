@@ -849,3 +849,18 @@ function hosting_site_hosting_failed_verify($task, $data, $code) {
 
 }
 
+/**
+ * Implementation of the hosting_failed_install hook
+ */
+function hosting_site_hosting_failed_import($task, $data, $code) {
+  $node = node_load($task->rid);
+
+  if ($node->type == 'site') {
+    $node->no_verify = TRUE;
+    $node->verified = 0;
+    $node->site_status = HOSTING_SITE_DISABLED;
+    node_save($node);
+  }
+
+}
+

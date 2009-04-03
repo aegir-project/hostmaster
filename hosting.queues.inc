@@ -245,7 +245,6 @@ function hosting_queues_get_arguments($task) {
   return $data;
 }
 
-
 function _hosting_backend_integrate($task, $data = array()) {
   if (is_array($data)) {
     foreach ((array) $data['log'] as $log) {
