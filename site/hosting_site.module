@@ -416,8 +416,8 @@ function hosting_site_insert(&$node) {
   $node->client = $client->nid;
   $node->language = ($node->language) ? $node->language : 'en';
 
-  db_query("INSERT INTO {hosting_site} (vid, nid, client, db_server, platform, profile, language, last_cron, status) VALUES (%d, %d, %d, %d, %d, %d, '%s', %d, %d)",
-    $node->vid, $node->nid, $node->client, $node->db_server, $node->platform, $node->profile, $node->language, $node->last_cron, $node->site_status);
+  db_query("INSERT INTO {hosting_site} (vid, nid, client, db_server, platform, profile, language, last_cron, status, verified) VALUES (%d, %d, %d, %d, %d, %d, '%s', %d, %d, %d)",
+    $node->vid, $node->nid, $node->client, $node->db_server, $node->platform, $node->profile, $node->language, $node->last_cron, $node->site_status, $node->verified);
   if ((!$node->old_vid)) {
     if ($node->import) {
       hosting_add_task($node->nid, 'import');
@@ -436,8 +436,8 @@ function hosting_site_update(&$node) {
   else {
     $client = hosting_get_client($node->client);
     $node->client = $client->nid;
-    db_query("UPDATE {hosting_site} SET client = %d, db_server = %d, platform = %d, last_cron = %d, status = %d, profile = %d, language = '%s' WHERE vid=%d",
-              $node->client, $node->db_server, $node->platform, $node->last_cron, $node->site_status, $node->profile, $node->language, $node->vid);
+    db_query("UPDATE {hosting_site} SET client = %d, db_server = %d, platform = %d, last_cron = %d, status = %d, profile = %d, language = '%s', verified = %d WHERE vid=%d",
+              $node->client, $node->db_server, $node->platform, $node->last_cron, $node->site_status, $node->profile, $node->language, $node->verified, $node->vid);
   }
   if (!$node->no_verify) {
     hosting_add_task($node->nid, 'verify');
@@ -445,7 +445,7 @@ function hosting_site_update(&$node) {
 }
 
 function hosting_site_load($node) {
-  $additions = db_fetch_object(db_query('SELECT  client, db_server, platform, profile, language, last_cron, status  AS site_status FROM {hosting_site} WHERE vid = %d', $node->vid));
+  $additions = db_fetch_object(db_query('SELECT  client, db_server, platform, profile, language, last_cron, status AS site_status, verified FROM {hosting_site} WHERE vid = %d', $node->vid));
   return $additions;
 }
 
@@ -485,6 +485,12 @@ function hosting_site_view(&$node, $teaser = false) {
       '#weight' => 5
     );
   }
+
+  $node->content['info']['verified'] = array(
+    '#type' => 'item',
+    '#title' => t('Verified'),
+    '#value' => hosting_format_interval($node->verified),
+  );
 
   $node->content['info']['platform'] = array(
     '#type' => 'item',
@@ -677,7 +683,7 @@ function hosting_site_list($filter_by = null, $filter_value = null) {
     $header[] = array('data' => t('Platform'), 'field' => 'platform');
   }
 
-  $sql = "SELECT n.nid, n.title, n.created, s.status as site_status, profile, language, platform FROM {node} n left join {hosting_site} s ON n.vid=s.vid WHERE type='%s'" . $cond;
+  $sql = "SELECT n.nid, n.title, n.created, s.status as site_status, profile, language, platform, verified FROM {node} n left join {hosting_site} s ON n.vid=s.vid WHERE type='%s'" . $cond;
   $sql .= tablesort_sql($header);
 
   // @TODO hide deleted sites
@@ -709,6 +715,10 @@ function _hosting_site_list_class($node) {
     HOSTING_SITE_DELETED => "hosting-error",
     HOSTING_SITE_DISABLED => "hosting-error",
   );
+  if (($node->site_status == HOSTING_SITE_ENABLED) && (!$node->verified)) {
+    return 'hosting-warning';
+  }
+
   return $classes[$node->site_status];
 }
 
@@ -814,10 +824,28 @@ function hosting_site_hosting_post_verify($task, $data) {
   $node = node_load($task->rid);
 
   if ($node->type == 'site') {
+    $node->verified = mktime();
+    $node->no_verify = TRUE;
+    node_save($node);
+
     $context = $data['context'];
     $packages = $context['packages'];
     hosting_package_sync($packages);
     hosting_package_instance_sync($node->nid, $packages);
   }
+}
+
+/**
+ * Implementation of the hosting_failed_install hook
+ */
+function hosting_site_hosting_failed_verify($task, $data, $code) {
+  $node = node_load($task->rid);
+
+  if ($node->type == 'site') {
+    $node->no_verify = TRUE;
+    $node->verified = 0;
+    node_save($node);
+  }
+
 }
 

@@ -14,6 +14,7 @@ function hosting_site_install() {
         profile int(11) NOT NULL default '0',
         language VARCHAR(10) NOT NULL default 'en',
         last_cron int(10) default NULL,
+        verified int(10) NOT NULL default '0',
         status tinyint NOT NULL default '0',
         PRIMARY KEY  (vid)
       ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
@@ -82,5 +83,16 @@ function hosting_site_update_3() {
   $ret[] = update_sql("DROP TABLE {hosting_site_statuses}");
 
   // Now we rid ourself of 'enabled', we really care about installed.
+  return $ret;
+}
+
+/**
+ * Add verified timestamp to the site
+ */
+function hosting_site_update_4() {
+  $ret = array();
+  $now = mktime();
+  $ret[] = update_sql("ALTER TABLE {hosting_site} ADD COLUMN verified int(10) NOT NULL default '0'");
+  db_query("UPDATE {hosting_site} SET verified=%d WHERE status=1", $now);
   return $ret;
 }
