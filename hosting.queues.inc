@@ -200,7 +200,7 @@ function hosting_process_task($task) {
     $data['root'] = $data['publish_path'];
 
     $cmd = _drush_backend_generate_command("provision " . $task->task_type, $data, 'POST', $drush_path, $hostname, $username);
-    hosting_task_log($task->vid, 'command', 'Running:' . escapeshellcmd("$cmd"));
+    hosting_task_log($task->vid, 'command', t('Task dispatcher running: %cmd', array('%cmd' => escapeshellcmd("$cmd"))));
     $output = _drush_backend_invoke($cmd, $data, FALSE);
     if (!is_array($output)) {
       hosting_task_log($task->vid, 'error', t("The command could not be executed succesfully"));
