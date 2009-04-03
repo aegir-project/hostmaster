@@ -14,7 +14,7 @@ function hosting_site_install() {
         profile int(11) NOT NULL default '0',
         language VARCHAR(10) NOT NULL default 'en',
         last_cron int(10) default NULL,
-        status tinyint unsigned NOT NULL default '0',
+        status tinyint NOT NULL default '0',
         PRIMARY KEY  (vid)
       ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
 
@@ -50,5 +50,37 @@ function hosting_site_update_2() {
   while ($obj = db_fetch_object($result)) {
     hosting_task_retry($obj->nid);
   }
+  return $ret;
+}
+
+/**
+ * Move away from bitmasks for the status field.
+ */
+function hosting_site_update_3() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE {hosting_site} CHANGE COLUMN status status int(11) NOT NULL default '0'");
+
+  $ret[] = update_sql("CREATE TEMPORARY TABLE {hosting_site_statuses} SELECT nid, 
+    (status&4) as deleted, NOT (status&2) AS disabled, status&1 AS installed FROM {hosting_site}");
+
+
+  // Reset them all to queued
+  $ret[] = update_sql("UPDATE {hosting_site} SET status = 0");
+
+  // First, we get rid of the deleted sites.
+  $ret[] = update_sql("UPDATE {hosting_site} SET status = -2 WHERE nid in (SELECT nid FROM {hosting_site_statuses} WHERE deleted > 0)");
+  $ret[] = update_sql("DELETE FROM {hosting_site_statuses} WHERE deleted > 0");
+
+  // Then the disabled sites.
+  $ret[] = update_sql("UPDATE {hosting_site} SET status = -1 WHERE nid in (SELECT nid FROM {hosting_site_statuses} WHERE disabled > 0)");
+  $ret[] = update_sql("DELETE FROM {hosting_site_statuses} WHERE disabled > 0");
+
+  // Then the installed sites, which are the same as 'enabled' sites.
+  $ret[] = update_sql("UPDATE {hosting_site} SET status = 1 WHERE nid in (SELECT nid FROM {hosting_site_statuses} WHERE installed > 0)");
+  $ret[] = update_sql("DELETE FROM {hosting_site_statuses} WHERE installed > 0");
+
+  $ret[] = update_sql("DROP TABLE {hosting_site_statuses}");
+
+  // Now we rid ourself of 'enabled', we really care about installed.
   return $ret;
 }

@@ -1,6 +1,9 @@
 <?php
 
-include_once('hosting_site_status.inc');
+define('HOSTING_SITE_DELETED', -2);
+define('HOSTING_SITE_DISABLED', -1);
+define('HOSTING_SITE_QUEUED', 0);
+define('HOSTING_SITE_ENABLED', 1);
 
 /**
  * Implementation of hook_node_info
@@ -22,10 +25,10 @@ function hosting_site_node_info() {
 function hosting_site_hosting_tasks($node) {
   $options = array();
   if ($node->type == 'site') {
-    if (hosting_task_outstanding($node->nid, 'delete') || ($node->site_status & HOSTING_SITE_DELETED)) {
+    if (hosting_task_outstanding($node->nid, 'delete') || ($node->site_status ==  HOSTING_SITE_DELETED)) {
       return $options;
     }
-    if (hosting_task_outstanding($node->nid, 'enable') || ($node->site_status & HOSTING_SITE_ENABLED)) {
+    if (hosting_task_outstanding($node->nid, 'enable') || ($node->site_status == HOSTING_SITE_ENABLED)) {
       $options['backup'] = array(
         'title' => t('Backup'),
         'description' => t('Generate a backup of this site that can be restored to at any time'),
@@ -130,7 +133,7 @@ function hosting_site_count() {
  */
 function hosting_get_sites_by_status($platform, $status) {
   $nodes = array();
-  $result = db_query("SELECT nid FROM {hosting_site} WHERE platform=%d AND (status & %d)", $platform, $status);
+  $result = db_query("SELECT nid FROM {hosting_site} WHERE platform=%d AND status == %d", $platform, $status);
   while ($nid = db_fetch_object($result)) {
     $nodes[$nid->nid] = node_load($nid->nid);
   }
@@ -142,7 +145,7 @@ function hosting_get_sites_by_status($platform, $status) {
  * Retrieve a node based on the url
  */
 function hosting_get_site_by_url($url) {
-  $nid = db_result(db_query("SELECT nid FROM {node} WHERE title='%s' AND type = 'site' AND status=1", $url));
+  $nid = db_result(db_query("SELECT nid FROM {node} WHERE title='%s' AND type = 'site' AND NOT (status=%d)", $url, HOSTING_SITE_DELETED));
   if ($nid) {
     return node_load($nid);
   }
@@ -152,7 +155,7 @@ function hosting_get_site_by_url($url) {
 /**
  * Helper function to generate new site node during import
  */
-function hosting_import_site($site_id, $data, $status, $platform = HOSTING_DEFAULT_PLATFORM) {
+function hosting_import_site($site_id, $data, $platform = HOSTING_DEFAULT_PLATFORM) {
   global $user;
   $client = node_load(HOSTING_DEFAULT_CLIENT);
 
@@ -166,6 +169,7 @@ function hosting_import_site($site_id, $data, $status, $platform = HOSTING_DEFAU
   $site->nid = $site_id;
   $site->uid = $client->uid;
   $site->status = 1;
+  $site->site_status = 1;
   $site->platform = $platform;
   $site->client = $client->nid;
   $db_server = hosting_get_db_server($data['db_id']);
@@ -185,7 +189,6 @@ function hosting_import_site($site_id, $data, $status, $platform = HOSTING_DEFAU
        'short_name' => 'default'));
   }
   $site->profile = $profile->package_id;
-  $site->site_status = $status;
 
   // cast site object to array, will be using various array_* functions on the data.
   $site = (array) $site;
@@ -210,13 +213,15 @@ function hosting_import_site($site_id, $data, $status, $platform = HOSTING_DEFAU
  * implementation of the hosting_post_install hook
  */
 function hosting_site_hosting_post_install($task, $data) {
-  db_query("UPDATE {hosting_site} SET status=(status|%d|%d)&~%d WHERE nid=%d", HOSTING_SITE_INSTALLED, HOSTING_SITE_ENABLED, HOSTING_SITE_DELETED, $task->rid);
   $node = node_load($task->rid);
   if ($node->type == 'site') {
     $context = $data['context'];
     $packages = $context['packages'];
     hosting_package_sync($packages);
     hosting_package_instance_sync($node->nid, $packages);
+    $node->site_status = HOSTING_SITE_ENABLED;
+    $node->no_verify = TRUE;
+    node_save($node);
   }
 }
 
@@ -230,6 +235,12 @@ function hosting_site_hosting_failed_install($task, $data, $code) {
     hosting_task_log($task->vid, 'notice', t("This site appears to be installed already. Generating an import task."));
     hosting_add_task($task->rid, 'import');
   }
+  else {
+    $node = node_load($task->rid);
+    $node->no_verify = TRUE;
+    $node->site_status = HOSTING_SITE_DISABLED;
+    node_save($node);
+  }
 }
 
 /**
@@ -242,7 +253,9 @@ function hosting_site_hosting_post_disable($task, $data) {
     $platform = node_load($ref->platform);
     hosting_site_add_backup($ref->nid, $platform->web_server, $data['context']['backup_file'], t('Generated before being disabled'));
   }
-  db_query("UPDATE {hosting_site} SET status=status&%d WHERE nid=%d", HOSTING_SITE_DISABLED, $task->rid);
+  $ref->site_status = HOSTING_SITE_DISABLED;
+  $ref->no_verify = TRUE;
+  node_save($ref);
 }
 
 /**
@@ -261,7 +274,9 @@ function hosting_site_hosting_post_restore($task, $data) {
  * implementation of hook_hosting_post_enable
  */
 function hosting_site_hosting_post_enable($task, $data) {
-  db_query("UPDATE {hosting_site} SET status=status|%d WHERE nid=%d", HOSTING_SITE_ENABLED, $task->rid);
+  $node = node_load($task->rid);
+  $node->site_status = HOSTING_SITE_ENABLED;
+  node_save($node);
 }
 
 /**
@@ -397,10 +412,6 @@ function hosting_site_submit(&$node) {
 }
 
 function hosting_site_insert(&$node) {
-  if (!($node->site_status & HOSTING_SITE_IMPORTED)) {
-    $node->site_status = HOSTING_SITE_ENABLED; # HOSTING_SITE_NOTINSTALLED implicit
-  }
-  
   $client = hosting_get_client($node->client);
   $node->client = $client->nid;
   $node->language = ($node->language) ? $node->language : 'en';
@@ -408,7 +419,7 @@ function hosting_site_insert(&$node) {
   db_query("INSERT INTO {hosting_site} (vid, nid, client, db_server, platform, profile, language, last_cron, status) VALUES (%d, %d, %d, %d, %d, %d, '%s', %d, %d)",
     $node->vid, $node->nid, $node->client, $node->db_server, $node->platform, $node->profile, $node->language, $node->last_cron, $node->site_status);
   if ((!$node->old_vid)) {
-    if ($node->site_status & HOSTING_SITE_IMPORTED) {
+    if ($node->import) {
       hosting_add_task($node->nid, 'import');
     }
     else {
@@ -458,7 +469,7 @@ function hosting_site_delete($node) {
 function hosting_site_view(&$node, $teaser = false) {
   hosting_set_breadcrumb($node);
   $node->content['info']['#prefix'] = '<div id="hosting-site-info">';
-  if (($node->site_status & HOSTING_SITE_ENABLED) && ($node->site_status & HOSTING_SITE_INSTALLED)) {
+  if ($node->site_status == HOSTING_SITE_ENABLED) {
     $node->content['info']['link'] = array(
       '#value' => l(t('Go to site'),
       'http://' . $node->title),
@@ -504,15 +515,10 @@ function hosting_site_view(&$node, $teaser = false) {
   }
 
   if ($node->nid) { 
-    $site_status = array(hosting_site_status_output($node->site_status));
-    $install_status = hosting_site_task_status($node->nid);
-    if ($install_status) {
-      $site_status[] = $install_status;
-    }
     $node->content['info']['status'] = array(
       '#type' => 'item',
       '#title' => t('Status'),
-      '#value' => join(', ', $site_status),
+      '#value' => _hosting_site_status($node),
     );
   }
 
@@ -528,6 +534,16 @@ function hosting_site_view(&$node, $teaser = false) {
     );
   }
   return $node;
+}
+
+function _hosting_site_status($node) {
+  static $labels = array(
+    HOSTING_SITE_QUEUED => "Queued",
+    HOSTING_SITE_ENABLED => "Enabled",
+    HOSTING_SITE_DELETED => "Deleted",
+    HOSTING_SITE_DISABLED => "Disabled",
+  );
+  return $labels[$node->site_status];
 }
 
 /**
@@ -617,9 +633,9 @@ function hosting_site_allow_domain($url, $nid=null) {
   $query = "SELECT COUNT(n.nid) FROM 
     {node} n JOIN {hosting_site} h 
     ON n.nid = h.nid WHERE type='site'
-    AND title='%s' AND h.status & %d";
+    AND title='%s' AND h.status <> %d";
   $args[] = $url;
-  $args[] = ~HOSTING_SITE_DELETED;
+  $args[] = HOSTING_SITE_DELETED;
 
   if ($nid) {
     $query .= ' AND n.nid <> %d';
@@ -661,7 +677,7 @@ function hosting_site_list($filter_by = null, $filter_value = null) {
     $header[] = array('data' => t('Platform'), 'field' => 'platform');
   }
 
-  $sql = "SELECT n.nid, n.title, n.created, s.status, profile, language, platform FROM {node} n left join {hosting_site} s ON n.vid=s.vid WHERE type='%s'" . $cond;
+  $sql = "SELECT n.nid, n.title, n.created, s.status as site_status, profile, language, platform FROM {node} n left join {hosting_site} s ON n.vid=s.vid WHERE type='%s'" . $cond;
   $sql .= tablesort_sql($header);
 
   // @TODO hide deleted sites
@@ -687,21 +703,20 @@ function hosting_site_list($filter_by = null, $filter_value = null) {
 }
 
 function _hosting_site_list_class($node) {
-  $task_status = hosting_task_status('rid', $node->nid, ($node->status & HOSTING_SITE_IMPORTED) ? 'import' : 'install');
-  if ($node->status & HOSTING_SITE_DELETED || ($task_status != DRUSH_NOT_COMPLETED && $task_status != DRUSH_SUCCESS)) {
-    return 'hosting-error';
-  }
-  if ($node->status & HOSTING_SITE_INSTALLED) {
-    return 'hosting-success';
-  }
-  return 'hosting-queue';
+  static $classes = array(
+    HOSTING_SITE_QUEUED => "hosting-queue",
+    HOSTING_SITE_ENABLED => "hosting-success",
+    HOSTING_SITE_DELETED => "hosting-error",
+    HOSTING_SITE_DISABLED => "hosting-error",
+  );
+  return $classes[$node->site_status];
 }
 
 /**
  * Page handler for displaying list of hosted sites on front page
  */
 function hosting_sites() {
-  if ($list = hosting_site_list('status', (HOSTING_SITE_INSTALLED) & ~HOSTING_SITE_DELETED)) {
+  if ($list = hosting_site_list()) {
     return $list;
   }
   $create_site_link = l(t('Create a site now?'), 'node/add/site');
@@ -792,7 +807,7 @@ function _hosting_site_form_populate($element, $value, $value2 = null) {
 function hosting_site_hosting_post_import($task, $data) {
   $site = node_load($task->rid);
   
-  hosting_import_site($site->nid, $data['context'], HOSTING_SITE_ENABLED | HOSTING_SITE_INSTALLED | HOSTING_SITE_IMPORTED, $site->platform);
+  hosting_import_site($site->nid, $data['context'], $site->platform);
 }
 
 function hosting_site_hosting_post_verify($task, $data) {
