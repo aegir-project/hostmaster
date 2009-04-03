@@ -171,6 +171,7 @@ function hosting_migrate_hosting_post_migrate($task, $data) {
   $ref = node_load($task->rid);
   if ($ref->type == 'site') {
     $target = $task->task_args['target_platform'];
+    $ref->verified = 0;
     $ref->platform = $target;
     node_save($ref);
   }

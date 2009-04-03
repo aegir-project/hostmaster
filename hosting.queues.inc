@@ -238,10 +238,12 @@ function hosting_queues_get_arguments($task) {
   $data = module_invoke_all('provision_args', $task, $task->task_type); 
   foreach ($data as $key => $value) {
     if (substr($key, 0, 1) == '#') {
-      $data[str_replace('#', '', $key)] = $value;
+      $data[(int) str_replace('#', '', $key)] = $value;
       unset($data[$key]);
     }
   }
+  
+  ksort($data);
   return $data;
 }
 
