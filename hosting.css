@@ -2,7 +2,7 @@
  *  Overview 
  */
 
-#hosting-platform-info, #hosting-site-info, #hosting-task-info {
+#hosting-platform-info, #hosting-site-info, #hosting-task-info, #hosting-site-edit-info {
   float:left;
   width:35%;
   padding: 2% 5%;
@@ -11,17 +11,26 @@
   border:solid 3px #CCC;
 }
 
-#hosting-task-info {
+#hosting-task-info, #hosting-site-edit-info {
   float:none;
   width:auto;
 }
 
-#hosting-task-info .form-item {
+#hosting-site-edit-info .form-item, #hosting-task-info .form-item {
   float:left;
   margin:0 3em  0 0;
 }
 
-#hosting-platform-info label, #hosting-site-info label, #hosting-task-info label {
+#hosting-site-edit-info {
+  margin: 10px 0;
+  padding: 2% ;
+}
+
+#hosting-site-edit-info .form-item {
+  width: 200px;
+}
+
+#hosting-site-edit-info label, #hosting-platform-info label, #hosting-site-info label, #hosting-task-info label {
   float:left;
   margin:0 5px 0 0;
 }

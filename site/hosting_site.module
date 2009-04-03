@@ -296,7 +296,11 @@ function hosting_site_form($node) {
   drupal_add_css(drupal_get_path('module', 'hosting_site') . '/hosting_site_form.css');
 
   $type = node_get_types('type', $node);
-  
+
+  if ($node->nid) {
+    $form['info']['#prefix'] = '<div class="clear-block" id="hosting-site-edit-info">';
+    $form['info']['#suffix'] = '<br /></div>';
+  }
   // We need to define form elements for the node's title and body.
   if (!$node->nid) {
     $form['title'] = array(
@@ -308,6 +312,13 @@ function hosting_site_form($node) {
     );
   }
   else {
+    $form['info']['title'] = array(
+      '#type' => 'item',
+      '#title' => t('Domain name'),
+      '#value' => $node->title,
+      '#weight' => -5
+    );
+
     $form['title'] = array('#type' => 'hidden', '#value' => $node->title);
   }
 
@@ -337,6 +348,11 @@ function hosting_site_form($node) {
   }
   else {
     $form['client'] = array('#type' => 'hidden', '#value' => $client->title);
+    $form['info']['client'] = array(
+      '#type' => 'item',
+      '#title' => t('Client'),
+      '#value' => $client->title,
+    );
   }
 
   if (!$node->nid) {
@@ -352,32 +368,60 @@ function hosting_site_form($node) {
       );
     }
     else {
+
       $form['platform'] = array('#type' => 'hidden', '#value' => key($platforms));
     }
     $form['profile'] = _hosting_site_form_profile();
     $form['language'] = _hosting_site_form_language();
   }
   else {
+    $form['info']['platform'] = array(
+      '#type' => 'item',
+      '#title' => t('Platform'),
+      '#value' => _hosting_node_link($node->platform),
+     );
     $form['platform'] = array('#type' => 'hidden', '#value' => $node->platform);
+ 
+    $form['info']['profile'] = array(
+       '#type' => 'item',
+       '#title' => t('Install Profile'),
+       '#value' => _hosting_node_link($node->profile),
+    );
     $form['profile'] = array('#type' => 'hidden', '#value' => $node->profile);
+    $form['info']['language'] = array(
+      '#type' => 'item',
+      '#title' => t('Language'),
+      '#value' => _hosting_language_name($node->language),
+    );
     $form['language'] = array('#type' => 'hidden', '#value' => $node->language);
   }
 
-  $db_servers = _hosting_get_db_servers();
-  if (sizeof($db_servers) > 1) {
-    $form['db_server'] = array(
-      '#type' => 'radios',
-      '#title' => t('Database server'),
-      '#required' => TRUE,
-      '#description' => t('The database server the site will use to host it\'s content.'),
-      '#options' => $db_servers,
-      '#default_value' => $node->db_server,
-    );
+  if (!$node->nid) {
+
+    $db_servers = _hosting_get_db_servers();
+    if (sizeof($db_servers) > 1) {
+      $form['db_server'] = array(
+        '#type' => 'radios',
+        '#title' => t('Database server'),
+        '#required' => TRUE,
+        '#description' => t('The database server the site will use to host it\'s content.'),
+        '#options' => $db_servers,
+        '#default_value' => $node->db_server,
+      );
+    }
+    else {
+      $form['db_server'] = array('#type' => 'hidden', '#value' => key($db_servers));
+    } 
   }
   else {
-    $form['db_server'] = array('#type' => 'hidden', '#value' => key($db_servers));
-  } 
- 
+    $form['info']['db_server'] = array(
+      '#type' => 'item',
+      '#title' => t('Database Server'),
+      '#value' => _hosting_node_link($node->db_server),
+    );
+    $form['db_server'] = array('#type' => 'hidden', '#value' => $node->db_server);
+  }
+
   return $form;
 }
 
