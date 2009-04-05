@@ -39,7 +39,7 @@ function hosting_package_instance_sync($rid) {
         $instance->rid = $rid;
         $instance->package_id = $package['package_id'];
       }
-
+      $instance->languages = $package['info']['languages'];
       $instance->filename = $package['filename'];
       $instance->version = ($package['version']) ? $package['version'] : 'Unknown';
       $instance->schema_version = $package['schema_version'];
@@ -57,9 +57,9 @@ function hosting_package_instance_sync($rid) {
 
 function _hosting_package_instance_languages($instance) {
   if (sizeof($instance->languages)) {
-    db_query("DELETE FROM {hosting_package_languages} WHERE iid=%d", $iid);
-    foreach ($languages as $language) {
-     db_query("INSERT INTO {hosting_package_languages} (iid, language) VALUES (%d, '%s')", $iid, $language);
+    db_query("DELETE FROM {hosting_package_languages} WHERE iid=%d", $instance->iid);
+    foreach ($instance->languages as $language) {
+      db_query("INSERT INTO {hosting_package_languages} (iid, language) VALUES (%d, '%s')", $instance->iid, $language);
     }
   }
 }
@@ -73,20 +73,19 @@ function hosting_package_instance_update(&$instance) {
     $instance->schema_version, $instance->version, $instance->status,
     $instance->iid);
 
-   _hosting_package_instance_languages($instance);
-
+  _hosting_package_instance_languages($instance);
 }
 
 function hosting_package_instance_create(&$instance) {
    $instance->iid = db_next_id("{hosting_package_instance}_iid");
-    db_query("INSERT INTO {hosting_package_instance} (
+   db_query("INSERT INTO {hosting_package_instance} (
       iid, rid, package_id, filename,
       schema_version, version, status)
       VALUES (%d, %d, %d, '%s', %d, '%s', %d)", 
       $instance->iid, $instance->rid, $instance->package_id, $instance->filename, 
       $instance->schema_version, $instance->version, $instance->status);
 
-      _hosting_package_instance_languages($instance);
+   _hosting_package_instance_languages($instance);
 }
 
 function hosting_package_instance_load($param) {

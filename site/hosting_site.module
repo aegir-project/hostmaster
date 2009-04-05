@@ -133,7 +133,7 @@ function hosting_site_count() {
  */
 function hosting_get_sites_by_status($platform, $status) {
   $nodes = array();
-  $result = db_query("SELECT nid FROM {hosting_site} WHERE platform=%d AND status == %d", $platform, $status);
+  $result = db_query("SELECT nid FROM {hosting_site} WHERE platform=%d AND status = %d", $platform, $status);
   while ($nid = db_fetch_object($result)) {
     $nodes[$nid->nid] = node_load($nid->nid);
   }
@@ -221,6 +221,7 @@ function hosting_site_hosting_post_install($task, $data) {
     hosting_package_instance_sync($node->nid, $packages);
     $node->site_status = HOSTING_SITE_ENABLED;
     $node->no_verify = TRUE;
+    $node->verified = mktime();
     node_save($node);
   }
 }
@@ -368,11 +369,10 @@ function hosting_site_form($node) {
       );
     }
     else {
-
       $form['platform'] = array('#type' => 'hidden', '#value' => key($platforms));
     }
-    $form['profile'] = _hosting_site_form_profile();
-    $form['language'] = _hosting_site_form_language();
+    $form['profile'] = _hosting_site_form_profile($node->platform);
+    $form['language'] = _hosting_site_form_language($node->platform, $node->profile);
   }
   else {
     $form['info']['platform'] = array(
@@ -837,7 +837,7 @@ function _hosting_site_form_language($profile = NULL, $platform = null) {
     );
   }
   else {
-    $form['language'] = array('#type' => 'hidden', '#value' => 'en', '#attributes' => array('class' => "hosting-site-form-language-options"));
+    $form['language'] = array('#type' => 'hidden', '#default_value' => 'en', '#attributes' => array('class' => "hosting-site-form-language-options"));
   }
   return $form['language'];
 }
