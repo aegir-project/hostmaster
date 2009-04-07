@@ -23,7 +23,6 @@ function hosting_drush_command() {
   }
 
   $items['hosting task'] = array(
-    'callback' => 'hosting_process_task',
     'description' => 'execute a specific queue item',
   );
   

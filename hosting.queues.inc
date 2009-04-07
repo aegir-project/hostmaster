@@ -172,68 +172,6 @@ function hosting_tasks_queue($count = 20) {
   }
 }
 
-function hosting_process_task($task) {
-  if (is_numeric($task)) {
-    $task = node_load($task);
-  }
-  if ($task->type == 'task') {
-    // create a new revision
-    $task->changed = mktime();
-    $task->executed = mktime();
-    $task->revision = true;
-    node_save($task);
-    hosting_task_log($task->vid, "queue", t("Task starts processing"));
-
-    // execute the hosting_pre_${task_type} hook.
-    module_invoke_all("hosting_pre_" . $task->task_type, $task);
-
-    $data = hosting_queues_get_arguments($task);
-
-    $hostname = null;
-    $username = null;
-
-    if (isset($data['web_id']) && ($data['web_id'] != HOSTING_OWN_WEB_SERVER)) {
-      $username = $data['script_user'];
-      $hostname = $data['web_host'];
-    }
-    $drush_path = $data['drush_path'];
-    $data['root'] = $data['publish_path'];
-
-    $cmd = _drush_backend_generate_command("provision " . $task->task_type, $data, 'POST', $drush_path, $hostname, $username);
-    hosting_task_log($task->vid, 'command', t('Task dispatcher running: %cmd', array('%cmd' => escapeshellcmd("$cmd"))));
-    $output = _drush_backend_invoke($cmd, $data, FALSE);
-    if (!is_array($output)) {
-      hosting_task_log($task->vid, 'error', t("The command could not be executed succesfully"));
-      hosting_task_log($task->vid, 'notice', $output);
-      $code = DRUSH_FRAMEWORK_ERROR;
-    }
-    else {
-      $code = $output['error_status'];
-    }
-    $code = ($code != DRUSH_SUCCESS) ? DRUSH_FRAMEWORK_ERROR : DRUSH_SUCCESS;
-    drush_log("Task returned $code");
-
-    _hosting_backend_integrate($task, $output);
-
-    // record status 
-    $task->task_status = $code;
-    $task->queued = 0;
-    // New revision is created at the beginning of function.
-    $task->revision = false;
-    node_save($task);
-
-    if ($code == DRUSH_SUCCESS) {
-      # The task has been successful. Run the post hook.
-      module_invoke_all("hosting_post_" . $task->task_type, $task, $output);
-    }
-    else {
-      module_invoke_all("hosting_failed_". $task->task_type, $task, $output, $code);
-    }
-    // remove from queue
-    hosting_task_log($task->vid, "queue", t("Removing task from hosting queue"));
-  }
-}
-
 function hosting_queues_get_arguments($task) {
   $data = module_invoke_all('provision_args', $task, $task->task_type); 
   foreach ($data as $key => $value) {
@@ -247,15 +185,6 @@ function hosting_queues_get_arguments($task) {
   return $data;
 }
 
-function _hosting_backend_integrate($task, $data = array()) {
-  if (is_array($data)) {
-    foreach ((array) $data['log'] as $log) {
-      hosting_task_log($task->vid, $log['type'], $log['message'], $log['error'], $log['timestamp']);
-    }
-    return $values; 
-  }
-}
-
 function _hosting_backend_invoke($cmd, $task) {
   $proc = _drush_proc_open($cmd, FALSE);
   if ($proc['output']) {
@@ -264,7 +193,6 @@ function _hosting_backend_invoke($cmd, $task) {
   }
   return FALSE;
 }
-
 
 function _hosting_queues_clean_output($return) {
   return filter_xss($return, array());

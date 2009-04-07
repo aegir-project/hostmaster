@@ -1,13 +1,5 @@
 <?php
 
-function hosting_cron_provision_args($node, $task) {
-  $args = array();
-  if ($task == 'cron') {
-    $args['load-provision-cron'] = TRUE;
-  }
-  return $args;
-}
-
 function hosting_cron_hosting_queues() {
   $items['cron'] = array(
     'type' => 'batch',

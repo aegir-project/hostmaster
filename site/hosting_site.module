@@ -100,26 +100,6 @@ function hosting_site_access($op, $node) {
 }
 
 /**
- * Map values of site node into command line arguments
- */
-function hosting_site_provision_args($node, $task = '') {
-  $values = array();
-  if ($node->type == 'site') {
-    $values['#1'] = $node->title;
-    $values['site_id'] = $node->nid;
-    if ($task != 'import') {
-      $values['language'] = $node->language;
-    }
-  }
-  if ($node->type == 'task' && $task == 'restore') {
-    $backup = hosting_site_get_backup($node->task_args['bid']);
-    $values['#2'] = $backup['filename'];
-    $values['uri'] = null;
-  }
-  return $values;
-}
-
-/**
  * Return a count of enabled sites.
  *
  * This is used by cron and statistics to batch the number of sites that are processed with each call
@@ -209,83 +189,6 @@ function hosting_import_site($site_id, $data, $platform = HOSTING_DEFAULT_PLATFO
   node_save($site);
 }
 
-/**
- * implementation of the hosting_post_install hook
- */
-function hosting_site_hosting_post_install($task, $data) {
-  $node = node_load($task->rid);
-  if ($node->type == 'site') {
-    $context = $data['context'];
-    $packages = $context['packages'];
-    hosting_package_sync($packages);
-    hosting_package_instance_sync($node->nid, $packages);
-    $node->site_status = HOSTING_SITE_ENABLED;
-    $node->no_verify = TRUE;
-    $node->verified = mktime();
-    node_save($node);
-  }
-}
-
-/**
- * Implementation of the hosting_failed_install hook
- */
-function hosting_site_hosting_failed_install($task, $data, $code) {
-  // @TODO : we need to check the returned list of errors, not the code. 
-  if (array_key_exists('PROVISION_DRUPAL_SITE_INSTALLED', $data['error_log'])) {
-    // Site has already been installed. Try to import instead.
-    hosting_task_log($task->vid, 'notice', t("This site appears to be installed already. Generating an import task."));
-    hosting_add_task($task->rid, 'import');
-  }
-  else {
-    $node = node_load($task->rid);
-    $node->no_verify = TRUE;
-    $node->site_status = HOSTING_SITE_DISABLED;
-    node_save($node);
-  }
-}
-
-/**
- * implementation of hook_hosting_post_disable
- * I am not very fond of the use of bitwise operators with negatives.
- */
-function hosting_site_hosting_post_disable($task, $data) {
-  $ref = node_load($task->rid);
-  if ($data['context']['backup_file'] && $ref->type == 'site') {
-    $platform = node_load($ref->platform);
-    hosting_site_add_backup($ref->nid, $platform->web_server, $data['context']['backup_file'], t('Generated before being disabled'));
-  }
-  $ref->site_status = HOSTING_SITE_DISABLED;
-  $ref->no_verify = TRUE;
-  node_save($ref);
-}
-
-/**
- * implementation of hook_hosting_post_restore
- * I am not very fond of the use of bitwise operators with negatives.
- */
-function hosting_site_hosting_post_restore($task, $data) {
-  $ref = node_load($task->rid);
-  if ($data['context']['backup_file'] && $ref->type == 'site') {
-    $platform = node_load($ref->platform);
-    hosting_site_add_backup($ref->nid, $platform->web_server, $data['context']['backup_file'], t('Generated before being restored to a previous version'));
-  }
-}
-
-/**
- * implementation of hook_hosting_post_enable
- */
-function hosting_site_hosting_post_enable($task, $data) {
-  $node = node_load($task->rid);
-  $node->site_status = HOSTING_SITE_ENABLED;
-  node_save($node);
-}
-
-/**
- * implementation of hook_hosting_post_DELETE
- */
-function hosting_site_hosting_post_delete($task, $data) {
-  db_query("UPDATE {hosting_site} SET status=%d WHERE nid=%d", HOSTING_SITE_DELETED, $task->rid);
-}
 
 /**
  * Implementation of hook_form
@@ -365,14 +268,14 @@ function hosting_site_form($node) {
         '#required' => TRUE,
         '#description' => t('The platform you want the site to be hosted on.'),
         '#options' => $platforms,
-        '#default_value' => $node->platform ? $node->platform : HOSTING_DEFAULT_PLATFORM,
+        '#default_value' => HOSTING_DEFAULT_PLATFORM,
       );
     }
     else {
       $form['platform'] = array('#type' => 'hidden', '#value' => key($platforms));
     }
-    $form['profile'] = _hosting_site_form_profile($node->platform);
-    $form['language'] = _hosting_site_form_language($node->platform, $node->profile);
+    $form['profile'] = _hosting_site_form_profile();
+    $form['language'] = _hosting_site_form_language();
   }
   else {
     $form['info']['platform'] = array(
@@ -639,20 +542,6 @@ function hosting_site_backup_list($site) {
   return $backups;
 }
 
-/**
- * Implementation of hook_hosting_post_backup
- *
- * Adds the data file that was saved to the site backup history.
- * This is needed to be able to restore.
- */
-function hosting_site_hosting_post_backup($task, $data) {
-  $ref = node_load($task->rid);
-  if ($data['context']['backup_file'] && $ref->type == 'site') {
-    $platform = node_load($ref->platform);
-    hosting_site_add_backup($ref->nid, $platform->web_server, $data['context']['backup_file'], t('Generated on request'));
-  }
-}
-
 
 /**
  * Hide the delete button on site nodes
@@ -809,13 +698,13 @@ function _hosting_site_form_profile($platform = NULL) {
       '#title' => t('Install profile'),
       '#description' => t('The type of site to install.'),
       '#options' => $profiles,
-      '#default_value' => $node->profile,
+      '#default_value' => key($profiles),
       '#required' => TRUE,
       '#attributes' => array('class' => "hosting-site-form-profile-options"),
     );
   }
   else {
-    $form['profile'] = array('#type' => 'hidden', '#value' => key($profiles), '#attributes' => array('class' => "hosting-site-form-profile-options"));
+    $form['profile'] = array('#type' => 'hidden', '#default_value' => key($profiles), '#attributes' => array('class' => "hosting-site-form-profile-options"));
   }
   return $form['profile'];
 }
@@ -856,55 +745,5 @@ function _hosting_site_form_populate($element, $value, $value2 = null) {
     )
   );
   exit();
-}
-
-function hosting_site_hosting_post_import($task, $data) {
-  $site = node_load($task->rid);
-  
-  hosting_import_site($site->nid, $data['context'], $site->platform);
-}
-
-function hosting_site_hosting_post_verify($task, $data) {
-  $node = node_load($task->rid);
-
-  if ($node->type == 'site') {
-    $node->verified = mktime();
-    $node->no_verify = TRUE;
-    node_save($node);
-
-    $context = $data['context'];
-    $packages = $context['packages'];
-    hosting_package_sync($packages);
-    hosting_package_instance_sync($node->nid, $packages);
-  }
-}
-
-/**
- * Implementation of the hosting_failed_install hook
- */
-function hosting_site_hosting_failed_verify($task, $data, $code) {
-  $node = node_load($task->rid);
-
-  if ($node->type == 'site') {
-    $node->no_verify = TRUE;
-    $node->verified = 0;
-    node_save($node);
-  }
-
-}
-
-/**
- * Implementation of the hosting_failed_install hook
- */
-function hosting_site_hosting_failed_import($task, $data, $code) {
-  $node = node_load($task->rid);
-
-  if ($node->type == 'site') {
-    $node->no_verify = TRUE;
-    $node->verified = 0;
-    $node->site_status = HOSTING_SITE_DISABLED;
-    node_save($node);
-  }
-
 }
 

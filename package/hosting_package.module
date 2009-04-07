@@ -26,17 +26,6 @@ function hosting_package_node_info() {
   return $types;
 }
 
-function hosting_package_provision_args($node, $task = '') {
-  $values = array();
-
-  if ($node->type == 'site') {
-    $profile = node_load($node->profile);
-    $values['profile'] = $profile->short_name;
-  }
-
-  return $values;
-}
-
 function hosting_package_menu($may_cache) {
   $items = array();
   
@@ -100,8 +89,8 @@ function hosting_package_access($op, $node) {
 }
 
 function hosting_get_profiles($platform = NULL) {
-  if ($platform) {
-    $platform = !is_null($platform) ? $platform : HOSTING_DEFAULT_PLATFORM;
+  $profiles = array();
+  if (!is_null($platform)) {
     $instances = hosting_package_instances_load(array(
       'rid' => $platform, 'package_type' => 'profile',
       'n.status' => 1));
@@ -111,7 +100,7 @@ function hosting_get_profiles($platform = NULL) {
     }
   }
   else {
-    $result = db_query("SELECT n.nid, n.title FROM {node} n LEFT JOIN {hosting_package} p ON n.nid = p.nid WHERE p.package_type = 'profile'");
+    $result = db_query("SELECT n.nid, n.title FROM {node} n LEFT JOIN {hosting_package} p ON n.vid = p.vid WHERE p.package_type = 'profile'");
     while ($profile = db_fetch_object($result)) {
       $profiles[$profile->nid] = $profile->title;
     }

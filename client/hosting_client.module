@@ -5,16 +5,6 @@
 
 include('hosting_client.access.inc');
 
-function hosting_client_provision_args($node, $task = '') {
-  $values = array();
-  if ($node->type == 'site' && $task == 'install') {
-    $client = node_load($node->client);
-    $values['client_id'] = $node->client;
-    $values['client_email'] = $client->email;
-  }
-  return $values;
-}
-
 function hosting_client_node_info() {
   $types["client"] =  array(
     "type" => 'client', "name" => 'Client',

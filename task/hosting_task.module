@@ -68,15 +68,6 @@ function hosting_task_log($vid, $type, $message, $error = '', $timestamp = null 
  db_query("INSERT INTO {hosting_task_log} (vid, type, message, error, timestamp) VALUES (%d, '%s', '%s', '%s', %d)", $vid, $type, $message, $error, $timestamp);
 }
 
-function hosting_task_provision_args($node, $task = '') {
-  $values = array();
-  if ($node->type == 'task') {
-    $values['task_id'] = $node->nid;
-    $values = array_merge($values, module_invoke_all('provision_args', node_load($node->rid), $task));
-  }
-  return $values;
-}
-
 function hosting_task_retry($task_id) {
   $node = node_load($task_id);
   if (!$node->queued) {

@@ -9,4 +9,3 @@ function hosting_alias_hosting_feature() {
     );
   return $features;
 }
-

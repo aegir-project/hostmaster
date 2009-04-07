@@ -1,17 +1,5 @@
 <?php
 
-function hosting_migrate_provision_args($node, $task) {
-  $values = array();
-  if ($node->type == 'task') {
-    if ($task == 'migrate') {
-      $platform = node_load($node->task_args['target_platform']);
-      $values['#2'] = $platform->publish_path;
-    }
-  }
-  return $values;
-}
-
-
 function hosting_migrate_hosting_tasks($node) {
   $options = array();
 
@@ -167,12 +155,3 @@ function hosting_task_migrate_form($node) {
 }
 
 
-function hosting_migrate_hosting_post_migrate($task, $data) {
-  $ref = node_load($task->rid);
-  if ($ref->type == 'site') {
-    $target = $task->task_args['target_platform'];
-    $ref->verified = 0;
-    $ref->platform = $target;
-    node_save($ref);
-  }
-}

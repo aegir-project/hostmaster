@@ -134,31 +134,6 @@ function hosting_web_server_access($op, $node) {
   }
 }
 
-function hosting_web_server_provision_args($node, $task = '') {
-  $values = array();
-  if (in_array($node->type, array('site', 'platform'))) {
-    if ($node->type == 'site') {
-      $platform = node_load($node->platform);
-      $web = node_load($platform->web_server);
-    }
-    else {
-      $web = node_load($node->web_server);
-    }
-    $values['drush_path'] = $web->drush_path;
-    $values['web_id'] = $web->nid;
-    $values['web_host'] = $web->title;
-    $values['web_ip'] = $web->ip_address;
-    $values['script_user'] = $web->script_user;
-    if ($task == 'verify' && $node->type == 'platform') {
-        $values['web_group'] = $web->web_group;
-        $values['config_path'] = $web->config_path;
-        $values['backup_path'] = $web->backup_path;
-        $values['restart_cmd'] = $web->restart_cmd;
-    }
-  }
-  return $values;
-}
-
 /**
  * Small helper function to get web servers.
 */ 
