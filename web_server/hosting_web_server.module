@@ -13,6 +13,7 @@ function hosting_web_server_hosting_service() {
 function hosting_web_server_help($section) {
   switch ($section) {
     case 'admin/help/provision#requirements':
+      $output .= _hosting_requirements('drush_path');
       $output .= _hosting_requirements('config_path');
       $output .= _hosting_requirements('httpd_conf');
       $output .= _hosting_requirements('visudo');
@@ -43,8 +44,23 @@ EOF;
   $help['configuration'][] = t(' please enter the following commands : <pre>@mkdir_cmd</pre>', $mkdir_cmd);
 
   return $help;
-
 }
+
+function _hosting_drush_path_requirements() {
+  $help['title'] = t('Full path to the Drush installation on this server.');
+  $help['summary'] = t('<a href="http://drupal.org/project/drush">Drush</a> is a command line script that is used to
+                       interact with Drupal sites through the unix shell.<br />
+                       To be able to use Aegir, you need to download Drush, and place it somewhere on your server
+                       that is accessible by the script user (eg: <code>/home/!script_user/drush/drush.php</code>).<br />
+                       Once Drush is installed, you are required to download <a href="http://drupal.org/project/provision">Provision</a>
+                       and place it in the .drush folder of the script user\'s home directory.
+                       (eg: <code>/home/!script_user/.drush/provision</code>).<br />', 
+                       array('!script_user' => HOSTING_DEFAULT_SCRIPT_USER));
+
+
+  return $help;
+}
+
 
 function _hosting_httpd_conf_requirements() {
   $vhost_path = HOSTING_DEFAULT_VHOST_PATH;
@@ -158,7 +174,18 @@ function hosting_web_server_form(&$node) {
     '#required' => TRUE,
     '#default_value' => $node->title,
     '#description' => t('The host name of the server. This is the address that will be used by Hostmaster to connect to the web server to issue commands.'),
-    '#weight' => -5
+    '#weight' => -10
+  );
+
+  #TODO : rename to db_ip_address, to avoid confusion
+  $form['ip_address'] = array(
+    '#type' => 'textfield',
+    '#title' => t('IP address'),
+    '#default_value' => $node->ip_address,
+    '#size' => 15,
+    '#maxlength' => 15,
+    '#description' => t("The IP address the server can be accessed by.<br />If this is empty, the hostname will be used instead."),
+    '#weight' => -9
   );
 
   $form['drush_path'] = array(
@@ -169,17 +196,7 @@ function hosting_web_server_form(&$node) {
     '#default_value' => ($node->drush_path) ? $node->drush_path : '',
     '#description' => t("The full path to the drush.php script on this server."),
     '#maxlength' => 255,
-    '#weight' => -2,
-  );
-
-  #TODO : rename to db_ip_address, to avoid confusion
-  $form['ip_address'] = array(
-    '#type' => 'textfield',
-    '#title' => t('IP address'),
-    '#default_value' => $node->ip_address,
-    '#size' => 15,
-    '#maxlength' => 15,
-    '#description' => t("The IP address the server can be accessed by.<br />If this is empty, the hostname will be used instead.")
+    '#weight' => -8,
   );
 
 
@@ -191,7 +208,7 @@ function hosting_web_server_form(&$node) {
       '#default_value' => ($node->restart_cmd) ? $node->restart_cmd : HOSTING_DEFAULT_RESTART_CMD,
       '#size' => 40,
       '#maxlength' => 255,
-      '#weight' => -20,
+      '#weight' => -7,
   );
 
   $form['script_user'] = array(
@@ -202,7 +219,7 @@ function hosting_web_server_form(&$node) {
     '#default_value' => ($node->script_user) ? $node->script_user : HOSTING_DEFAULT_SCRIPT_USER,
     '#size' => 20,
     '#maxlength' => 255,
-    '#weight' => -15,
+    '#weight' => -6,
   );
    
   $form['web_group'] = array(
@@ -213,7 +230,7 @@ function hosting_web_server_form(&$node) {
     '#default_value' => ($node->web_group) ? $node->web_group : HOSTING_DEFAULT_WEB_GROUP,
     '#size' => 20,
     '#maxlength' => 75,
-    '#weight' => -10,
+    '#weight' => -5,
   );
   
   $form['config_path'] = array(
@@ -225,7 +242,7 @@ function hosting_web_server_form(&$node) {
     '#description' => t("The path on the server where configuration files will be stored.<br />
         It is essential that this directory should not be accessible via a web browser."),
     '#maxlength' => 255,
-    '#weight' => -10,
+    '#weight' => -4,
   );
   
   $form['backup_path'] = array(
@@ -237,7 +254,7 @@ function hosting_web_server_form(&$node) {
     '#description' => t("The path on the server where backups will be stored.<br />
         It is essential that this directory should not be accessible via a web browser."),
     '#maxlength' => 255,
-    '#weight' => -10,
+    '#weight' => -3,
   );
   
 

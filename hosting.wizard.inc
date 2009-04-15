@@ -234,6 +234,13 @@ function hosting_wizard_provision_paths() {
   $form['ip_address']['#type'] = 'value';
   $form['restart_cmd']['#type'] = 'value';
 
+  $form['drush_path_help'] = array(
+    '#type' => 'requirement_help', '#requirement' => 'drush_path', 
+    '#weight' => 4, '#summary' => HOSTING_HELP_ENABLED, 
+    '#configuration' => HOSTING_HELP_DISABLED);
+  $form['drush_path']['#weight'] = 5;
+
+
   $form['config_path_help'] = array(
     '#type' => 'requirement_help', '#requirement' => 'config_path', 
     '#weight' => 9, '#summary' => HOSTING_HELP_ENABLED, 
