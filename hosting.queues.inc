@@ -1,5 +1,10 @@
 <?php
 
+
+function _hosting_watchdog($entry) {
+  watchdog($entry['type'], $entry['message']);
+}
+
 /**
  * Main queue processing command for hostmaster.
  *
