@@ -24,7 +24,25 @@ function hosting_menu($may_cache = true) {
   $items = array();
   hosting_wizard_menu($may_cache, $items);
   if ($may_cache) {
+ 
+    $items[] = array(
+      'path' => 'hosting/disabled',
+      'title' => t('Site disabled'),
+      'callback' => 'hosting_disabled_site',
+      'access' => TRUE,
+      'type' => MENU_CALLBACK
+    );
 
+ 
+    $items[] = array(
+      'path' => 'hosting/maintenance',
+      'title' => t('Site maintenance'),
+      'callback' => 'hosting_site_maintenance',
+      'access' => TRUE,
+      'type' => MENU_CALLBACK
+    );
+
+    
     $items[] = array(
       'path' => 'admin/help/provision/requirements',
       'title' => t('Provisioning requirements'),
@@ -99,6 +117,15 @@ function hosting_menu($may_cache = true) {
   return $items;
 }
 
+function hosting_disabled_site($url) {
+  drupal_set_breadcrumb(array());
+  return t("!url has been disabled by the site administrators", array('!url' => $url));
+}
+
+function hosting_site_maintenance($url) {
+  drupal_set_breadcrumb(array());
+  return t("!url has being worked on presently. Check back later.", array('!url' => $url));
+}
 
 /**
  * Implementation of hook_nodeapi

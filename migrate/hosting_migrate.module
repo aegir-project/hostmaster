@@ -4,7 +4,7 @@ function hosting_migrate_hosting_tasks($node) {
   $options = array();
 
   if ($node->type == 'site') {
-    if (hosting_task_outstanding($node->nid, 'enable') || ($node->site_status & HOSTING_SITE_ENABLED)) {
+    if (($node->site_status == HOSTING_SITE_ENABLED)) {
       $options['migrate'] = array(
         'title' => t('Migrate'),
         'description' => t('Move the site to a new platform.'),

@@ -85,6 +85,7 @@ function hosting_site_post_hosting_restore_task($task, $data) {
  */
 function hosting_site_post_hosting_enable_task($task, $data) {
   $task->ref->site_status = HOSTING_SITE_ENABLED;
+  $task->ref->no_verify = TRUE;
   node_save($task->ref);
 }
 
@@ -92,7 +93,8 @@ function hosting_site_post_hosting_enable_task($task, $data) {
  * implementation of hook_hosting_post_DELETE
  */
 function hosting_site_post_hosting_delete_task($task, $data) {
-  $task->ref->site_status = HOSTING_SITE_ENABLED;
+  $task->ref->site_status = HOSTING_SITE_DELETED;
+  $task->ref->no_verify = TRUE;
   node_save($task->ref);
 }
 
