@@ -13,6 +13,9 @@
 include_once(drupal_get_path('module', 'hosting_dns') . '/hosting_dns.admin.inc');
 include_once(drupal_get_path('module', 'hosting_dns') . '/hosting_dns.api.inc');
 
+function hosting_dns_init() {
+  define('HOSTING_DEFAULT_DNS_SERVER', variable_get('hosting_default_db_server', null));
+}
 function hosting_dns_hosting_service() {
   return array("dns_server" => t("DNS Server"));
 }
@@ -197,6 +200,8 @@ function hosting_dns_form(&$node) {
     '#maxlength' => 64,
     '#weight' => 0,
   );
+
+  /**
   $form['engine'] = array(
     '#type' => 'select',
     '#title' => t('Type/Engine'),
@@ -205,7 +210,12 @@ function hosting_dns_form(&$node) {
 # the available engines should also be configurable, somehow.. 
     '#options' => array('bind' => t('BIND'), 'mydns' => t('MyDNS'), 'djbdns' => t('djbdns')),
     '#default_value' => $node->engine,
-  );
+  );*/
+  $form['engine'] = array(
+    '#type' => 'value',
+    '#value' => 'bind');
+  $node->engine = 'bind';
+
   if ($node->engine == 'bind') {
     $form['bind_settings'] = array(
       '#type' => 'fieldset', 
@@ -335,6 +345,19 @@ function hosting_dns_form(&$node) {
     '#maxlength' => 128,
     '#description' => t('Default TTL for zone resource records without their own TTL value (default 1w)'),
   );
+  
+  if ($node->nid != HOSTING_DEFAULT_DNS_SERVER) {
+    $form['default_dns_server'] = array(
+      '#type' => 'checkbox',
+      '#return_value' => 1,
+      '#title' => t('Make default dns server'),
+    );
+  } else {
+    $form['default_dns_server'] = array(
+      '#type' => 'value', 
+      '#value' => 1
+    );
+  }
 
   return $form;
 }
@@ -357,6 +380,9 @@ function hosting_dns_validate($node, &$form) {
  * Implementation of hook_insert().
  */
 function hosting_dns_insert($node) {
+   if ($node->default_dns_server == 1) {
+      variable_set('hosting_default_dns_server', $node->nid);
+   }
    db_query("INSERT INTO {hosting_dns_server} (vid, nid, engine, default_ip, ns, mbox, refresh, retry, expire, minimum, ttl, xfer) 
       VALUES (%d, %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')", 
       $node->vid, $node->nid, $node->engine, $node->default_ip, $node->ns, $node->mbox, $node->refresh, $node->retry, $node->expire, $node->minimum, $node->ttl, $node->xfer);
@@ -386,7 +412,10 @@ function hosting_dns_insert($node) {
 function hosting_dns_update($node) {
   if ($node->revision) {
     hosting_dns_insert($node);
-  } else { 
+  } else {
+    if ($node->default_dns_server == 1) {
+      variable_set('hosting_default_dns_server', $node->nid);
+    }
     db_query("UPDATE {hosting_dns_server} SET engine = '%s', default_ip = '%s', ns = '%s', mbox = '%s', refresh = '%s', retry = '%s', expire = '%s', minimum = '%s', ttl = '%s', xfer = '%s' WHERE vid = %d", $node->engine, $node->default_ip, $node->ns, $node->mbox, $node->refresh, $node->retry, $node->expire, $node->minimum, $node->ttl, $node->xfer, $node->vid);
 
     if ($node->engine == 'bind') {
@@ -455,6 +484,7 @@ function hosting_dns_view($node, $teaser = FALSE, $page = FALSE) {
       '#value' => $node->zonedata,
       '#weight' => -1,
     );
+
     $node->content['engine']['named_conf'] = array(
       '#type' => 'item',
       '#title' => t('Named config file'),
@@ -618,23 +648,12 @@ function hosting_get_dns_server($node) {
 }
 
 function hosting_dns_site_insert($node) {
-  $url_parts = _hosting_dns_split_url($node->title);
-  if (!isset($url_parts['zone'])) { 
-    #provision_set_error(HOSTING_FRAMEWORK_ERROR);
-drupal_set_message("no ZONE identified by _hosting_dns_split_url for ".$node->title);
-    return;
-  }
-
   $dns = node_load($node->dns_server);
 drupal_set_message("loaded DNS server node ".$dns->title." for new site node ".$node->title);
-  $zone = hosting_dns_create_zone($url_parts['zone'], $dns);   # initialize zone for this domain 
-								 # (if it doesn't exist)
-ob_start(); print_r($zone);
-drupal_set_message("retrieved zone for new site: ".ob_get_contents());
-ob_end_clean();
+  $zone = hosting_dns_create_zone($node->title, $dns);   # initialize zone for this domain 
   $data['type'] = 'A';
   $data['dns_ip'] = $dns->default_ip;
-  hosting_dns_create_record($url_parts['host'], $zone, $data);    # creates the RR for the (sub)domain
+  hosting_dns_create_record('www', $zone, $data);    # creates the RR for the (sub)domain
 }
 
 
@@ -746,7 +765,6 @@ drupal_set_message("loading DNS info for site: ".$node->title);
         break;
       case 'view':
         $dns_server = hosting_get_dns_server($node);
-        
 	$node->content['info']['dns_server'] = array(
 	  '#type' => 'item',
 	  '#title' => t('DNS server'),

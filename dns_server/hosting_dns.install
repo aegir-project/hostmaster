@@ -25,11 +25,11 @@ function hosting_dns_install() {
       # This table is intended to keep track of "per-engine" configuration
       # details, specific to the particular backend (BIND, myDNS, etc)
       db_query("CREATE TABLE {hosting_dns_server_config} (
-	vid int(10) unsigned NOT NULL,
-	nid int(10) unsigned NOT NULL default '0',
-	engine char(128) NOT NULL,
-	data longtext NOT NULL default '',
-	PRIMARY KEY (vid,engine),
+        vid int(10) unsigned NOT NULL,
+        nid int(10) unsigned NOT NULL default '0',
+        engine char(128) NOT NULL,
+        data longtext NOT NULL default '',
+        PRIMARY KEY (vid,engine)
       ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
 
       # This one is a join table against platform nodes, to track the DNS
@@ -40,7 +40,6 @@ function hosting_dns_install() {
        dns_server int(10) unsigned NOT NULL default '0',
        key (vid, dns_server) 
       ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
-      break;
 
       // The hosting_dns_server_zone table maps DNS server nodes onto zone IDs
       db_query("CREATE TABLE {hosting_dns_server_zone} (
@@ -83,13 +82,13 @@ function hosting_dns_install() {
         PRIMARY KEY (rid),
         UNIQUE KEY rr (zid,name,type,data)
       ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
-      break;
   }
 }
 
 function hosting_dns_uninstall() {
   db_query("DROP TABLE {hosting_dns_server}");
-  db_query("DROP TABLE {hosting_dns_server_platform}");
+  db_query("DROP TABLE {hosting_dns_server_config}");
+  db_query("DROP TABLE {hosting_dns_platform}");
   db_query("DROP TABLE {hosting_dns_server_zone}");
   db_query("DROP TABLE {hosting_dns_soa}"); // Should we tell the engine to remove these first?
   db_query("DROP TABLE {hosting_dns_rr}"); 

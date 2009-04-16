@@ -8,37 +8,35 @@
  **/
 function hosting_dns_menu($may_cache) {
   if (!$may_cache) {
+# provide engine-specific settings here, depending on the types of the DNS nodes in the system..
     $items[] = array(
-      'path' => 'admin/settings/hosting_dns',
-      'title' => t('DNS Provisioning Settings'),
+      'path' => 'admin/hosting/dns',
+      'title' => t('DNS'),
+      'description' => t('Manually administer DNS zones and records'),
+      'callback' => 'hosting_dns_admin',
+      'access' => user_access('administer DNS provisioning'),
+      'type' => MENU_LOCAL_TASK
+    );
+    $items[] = array(
+      'path' => 'admin/hosting/dns/list',
+      'title' => t('List Zones'),
+      'type' => MENU_DEFAULT_LOCAL_TASK,
+      'weight' => -1,
+    );
+    $items[] = array(
+      'path' => 'admin/hosting/dns/configure',
+      'title' => t('Configure'),
+      'type' => MENU_LOCAL_TASK,
       'description' => t('Configure DNS Provisioning'),
       'callback' => 'drupal_get_form',
       'callback arguments' => 'hosting_dns_settings',
       'access' => user_access('administer DNS provisioning'),
+      'weight' => 10,
     );
-    $items[] = array(
-      'path' => 'admin/settings/hosting_dns/general',
-      'title' => t('General'),
-      'type' => MENU_DEFAULT_LOCAL_TASK,
-      'weight' => -1,
-    );
-# provide engine-specific settings here, depending on the types of the DNS nodes in the system..
+
 
     $items[] = array(
-      'path' => 'admin/build/hosting_dns',
-      'title' => t('DNS Provisioning Admin'),
-      'description' => t('Manually administer DNS zones and records'),
-      'callback' => 'hosting_dns_admin',
-      'access' => user_access('administer DNS provisioning'),
-    );
-    $items[] = array(
-      'path' => 'admin/build/hosting_dns/list',
-      'title' => t('List Zones'),
-      'type' => MENU_DEFAULT_LOCAL_TASK,
-      'weight' => -10,
-    );
-    $items[] = array(
-      'path' => 'admin/build/hosting_dns/add',
+      'path' => 'admin/hosting/dns/add',
       'title' => t('Add Zone'),
       'description' => t('Add a new DNS zone (domain) to the system'),
       'callback' => 'drupal_get_form',
@@ -48,14 +46,14 @@ function hosting_dns_menu($may_cache) {
 
     $zid = arg(3);
     $items[] = array(
-      'path' => 'admin/build/hosting_dns/'. $zid .'/edit',
+      'path' => 'admin/hosting/dns/'. $zid .'/edit',
       'title' => t('Edit Zone'),
       'callback' => 'drupal_get_form',
       'callback arguments' => array('hosting_dns_zone_form', $zid),
       'type' => MENU_CALLBACK,
     );
     $items[] = array(
-      'path' => 'admin/build/hosting_dns/'. $zid .'/delete',
+      'path' => 'admin/hosting/dns/'. $zid .'/delete',
       'title' => t('Delete Zone'),
       'callback' => 'drupal_get_form',
       'callback arguments' => array('hosting_dns_zone_delete_confirm', $zid),
@@ -64,7 +62,7 @@ function hosting_dns_menu($may_cache) {
 
     $rid = arg(5);
     $items[] = array(
-      'path' => 'admin/build/hosting_dns/'. $zid .'/records',
+      'path' => 'admin/hosting/dns/'. $zid .'/records',
       'title' => t('Zone Records'),
       'callback' => 'hosting_dns_records',
       'callback arguments' => $zid,
@@ -72,13 +70,13 @@ function hosting_dns_menu($may_cache) {
       'type' => MENU_CALLBACK,
     );
     $items[] = array(
-      'path' => 'admin/build/hosting_dns/'. $zid .'/records/list',
+      'path' => 'admin/hosting/dns/'. $zid .'/records/list',
       'title' => t('List Zone Records'),
       'type' => MENU_DEFAULT_LOCAL_TASK,
       'weight' => -10,
     );
     $items[] = array(
-      'path' => 'admin/build/hosting_dns/' . $zid .'/records/add',
+      'path' => 'admin/hosting/dns/' . $zid .'/records/add',
       'title' => t('Add Zone Record'),
       'description' => t('Add a new DNS zone record (subdomain) to the system'),
       'callback' => 'drupal_get_form',
@@ -86,7 +84,7 @@ function hosting_dns_menu($may_cache) {
       'type' => MENU_LOCAL_TASK,
     );
     $items[] = array(
-      'path' => 'admin/build/hosting_dns/'. $zid .'/records/'. $rid . '/edit',
+      'path' => 'admin/hosting/dns/'. $zid .'/records/'. $rid . '/edit',
       'title' => t('Edit Zone Record'),
       'callback' => 'drupal_get_form',
       'callback arguments' => array('hosting_dns_record_form', $zid, $rid),
@@ -94,7 +92,7 @@ function hosting_dns_menu($may_cache) {
     );
 
     $items[] = array(
-      'path' => 'admin/build/hosting_dns/'. $zid .'/records/'. $rid . '/delete',
+      'path' => 'admin/hosting/dns/'. $zid .'/records/'. $rid . '/delete',
       'title' => t('Delete Zone Record'),
       'callback' => 'drupal_get_form',
       'callback arguments' => array('hosting_dns_record_delete_confirm', $zid, $rid),
@@ -131,13 +129,13 @@ function hosting_dns_admin() {
   while ($row = db_fetch_array($result)) {
     $records = db_result(db_query("SELECT COUNT(*) FROM {hosting_dns_rr} WHERE zid = %d", $row['zid
 ']));
-    $rows[] = array(l(t($row['origin']), "admin/build/hosting_dns/". $row['zid'] ."/records"),
+    $rows[] = array(l(t($row['origin']), "admin/hosting/dns/". $row['zid'] ."/records"),
                         $row['serial'],
                         $records,
                         $row['active'],
-                        l(t('records'), "admin/build/hosting_dns/". $row['zid'] . "/records"),
-                        l(t('edit'), "admin/build/hosting_dns/". $row['zid'] . "/edit"),
-                        l(t('delete'), "admin/build/hosting_dns/". $row['zid'] . "/delete")
+                        l(t('records'), "admin/hosting/dns/". $row['zid'] . "/records"),
+                        l(t('edit'), "admin/hosting/dns/". $row['zid'] . "/edit"),
+                        l(t('delete'), "admin/hosting/dns/". $row['zid'] . "/delete")
                    );
   }
   $output .= theme('table', $header, $rows);
@@ -153,14 +151,14 @@ function hosting_dns_records($zid) {
   $result = db_query("SELECT rid, name, type, data, aux FROM {hosting_dns_rr} WHERE zid=%d ORDER BY
  name", $zid);
   while ($row = db_fetch_array($result)) {
-    $rows[] = array(l(t($row['name']), "admin/build/hosting_dns/". $zid . "/records/" . $row['rid']
+    $rows[] = array(l(t($row['name']), "admin/hosting/dns/". $zid . "/records/" . $row['rid']
 ),
                         $row['type'],
                         $row['data'],
                         $row['aux'],
-                        l(t('edit'), "admin/build/hosting_dns/". $zid . "/records/". $row['rid'] . 
+                        l(t('edit'), "admin/hosting/dns/". $zid . "/records/". $row['rid'] . 
 "/edit"),
-                        l(t('delete'), "admin/build/hosting_dns/". $zid . "/records/". $row['rid'] 
+                        l(t('delete'), "admin/hosting/dns/". $zid . "/records/". $row['rid'] 
 . "/delete"),
                    );
   }
@@ -230,7 +228,7 @@ function hosting_dns_zone_form_submit($form_id, $form_values) {
     hosting_dns_zone('add', $form_values);
 # schedule task
   } 
-  return 'admin/build/hosting_dns';
+  return 'admin/hosting/dns';
 }
 
 function hosting_dns_zone_delete_confirm($zid) {
@@ -245,7 +243,7 @@ function hosting_dns_zone_delete_confirm_submit($form_id, $form_values) {
 # remove zone from db (soa table)
 # schedule task to delete zone
   #provision_dns_zone('delete', array('zid' => $form_values['zid']));
-  return 'admin/build/hosting_dns';
+  return 'admin/hosting/dns';
 }
 
 function hosting_dns_record_form($zid, $rid=0) {
@@ -319,7 +317,7 @@ function hosting_dns_record_form_submit($form_id, $form_values) {
     hosting_dns_rr('add', $form_values['zid'], $form_values);
 # schedule a task to commit update
   }
-  return 'admin/build/hosting_dns/'. $form_values['zid'] .'/records';
+  return 'admin/hosting/dns/'. $form_values['zid'] .'/records';
 }
 
 function hosting_dns_record_delete_confirm($zid, $rid) {
@@ -330,7 +328,7 @@ function hosting_dns_record_delete_confirm($zid, $rid) {
   $form['zid'] = array('#type' => 'value', '#value' => $zid);
   $form['rid'] = array('#type' => 'value', '#value' => $rid);
   $output = confirm_form($form, t('Are you sure you want to delete the zone record "'. $name .'" from
- the ' . $origin . ' zone?'), "admin/build/hosting_dns/". $zid . "/records", "This action cannot be
+ the ' . $origin . ' zone?'), "admin/hosting/dns/". $zid . "/records", "This action cannot be
  undone.", t('Delete'), t('Cancel'));
   return $output;
 }
@@ -338,5 +336,5 @@ function hosting_dns_record_delete_confirm($zid, $rid) {
 function hosting_dns_record_delete_confirm_submit($form_id, $form_values) {
   # Schedule task to delete the record?
   # hosting_dns_rr('delete', $form_values['zid'], array('rid' => $form_values['rid']));
-  return 'admin/build/hosting_dns/'. $form_values['zid'] .'/records';
+  return 'admin/hosting/dns/'. $form_values['zid'] .'/records';
 }

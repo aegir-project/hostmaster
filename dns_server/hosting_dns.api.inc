@@ -126,13 +126,6 @@ ob_end_clean();
  **/
 function hosting_dns_create_record($host, $zone, $data) {
   # provision_log("notice", t("Creating %type record for url @url", array('%type' => $data['type'], '@url' => $host)));
-drupal_set_message("called hosting_dns_create_record for $host");
-ob_start(); print_r($zone);
-drupal_set_message("zone data: ".ob_get_contents());
-ob_end_clean();
-ob_start(); print_r($data);
-drupal_set_message("DNS data: ".ob_get_contents());
-ob_end_clean();
   $rec['name'] = $host;
   $rec['type'] = $data['type']?$data['type']:'A';
   $rec['data'] = $data['dns_ip'];
