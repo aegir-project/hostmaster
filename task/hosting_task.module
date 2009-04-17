@@ -47,7 +47,7 @@ function hosting_task_access($op, $node) {
   }
 }
 
-function hosting_task_perm() {
+function hosting_migrate_perm() {
   return array(
     'administer tasks',
     'create backup task',

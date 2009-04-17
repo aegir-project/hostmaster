@@ -40,6 +40,7 @@ function hosting_package_menu($may_cache) {
           'callback' => 'hosting_package_list',
           'callback arguments' => array(arg(1)),
           'type' => MENU_LOCAL_TASK,
+          'access' => user_access('view package'),
           'weight' => 1, 
         );
         $items[] = array(
@@ -330,16 +331,17 @@ function hosting_package_list($rid, $type = null) {
   $args[] = $rid;
 
   if (!is_null($type)) {
-    $cond = " AND p.package_type = '%s'";
+    $cond = " AND n.package_type = '%s'";
     $args[] = $type;
   }
 
-  $sql = "SELECT i.status, p.nid as 'package', p.short_name, i.version, p.package_type, i.status FROM {hosting_package} p
-    LEFT JOIN {hosting_package_instance} i ON i.package_id=p.nid WHERE i.rid=%d" . $cond;
+  $sql = "SELECT n.nid as 'package', i.status, n.short_name, i.version, n.package_type, i.status FROM {hosting_package} n
+    LEFT JOIN {hosting_package_instance} i ON i.package_id=n.nid WHERE i.rid=%d" . $cond;
   $sql .= tablesort_sql($header);
 
   // @TODO hide deleted sites
   $result = pager_query(db_rewrite_sql($sql), 25, 2, null, $args);
+  $view_package_perm = user_access('view package');
 
   if (!db_num_rows($result)) {
     return t('No packages are associated with @reference', array('@reference' => $ref->title));
@@ -349,7 +351,7 @@ function hosting_package_list($rid, $type = null) {
     $row_class = ($package->status == 1) ? 'hosting-success' : 'hosting-info';
     $row = array();
     $row[] =  array('data' => ($package->status) ? t('Enabled') : t('Available') , 'class'=> 'hosting-status');
-    $row[] =  array('data' => l(filter_xss($package->short_name), 'node/' . $package->package));
+    $row[] =  ($view_package_perm) ? l(filter_xss($package->short_name), 'node/' . $package->package) : $package->short_name;
     $row[] =  $package->version;
     $row[] = filter_xss($package->package_type);
     $rows[] = array('data' => $row, 'class' => $row_class);

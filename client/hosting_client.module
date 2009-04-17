@@ -187,21 +187,50 @@ function hosting_client_insert($node) {
   db_query("INSERT INTO {hosting_client} (vid, nid, name, organization, email) VALUES (%d, %d, '%s', '%s', '%s' )",
     $node->vid, $node->nid, $node->client_name, $node->organization, $node->email);
   hosting_client_set_title($node);
-  if ($node->register_user) {
+  if (variable_get('hosting_client_register_user', FALSE) 
+    && !user_load(array('mail' => $node->email))) {
     hosting_client_register_user($node);
   }
 }
 
+function _hosting_client_get_role() {
+  return db_result(db_query("SELECT rid FROM {role} WHERE name='aegir client'"));
+}
+
 function hosting_client_register_user($node) {
   //register a new user account for the client
+  $pass = user_password();
   $user = new stdClass();
-  $user->name = $node->client_name;
-  $user->hosting_client = $node->nid;
-  $user->email = $node->email;
-  $user->pass = user_password();
-  user_save($user, $edit);
-  if ($node->send_welcome) {
-    # @TODO: send welcome mail on new user registration
+  $edit['name'] = $node->email;
+  $edit['hosting_client'] = $node->nid;
+  $edit['mail'] = $node->email;
+  $edit['pass'] = $pass;
+  $edit['status'] = 1;
+  $edit['roles'][_hosting_client_get_role()] = TRUE;
+  $user = user_save($user, $edit);
+
+  if ($user->uid && variable_get('hosting_client_send_welcome', FALSE)) {
+    if ($node->client_name) {
+      $to = sprintf("%s <%s>", $node->client_name, $node->email);
+    }
+    else {
+      $to = $node->email;
+    }
+
+    $variables = array(
+      '!username' => $user->name, 
+      '!site' => variable_get('site_name', 'Drupal'), 
+      '!password' => $pass, 
+      '!uri' => $GLOBALS['base_url'], 
+      '!uri_brief' => substr($base_url, strlen('http://')), 
+      '!date' => format_date(time()), 
+      '!login_uri' => url('user', NULL, NULL, TRUE), 
+      '!edit_uri' => url('user/'. $account->uid .'/edit', NULL, NULL, TRUE), 
+      '!login_url' => user_pass_reset_url($user));
+    // No e-mail verification is required, create new user account, and login user immediately.
+    $subject = _hosting_client_mail_text('welcome_subject', $variables);
+    $body = _hosting_client_mail_text('welcome_body', $variables);
+    drupal_mail('hosting-client-register-welcome', $to, $subject, $body);
   }
 }
 
@@ -333,7 +362,71 @@ function hosting_client_menu($may_cache) {
     );
 
   }
+  else {
+    $items[] = array(
+      'path' => 'admin/hosting/client', 
+      'title' => t('Clients'),
+      'callback' => 'drupal_get_form',
+      'callback arguments' => 'hosting_client_configure', 
+      'access' => user_access('administer clients'),
+      'type' => MENU_LOCAL_TASK
+    );
+  }
   return $items;
+}
+
+
+function _hosting_client_mail_text($messageid, $variables = array()) {
+  // Check if an admin setting overrides the default string.
+  if ($admin_setting = variable_get('hosting_client_mail_'. $messageid, FALSE)) {
+    return strtr($admin_setting, $variables);
+  }
+
+  switch ($messageid) {
+      case 'welcome_subject':
+        return t('Account details for !username at !site', $variables);
+      case 'welcome_body':
+        return t("!username,\n\nThank you for registering at !site. You may now log in to !login_uri using the following username and password:\n\nusername: !username\npassword: !password\n\nYou may also log in by clicking on this link or copying and pasting it in your browser:\n\n!login_url\n\nThis is a one-time login, so it can be used only once.\n\nAfter logging in, you will be redirected to !edit_uri so you can change your password.\n\n\n--  !site team", $variables);
+
+  }
+}
+
+
+function hosting_client_configure() {
+  $form['hosting_client_register_user'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Automatically create user accounts for new clients.'),
+    '#description' => t('If this setting is on, any new client nodes will automatically have a system user account generated for them, and associated with the new client node.'),
+    '#default_value' => variable_get('hosting_client_register_user', FALSE)
+  );
+
+  // User e-mail settings.
+  $form['email'] = array('#type' => 'fieldset', '#title' => t('User e-mail settings'));
+  $form['email']['hosting_client_send_welcome'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Send welcome mail to new clients.'),
+    '#description' => t('If this setting is on, new clients will receive a welcome email containing their login details.'),
+    '#default_value' => variable_get('hosting_client_send_welcome', FALSE)
+  );
+  $form['email']['hosting_client_mail_welcome_subject'] = array(
+    '#type' => 'textfield', 
+    '#title' => t('Subject of welcome e-mail'), 
+    '#default_value' => _hosting_client_mail_text('welcome_subject'), 
+    '#maxlength' => 180, 
+    '#description' => t('Customize the subject of your welcome e-mail, which is sent to new members upon registering.') 
+    .' '. t('Available variables are:') .' !username, !site, !password, !uri, !uri_brief, !date, !login_uri, !edit_uri, !login_url.'
+  );
+  $form['email']['hosting_client_mail_welcome_body'] = array(
+    '#type' => 'textarea', 
+    '#title' => t('Body of welcome e-mail'),
+    '#default_value' => _hosting_client_mail_text('welcome_body'), 
+    '#rows' => 15,
+    '#description' => t('Customize the body of the welcome e-mail, which is sent to new members upon registering.') 
+    .' '. t('Available variables are:') .' !username, !site, !password, !uri, !uri_brief, !login_uri, !edit_uri, !login_url.');
+
+
+  return system_settings_form($form);
+
 }
 
 

@@ -232,12 +232,9 @@ function hosting_site_form($node) {
     $client = node_load($node->client);
   } else {
     global $user;
-    # default to the user' client if available
-    if ($user->hosting_client) {
-      $client = hosting_get_client($user->hosting_client);
-    } else {
-      $client = node_load(HOSTING_DEFAULT_CLIENT);
-    }
+    $client_id = hosting_get_client_from_user($user->uid);
+    $client_id = ($client_id) ? $client_id : HOSTING_DEFAULT_CLIENT;
+    $client = node_load($client_id);
   }
 
   if ((!$node->client || $node->nid) && user_access('administer site')) {

@@ -15,6 +15,14 @@ function hosting_migrate_hosting_tasks($node) {
   return $options;
 }
 
+
+function hosting_task_perm() {
+  return array(
+    'create migrate task',
+  );
+}
+
+
 function theme_hosting_task_migrate_form(&$form) {
   $node = $form['#node'];
   $packages = $form['#packages'];

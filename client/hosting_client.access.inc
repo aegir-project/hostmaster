@@ -22,9 +22,15 @@ function hosting_client_user($op, &$edit, &$user, $category = NULL) {
 
   case 'validate':
     return hosting_client_user_form_validate($edit);
- 
+
+  case 'insert':
+  case 'update': 
+    hosting_client_user_form_submit($edit, $user);
+    $edit['hosting_client'] = NULL;
+    break;
   case 'submit':
-    return hosting_client_user_form_submit($edit, $user);
+    hosting_client_user_form_submit($edit, $user);
+    break;
 
   case 'delete':
     db_query('DELETE FROM {hosting_client_user} WHERE user = %d', $user->uid);
@@ -169,12 +175,13 @@ function hosting_client_node_access_records($node) {
   }
 
   if ($base_grant['gid']) {
-    $grants[] = $base_grant;
     if ($base_grant['gid'] != HOSTING_DEFAULT_CLIENT) {
+      $grants[] = $base_grant;
+    }
       // Also give full access to the administrator user.
       $base_grant['gid'] = 1;
       $grants[] = $base_grant;
-    }
+
     return $grants;
   }
 }
