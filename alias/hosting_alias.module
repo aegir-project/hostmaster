@@ -79,7 +79,7 @@ function hosting_alias_get_aliases($node, $type = null) {
 function hosting_alias_insert($node) {
   $automatic = hosting_alias_automatic_aliases($node->title);
   if ($node->aliases || sizeof($automatic)) {
-    $aliases = (is_array($node->aliases)) ? $node->aliases : explode("\n", $node->aliases);
+    $aliases = (is_array($node->aliases)) ? $node->aliases : explode("\n", str_replace(",", "\n", $node->aliases));
     if (is_array($aliases)) {
       foreach ($aliases as $alias) {
         if (($alias = trim($alias)) && !in_array($alias, $automatic)) {
