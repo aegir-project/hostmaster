@@ -320,9 +320,13 @@ function hosting_client_view($node, $teaser = FALSE, $page = FALSE) {
  *   The nid of the generated client
  */
 function hosting_import_client($email, $name = '', $organization = '') {
-  $client = new stdClass();
-  $client->type = 'client';
-  $client->email = $email;
+  $client = hosting_get_client_by_email($email);
+
+  if (!$client) {
+    $client = new stdClass();
+    $client->type = 'client';
+    $client->email = $email;
+  }
   $client->client_name = trim($name);
   $client->organization = $organization;
   $client->status = 1;

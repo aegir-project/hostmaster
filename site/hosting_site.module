@@ -140,9 +140,7 @@ function hosting_import_site($site_id, $data, $platform = HOSTING_DEFAULT_PLATFO
   $client = node_load(HOSTING_DEFAULT_CLIENT);
 
   if ($data['client_email']) {
-    if (!($client = hosting_get_client_by_email($data['client_email']))) {
-      $client = hosting_import_client($data['client_email'], $data['client_name'], $data['client_organization']);
-    }
+    $client = hosting_import_client($data['client_email'], $data['client_name'], $data['client_organization']);
   }
 
   $site = new stdClass();
