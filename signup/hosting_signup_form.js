@@ -20,7 +20,8 @@ if (Drupal.jsEnabled) {
  */
 function hostingSitePopulate(option) {
   // initialize variables
-  obj = 'input[@name=' + ((option == 'profile') ? 'platform' : 'profile') + ']:checked';
+  parent_field = ((option == 'profile') ? 'platform' : 'profile');
+  obj = _hostingSiteField(parent_field); 
   value = $('input[@name=' + option + ']:checked').val();
   
   // add loading animation gif pic
@@ -63,13 +64,14 @@ function hostingSitePopulate(option) {
     $('div#hm-processing').remove();
   }
   // prepare url params
-  if (option == 'profile') {
-    params = $(obj).val();
-  }
-  else if (option == 'language') {
-    hPlatform = 'input[@name=platform]';
-    params = $(obj).val() + '/' + ($(hPlatform).attr('type') == 'radio' ? $(hPlatform + ':checked').val() : $(hPlatform).val());
-  }
-  
+  params = (option == 'profile') ? $(obj).val() : ($(obj).val() + '/' + $(_hostingSiteField('platform')).val());
   $.get('/hosting/signup/form_populate/' + option + '/' + params, null, resultOptions);
+}
+
+function _hostingSiteField(name) {
+  obj = 'input[@name=' + name + ']';
+  if ($(obj).attr('type') != 'hidden') {
+    obj = 'input[@name=' + name + ']:checked';
+  }
+  return obj;
 }
