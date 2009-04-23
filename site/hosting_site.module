@@ -226,14 +226,14 @@ function hosting_site_form($node) {
 
 
   # find the right client
-  if ($node->client) {
-    $client = node_load($node->client);
-  } else {
-    global $user;
-    $client_id = hosting_get_client_from_user($user->uid);
-    $client_id = ($client_id) ? $client_id : HOSTING_DEFAULT_CLIENT;
-    $client = node_load($client_id);
+  global $user;
+  $client_id = hosting_get_client_from_user($user->uid);
+  $client_id = ($client_id) ? $client_id : HOSTING_DEFAULT_CLIENT;
+  // allow admins to override
+  if ($node->client && user_access('administer site')) {
+    $client_id = $node->client;
   }
+  $client = node_load($client_id);
 
   if ((!$node->client || $node->nid) && user_access('administer site')) {
     $form['client'] = array(

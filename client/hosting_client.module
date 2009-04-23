@@ -352,6 +352,7 @@ function hosting_client_menu($may_cache) {
           'description' => t('Add a site to the current client'),
           'callback' => 'drupal_get_form',
           'callback arguments' => array('site_node_form', $site),
+          'access' => user_access('create site'),
           'type' => MENU_LOCAL_TASK,
           'weight' => 5,
         );
