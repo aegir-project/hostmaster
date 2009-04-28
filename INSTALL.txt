@@ -21,8 +21,9 @@ This assumes you have installed CVS and have access to the /var
 directory. This may require running those steps as root.
 
 Shell commands::
+ export CVSROOT=:pserver:anonymous:anonymous@cvs.drupal.org:/cvs/drupal
  cd /var
- cvs -z6 -d:pserver:anonymous:anonymous@cvs.drupal.org:/cvs/drupal co -d aegir/drupal-5.x -r DRUPAL-5-16 drupal
+ cvs co -d aegir/drupal-5.x -r DRUPAL-5-16 drupal
  cd aegir/drupal-5.x/
  cvs co -d profiles/hostmaster contributions/profiles/hostmaster
  cvs co -d sites/default/modules/hosting contributions/modules/hosting
