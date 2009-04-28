@@ -25,6 +25,7 @@ webserver node configuration. Rerunning the wizard will prompt you for
 that. Make sure you also run the hosting setup command.
 
 Shell commands::
+ export CVSROOT=:pserver:anonymous:anonymous@cvs.drupal.org:/cvs/drupal
  cd /var/aegir
  cvs co -d drush  contributions/modules/drush
  mkdir .drush
