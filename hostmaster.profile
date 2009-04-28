@@ -124,6 +124,9 @@ function hostmaster_profile_final() {
   variable_set('site_name', t('Hostmaster'));
   variable_set('site_frontpage', 'hosting/sites');
 
+  // do not allow user registration: the signup form will do that
+  variable_set('user_register', 0);
+
   // This is set to true, because the node/add/site form needs
   // to use AHAH to create a valid node, and ahah_forms requires clean_urls
   variable_set('clean_url', TRUE);
