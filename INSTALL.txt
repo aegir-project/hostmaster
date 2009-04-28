@@ -22,7 +22,7 @@ directory. This may require running those steps as root.
 
 Shell commands::
  cd /var
- cvs -z6 -d:pserver:anonymous:anonymous@cvs.drupal.org:/cvs/drupal co -d aegir/drupal-5.x -r DRUPAL-5-12 drupal
+ cvs -z6 -d:pserver:anonymous:anonymous@cvs.drupal.org:/cvs/drupal co -d aegir/drupal-5.x -r DRUPAL-5-16 drupal
  cd aegir/drupal-5.x/
  cvs co -d profiles/hostmaster contributions/profiles/hostmaster
  cvs co -d sites/default/modules/hosting contributions/modules/hosting
