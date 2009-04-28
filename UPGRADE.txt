@@ -34,6 +34,9 @@ Shell commands::
  cvs up -A drupal-5.x/profiles/hostmaster/modules/hosting
  cd drupal-5.x && ./drush/drush.php hosting setup
 
+The above commands need to be ran as your "aegir" user, especially the
+last step.
+
 Upgrading Hostslave platforms from 0.1
 --------------------------------------
 
