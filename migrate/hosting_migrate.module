@@ -16,7 +16,7 @@ function hosting_migrate_hosting_tasks($node) {
 }
 
 
-function hosting_task_perm() {
+function hosting_migrate_perm() {
   return array(
     'create migrate task',
   );
