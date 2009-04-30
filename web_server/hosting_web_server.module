@@ -184,7 +184,7 @@ function hosting_web_server_form(&$node) {
     '#default_value' => $node->ip_address,
     '#size' => 15,
     '#maxlength' => 15,
-    '#description' => t("The IP address the server can be accessed by.<br />If this is empty, the hostname will be used instead."),
+    '#description' => t("The IP address the server can be accessed by. This will be used to create database grants, amongst other things.<br />If this is empty, Hostmaster will attempt to resolve the hostname to get the address.<br />If that fails, the hostname will be used instead."),
     '#weight' => -9
   );
 
@@ -322,6 +322,13 @@ function hosting_web_server_delete($node) {
  */
 function hosting_web_server_load($node) {
   $additions = db_fetch_object(db_query('SELECT ip_address, script_user, web_group, config_path, backup_path, restart_cmd, drush_path FROM {hosting_web_server} WHERE vid = %d', $node->vid));
+  if (!$additions->ip_address) {
+    $ip = gethostbyname($node->title);
+    // setup IP only if resolution succeeded
+    if ($ip != $node->title) {
+      $additions->ip_address = $ip;
+    }
+  }
   return $additions;
 }
 
