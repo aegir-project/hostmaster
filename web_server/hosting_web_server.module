@@ -265,8 +265,6 @@ function hosting_web_server_form(&$node) {
  * Implementation of hook_validate().
   */
 function hosting_web_server_validate(&$node) {
-  $user = $node->script_user;
-  $group = $node->web_group;
   if ($node->script_user == 'root') {
     form_set_error('script_user', t('For security reasons, you should not run drush commands as the root user. Please choose a different system account name.'));
   }
