@@ -10,9 +10,9 @@
 function hosting_signup_xmlrpc() {
   return array(
     array('hosting_signup.getForm',
-    'hosting_signup_get_form',
+          'hosting_signup_get_form',
     array('struct', 'string', 'struct'),
-    t("Retrieve the form to build")
+          t("Retrieve the form to build")
     ),
      array(
       'hosting_signup.submitForm',
@@ -34,7 +34,7 @@ function hosting_signup_xmlrpc() {
 function hosting_signup_menu($may_cache) {
 
   if (!$may_cache) {
-  global $user;
+    global $user;
 
     $items[] = array(
       'path' => 'hosting/signup',
