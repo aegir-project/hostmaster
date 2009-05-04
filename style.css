@@ -316,22 +316,52 @@ div.sidebar ul.menu li,
 div.sidebar div.item-list li {
   list-style:none;
   font-size:11px;
-  padding:2px 10px 3px;
+  padding:0px;
   margin:0px 0px 5px;
   background:#fff;
-
-  -moz-border-radius:3px;
-  -webkit-border-radius: 3px;
   }
+
+  div.sidebar div.item-list li,
+  div.sidebar ul.menu a {
+    display:block;
+    padding:2px 10px;
+    }
+
+  div.sidebar ul.menu ul { padding-left:10px; }
 
   div.sidebar ul.menu li li {
     margin:0px;
-    padding:2px 0px 2px 10px;
-    border-top:1px solid #f8f8f8;
-
-    -moz-border-radius:0px;
-    -webkit-border-radius: 0px;
+    border-top:1px solid #f0f0f0;
     }
+
+  div.sidebar ul.menu a:hover {
+    color:#fff;
+    background:#6ac;
+    }
+
+  /* Corner rounding logic */
+  div.sidebar ul.menu li,
+  div.sidebar ul.menu a,
+  div.sidebar div.item-list li {
+    -moz-border-radius:3px;
+    -webkit-border-radius: 3px;
+    }
+
+  div.sidebar ul.menu li.expanded a {
+    -moz-border-radius:0px;
+    -moz-border-radius-topleft:3px;
+    -moz-border-radius-topright:3px;
+
+    -webkit-border-radius: 0px;
+    -webkit-border-top-left-radius:3px;
+    -webkit-border-top-right-radius:3px;
+    }
+
+    div.sidebar ul.menu li.expanded li,
+    div.sidebar ul.menu li.expanded li a {
+      -moz-border-radius:0px;
+      -webkit-border-radius: 0px;
+      }
 
 /**
  * CONSOLE MESSAGES ===================================================

@@ -1,5 +1,7 @@
 /* $Id$ */
 
+div.sidebar ul.menu li,
+div.sidebar ul.menu li a,
 #hosting-site-edit-info div.form-item,
 body.ntype-task #page div.node div#hosting-task-info div.form-item,
 body.aegir #page div.node div.content div.form-item,
