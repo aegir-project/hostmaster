@@ -457,12 +457,14 @@ function hosting_client_block($op = 'list', $delta = 0, $edit = array()) {
     switch ($op) {
       case 'list' :
         $blocks['hosting_clients'] = array('info' => t('Hosting clients'), 
-                                           'enabled' => 1, 'region' => 'left', 'weight' => 10);
+        'enabled' => 1, 'region' => 'left', 'weight' => 10);
+        break;
       case 'view' : 
         switch ($delta) {
           case 'hosting_clients':
             $blocks['title'] = t('Clients');
             $blocks['content'] = hosting_client_list();
+            break;
         }
     }
   }
