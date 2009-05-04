@@ -43,4 +43,6 @@ function eldir_preprocess_page(&$vars) {
   $vars['body_classes'] .= empty($vars['sidebar_left']) && empty($vars['sidebar_right']) ? ' wide' : '';
 
   $vars['body_classes'] .= ' path-'. str_replace('/', '-', $_GET['q']);
+
+  $vars['styles_ie6'] = base_path() . path_to_theme() . '/ie6.css';
 }

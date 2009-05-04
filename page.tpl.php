@@ -3,6 +3,9 @@
   <head>
     <?php print $head ?>
     <?php print $styles ?>
+    <!--[if lt IE 7]>
+    <style type="text/css" media="all">@import "<?php print $styles_ie6 ?>";</style>
+    <![endif]-->
     <title><?php print $head_title ?></title>
   </head>
   <body class='aegir <?php print $body_classes ?>'>

@@ -158,8 +158,18 @@ div#header div.site-name {
   border-left:1px solid #258;
   }
 
-div#header form { float:right; }
-div#header form input.form-text { width:60%; }
+div#header form {
+  width:370px;
+  height:40px;
+  line-height:40px;
+  padding:20px 0px;
+  float:right;
+  text-align:right;
+  }
+
+  div#header form * { vertical-align:middle; }
+
+  div#header form input.form-text { width:60%; }
 
 /**
  * NAVIGATION =========================================================
@@ -424,6 +434,7 @@ form div.form-item {
     width:170px;
     }
 
+  div.sidebar form div.form-item,
   form#system-theme-settings div.form-item,
   form div.form-item div.form-item,
   form table div.form-item,
@@ -435,6 +446,7 @@ form div.form-item {
     border:0px;
     }
 
+  div.sidebar form div.form-item label,
   form div.form-item label.option,
   form#system-theme-settings div.form-item label,
   form div.form-item div.form-item label,
