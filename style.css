@@ -703,3 +703,14 @@ div.admin .left {
   padding:0px;
   width:265px;
   }
+
+/**
+ * ERROR PAGES ========================================================
+ */
+body.error-page div.page-content {
+  border:1px solid #e8e8e8;
+  background:#f8f8f8;
+  padding:19px;
+  font-size:18px;
+  text-align:center;
+  }
