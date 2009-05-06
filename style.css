@@ -69,6 +69,12 @@ a {
   text-decoration:none;
   }
 
+  a:hover { text-decoration:underline; }
+
+  /* No underline for links that are likely to have good hover classes anyway. */
+  ul.menu li a:hover,
+  ul.links li a:hover { text-decoration:none; }
+
   /* Reverse color text/links */
   div.reverse { color:#fff; }
   div.reverse a { color:#ace; }
@@ -126,7 +132,11 @@ ul.links li a { float:left; }
 /**
  * LISTS ==============================================================
  */
+div.node div.content ul,
 div#console div.messages ul { padding-left:20px; }
+
+div.node div.content ul li,
+div#console div.messages ul li { list-style: square; }
 
 /**
  * HEADER =============================================================
@@ -393,8 +403,8 @@ div#console div.messages {
     }
 
   div#console div.ok {
-    color:#8cf;
-    text-shadow:0px 0px 15px #06c;
+    color:#cfc;
+    text-shadow:0px 0px 15px #0c6;
     }
 
 /**
@@ -443,6 +453,9 @@ input.form-submit {
   padding:5px;
   color:#fff;
   background:#666;
+
+  cursor:pointer;
+
   -moz-border-radius:3px;
   -webkit-border-radius: 3px;
   }
@@ -563,12 +576,56 @@ body.aegir fieldset.collapsible legend a {
 /**
  * NODES ==============================================================
  */
-div.node div.meta {
+div.node {
+  margin:0px 0px 10px;
+  padding:0px 0px 9px;
   border-bottom:1px solid #e8e8e8;
-  padding:0px 0px 4px;
+  }
+
+div.sticky {
+  padding:4px 4px 9px;
+  border:1px solid #e0e6e8;
+  background:#f0f6f8;
+  }
+
+  /* Cancel out all the particulars for full node pages */
+  body.node-page div.node {
+    background:transparent;
+    border:0px;
+    padding:0px;
+    margin:0px;
+    }
+
+div.node h2 {
+  border:0px;
+  font-size:24px;
+  line-height:30px;
+  font-weight:normal;
+  }
+
+  div.node h2 span.label {
+    float:left;
+    font-size:9px;
+    font-weight:bold;
+    line-height:20px;
+
+    margin:5px 10px 0px 0px;
+    padding:0px 5px;
+
+    background:#666;
+    color:#fff;
+    }
+
+div.node div.meta {
+  color:#888;
   margin:0px 0px 10px;
   font-size:11px;
   }
+
+  body.node-page div.node div.meta {
+    border-bottom:1px solid #e8e8e8;
+    padding:0px 0px 9px;
+    }
 
 /**
  * AEGIR-SPECIFIC =====================================================

@@ -35,6 +35,7 @@ function eldir_preprocess_page(&$vars) {
       $vars['title'] = "<span class='label'>{$types[$type]->name}</span> {$vars['title']}";
     }
 
+    $vars['body_classes'] .= " node-page";
     $vars['body_classes'] .= " ntype-{$type}";
   }
 
@@ -55,3 +56,18 @@ function eldir_preprocess_page(&$vars) {
   // Add IE 6 compatibility stylesheet
   $vars['styles_ie6'] = base_path() . path_to_theme() . '/ie6.css';
 }
+
+/**
+ * Preprocessor for theme_node().
+ */
+function eldir_preprocess_node(&$vars) {
+  if (!empty($vars['node'])) {
+    // Add a node type label on node pages to help users.
+    $types = node_get_types();
+    $type = $vars['node']->type;
+    if (!empty($types[$type])) {
+      $vars['title'] = "<span class='label'>{$types[$type]->name}</span> {$vars['title']}";
+    }
+  }
+}
+
