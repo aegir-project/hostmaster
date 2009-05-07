@@ -21,14 +21,15 @@ Shell commands::
  cd /var/aegir
  ./drush/drush.php dl drupal-5.17 --package-handler=cvs
  mv drupal drupal-5.17
+ cd drupal-5.17
+ cvs co -d profiles/hostmaster contributions/profiles/hostmaster
+ cvs co -d sites/default/modules/hosting contributions/modules/hosting
  crontab -e # disable cronjob
- cd drupal-5.x
+ cd ../drupal-5.x
  /var/hostmaster/drush/drush.php --verbose=2 provision import default
  /var/hostmaster/drush/drush.php --verbose=2 provision verify default
  /var/hostmaster/drush/drush.php --verbose=2 provision migrate default /var/hostmaster/drupal-5.17/
-
-Note that there's still an issue with the migration process and this
-is currently broken. See http://drupal.org/node/453492
+ crontab -e # enable cronjob and change root to new platform
 
 Upgrading Hostmaster from 0.1
 -----------------------------
