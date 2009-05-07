@@ -2,13 +2,17 @@
  *  Overview 
  */
 
-#hosting-platform-info, #hosting-site-info, #hosting-task-info, #hosting-site-edit-info {
+#hosting-webserver-info, #hosting-dbserver-info, #hosting-client-info, #hosting-platform-info, #hosting-site-info, #hosting-task-info, #hosting-site-edit-info {
   float:left;
   width:35%;
   padding: 2% 5%;
   margin:25px 0;
   background:#F1F1F1;
   border:solid 3px #CCC;
+}
+
+#hosting-webserver-info, #hosting-dbserver-info, #hosting-client-info {
+  width: auto;
 }
 
 #hosting-task-info, #hosting-site-edit-info {
@@ -30,7 +34,7 @@
   width: 200px;
 }
 
-#hosting-site-edit-info label, #hosting-platform-info label, #hosting-site-info label, #hosting-task-info label {
+#hosting-webserver-info label, #hosting-dbserver-info label, #hosting-client-info label, #hosting-site-edit-info label, #hosting-platform-info label, #hosting-site-info label, #hosting-task-info label {
   float:left;
   margin:0 5px 0 0;
 }

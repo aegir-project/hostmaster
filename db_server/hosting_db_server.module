@@ -217,14 +217,17 @@ function hosting_db_server_load($node) {
  */
 function hosting_db_server_view($node, $teaser = FALSE, $page = FALSE) {
   $node = node_prepare($node, $teaser);
-
-  $node->content['db_type'] = array(
+  $node->content['info'] = array(
+    '#prefix' => '<div id="hosting-dbserver-info">',
+    '#suffix' => '</div>'
+  );
+  $node->content['info']['db_type'] = array(
     '#type' => 'item',
     '#title' => t('Database type'),
     '#value' => $node->db_type,
   );
   
-  $node->content['db_user'] = array(
+  $node->content['info']['db_user'] = array(
     '#type' => 'item',
     '#title' => t('Database user'),
     '#value' => filter_xss($node->db_user),
@@ -232,8 +235,9 @@ function hosting_db_server_view($node, $teaser = FALSE, $page = FALSE) {
 
   $node->content['sites_view'] = array(
     '#type' => 'item',
-    '#title' => t("Sites"),
     '#value' => hosting_site_list("db_server", $node->nid), 
+    '#prefix' => '<div id="hosting-site-list">',
+    '#suffix' => '</div>',
     '#weight' => 10
   );
   

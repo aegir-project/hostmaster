@@ -275,32 +275,37 @@ function hosting_client_load($node) {
  * Implementation of hook_view().
  */
 function hosting_client_view($node, $teaser = FALSE, $page = FALSE) {
+  $node->content['info']['#prefix'] = '<div id="hosting-client-info">';
   if ( $node->organization ) {
-    $node->content['organization'] = array(
+    $node->content['info']['organization'] = array(
       '#type' => 'item',
       '#title' => t('Organization'),
       '#value' => filter_xss($node->organization),
     );
   }
   if ( $node->client_name ) {
-    $node->content['name'] = array(
+    $node->content['info']['name'] = array(
       '#type' => 'item',
       '#title' => t('Contact name'),
       '#value' => filter_xss($node->client_name),
     );
   }
   if ($node->name || $node->email) {
-    $node->content['email'] = array(
+    $node->content['info']['email'] = array(
       '#type' => 'item',
       '#title' => t('Email'),
       '#value' => filter_xss($node->email),
     );
   }
+
+  $node->content['info']['#suffix'] = '</div>';
   if ($page) {
     $node->content['sites_view'] = array(
       '#type' => 'item',
-      '#title' => t("Sites"),
       '#value' => hosting_site_list("client", $node->nid), 
+      '#prefix' => '<div id="hosting-site-list">',
+      '#suffix' => '</div>', 
+
       '#weight' => 10
     );
   }

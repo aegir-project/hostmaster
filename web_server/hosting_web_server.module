@@ -335,39 +335,43 @@ function hosting_web_server_load($node) {
  */
 function hosting_web_server_view($node, $teaser = FALSE, $page = FALSE) {
   $node = node_prepare($node, $teaser);
+  $node->content['info'] = array(
+    '#prefix' => '<div id="hosting-webserver-info">',
+    '#suffix' => '</div>'
+  );
   if ($node->ip_address) {
-    $node->content['ip_address'] = array(
+    $node->content['info']['ip_address'] = array(
       '#type' => 'item',
       '#title' => t('IP address'),
       '#value' => filter_xss($node->ip_address),
     );    
   }
-  $node->content['drush_path'] = array(
+  $node->content['info']['drush_path'] = array(
     '#type' => 'item',
     '#title' => t('Drush path'),
     '#value' => filter_xss($node->drush_path),
   );
-  $node->content['script_user'] = array(
+  $node->content['info']['script_user'] = array(
     '#type' => 'item',
     '#title' => t('Script user'),
     '#value' => filter_xss($node->script_user),
   );
-  $node->content['web_group'] = array(
+  $node->content['info']['web_group'] = array(
     '#type' => 'item',
     '#title' => t('Web server group'),
     '#value' => filter_xss($node->web_group),
   );
-  $node->content['config_path'] = array(
+  $node->content['info']['config_path'] = array(
     '#type' => 'item',
     '#title' => t('Configuration path'),
     '#value' => filter_xss($node->config_path),
   );
-  $node->content['backup_path'] = array(
+  $node->content['info']['backup_path'] = array(
     '#type' => 'item',
     '#title' => t('Backup path'),
     '#value' => filter_xss($node->backup_path),
   );
-   $node->content['restart_cmd'] = array(
+   $node->content['info']['restart_cmd'] = array(
     '#type' => 'item',
     '#title' => t('Restart command'),
     '#value' => filter_xss($node->restart_cmd),
