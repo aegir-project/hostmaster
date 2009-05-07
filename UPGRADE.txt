@@ -31,6 +31,15 @@ Shell commands::
  /var/hostmaster/drush/drush.php --verbose=2 provision migrate default /var/hostmaster/drupal-5.17/
  crontab -e # enable cronjob and change root to new platform
 
+This will likely create a new vhost named "default" in
+/var/hostmaster/config/vhost.d. This will likely conflict with your
+already existing vhost there (which is probably more something like
+aegir.example.com). The recommended way is to remove the
+aegir.example.com config file and add "ServerAlias aegir.example.com"
+to the 'default' file.
+
+See http://drupal.org/node/453540 for more details about this issue.
+
 Upgrading Hostmaster from 0.1
 -----------------------------
 
