@@ -1,14 +1,74 @@
 -*-rst-*-
 
+This document describes briefly how to install a multi-platform,
+single-server Aegir Drupal provisionning system. 
+
 This document is formatted using the ReST syntax.
+
+Aegir 0.2 requirements
+======================
+
+This section describes what is expected of the servers Aegir is
+running on.
+
+Web server
+----------
+
+You will need at least one dedicated web server, running Apache. We
+generally work with Apache 2 but we should be compatible with the 1.x
+series. You will need root access to that server and the server must
+be reserved for Aegir. Sharing the server with other control panels
+such as Cpanel, Plesk or AlternC will very likely create problems and
+is not supported.
+
+That webserver should probably run some UNIX flavour because the
+majority of functionality in this system occurs in the back-end,
+through command line scripting. There are also several features (such
+as symlinks), that are not available to users on Windows. There are no
+plans currently to add windows support.
+
+Shell commands::
+ apt-get install apache2
+
+PHP 5.2
+-------
+
+Since Aegir strongly depends on Drush, we therefore depend on PHP 5.2
+or above. You also need to have the commandline version of PHP to run
+Drush properly and the MySQL extensions.
+
+Shell commands::
+ apt-get install php5 php5-cli php5-mysql
+
+MySQL server
+------------
+
+You will require a MySQL server, obviously. It is preferable to use a
+dedicated server since Aegir will create MySQL users, since it will
+require a "root" MySQL user.
+
+Mail transfer agent
+-------------------
+
+Aegir requires an MTA (Mail Transfer Agent) installed on your
+webserver in order to be able to install a new site to your new
+platform. If you don't have an MTA you the site installation will fail
+with message like "could not send email." Additional messages will
+show that site has been removed because of this problem. To remedy the
+situation simply install an MTA like sendmail, postfix, or exim and do
+the minimal configuration.  On Debian-based systems do:
+
+Shell commands::
+ sudo apt-get install postfix
+    
+Once that is done you should be able to install a site to the new platform. 
 
 Aegir 0.2 installation instructions
 ===================================
 
-This document describes briefly how to install a multi-platform,
-single-server Aegir Drupal provisionning system. Those instructions
-limit themselves to getting you into the Aegir wizard, which will then
-give you further configuration instructions.
+This section deals with the installation of Aegir proper. Those
+instructions limit themselves to getting you into the Aegir wizard,
+which will then give you further configuration instructions.
 
 This document assumes the Aegir home is in /var/aegir, adapt as desired,
 but make sure that the user you create (as suggested in the install
