@@ -591,6 +591,9 @@ table.hosting-table {
 /* Node info */
 #hosting-task-list { width:230px; }
 
+#hosting-client-info,
+#hosting-dbserver-info,
+#hosting-webserver-info,
 #hosting-platform-info,
 #hosting-site-info,
 #hosting-task-info,
@@ -606,6 +609,11 @@ table.hosting-table {
   width:280px;
   }
 
+#hosting-client-info,
+#hosting-dbserver-info,
+#hosting-webserver-info {
+  width: 520px;
+}
   #hosting-site-edit-info,
   #hosting-site-edit-info div.form-item {
     float:none;
