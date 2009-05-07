@@ -1,7 +1,7 @@
 <?php
 // $Id$
 
-function hosting_client_pre_hosting_task() {
+function drush_hosting_client_pre_hosting_task() {
   $task =& drush_get_context('HOSTING_TASK');
   if ($task->ref->type == 'site' && $task->task_type == 'install') {
     $client = node_load($task->ref->client);

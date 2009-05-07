@@ -1,7 +1,7 @@
 <?php
 // $Id$
 
-function hosting_web_server_pre_hosting_task() {
+function drush_hosting_web_server_pre_hosting_task() {
   $task =& drush_get_context('HOSTING_TASK');
   if (in_array($task->ref->type, array('site', 'platform'))) {
     if ($task->ref->type == 'site') {

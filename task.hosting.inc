@@ -6,11 +6,14 @@ function _hosting_task_log($entry) {
     hosting_task_log($task->vid, $entry['type'], $entry['message'], $entry['error'], $entry['timestamp']);
   }
   else {
-    _drush_print_log($entry);
+    return _drush_print_log($entry);
+  }
+  if (drush_get_option('debug', FALSE)) {
+    return _drush_print_log($entry);
   }
 }
 
-function hosting_hosting_task_validate($task) {
+function drush_hosting_hosting_task_validate($task) {
   if (is_numeric($task)) {
     $task = node_load($task);
   }
@@ -33,11 +36,10 @@ function hosting_hosting_task_validate($task) {
   }
 }
 
-function hosting_hosting_task() {
+function drush_hosting_hosting_task() {
   $task =& drush_get_context('HOSTING_TASK');
   $hostname = null;
   $username = null;
-
   if (isset($task->options['web_id']) && ($task->options['web_id'] != HOSTING_OWN_WEB_SERVER)) {
     $username = $task->options['script_user'];
     $hostname = $task->options['web_host'];
@@ -63,13 +65,13 @@ function hosting_hosting_task() {
   drush_log(dt("Removing task from hosting queue"), 'queue');
 }
 
-function hosting_hosting_task_rollback() {
+function drush_hosting_hosting_task_rollback() {
   $task =& drush_get_context('HOSTING_TASK');
   module_invoke_all(sprintf("hosting_%s_task_rollback", $task->task_type), $task, drush_get_context('HOSTING_DRUSH_OUTPUT'));
 }
 
 
-function hosting_post_hosting_task($task) {
+function drush_hosting_post_hosting_task($task) {
   $task =& drush_get_context('HOSTING_TASK');
   module_invoke_all(sprintf("post_hosting_%s_task", $task->task_type), $task, drush_get_context('HOSTING_DRUSH_OUTPUT'));
 }

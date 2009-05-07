@@ -1,7 +1,7 @@
 <?php
 // $Id$
 
-function hosting_migrate_pre_hosting_task($task) {
+function drush_hosting_migrate_pre_hosting_task($task) {
   $task =& drush_get_context('HOSTING_TASK');
   if ($task->ref->type == 'site' && $task->task_type == 'migrate') {
     $platform = node_load($task->task_args['target_platform']);

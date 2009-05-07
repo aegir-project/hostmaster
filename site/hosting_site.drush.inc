@@ -5,7 +5,7 @@
 /**
  * Map values of site node into command line arguments
  */
-function hosting_site_pre_hosting_task($task) {
+function drush_hosting_site_pre_hosting_task($task) {
   $task =& drush_get_context('HOSTING_TASK');
 
   if ($task->ref->type == 'site') {
