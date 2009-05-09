@@ -192,6 +192,9 @@ function hostmaster_install_add_block($module, $delta, $theme, $status, $weight,
 
 /**
  * Enable a theme, if present
+ *
+ * @param mixed The theme name or an array of preferred themes, that
+ * will be tried in order.
  */
 function hostmaster_setup_theme($name) {
   if (!is_array($name)) {
