@@ -86,7 +86,7 @@ Shell commands::
  cvs co -d aegir/drupal-5.x -r DRUPAL-5-16 drupal
  cd aegir/drupal-5.x/
  cvs co -d profiles/hostmaster contributions/profiles/hostmaster
- cvs co -d sites/default/modules/hosting contributions/modules/hosting
+ cvs co -d profiles/hostmaster/modules/hosting contributions/modules/hosting
  cd /var/aegir
  cvs co -d drush  contributions/modules/drush
  mkdir .drush
