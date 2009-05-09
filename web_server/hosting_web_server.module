@@ -270,7 +270,7 @@ function hosting_web_server_validate(&$node, &$form) {
   }
   if (!$node->ip_address) {
     if (!_hosting_valid_fqdn($node->title)) {
-      form_set_error('title', t('Invalid valid domain name. Either choose a proper domain name or hardcode the IP address of the webserver.'))
+      form_set_error('title', t('Invalid valid domain name. Either choose a proper domain name or hardcode the IP address of the webserver.'));
     }
     $ip = gethostbyname($node->title);
     // setup IP only if resolution succeeded
