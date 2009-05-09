@@ -139,6 +139,9 @@ function hostmaster_profile_final() {
   hostmaster_install_add_block('hosting', 'hosting_queues', 'garland', 1, 0, 'right');
   hostmaster_install_add_block('hosting', 'hosting_queues_summary', 'garland', 1, 2, 'right');
 
+  // enable the eldir theme, if present
+  hostmaster_setup_theme('eldir');
+
   // @todo create proper roles, and set up views to be role based
   hostmaster_install_set_permissions(hostmaster_install_get_rid('anonymous user'), array('access content', 'access all views'));
   hostmaster_install_set_permissions(hostmaster_install_get_rid('authenticated user'), array('access content', 'access all views'));
@@ -187,3 +190,20 @@ function hostmaster_install_add_block($module, $delta, $theme, $status, $weight,
   }
 }
 
+/**
+ * Enable a theme, if present
+ */
+function hostmaster_setup_theme($name) {
+  if (!is_array($name)) {
+    $name = array($name);
+  }
+  $themes = system_theme_data();
+  // In preference descending order
+  foreach ($name as $theme) {
+    if (array_key_exists($theme, $themes)) {
+      system_initialize_theme_blocks($theme);
+      db_query("UPDATE {system} SET status = 1 WHERE type = 'theme' and name = '%theme'", array('%theme' => $theme));
+      variable_set('theme_default', $theme);
+    }
+  }
+}
