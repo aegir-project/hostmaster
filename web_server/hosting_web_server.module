@@ -269,6 +269,9 @@ function hosting_web_server_validate(&$node, &$form) {
     form_set_error('script_user', t('For security reasons, you should not run drush commands as the root user. Please choose a different system account name.'));
   }
   if (!$node->ip_address) {
+    if (!_hosting_valid_fqdn($node->title)) {
+      form_set_error('title', t('Invalid valid domain name. Either choose a proper domain name or hardcode the IP address of the webserver.'))
+    }
     $ip = gethostbyname($node->title);
     // setup IP only if resolution succeeded
     if ($ip != $node->title) {
