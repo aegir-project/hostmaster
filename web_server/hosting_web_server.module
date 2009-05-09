@@ -279,6 +279,9 @@ function hosting_web_server_validate(&$node, &$form) {
       form_set_error('title', t('Could not resolve IP address of webserver %name. Either set the web server name to a FQDN (Fully Qualified Domain Name) or hardcode the IP here.', array('%name' => $node->title)));
     }
   }
+  if (!_hosting_valid_ip($node->ip_address)) {
+    form_set_error('ip_address', t('Invalid IP address'));
+  }
 
 }
 
