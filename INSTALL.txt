@@ -83,7 +83,7 @@ directory. This may require running those steps as root.
 Shell commands::
  export CVSROOT=:pserver:anonymous:anonymous@cvs.drupal.org:/cvs/drupal
  cd /var
- cvs co -d aegir/drupal-5.x -r DRUPAL-5-16 drupal
+ cvs co -d aegir/drupal-5.x -r DRUPAL-5-17 drupal
  cd aegir/drupal-5.x/
  cvs co -d profiles/hostmaster contributions/profiles/hostmaster
  cvs co -d profiles/hostmaster/modules/hosting contributions/modules/hosting
@@ -91,6 +91,14 @@ Shell commands::
  cvs co -d drush  contributions/modules/drush
  mkdir .drush
  cvs co -d .drush/provision  contributions/modules/provision
+
+Checking out the theme
+----------------------
+
+Aegir now has its own theme which you can use. This is optional:
+
+Shell commands::
+ cvs co -d profiles/hostmaster/themes/eldir contributions/themes/eldir
 
 Apache configuration
 --------------------
