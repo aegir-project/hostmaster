@@ -173,7 +173,7 @@ function hosting_web_server_form(&$node) {
     '#title' => t('Web server hostname'),
     '#required' => TRUE,
     '#default_value' => $node->title,
-    '#description' => t('The host name of the server. This is the address that will be used by Hostmaster to connect to the web server to issue commands.'),
+    '#description' => t('The host name of the server. This is the address that will be used by Hostmaster to connect to the web server to issue commands.<br /><strong>Be careful when changing the node title, it is used to create the SQL users if the IP address, below, is not set.</strong>'),
     '#weight' => -10
   );
 
@@ -184,7 +184,7 @@ function hosting_web_server_form(&$node) {
     '#default_value' => $node->ip_address,
     '#size' => 15,
     '#maxlength' => 15,
-    '#description' => t("The IP address the server can be accessed by. This will be used to create database grants, amongst other things.<br />If this is empty, Hostmaster will attempt to resolve the hostname to get the address.<br />If that fails, the hostname will be used instead."),
+    '#description' => t("The IP address the server can be accessed by. This will be used to create database grants, amongst other things.<br />If this is empty, Hostmaster will attempt to resolve the hostname to get the address.<br />If that fails, the hostname (ie. the node title) will be used instead."),
     '#weight' => -9
   );
 
@@ -264,10 +264,22 @@ function hosting_web_server_form(&$node) {
 /**
  * Implementation of hook_validate().
   */
-function hosting_web_server_validate(&$node) {
+function hosting_web_server_validate(&$node, &$form) {
   if ($node->script_user == 'root') {
     form_set_error('script_user', t('For security reasons, you should not run drush commands as the root user. Please choose a different system account name.'));
   }
+  if (!$node->ip_address) {
+    $ip = gethostbyname($node->title);
+    // setup IP only if resolution succeeded
+    if ($ip != $node->title) {
+      form_set_value($form['ip_address'], $ip);
+      $node->ip_address = $ip;
+      drupal_set_message(t('Initialized the webserver IP to %ip based on hostname %name', array('%ip' => $ip, '%name' => $node->title)), 'message');
+    } else {
+      form_set_error('title', t('Could not resolve IP address of webserver %name. Either set the web server name to a FQDN (Fully Qualified Domain Name) or hardcode the IP here.', array('%name' => $node->title)));
+    }
+  }
+
 }
 
 /**
@@ -320,13 +332,6 @@ function hosting_web_server_delete($node) {
  */
 function hosting_web_server_load($node) {
   $additions = db_fetch_object(db_query('SELECT ip_address, script_user, web_group, config_path, backup_path, restart_cmd, drush_path FROM {hosting_web_server} WHERE vid = %d', $node->vid));
-  if (!$additions->ip_address) {
-    $ip = gethostbyname($node->title);
-    // setup IP only if resolution succeeded
-    if ($ip != $node->title) {
-      $additions->ip_address = $ip;
-    }
-  }
   return $additions;
 }
 
