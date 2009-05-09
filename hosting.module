@@ -325,6 +325,14 @@ function _hosting_valid_ip($hostname) {
   return true;
 }
 
+/**
+ * Check if the FQDN provided is valid.
+ */
+function _hosting_valid_fqdn($fqdn) {
+  # regex is an implementation of RFC1035
+  return preg_match("/^([a-z0-9]([a-z0-9-]*[a-z0-9])?\.?)+$/i", $fqdn);
+}
+
 function hosting_format_interval($ts) {
   if ($ts==mktime()) { 
     return t('Now');

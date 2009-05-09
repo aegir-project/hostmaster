@@ -323,14 +323,9 @@ function hosting_site_form($node) {
   return $form;
 }
 
-function _hosting_site_validate_fqdn($fqdn) {
-  # regex is an implementation of RFC1035
-  return preg_match("/^([a-z0-9]([a-z0-9-]*[a-z0-9])?\.?)+$/i", $fqdn);
-}
-
 function hosting_site_validate(&$node) {
   $url = strtolower($node->title); // domain names are case-insensitive
-  if (!_hosting_site_validate_fqdn($url)) {
+  if (!_hosting_valid_fqdn($url)) {
     form_set_error('title', t("You have not specified a valid url for this site."));
   }
   # TODO: maybe we should allow creation of sites that conflict with HOSTING_SITE_DISABLED (which would then need to be renamed before being re-enabled)
