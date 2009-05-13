@@ -142,6 +142,9 @@ function hostmaster_profile_final() {
   // enable the eldir theme, if present
   hostmaster_setup_theme('eldir');
 
+  // Enable optional, yet recommended modules.
+  hostmaster_setup_optional_modules();
+
   // @todo create proper roles, and set up views to be role based
   hostmaster_install_set_permissions(hostmaster_install_get_rid('anonymous user'), array('access content', 'access all views'));
   hostmaster_install_set_permissions(hostmaster_install_get_rid('authenticated user'), array('access content', 'access all views'));
@@ -210,3 +213,105 @@ function hostmaster_setup_theme($name) {
     }
   }
 }
+
+
+/**
+ * Enable optional modules, if present
+ */
+function hostmaster_setup_optional_modules() {
+  $optional = array('admin_menu');
+
+  foreach ($optional as $name) {
+    $exists = db_result(db_query("SELECT name FROM {system} WHERE type='module' and name='%s'", $name));
+
+    drupal_install_modules(array($name));
+
+    if ($exists == $name) {
+      switch ($name) {
+        case 'admin_menu' :
+          variable_set('admin_menu_margin_top', 1);
+          variable_set('admin_menu_position_fixed', 1);
+          variable_set('admin_menu_tweak_menu', 0);
+          variable_set('admin_menu_tweak_modules', 0);
+          variable_set('admin_menu_tweak_tabs', 0);
+
+          $menu_mid = hostmaster_create_menu(t('Administration'));
+          $admin_mid = hostmaster_menu_get_mid('admin');
+          hostmaster_update_menu_item($admin_mid, array('pid' => $menu_mid));
+          hostmaster_disable_menu_item($admin_mid);
+          break;
+      }
+    }
+  }
+}
+
+/**
+ * Create a new top-level menu
+ *
+ * @return  integer    The database ID of the newly created menu
+ */
+function hostmaster_create_menu($title, $weight = 0) {
+  $mid = db_next_id('{menu}_mid');
+  // Check explicitly for mid <= 2. If the database was improperly prefixed,
+  // this would cause a nasty infinite loop or duplicate mid errors.
+  // TODO: have automatic prefixing through an installer to prevent this.
+  while ($mid <= 2) {
+    $mid = db_next_id('{menu}_mid');
+  }
+  db_query("INSERT INTO {menu} (mid, pid, title, weight, type) VALUES (%d, 0, '%s', %d, 115)", $mid, $title, $weight);
+  // not sure if this is needed, but we've seen problems without it.
+  menu_rebuild();
+  // this is important to add new items to this menu.
+  return $mid;
+}
+
+
+/**
+ * Get the menu ID, searching on path
+ *
+ * @return  integer    The database ID of a menu item based on its path
+ */
+function hostmaster_menu_get_mid($path) {
+  return db_result(db_query("SELECT mid FROM {menu} WHERE path = '%s' LIMIT 1", $path));  
+}
+
+
+/**
+ * Update a menu item.
+ *
+ * @param  $mid          Menu item id
+ * @param  $properties   A keyed array of only the values you want to change.
+ *
+ * @return FALSE if menu does not exist, otherwise return the status returned
+ *         by menu_save_item() in menu.module
+ */
+function hostmaster_update_menu_item($mid, $properties) {
+  $existing_item = menu_get_item($mid);
+  if (empty($existing_item)) {
+    drupal_set_message(t('Menu item '. $mid .' did not exist in install_menu_update_menu().'));
+    return FALSE;
+  }
+  $edit = array_merge($existing_item, $properties);
+  $edit['mid'] = $mid;
+  // Tell menu this is an updated item.
+  $edit['type'] = 54;
+
+  $status = menu_save_item($edit);
+  menu_rebuild();
+  return $status;
+}
+
+/**
+ * Remove the specified filter from the specified format 
+ * @param  $mid  The ID of the menu item to disable
+ */
+function hostmaster_disable_menu_item($mid) { 
+  $item = menu_get_item($mid);
+  $type = $item['type'];
+  $type &= ~MENU_VISIBLE_IN_TREE;
+  $type &= ~MENU_VISIBLE_IN_BREADCRUMB;
+  $type |= MENU_MODIFIED_BY_ADMIN;
+  db_query('UPDATE {menu} SET type = %d WHERE mid = %d', $type, $mid);
+  menu_rebuild();
+}
+
