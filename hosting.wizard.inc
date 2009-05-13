@@ -142,7 +142,7 @@ function hosting_wizard_account() {
   $form = array();
   $form['introduction']['#value'] =
     t("<p>As part of the installation, we have already created an administrator account on this system for you. One of hostmaster's project goals is to configure itself to the best of it's abilities, so that you don't have to. Unfortunately there will be some information that we can't guess.</p>
-    <p>So to ensure that you are actually able to log back in and use the system, we would appreciate it if you could please change your password to something we didn't generate randomly.</p>");
+    <p>To ensure that you are actually able to log back in and use the system, we would appreciate it if you could please change your password to something we didn't generate randomly.</p>");
 
    $form['account']['name'] = array('#type' => 'textfield',
      '#title' => t('Username'),
@@ -173,8 +173,6 @@ function hosting_wizard_account() {
     '#size' => 30,
   );
   $client_help = hosting_node_help('client');
-  $form['client_info']['#value'] = t("<p>This information will also be used by Hostmaster to create the <a id='hosting-wizard-client-help-show'>primary client.</a></p>
-    <div id='hosting-wizard-client-help' class='hosting-wizard-glossary'>!client_help</div>", array('!client_help' => $client_help));
   
   return hosting_wizard_form('account', $form);
 }

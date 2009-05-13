@@ -158,9 +158,10 @@ function hosting_db_server_form(&$node) {
  * Implementation of hook_validate().
   */
 function hosting_db_server_validate($node, &$form) {
-  if (!$node->db_passwd && $node->nid) {
+  if (!empty($node->db_passwd) && $node->nid) {
     $old = node_load($node->nid);
-    form_set_value($form['db_passwd'], $old->db_passwd);
+    form_set_value($form['db_passwd']['pass1'], $old->db_passwd);
+    form_set_value($form['db_passwd']['pass2'], $old->db_passwd);
   }
 }
 
