@@ -447,6 +447,14 @@ input.form-text {
     border-color:#258;
     }
 
+  html.js input.form-autocomplete { background-position:100% 4px; }
+  html.js input.throbbing { background-position: 100% -16px; }
+
+  td select,
+  td input.form-text,
+  div.container-inline select,
+  div.container-inline input.form-text { width:auto; }
+
 input.form-submit {
   font: bold 13px/20px "Helvetica Neue",Arial,sans-serif;
   border:0px;
@@ -466,17 +474,21 @@ form div.form-item {
   clear:both;
   position:relative;
   margin:0px;
-  padding:10px 10px 9px 180px;
+  padding:10px 10px 9px;
   border-bottom:1px solid #e8e8e8;
   }
 
-  form div.form-item label {
+  form div.form-item-labeled { padding-left:180px; }
+
+  form div.form-item-labeled label {
     font-size:11px;
     position:absolute;
     left:0px;
     width:170px;
     }
 
+  /* Exceptions */
+  dl.multiselect div.form-item,
   div.sidebar form div.form-item,
   form#system-theme-settings div.form-item,
   form div.form-item div.form-item,
@@ -489,6 +501,7 @@ form div.form-item {
     border:0px;
     }
 
+  dl.multiselect div.form-item label,
   div.sidebar form div.form-item label,
   form div.form-item label.option,
   form#system-theme-settings div.form-item label,
@@ -643,9 +656,17 @@ table.hosting-table {
   }
 
 #page table,
+#page table tr,
+#page table td,
+#page table th,
+#page table thead,
+#page table body,
 #page table.hosting-table,
-#page table *,
-#page table.hosting-table * {
+#page table.hosting-table tr,
+#page table.hosting-table td,
+#page table.hosting-table th,
+#page table.hosting-table thead,
+#page table.hosting-table tbody {
   border:0px;
   padding:0px;
   }
@@ -662,8 +683,13 @@ table.hosting-table {
 #page table.hosting-table th {
   font-size:11px;
   background:#666 !important;
-  color:#fff;
   }
+
+  #page table th.active,
+  #page table.hosting-table th.active { background:#555 !important; }
+
+  #page table th,
+  #page table th a { color:#fff; }
 
 #page table tr.even td { background-color:#fcfcfc; }
 #page table tr.odd td { background-color:#f8f8f8; }
@@ -762,6 +788,25 @@ tr.hosting-queue td.hosting-status {    background-image: url(images/icon-queue.
 tr.hosting-error td.hosting-status {    background-image: url(images/icon-error.png); }
 tr.hosting-success td.hosting-status {  background-image: url(images/icon-ok.png); }
 
+/* Forms */
+.hosting-queue-frequency,
+.hosting-queue-frequency-head {
+  text-align:left;
+  padding-right:inherit;
+  }
+
+div.hosting-queue-frequency {
+  font-size:10px;
+  text-align:left;
+  white-space:nowrap;
+  }
+
+div.hosting-queue-frequency input,
+div.hosting-queue-frequency select {
+  padding:2px;
+  font-size:10px;
+  }
+
 /**
  * CORE ADMIN =========================================================
  */
@@ -790,6 +835,9 @@ div.admin .left {
   padding:0px;
   width:265px;
   }
+
+/* Put some space between multiselect options. See admin/content/node */
+dl.multiselect div.form-item { margin:0px 0px 10px; }
 
 /**
  * ERROR PAGES ========================================================
