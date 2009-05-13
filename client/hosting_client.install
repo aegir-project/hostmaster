@@ -17,9 +17,10 @@ function hosting_client_install() {
       db_query("CREATE TABLE {hosting_client_user} (
          user int(10) unsigned NOT NULL default '0',
          client int(10) unsigned NOT NULL default '0',
-         PRIMARY KEY (user)
+         contact_type longtext NOT NULL,
+         PRIMARY KEY (user, client)
        ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
-      db_query("INSERT INTO {hosting_client_user} VALUES (1, 1)");
+      db_query("INSERT INTO {hosting_client_user} VALUES (1, 1, 'admin')");
       break;
    }
 
@@ -101,6 +102,17 @@ function hosting_client_update_4() {
  */
 function hosting_client_update_5() {
   $ret = array();
+  node_access_rebuild();
+  return $ret;
+}
+
+/**
+ * Make it possible to have many clients per user and keep track of the contact type (admin/tech/billing/etc.) between users and clients
+ */
+function hosting_client_update_6() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE {hosting_client_user} DROP PRIMARY KEY, ADD PRIMARY KEY (user, client)"); 
+  $ret[] = update_sql("ALTER TABLE {hosting_client_user} ADD contact_type LONGTEXT NOT NULL");
   node_access_rebuild();
   return $ret;
 }

@@ -29,7 +29,6 @@ function hosting_client_user($op, &$edit, &$user, $category = NULL) {
     $edit['hosting_client'] = NULL;
     break;
   case 'submit':
-    hosting_client_user_form_submit($edit, $user);
     break;
 
   case 'delete':
@@ -41,50 +40,80 @@ function hosting_client_user($op, &$edit, &$user, $category = NULL) {
 function hosting_client_user_view($user) {
   if ($user->client_id) {
 
-    $items['client'] = array(
-      'title' => t('Hosting client'),
-      'value' => _hosting_node_link($user->client_id),
-      'class' => 'client',
-    );
+    foreach($user->client_id as $client => $type) {
+      $rows[] = array(_hosting_node_link($client));
+    }
 
-    return array(t('Client') => $items);
+    // this is a table because we'll have types for clients eventually
+    $header = array(t('Hosting client'));
+    $items['client_'. $client] = array(
+        'value' => theme('table', $header, $rows),
+        'class' => 'client',
+        );
+
+    return array(t('Clients') => $items);
   }
 }
 
 function hosting_client_user_form($edit, $user, $category) {
-  if (user_access('administer client users')) {
-    $client = hosting_get_client($user->client_id);
-    $fields[$category]['hosting_client'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Client'),
-      '#autocomplete_path' => 'hosting_client/autocomplete/client',
-      '#default_value' => $client->title,
-      '#weight' => 1,
-    );
 
-    return $fields;
+  $clients = array();
+  if ($user->client_id) {
+    foreach($user->client_id as $client => $type) {
+      $clients[$client] = '';
+      $fields[$category]['name'][$client] = array('#type' => 'markup', '#value' => _hosting_node_link($client));
+    }
   }
+  if (user_access('administer client users')) {
+    $fields[$category]['clients'] = array('#type' => 'checkboxes', '#options' => $clients);
+  }
+  
+  $fields[$category]['header'] = array('#type' => 'value', '#value' => array(array('data' => t('Hosting client')), array('data' => t('Remove'))));
+  
+  if (user_access('administer client users')) {
+    $fields[$category]['hosting_client'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Client name'),
+        '#title' => t('Add new client'),
+        '#weight' => 2,
+        '#autocomplete_path' => 'hosting_client/autocomplete/client',
+        );
+  }
+  $fields[$category]['#theme'] = 'hosting_client_user_form';
+  return $fields;
+}
+
+function theme_hosting_client_user_form($form) {
+  foreach (element_children($form['name']) as $client) {
+    $row = array();
+    $row['data'][] = drupal_render($form['name'][$client]);
+    if (user_access('administer client users')) {
+      $row['data'][] = drupal_render($form['clients'][$client]);
+    }
+    $rows[] = $row;
+  }
+  $output = drupal_render($form);
+  $output .= theme('table', $form['header']['#value'], $rows);
+  return $output;
 }
 
 function hosting_client_user_form_validate($edit) {
-  if (array_key_exists('hosting_client', $edit)) {
-    if (!$client = hosting_get_client($edit['hosting_client'])) {
-      form_set_error('hosting_client', 'Please fill in a valid client');
-    }
+  if (array_key_exists('hosting_client', $edit) && $edit['hosting_client'] && (!$client = hosting_get_client($edit['hosting_client']))) {
+    form_set_error('hosting_client', 'Please fill in a valid client');
   }
 }
 
 function hosting_client_user_form_submit($edit, $user) {
-  if (array_key_exists('hosting_client', $edit)) {
-    $client = hosting_get_client($edit['hosting_client']);
-    $query = db_query('UPDATE {hosting_client_user} SET client = %d WHERE user = %d', $client->nid, $user->uid);
-    if (!db_affected_rows()) {
-      $query = db_query('INSERT INTO {hosting_client_user} (client, user) VALUES (%d, %d)', $client->nid, $user->uid);
+  if (array_key_exists('clients', $edit)) {
+    foreach ($edit['clients'] as $client) {
+      $query = db_query('DELETE FROM {hosting_client_user} WHERE user = %d AND client = %d', $user->uid, $client);
     }
   }
+  if (array_key_exists('hosting_client', $edit) && $edit['hosting_client']) {
+    $client = hosting_get_client($edit['hosting_client']);
+    $query = db_query('INSERT INTO {hosting_client_user} (client, user, contact_type) VALUES (%d, %d, "%s")', $client->nid, $user->uid, '');
+  }
 }
-
-
 
 /**
  * Simple function to make sure we don't respond with grants when disabling
@@ -114,11 +143,12 @@ function hosting_client_disabling($set = NULL) {
  */
 function hosting_node_grants($account, $op) {
   $account->client_id = hosting_get_client_from_user($account->uid);
-  if ($account->client_id) {
+  foreach($account->client_id as $client_id => $client_relations) {
     $types = array_merge(hosting_feature_node_types(), array('site', 'task', 'package', 'client')); 
     foreach ($types as $type) {
       if (user_access("$op $type")) {
-        $grants['hosting ' . $type] = array($account->client_id);
+        // TODO: restrict access to certain op-type based on the user relationship to this client - see content of $client_relations
+        $grants['hosting ' . $type] = array($client_id); 
       }
     }
     return $grants;
@@ -186,6 +216,15 @@ function hosting_client_node_access_records($node) {
   }
 }
 
+/**
+ * Returns an associative array that provides the relationships a user has with different clients
+ */
 function hosting_get_client_from_user($uid) {
-  return db_result(db_query("SELECT client FROM {hosting_client_user} WHERE user=%d", $uid));
+  $clients = array();
+  if ($results = db_query("SELECT client, contact_type FROM {hosting_client_user} WHERE user=%d", $uid)) {
+    while ($result = db_fetch_array($results)) {
+      $clients[$result['client']] = explode(',', $result['contact_type']);
+    }
+  }
+  return $clients;
 }

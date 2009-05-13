@@ -227,13 +227,25 @@ function hosting_site_form($node) {
 
   # find the right client
   global $user;
-  $client_id = hosting_get_client_from_user($user->uid);
-  $client_id = ($client_id) ? $client_id : HOSTING_DEFAULT_CLIENT;
+  $client_ids = hosting_get_client_from_user($user->uid);
+  $clients = array();
+  foreach($client_ids as $client_id => $client_permissions) {
+    $client_id = $client_id ? $client_id : HOSTING_DEFAULT_CLIENT;
+    $client = node_load($client_id);
+    $clients[$client->title] = $client->title;
+    if ($node->client == $client_id || !$current_client_id) {
+      $current_client_id = $client_id;
+    }
+  }
   // allow admins to override
   if ($node->client && user_access('administer site')) {
-    $client_id = $node->client;
+    $current_client_id = $node->client;
   }
-  $client = node_load($client_id);
+  if (!$current_client_id) {
+    drupal_access_denied();
+    exit();
+  }
+  $client = node_load($current_client_id);
 
   if ((!$node->client || $node->nid) && user_access('administer site')) {
     $form['client'] = array(
@@ -245,12 +257,21 @@ function hosting_site_form($node) {
       '#autocomplete_path' => 'hosting_client/autocomplete/client',
     );
   }
-  else {
+  elseif ($node->client) {
     $form['client'] = array('#type' => 'hidden', '#value' => $client->title);
     $form['info']['client'] = array(
       '#type' => 'item',
       '#title' => t('Client'),
       '#value' => $client->title,
+    );
+  }
+  else {
+    $form['client'] = array(
+      '#type' => 'radios',
+      '#title' => t('Client'),
+      '#default_value' => key($clients),
+      '#options' => $clients,
+      '#description' => t('The client who this site belongs to.'),
     );
   }
 
@@ -323,7 +344,8 @@ function hosting_site_form($node) {
   return $form;
 }
 
-function hosting_site_validate(&$node) {
+function hosting_site_validate($node, &$form) {
+  global $user;
   $url = strtolower($node->title); // domain names are case-insensitive
   if (!_hosting_valid_fqdn($url)) {
     form_set_error('title', t("You have not specified a valid url for this site."));
@@ -332,8 +354,14 @@ function hosting_site_validate(&$node) {
   if (hosting_site_exists($url, $node->nid)) {
     form_set_error('title', t("The domain name you have specified is not unique."));
   }
-  if (!$node->new_client && !hosting_get_client($node->client)) {
-    form_set_error('client', t('Please fill in a valid client'));
+  if (!$node->new_client) {
+    $client = hosting_get_client($node->client);
+    if (!$node->client || !$client) {
+      form_set_error('client', t('Please fill in a valid client'));
+    }
+    if (!user_access('administer client') && !array_key_exists($client->nid, hosting_get_client_from_user($user->uid))) {
+      form_set_error('client', t('Access denied to client @client', array('@client' => $client->title)));
+    }
   }
   if (!array_key_exists($node->profile, hosting_get_profiles($node->platform))) {
     form_set_error('profile', t('Please fill in a valid profile'));
@@ -727,6 +755,7 @@ function _hosting_site_form_language($profile = NULL, $platform = null) {
 function _hosting_site_form_populate($element, $value, $value2 = null) {
   $form[$element] = call_user_func('_hosting_site_form_'. $element, $value, $value2);
 
+  $GLOBALS['devel_shutdown'] = FALSE;
   print drupal_to_js(
     array(
       'status' => 'TRUE',
