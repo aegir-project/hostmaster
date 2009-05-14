@@ -46,7 +46,7 @@ function hosting_client_user_view($user) {
 
     // this is a table because we'll have types for clients eventually
     $header = array(t('Hosting client'));
-    $items['client_'. $client] = array(
+    $items['client_list'] = array(
         'value' => theme('table', $header, $rows),
         'class' => 'client',
         );
