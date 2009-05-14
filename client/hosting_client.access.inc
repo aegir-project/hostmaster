@@ -143,16 +143,14 @@ function hosting_client_disabling($set = NULL) {
  */
 function hosting_node_grants($account, $op) {
   $account->client_id = hosting_get_client_from_user($account->uid);
-  foreach($account->client_id as $client_id => $client_relations) {
-    $types = array_merge(hosting_feature_node_types(), array('site', 'task', 'package', 'client')); 
-    foreach ($types as $type) {
-      if (user_access("$op $type")) {
-        // TODO: restrict access to certain op-type based on the user relationship to this client - see content of $client_relations
-        $grants['hosting ' . $type] = array($client_id); 
-      }
+  $types = array_merge(hosting_feature_node_types(), array('site', 'task', 'package', 'client')); 
+  foreach ($types as $type) {
+    if (user_access("$op $type")) {
+      // TODO: restrict access to certain op-type based on the user relationship to this client - see content of $client_relations
+      $grants['hosting ' . $type] = array_keys($account->client_id); 
     }
-    return $grants;
   }
+  return $grants;
 }
 
 /**

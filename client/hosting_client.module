@@ -53,8 +53,7 @@ function hosting_client_access($op, $node) {
         return user_access('create client');
         break;
       case 'view':
-        return user_access('view client');
-        break;
+        return user_access('view client') && db_fetch_array(db_query("SELECT user FROM {hosting_client_user} WHERE user=%d and client=%d", $user->uid, $node->nid));
       case 'update':
         if (user_access('edit own client') && $user->uid == $node->uid) {
           return TRUE;
@@ -73,10 +72,10 @@ function hosting_client_access($op, $node) {
 
 function hosting_get_client($client) {
   if (is_numeric($client)) {
-    $result = db_result(db_query("SELECT nid FROM {hosting_client} WHERE nid = %d", $client));
+    $result = db_result(db_query(db_rewrite_sql("SELECT nid FROM {hosting_client} h INNER JOIN {nid} n WHERE nid = %d"), $client));
   }
   else {
-    $result = db_result(db_query("SELECT c.nid FROM {hosting_client} c JOIN {node} n ON c.nid = n.nid WHERE (n.title = '%s' OR c.email = '%s') AND n.type = 'client'", $client));
+    $result = db_result(db_query(db_rewrite_sql("SELECT c.nid FROM {hosting_client} c JOIN {node} n ON c.nid = n.nid WHERE (n.title = '%s' OR c.email = '%s') AND n.type = 'client'"), $client));
   }
 
   if ($result) {
@@ -86,7 +85,7 @@ function hosting_get_client($client) {
 }
 
 function hosting_get_client_by_email($email) {
-  $result = db_result(db_query("SELECT c.nid FROM {hosting_client} c  WHERE c.email = '%s'", $email));
+  $result = db_result(db_query(db_rewrite_sql("SELECT c.nid FROM {hosting_client} c INNER JOIN {node} n ON n.nid = c.nid WHERE c.email = '%s'"), $email));
   if ($result) {
     return node_load($result);
   }
@@ -443,7 +442,7 @@ function hosting_client_configure() {
 
 function _hosting_get_clients() {
   $return = array();
-  $result = pager_query('SELECT nid,name from hosting_client', 25);
+  $result = pager_query(db_rewrite_sql('SELECT nid,name from {hosting_client} AS h INNER JOIN {node} n ON n.nid = h.nid AND n.vid = h.vid'), 25);
   while ($client = db_fetch_object($result)) {
     $return[$client->nid] = $client->name;
   }
@@ -483,7 +482,7 @@ function hosting_client_autocomplete($type, $keyword) {
   $matches = array();
   
   if ($type == 'client') {
-    $query = db_query('SELECT *FROM {node} WHERE type = "%s" AND title LIKE "%s"', $type, $keyword. "%");
+    $query = db_query(db_rewrite_sql('SELECT * FROM {node} n WHERE type = "%s" AND title LIKE "%s"'), $type, $keyword. "%");
     while ($result = db_fetch_object($query)) {
       $matches[$result->title] = $result->title;
     }

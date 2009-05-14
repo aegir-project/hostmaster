@@ -116,3 +116,12 @@ function hosting_client_update_6() {
   node_access_rebuild();
   return $ret;
 }
+
+/**
+ * Rebuild the node access table now that we fixed the hook_access properly
+ */
+function hosting_client_update_7() {
+  node_access_rebuild();
+  return array();
+}
+
