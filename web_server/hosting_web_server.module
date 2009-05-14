@@ -276,7 +276,7 @@ function hosting_web_server_validate(&$node, &$form) {
     // setup IP only if resolution succeeded
     if ($ip != $node->title) {
       form_set_value($form['ip_address'], $ip);
-      $node->ip_address = $ip;
+      $node->ip_address = $ip; // required to fool the ip check below
       drupal_set_message(t('Initialized the webserver IP to %ip based on hostname %name', array('%ip' => $ip, '%name' => $node->title)), 'message');
     } else {
       form_set_error('title', t('Could not resolve IP address of webserver %name. Either set the web server name to a FQDN (Fully Qualified Domain Name) or hardcode the IP here.', array('%name' => $node->title)));
@@ -396,4 +396,19 @@ function hosting_web_server_hosting_summary() {
   $web_servers = _hosting_get_web_servers();
   $summary['web_servers'] = theme('item_list', array_map('_hosting_node_link', array_keys($web_servers)), t('Web servers'));
   return $summary;
+}
+
+function hosting_web_server_form_alter($form_id, &$form) {
+  switch ($form_id) {
+    case 'web_server_node_form':
+      if ($form['#post']['op'] == 'Preview' && !$form['#post']['ip_address']) {
+        $ip = gethostbyname($form['#post']['title']);
+        // setup IP only if resolution succeeded
+        if ($ip != $node->title) {
+          drupal_set_message(t('Initialized the webserver IP to %ip based on hostname %name', array('%ip' => $ip, '%name' => $form['#post']['title'])), 'message');
+          $form['#post']['ip_address'] = $ip;
+        }
+      }
+      break;
+  }
 }
