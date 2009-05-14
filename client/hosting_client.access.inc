@@ -73,7 +73,6 @@ function hosting_client_user_form($edit, $user, $category) {
   if (user_access('administer client users')) {
     $fields[$category]['hosting_client'] = array(
         '#type' => 'textfield',
-        '#title' => t('Client name'),
         '#title' => t('Add new client'),
         '#weight' => 2,
         '#autocomplete_path' => 'hosting_client/autocomplete/client',
