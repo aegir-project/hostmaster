@@ -135,8 +135,48 @@ function hosting_client_form(&$node) {
     '#maxlength' => 100,
   );
 
-  
+  if ($node->nid) {
+    // this should probably be factored out in a common function
+    $q = db_query("SELECT u.uid, u.name FROM {hosting_client_user} h INNER JOIN {users} u ON u.uid = h.user WHERE h.client = %d", $node->nid);
+    while ($result = db_fetch_array($q)) {
+      $form['user_edit']['name'][$result['uid']] = array('#type' => 'markup', '#value' => l($result['name'], '/user/' . $result['uid']));
+      $users[$result['uid']] = '';
+    }
+    if (user_access('administer client users')) {
+      $form['user_edit']['users'] = array('#type' => 'checkboxes', '#options' => $users);
+    }
+    $form['user_edit']['header'] = array('#type' => 'value', '#value' => array(array('data' => t('Allowed users')), array('data' => t('Remove'))));
+    if (user_access('administer client users')) {
+      $form['user_edit']['new_user'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Add new user'),
+        '#weigth' => 2,
+        '#autocomplete_path' => 'user/autocomplete',
+        );
+    }
+    $form['user_edit']['#theme'] = 'hosting_client_form';
+  } else {
+    global $user;
+    $form['new_user'] = array(
+      '#type' => 'value',
+      '#value' => $user->name,
+    );
+  }
   return $form;
+}
+
+function theme_hosting_client_form($form) {
+  foreach (element_children($form['name']) as $user) {
+    $row = array();
+    $row['data'][] = drupal_render($form['name'][$user]);
+    if (user_access('administer client users')) {
+      $row['data'][] = drupal_render($form['users'][$user]);
+    }
+    $rows[] = $row;
+  }
+  $output = theme('table', $form['header']['#value'], $rows);
+  $output .= drupal_render($form);
+  return $output;
 }
 
 /**
@@ -189,6 +229,10 @@ function hosting_client_insert($node) {
   if (variable_get('hosting_client_register_user', FALSE) 
     && !user_load(array('mail' => $node->email))) {
     hosting_client_register_user($node);
+  }
+  if ($node->new_user) {
+    $user = user_load(array('name' => $node->new_user));
+    db_query('INSERT INTO {hosting_client_user} (client, user, contact_type) VALUES (%d, %d, "%s")', $node->nid, $user->uid, '');
   }
 }
 
@@ -249,6 +293,15 @@ function hosting_client_update($node) {
               $node->nid, $node->client_name, $node->organization, $node->email, $node->vid);
   }
   hosting_client_set_title($node);  
+  if ($node->users) {
+    foreach ($node->users as $user) {
+      db_query('DELETE FROM {hosting_client_user} WHERE user = %d AND client = %d', $user, $node->nid);
+    }
+  }
+  if ($node->new_user) {
+    $user = user_load(array('name' => $node->new_user));
+    db_query('INSERT INTO {hosting_client_user} (client, user, contact_type) VALUES (%d, %d, "%s")', $node->nid, $user->uid, '');
+  }
 }
 
 function hosting_nodeapi_client_delete_revision(&$node) {
@@ -304,8 +357,22 @@ function hosting_client_view($node, $teaser = FALSE, $page = FALSE) {
       '#value' => hosting_site_list("client", $node->nid), 
       '#prefix' => '<div id="hosting-site-list">',
       '#suffix' => '</div>', 
-
       '#weight' => 10
+    );
+
+    // this should probably be factored out in a common function
+    $q = db_query("SELECT u.uid, u.name FROM {hosting_client_user} h INNER JOIN {users} u ON u.uid = h.user WHERE h.client = %d", $node->nid);
+    while ($result = db_fetch_array($q)) {
+      $rows[] = array(l($result['name'], '/user/' . $result['uid']));
+    }
+    $header = array(t('Allowed users'));
+    $node->content['users_view'] = array(
+      '#type' => 'item',
+      '#value' => theme('table', $header, $rows),
+      '#class' => 'client',
+      '#prefix' => '<div id="hosting-site-list">',
+      '#suffix' => '</div>', 
+      '#weight' => 11
     );
   }
   return $node;
