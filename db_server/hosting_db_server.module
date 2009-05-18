@@ -160,8 +160,7 @@ function hosting_db_server_form(&$node) {
 function hosting_db_server_validate($node, &$form) {
   if (empty($node->db_passwd) && $node->nid) {
     $old = node_load($node->nid);
-    form_set_value($form['db_passwd']['pass1'], $old->db_passwd);
-    form_set_value($form['db_passwd']['pass2'], $old->db_passwd);
+    form_set_value($form['db_passwd'], $old->db_passwd);
   }
 }
 
