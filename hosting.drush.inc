@@ -24,6 +24,7 @@ function hosting_drush_command() {
 
   $items['hosting task'] = array(
     'description' => 'execute a specific queue item',
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL
   );
   
   return $items;

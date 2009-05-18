@@ -14,6 +14,8 @@ function _hosting_task_log($entry) {
 }
 
 function drush_hosting_hosting_task_validate($task) {
+  drush_set_options('user', 1);
+  drush_bootstrap(DRUSH_BOOTSTRAP_DRUPAL_LOGIN);
   if (is_numeric($task)) {
     $task = node_load($task);
   }
