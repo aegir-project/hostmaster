@@ -155,14 +155,15 @@ function hosting_db_server_form(&$node) {
 }
 
 /**
- * Implementation of hook_validate().
+ * Implementation of hook_submit().
   */
-function hosting_db_server_validate($node, $values, &$form) {
+function hosting_db_server_submit(&$node) {
   if (empty($node->db_passwd) && $node->nid) {
     $old = node_load($node->nid);
-    form_set_value($form['db_passwd'], $old->db_passwd);
+    $node->db_passwd = $old->db_passwd;
   }
 }
+
 
 /**
  * Implementation of hook_insert().
