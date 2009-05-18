@@ -227,24 +227,26 @@ function hosting_site_form($node) {
 
   # find the right client
   global $user;
-  $client_ids = hosting_get_client_from_user($user->uid);
-  $clients = array();
-  foreach($client_ids as $client_id => $client_permissions) {
-    $client_id = $client_id ? $client_id : HOSTING_DEFAULT_CLIENT;
-    $client = node_load($client_id);
-    $clients[$client->title] = $client->title;
-    if ($node->client == $client_id || !$current_client_id) {
-      $current_client_id = $client_id;
+  if ($user->uid) {
+    $client_ids = hosting_get_client_from_user($user->uid);
+    $clients = array();
+    foreach($client_ids as $client_id => $client_permissions) {
+      $client_id = $client_id ? $client_id : HOSTING_DEFAULT_CLIENT;
+      $client = node_load($client_id);
+      $clients[$client->title] = $client->title;
+      if ($node->client == $client_id || !$current_client_id) {
+        $current_client_id = $client_id;
+      }
     }
+  }
+  else {
+    $current_client_id = HOSTING_DEFAULT_CLIENT;
   }
   // allow admins to override
   if ($node->client && user_access('administer site')) {
     $current_client_id = $node->client;
   }
-  if (!$current_client_id) {
-    drupal_access_denied();
-    exit();
-  }
+
   $client = node_load($current_client_id);
 
   if ((!$node->client || $node->nid) && user_access('administer site')) {
