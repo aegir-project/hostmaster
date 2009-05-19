@@ -64,13 +64,13 @@ function hosting_client_user_form($edit, $user, $category) {
       $fields[$category]['name'][$client] = array('#type' => 'markup', '#value' => _hosting_node_link($client));
     }
   }
-  if (user_access('administer client users')) {
+  if (user_access('edit client users')) {
     $fields[$category]['clients'] = array('#type' => 'checkboxes', '#options' => $clients);
   }
   
   $fields[$category]['header'] = array('#type' => 'value', '#value' => array(array('data' => t('Hosting client')), array('data' => t('Remove'))));
   
-  if (user_access('administer client users')) {
+  if (user_access('edit client users')) {
     $fields[$category]['hosting_client'] = array(
         '#type' => 'textfield',
         '#title' => t('Add new client'),
@@ -86,7 +86,7 @@ function theme_hosting_client_user_form($form) {
   foreach (element_children($form['name']) as $client) {
     $row = array();
     $row['data'][] = drupal_render($form['name'][$client]);
-    if (user_access('administer client users')) {
+    if (user_access('edit client users')) {
       $row['data'][] = drupal_render($form['clients'][$client]);
     }
     $rows[] = $row;

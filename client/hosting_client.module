@@ -34,7 +34,7 @@ function hosting_client_hosting_feature() {
 
 
 function hosting_client_perm() {
-  return array('create client','view client', 'edit own client', 'delete own client', 'administer clients', 'administer client users');
+  return array('create client','view client', 'edit own client', 'delete own client', 'administer clients', 'edit client users');
 }
 
 function hosting_client_access($op, $node) {
@@ -141,11 +141,11 @@ function hosting_client_form(&$node) {
       $form['user_edit']['name'][$result['uid']] = array('#type' => 'markup', '#value' => l($result['name'], '/user/' . $result['uid']));
       $users[$result['uid']] = '';
     }
-    if (user_access('administer client users')) {
+    if (user_access('edit client users')) {
       $form['user_edit']['users'] = array('#type' => 'checkboxes', '#options' => $users);
     }
     $form['user_edit']['header'] = array('#type' => 'value', '#value' => array(array('data' => t('Allowed users')), array('data' => t('Remove'))));
-    if (user_access('administer client users')) {
+    if (user_access('edit client users')) {
       $form['user_edit']['new_user'] = array(
         '#type' => 'textfield',
         '#title' => t('Add new user'),
@@ -168,7 +168,7 @@ function theme_hosting_client_form($form) {
   foreach (element_children($form['name']) as $user) {
     $row = array();
     $row['data'][] = drupal_render($form['name'][$user]);
-    if (user_access('administer client users')) {
+    if (user_access('edit client users')) {
       $row['data'][] = drupal_render($form['users'][$user]);
     }
     $rows[] = $row;
