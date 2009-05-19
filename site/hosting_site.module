@@ -361,7 +361,7 @@ function hosting_site_validate($node, &$form) {
     if (!$node->client || !$client) {
       form_set_error('client', t('Please fill in a valid client'));
     }
-    if (!user_access('administer client') && !array_key_exists($client->nid, hosting_get_client_from_user($user->uid))) {
+    if (!user_access('administer clients') && !array_key_exists($client->nid, hosting_get_client_from_user($user->uid))) {
       form_set_error('client', t('Access denied to client @client', array('@client' => $client->title)));
     }
   }
