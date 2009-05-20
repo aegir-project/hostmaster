@@ -338,7 +338,8 @@ function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
   }
   $node->content['info']['#suffix'] = '</div>';
 
-  if (user_access('retry failed tasks') && !$node->queued && ($node->task_status != HOSTING_TASK_SUCCESS)) {
+  if (user_access('retry failed tasks') && !$node->queued && ($node->task_status == HOSTING_TASK_ERROR)) {
+
     $node->content['retry'] = array(
       '#type' => 'markup',
       '#value' => drupal_get_form('hosting_task_retry_form', $node->nid),
@@ -543,7 +544,7 @@ function _hosting_task_list($filter_by, $filter_value, $count = 5, $element = 0,
      if (!in_array('actions', $skip) && user_access('retry failed tasks')) {
        $headers[t('Actions')] = '';
 
-      if (($node->task_status != HOSTING_TASK_SUCCESS) && !$node->queued) {
+      if (($node->task_status == HOSTING_TASK_ERROR) && !$node->queued) {
         $row['actions'] = array(
           'data' => drupal_get_form('hosting_task_retry_form', $node->nid),
           'class' => 'hosting-task-retry'
@@ -554,14 +555,14 @@ function _hosting_task_list($filter_by, $filter_value, $count = 5, $element = 0,
        }
      }
 
-     if ($node->queued) {
-       $class = 'hosting-queue';
-     }
-     elseif ($node->task_status == HOSTING_TASK_SUCCESS) {
+     if ($node->task_status == HOSTING_TASK_SUCCESS) {
        $class = 'hosting-success';
      }
-     else {
+     elseif ($node->task_status == HOSTING_TASK_ERROR) {
        $class = 'hosting-error';
+     }
+     else {
+       $class = 'hosting-queue';
      }
 
      $rows[] = array('data' => $row, 'class' => $class);

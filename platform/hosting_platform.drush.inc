@@ -51,6 +51,7 @@ function hosting_platform_post_hosting_verify_task($task, $data) {
         // Import any sites that have not been created yet.
         $site = new StdClass();
         $site->type = 'site';
+        $site->site_status = HOSTING_SITE_QUEUED;
         $site->import = TRUE;
         $site->title = $url;
         $site->platform = $node->nid;

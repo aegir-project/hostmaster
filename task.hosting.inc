@@ -24,6 +24,10 @@ function drush_hosting_hosting_task_validate($task) {
     $task->changed = mktime();
     $task->executed = mktime();
     $task->revision = true;
+
+    // We remove this from the queue at the start of execution,
+    // otherwise, if it takes too long to run it might have a
+    // second thread spawned to process it.
     $task->queued = 0;
     node_save($task);
 
