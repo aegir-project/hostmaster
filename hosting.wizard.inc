@@ -430,7 +430,7 @@ function hosting_wizard_hosting_verify() {
   $form = array();
   $node = hosting_get_most_recent_task(HOSTING_OWN_PLATFORM, 'verify');
   $form['provision'] = array('#type' => 'requirement_help', '#requirement' => 'platform');
-  if ($node->task_status & DRUSH_SUCCESS) {
+  if ($node->task_status == HOSTING_TASK_SUCCESS) {
     $form['provision']['#status'] = HOSTING_STATUS_SUCCESS;
     $form['provision']['#message'] = t('Your platform has been succesfully configured. You can now create sites.');
 
@@ -455,7 +455,7 @@ function hosting_wizard_hosting_verify() {
 
 function hosting_wizard_hosting_verify_validate() {
   $node = hosting_get_most_recent_task(HOSTING_OWN_PLATFORM, 'verify');
-  if (!($node->task_status & DRUSH_SUCCESS)) {
+  if (!($node->task_status == HOSTING_TASK_SUCCESS)) {
     drupal_goto('/hosting/wizard/hosting/verify');
   }
 }

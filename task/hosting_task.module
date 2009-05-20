@@ -94,7 +94,7 @@ function hosting_add_task($nid, $type, $args = null) {
  #todo: make this pretty
  $task->title = t("!type !title", array('!type' => $type, '!title' => $node->title) );
  $task->task_type = $type;
- $task->task_status = DRUSH_NOT_COMPLETED;
+ $task->task_status = HOSTING_TASK_QUEUED;
  $task->rid = $node->nid;
  $task->queued = 1;
 
@@ -333,12 +333,12 @@ function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
     $node->content['info']['status'] = array(
       '#type' => 'item',
       '#title' => t('Status'),
-      '#value' => implode(", ", _hosting_parse_error_code($node->task_status)),
+      '#value' => _hosting_parse_error_code($node->task_status),
     );
   }
   $node->content['info']['#suffix'] = '</div>';
 
-  if (user_access('retry failed tasks') && !$node->queued && ($node->task_status != DRUSH_SUCCESS)) {
+  if (user_access('retry failed tasks') && !$node->queued && ($node->task_status != HOSTING_TASK_SUCCESS)) {
     $node->content['retry'] = array(
       '#type' => 'markup',
       '#value' => drupal_get_form('hosting_task_retry_form', $node->nid),
@@ -455,14 +455,12 @@ function hosting_get_tasks($filter_by = null, $filter_value = null, $count = 5, 
 */
 
 
-if (!defined('DRUSH_SUCCESS')) {
-  /** The command was not successfully completed. This is the default error status. */
-  define('DRUSH_NOT_COMPLETED', 0);
-  /** The command completed succesfully. */
-  define('DRUSH_SUCCESS', 1);
-  /** The command could not be completed because the framework has specified errors that have occured. */
-  define('DRUSH_FRAMEWORK_ERROR', 2);
-}
+/** The task is queued **/
+define('HOSTING_TASK_QUEUED', 0);
+/** The command completed succesfully. */
+define('HOSTING_TASK_SUCCESS', 1);
+/** The command was not successfully completed. This is the default error status. */
+define('HOSTING_TASK_ERROR', 2);
 
 
 /**
@@ -473,17 +471,12 @@ if (!defined('DRUSH_SUCCESS')) {
  * Turn bitmask integer error code into associative array
  */
 function _hosting_parse_error_code($code) {
-  switch ($code) {
-    case DRUSH_NOT_COMPLETED : 
-      return array(DRUSH_NOT_COMPLETED => t('Queued'));
-      break;
-    case DRUSH_SUCCESS : 
-      return array(DRUSH_SUCCESS => t('Succesful'));
-      break;
-    default:
-      return array(DRUSH_FRAMEWORK_ERROR => t('Framework error'));
-      break;
-  }
+  $messages = array(
+    HOSTING_TASK_SUCCESS => t('Succesful'),
+    HOSTING_TASK_QUEUED => t('Queued'),
+    HOSTING_TASK_ERROR => t('Failed')
+  );
+  return $messages[$code];
 }
 
 function hosting_task_status($filter_by, $filter_value, $type = 'install') {
@@ -501,7 +494,7 @@ function hosting_task_status($filter_by, $filter_value, $type = 'install') {
 function hosting_task_status_output($filter_by, $filter_value, $type = 'install') {
   $status = hosting_task_status($filter_by, $filter_value, $type);
   if (is_int($status)) {
-    return join(', ', _hosting_parse_error_code($status));
+    return _hosting_parse_error_code($status);
   } else {
     return $status; # should be NULL
   }
@@ -550,7 +543,7 @@ function _hosting_task_list($filter_by, $filter_value, $count = 5, $element = 0,
      if (!in_array('actions', $skip) && user_access('retry failed tasks')) {
        $headers[t('Actions')] = '';
 
-      if (($node->task_status != DRUSH_SUCCESS) && !$node->queued) {
+      if (($node->task_status != HOSTING_TASK_SUCCESS) && !$node->queued) {
         $row['actions'] = array(
           'data' => drupal_get_form('hosting_task_retry_form', $node->nid),
           'class' => 'hosting-task-retry'
@@ -564,7 +557,7 @@ function _hosting_task_list($filter_by, $filter_value, $count = 5, $element = 0,
      if ($node->queued) {
        $class = 'hosting-queue';
      }
-     elseif ($node->task_status == DRUSH_SUCCESS) {
+     elseif ($node->task_status == HOSTING_TASK_SUCCESS) {
        $class = 'hosting-success';
      }
      else {

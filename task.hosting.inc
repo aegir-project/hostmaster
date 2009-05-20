@@ -24,6 +24,7 @@ function drush_hosting_hosting_task_validate($task) {
     $task->changed = mktime();
     $task->executed = mktime();
     $task->revision = true;
+    $task->queued = 0;
     node_save($task);
 
     $task->options = array();
@@ -59,7 +60,9 @@ function drush_hosting_hosting_task() {
   drush_set_context('HOSTING_DRUSH_OUTPUT', $output);
   $code = drush_get_error();
   // record status 
-  $task->task_status = ($code) ? $code : DRUSH_SUCCESS;
+  // We return 0 on success, so anything else is an error.
+  $task->task_status = ($code) ? HOSTING_TASK_ERROR : HOSTING_TASK_SUCCESS;
+
   $task->queued = 0;
     // New revision is created at the beginning of function.
   $task->revision = false;

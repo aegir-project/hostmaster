@@ -143,7 +143,7 @@ function hosting_site_hosting_verify_task_rollback($task, $data) {
 /**
  * Implementation of the hosting_failed_install hook
  */
-function hosting_site_hosting_import_task_rollback($task, $data, $code) {
+function hosting_site_hosting_import_task_rollback($task, $data) {
   if ($task->ref->type == 'site') {
     $task->ref->no_verify = TRUE;
     $task->ref->verified = 0;
