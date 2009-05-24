@@ -138,7 +138,7 @@ function hosting_client_form(&$node) {
     // this should probably be factored out in a common function
     $q = db_query("SELECT u.uid, u.name FROM {hosting_client_user} h INNER JOIN {users} u ON u.uid = h.user WHERE h.client = %d", $node->nid);
     while ($result = db_fetch_array($q)) {
-      $form['user_edit']['name'][$result['uid']] = array('#type' => 'markup', '#value' => l($result['name'], '/user/' . $result['uid']));
+      $form['user_edit']['name'][$result['uid']] = array('#type' => 'markup', '#value' => l($result['name'], 'user/' . $result['uid']));
       $users[$result['uid']] = '';
     }
     if (user_access('edit client users')) {
@@ -362,7 +362,13 @@ function hosting_client_view($node, $teaser = FALSE, $page = FALSE) {
     // this should probably be factored out in a common function
     $q = db_query("SELECT u.uid, u.name FROM {hosting_client_user} h INNER JOIN {users} u ON u.uid = h.user WHERE h.client = %d", $node->nid);
     while ($result = db_fetch_array($q)) {
-      $rows[] = array(l($result['name'], '/user/' . $result['uid']));
+      if (user_access('view users') || ($result['uid'] == $GLOBALS['user']->uid)) {
+        $rows[] = array(l($result['name'], 'user/' . $result['uid']));
+      }
+      else {
+        $rows[] = array($result['name']);
+      }
+      
     }
     $header = array(t('Allowed users'));
     $node->content['users_view'] = array(

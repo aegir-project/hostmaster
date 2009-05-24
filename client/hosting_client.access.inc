@@ -83,6 +83,12 @@ function hosting_client_user_form($edit, $user, $category) {
 }
 
 function theme_hosting_client_user_form($form) {
+  if (array_key_exists('hosting_client', $form)) {
+    $edit_name = drupal_render($form['hosting_client']);
+  }
+  else {
+    $edit_name = '';
+  }
   foreach (element_children($form['name']) as $client) {
     $row = array();
     $row['data'][] = drupal_render($form['name'][$client]);
@@ -93,6 +99,7 @@ function theme_hosting_client_user_form($form) {
   }
   $output = drupal_render($form);
   $output .= theme('table', $form['header']['#value'], $rows);
+  $output .= $edit_name;
   return $output;
 }
 
