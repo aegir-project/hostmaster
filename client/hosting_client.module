@@ -450,7 +450,7 @@ function hosting_client_menu($may_cache) {
       'title' => t('Clients'),
       'callback' => 'drupal_get_form',
       'callback arguments' => 'hosting_client_configure', 
-      'access' => user_access('administer clients'),
+      'access' => user_access('administer clients') && hosting_feature('client'),
       'type' => MENU_LOCAL_TASK
     );
   }
