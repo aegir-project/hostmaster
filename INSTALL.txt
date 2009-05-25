@@ -88,9 +88,9 @@ Shell commands::
  cvs co -d profiles/hostmaster -rDRUPAL-5--0-2-BETA1 contributions/profiles/hostmaster
  cvs co -d profiles/hostmaster/modules/hosting -rDRUPAL-5--0-2-BETA1 contributions/modules/hosting
  cd /var/aegir
- cvs co -d drush -rDRUPAL-6--0-2-RC1 contributions/modules/drush
+ cvs co -d drush -rDRUPAL-6--2-0-RC1 contributions/modules/drush
  mkdir .drush
- cvs co -d .drush/provision -rDRUPAL-5--0-2-BETA1 contributions/modules/provision
+ cvs co -d .drush/provision -rDRUPAL-6--0-2-BETA1 contributions/modules/provision
 
 Checking out the theme
 ----------------------
