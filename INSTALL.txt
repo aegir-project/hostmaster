@@ -98,7 +98,7 @@ Checking out the theme
 Aegir now has its own theme which you can use. This is optional:
 
 Shell commands::
- cvs co -d profiles/hostmaster/themes/eldir -rDRUPAL-5--0-2-BETA1 contributions/themes/eldir
+ cvs co -d drupal-5.x/profiles/hostmaster/themes/eldir -rDRUPAL-5--0-2-BETA1 contributions/themes/eldir
 
 Apache configuration
 --------------------
