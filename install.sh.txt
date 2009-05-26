@@ -1,0 +1,166 @@
+#!/usr/bin/env sh
+
+AEGIR_VERSION=0.2
+DRUPAL_VERSION=5.18
+AMENU_VERSION=5.x-2.8
+
+DRUSH_TAG=DRUPAL-6--2-0
+PROVISION_TAG=DRUPAL-6--0-2
+HOSTING_TAG=DRUPAL-6--0-2
+
+
+NO_COLOR='\e[0m'
+UL='\E[0;4m'
+BOLD='\E[0;1m'
+
+aegir_title () {
+  echo "$BOLD$UL$1$NO_COLOR"; 
+}
+
+aegir_prompt () {
+  echo "\n$BOLD$1$NO_COLOR \c";
+}
+
+aegir_user () {
+  aegir_title "SECTION 1 : Aegir user account"
+  echo "Aegir is designed to run as it's own user that was created specifically for it."
+  echo "This script will not create the user account, but will install Aegir for the currently logged in user."
+  aegir_prompt "Do you wish to continue installing Aegir as the $USER user? yes/no (Y/n) :"
+
+  read yesno
+  if echo yesno | grep -qi n; then
+    echo "You can create a user account by typing: 
+      'sudo adduser aegir --home /var/aegir'"
+    echo "Once you have created the user, you should log in as that user by typing:
+      'su - aegir'"
+    echo "Once you have logged in as the new user, you can run this script again to continue";
+    exit
+  fi;
+}
+
+check_requirements () {
+  aegir_title "SECTION 2 : Checking dependencies"
+  echo "Checking that all the required commands are available :"
+
+  DOEXIT=0
+
+  found=`type php`
+  if [ $? != 0 ]; then
+    echo "PHP command line interface not available."
+    DOEXIT=1;
+  else
+    echo $found;
+  fi;
+
+  found=`type mysql`
+  if [ $? != 0 ]; then
+    echo "Mysql client binary not available."
+    DOEXIT=1;
+  else
+    echo $found;
+  fi;
+
+  found=`type cvs`
+  if [ $? != 0 ]; then
+    echo "CVS command not available."
+    DOEXIT=1
+  fi;
+
+  found=`type wget`
+  if [ $? != 0 ]; then
+    echo "Wget command not available."
+    DOEXIT=1;
+  else
+    echo $found;
+  fi;
+
+  if [ $DOEXIT = 1 ]; then
+    echo "\n Aegir can not be installed because of missing dependencies."
+    echo "Please install the missing packages and run this script again.\n\n\n"
+    exit
+  fi;
+
+  echo "All the requirements are available."
+}
+
+
+aegir_download () {
+  aegir_title "SECTION 3 : Downloading Aegir"
+  echo "Logging in to Drupal CVS"
+  export CVSROOT=:pserver:anonymous:anonymous@cvs.drupal.org:/cvs/drupal-contrib
+  cvs login
+
+  echo "Downloading Drush"
+  cvs -z6 co -d drush -r$DRUSH_TAG contributions/modules/drush
+
+  echo "Downloading Provision"
+  mkdir ~/.drush
+  cvs -z6 co -d .drush/provision -r$PROVISION_TAG contributions/modules/provision
+
+  echo "Download hostmaster install profile"
+  cvs -z6 co -d hostmaster -r$HOSTING_TAG contributions/profiles/hostmaster
+  mkdir hostmaster/modules
+  mkdir hostmaster/themes
+
+  echo "Download hosting front end"
+  cvs -z6 co -d hostmaster/modules/hosting -r$HOSTING_TAG contributions/modules/hosting
+
+  echo "Download optional components eldir and admin_menu"
+  cvs -z6 co -d hostmaster/themes/eldir -r$HOSTING_TAG contributions/themes/eldir
+  ~/drush/drush.php dl admin_menu-$AMENU_VERSION --destination=hostmaster/modules 
+
+  echo "Downloading Drupal"
+  drush/drush.php dl drupal-$DRUPAL_VERSION
+  mv hostmaster $DRUPAL_DIR/profiles/
+
+  echo "Making settings.php file writeable"
+  chmod 777 $DRUPAL_DIR/sites/default/settings.php
+}
+
+aegir_vhost () {
+  aegir_title "SECTION 4 : Creating Virtual host configuration file"
+
+  aegir_prompt "Choose a domain for your hosting site: "
+  read $DOMAIN
+
+  CONF_DIR=~/config/vhost.d
+  DRUPAL_DIR=~/drupal-$DRUPAL_VERSION
+
+  echo Creating $CONF_DIR to store configuration files
+  mkdir -p $CONF_DIR
+
+  sed -e "s+aegir.example.com+$DOMAIN+g" $DRUPAL_DIR/profiles/hostmaster/apache2.conf.txt |
+  sed -e "s+/var/aegir/drupal-5.x+$DRUPAL_DIR+g" |
+  sed -e "s+/var/aegir/config/vhost.d+$CONF_DIR+g" > $CONF_DIR/$DOMAIN
+
+  echo "You will need to modify your http.conf file to add the following line to it :"
+  echo "Include $CONF_DIR"
+}
+
+aegir_database () {
+  aegir_title "SECTION 5 : Setting up MySQL"
+  aegir_prompt "MySQL root user password : "
+  read DBPASS
+
+  echo "Creating mysql database for hostmaster site :"
+  mysqladmin -uroot -p$DBPASS create hostmaster
+
+  echo "Creating hostmaster user account :"
+  aegir_prompt "Username [hostmaster]:"
+  read HMUSER
+
+  aegir_prompt "Password:"
+  read HMPASS
+
+  echo "GRANT ALL ON hostmaster.* TO '$HMUSER'@'localhost' IDENTIFIED BY '$HMPASS'" | 
+   mysql -uroot  -p$DBPASS hostmaster
+}
+
+clear
+aegir_title "Installing Aegir $AEGIR_VERSION"
+cd ~/
+aegir_user
+check_requirements
+aegir_download
+aegir_vhost
+aegir_database
