@@ -2,12 +2,11 @@
 
 AEGIR_VERSION=0.2
 DRUPAL_VERSION=5.18
-AMENU_VERSION=5.x-2.8
 
 DRUSH_TAG=DRUPAL-6--2-0
 PROVISION_TAG=DRUPAL-6--0-2
-HOSTING_TAG=DRUPAL-6--0-2
-
+HOSTING_TAG=DRUPAL-5--0-2
+AMENU_TAG=DRUPAL-5--2-8
 
 NO_COLOR='\e[0m'
 UL='\E[0;4m'
@@ -21,22 +20,148 @@ aegir_prompt () {
   echo "\n$BOLD$1$NO_COLOR \c";
 }
 
+SUDO_PASS=''
+root_sudo () {
+  while [ -z $SUDO_PASS ]; do
+    echo "Enter sudo password: \c";
+    read -s TEMP_SUDO_PASS;
+    echo ""
+    echo $TEMP_SUDO_PASS | sudo -S true 2> /dev/null
+    if [ $? != 1 ]; then
+      SUDO_PASS=$TEMP_SUDO_PASS;
+    else
+      echo "Sudo password incorrect, please try again.";
+    fi;
+  done;
+
+  if [ -n $1 ]; then
+    echo $SUDO_PASS | sudo -S "$1";
+  fi;
+}
+
+
+AEGIR_PASS=''
+aegir_sudo () {
+  while [ -z $AEGIR_PASS ]; do
+    echo "Enter password $AEGIR_USER user: \c";
+    read -s TEMP_AEGIR_PASS;
+    echo ""
+    echo $TEMP_AEGIR_PASS | sudo -H -u $AEGIR_USER -S - true 2> /dev/null
+    if [ $? != 1 ]; then
+      AEGIR_PASS=$TEMP_AEGIR_PASS;
+    else
+      echo "Sudo password incorrect, please try again.";
+    fi;
+  done;
+  if [ -n $1 ]; then
+    echo $AEGIR_PASS | sudo -H -u $AEGIR_USER -S - "$1";
+  fi;
+}
+
+find_apachectl () {
+  found=`which apache2ctl || which apachectl`
+  if [ $? = 1 ]; then
+    echo "Could not find apache2ctl or apachectl in your path. exiting";
+    exit;
+  fi;
+  export APACHECTL_BIN=$found
+}
+
+find_phpcli () {
+  found=`which php5 || which php`
+  if [ $? = 1 ]; then
+    echo "Could not find php5 or php binaries in your path. exiting";
+    exit;
+  fi;
+  export PHP_BIN=$found
+}
+
+find_httpd () {
+  found=`which apache2 || which apache || which httpd`
+  if [ $? = 1 ]; then
+    echo "Could not find apache2, apache or httpd in your path. exiting";
+    exit;
+  fi;
+  export HTTPD_BIN=$found
+}
+
+find_httpdconf () {
+  HTTPD_CONF=`$APACHECTL_BIN -V | grep SERVER_CONFIG_FILE | sed -e 's/.*=//' -e 's/"//g'`
+}
+
+find_web_group () {
+  bnfound=`basename $HTTPD_BIN`
+  group=`ps -eo user,group,comm  | grep $bnfound | grep -v 'root' | awk '{print $2}'`
+}
+
+edit_visudo () {
+  sudo cat /etc/sudoers > /tmp/sudoers; 
+  echo "$AEGIR_USER ALL= NOPASSWD: $APACHECTL_BIN" >> /tmp/sudoers
+  sudo visudo -c -f /tmp/sudoers
+  if [ $? != 0 ]; then
+    sudo rm /tmp/sudoers;
+    exit 1;
+  fi
+  if [ -e /etc/sudoers.tmp ]; 
+    sudo rm /tmp/sudoers;
+    then exit 1; 
+  fi
+  sudo mv /tmp/sudoers /etc/sudoers
+}
+
+edit_httpdconf () {
+  echo "\nInclude $CONF_DIR" >> $HTTPD_CONF
+}
+
 aegir_user () {
+
+  AEGIR_USER=''
+
   aegir_title "SECTION 1 : Aegir user account"
   echo "Aegir is designed to run as it's own user that was created specifically for it."
   echo "This script will not create the user account, but will install Aegir for the currently logged in user."
-  aegir_prompt "Do you wish to continue installing Aegir as the $USER user? yes/no (Y/n) :"
-
+  aegir_prompt "Install Aegir as the $USER user? yes/no (Y/n) :"
   read yesno
-  if echo yesno | grep -qi n; then
-    echo "You can create a user account by typing: 
-      'sudo adduser aegir --home /var/aegir'"
-    echo "Once you have created the user, you should log in as that user by typing:
-      'su - aegir'"
-    echo "Once you have logged in as the new user, you can run this script again to continue";
-    exit
+  if `echo $yesno | grep -qi y`; then
+    AEGIR_USER=$USER;
+    aegir_user_home
+  else
+    while [ -z $AEGIR_USER ]; do
+      aegir_prompt "Which user do you want to install aegir as? [aegir] :"
+      read USER_CHECK
+      if [ -z $USER_CHECK ]; then
+        USER_CHECK=aegir;
+      fi;
+
+      AEGIR_UID=`id -u $USER_CHECK 2> /dev/null`
+      if [ $? = 0 ]; then
+        echo "User $USER_CHECK already exists.";
+        AEGIR_USER=USER_CHECK
+        aegir_user_home
+      else
+        echo "User does not exist, do you want to create this user?"
+      fi;
+    done;
   fi;
 }
+
+aegir_user_home() {
+  if [ `uname` = 'Darwin' ]; then
+    AEGIR_HOME=`dscl localhost -read /Local/Default/Users/$AEGIR_USER NFSHomeDirectory | awk '{print $2}'`
+  else
+    AEGIR_HOME=`cat /etc/passwd | grep $AEGIR_USER | awk -F: '{print $6}'`
+  fi;
+  if [ -z $AEGIR_HOME ]; then
+    echo "Aegir requires the user to have a home directory";
+    exit 1;
+  fi;
+  return $?;
+}
+
+aegir_password() {
+
+}
+
 
 check_requirements () {
   aegir_title "SECTION 2 : Checking dependencies"
@@ -91,23 +216,22 @@ aegir_download () {
   cvs login
 
   echo "Downloading Drush"
-  cvs -z6 co -d drush -r$DRUSH_TAG contributions/modules/drush
+  cvs_co modules/drush $DRUSH_TAG ~/drush
 
   echo "Downloading Provision"
-  mkdir ~/.drush
-  cvs -z6 co -d .drush/provision -r$PROVISION_TAG contributions/modules/provision
+  cvs_co modules/provision $PROVISION_TAG ~/.drush/provision
 
   echo "Download hostmaster install profile"
-  cvs -z6 co -d hostmaster -r$HOSTING_TAG contributions/profiles/hostmaster
-  mkdir hostmaster/modules
-  mkdir hostmaster/themes
+  cvs_co profiles/hostmaster $HOSTING_TAG ~/hostmaster
 
   echo "Download hosting front end"
-  cvs -z6 co -d hostmaster/modules/hosting -r$HOSTING_TAG contributions/modules/hosting
+  cvs_co modules/hosting $HOSTING_TAG ~/hostmaster/modules/hosting
 
-  echo "Download optional components eldir and admin_menu"
-  cvs -z6 co -d hostmaster/themes/eldir -r$HOSTING_TAG contributions/themes/eldir
-  ~/drush/drush.php dl admin_menu-$AMENU_VERSION --destination=hostmaster/modules 
+  echo "Download eldir theme"
+  cvs_co themes/eldir $HOSTING_TAG ~/hostmaster/themes/eldir
+
+  echo "Download admin_menu module"
+  cvs_co modules/admin_menu $AMENU_TAG ~/hostmaster/modules/admin_menu
 
   echo "Downloading Drupal"
   drush/drush.php dl drupal-$DRUPAL_VERSION
@@ -115,6 +239,12 @@ aegir_download () {
 
   echo "Making settings.php file writeable"
   chmod 777 $DRUPAL_DIR/sites/default/settings.php
+}
+
+cvs_co () {
+  bn=`basename $3`
+  cvs -z6 co -d $bn.tmp -r$2 contributions/$1
+  mv $bn.tmp $3
 }
 
 aegir_vhost () {
@@ -158,9 +288,13 @@ aegir_database () {
 
 clear
 aegir_title "Installing Aegir $AEGIR_VERSION"
-cd ~/
-aegir_user
-check_requirements
-aegir_download
-aegir_vhost
-aegir_database
+echo "This script is not safe to use yet, please follow the instructions in install.txt"
+exit
+
+#cd ~/
+root_sudo ls
+#aegir_user
+#check_requirements
+#aegir_download
+#aegir_vhost
+#aegir_database
