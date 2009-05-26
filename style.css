@@ -639,6 +639,21 @@ div.node div.meta {
     padding:0px 0px 9px;
     }
 
+div.node ul.links {
+  float:right;
+  font-size:11px;  
+  }
+
+  div.node ul.links li a {
+    border-right:1px solid #e8e8e8;
+    padding:0px 10px;
+    }
+
+  div.node ul.links li.last a {
+    border:0px;
+    padding-right:0px;
+    }
+
 /**
  * AEGIR-SPECIFIC =====================================================
  */
