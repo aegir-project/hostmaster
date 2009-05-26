@@ -10,12 +10,6 @@
   </head>
   <body class='aegir <?php print $body_classes ?>'>
 
-  <?php if ($messages): ?>
-  <div id="console" class='reverse'><div class='limiter clear-block'>
-    <?php if ($messages): print $messages; endif; ?>
-  </div></div>
-  <?php endif; ?>
-
   <div id="header" class='reverse'><div class='limiter clear-block'>
     <div class='logo'><?php print $logo ?></div>
     <?php if ($site_name): ?><div class='site-name'><?php print $site_name ?></div><?php endif; ?>
@@ -26,6 +20,12 @@
     <?php if ($breadcrumb) print $breadcrumb; ?>
     <?php if ($primary_links) print theme('links', $primary_links, array('class' => 'links primary-links')) ?>
   </div></div>
+
+  <?php if ($messages): ?>
+  <div id="console" class='reverse'><div class='limiter clear-block'>
+    <?php if ($messages): print $messages; endif; ?>
+  </div></div>
+  <?php endif; ?>
 
   <div id='header-region'><div class='limiter clear-block'>
     <?php print $header; ?>

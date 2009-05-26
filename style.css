@@ -377,31 +377,42 @@ div.sidebar div.item-list li {
  */
 div#console {
   font-size:15px;
-  background:#111;
-  border-bottom:1px solid #234;
+  border-top:1px solid #111;
+  border-bottom:1px solid #fff;
+  padding:9px 0px;
+  background:#222 url(images/sprite.png) 0px -240px repeat-x;
   }
 
 div#console div.messages {
-  background:transparent;
   color:#8cf;
   text-shadow:0px 0px 15px #06c;
+  background:#024;
 
-  border:0px;
-  padding:20px 0px;
-  border-top:1px solid #333;
+  margin:5px 0px;
+  padding:9px;
+
+  border-style:solid;
+  border-color:#048;
+  border-width:1px 1px 1px 6px;
   }
 
   div#console div.error {
+    background-color:#400;
+    border-color:#800;
     color:#fa4;
     text-shadow:0px 0px 15px #c30;
     }
 
   div#console div.warning {
+    background-color:#630;
+    border-color:#a50;
     color:#fe4;
     text-shadow:0px 0px 15px #c80;
     }
 
   div#console div.ok {
+    background-color:#040;
+    border-color:#080;
     color:#cfc;
     text-shadow:0px 0px 15px #0c6;
     }
