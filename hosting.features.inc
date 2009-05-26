@@ -114,7 +114,8 @@ function hosting_get_features($refresh = FALSE) {
     foreach ($hooks as $func) {
       $features = array_merge($features, $func());
     }
-    cache_set('hosting_features', 'cache', serialize($features));
+    $serialized = serialize($features);
+    cache_set('hosting_features', 'cache', $serialized);
     return $features;
   }
   else {

@@ -19,10 +19,10 @@ include_once('hosting.features.inc');
 /**
  * Implementation of hook_menu()
  */
-function hosting_menu($may_cache = true) {
+function hosting_menu($may_cache) {
   global $user;
   $items = array();
-  hosting_wizard_menu($may_cache, $items);
+#  hosting_wizard_menu($may_cache, $items);
   if ($may_cache) {
  
     $items[] = array(

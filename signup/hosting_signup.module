@@ -245,10 +245,9 @@ function hosting_signup_validate_form($server_key, $values = array()) {
 function hosting_signup_form_submit($form_id, $values) {
   $key = variable_get('hosting_signup_server_key', '');
   $values['form_id'] =  '_hosting_signup_form';
-
-  $return = xmlrpc(_hosting_signup_get_url(), 'hosting_signup.submitForm', $key, $values);
-  if (isset($return['site']['nid']) && isset($return['site']['nid'])) {
-    $path = sprintf("hosting/signup/thanks/%s/%s/%s", $return['site']['title'], $return['client']['email'], $return['client']['client_name']);
+  $xmlrpc = xmlrpc(_hosting_signup_get_url(), 'hosting_signup.submitForm', $key, $values);
+  if (isset($xmlrpc['site']['nid']) && isset($xmlrpc['site']['nid'])) {
+    $path = sprintf("hosting/signup/thanks/%s/%s/%s", $xmlrpc['site']['title'], $xmlrpc['client']['email'], $xmlrpc['client']['client_name']);
     drupal_goto($path);
   }
 }

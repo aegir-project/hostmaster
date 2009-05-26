@@ -687,7 +687,7 @@ function hosting_sites() {
     '!link' => $create_site_link));
 }
 
-function hosting_site_menu($may_cache = false) {
+function hosting_site_menu($may_cache) {
   $items[] = array(
     'path' => 'hosting/sites',
     'title' => t('Hosted sites'),
@@ -757,12 +757,13 @@ function _hosting_site_form_language($profile = NULL, $platform = null) {
 function _hosting_site_form_populate($element, $value, $value2 = null) {
   $form[$element] = call_user_func('_hosting_site_form_'. $element, $value, $value2);
 
+  $built = form_builder('hosting-site-form', $form);
   $GLOBALS['devel_shutdown'] = FALSE;
   print drupal_to_js(
     array(
       'status' => 'TRUE',
       'type' => $form[$element]['#type'],
-      'data' => drupal_render(form_builder('hosting-site-form', $form)),
+      'data' => drupal_render($form),
     )
   );
   exit();

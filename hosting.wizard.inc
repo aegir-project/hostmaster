@@ -73,7 +73,6 @@ function hosting_wizard_steps($step = null) {
  * Branches off from hosting using the referenced &$items parameter.
  * I'm not entirely sure the wizard is big enough to need it's own
  * module yet.
- */
 function hosting_wizard_menu($may_cache, &$items) {
   $items[] = array(
     'path' => 'hosting/wizard',
@@ -112,6 +111,7 @@ function hosting_wizard_menu($may_cache, &$items) {
     $items =  array_merge($items, $wizard_items);
   }
 }
+ */
 
 /**
  * Introduction form.
