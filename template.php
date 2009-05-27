@@ -39,9 +39,9 @@ function eldir_preprocess_page(&$vars) {
     $vars['body_classes'] .= " ntype-{$type}";
   }
 
-  $vars['sidebar_left'] = trim($vars['sidebar_left']);
-  $vars['sidebar_right'] = trim($vars['sidebar_right']);
-  $vars['body_classes'] .= empty($vars['sidebar_left']) && empty($vars['sidebar_right']) ? ' wide' : '';
+  $vars['sidebar_left'] = trim($vars['left']);
+  $vars['sidebar_right'] = trim($vars['right']);
+  $vars['body_classes'] .= empty($vars['left']) && empty($vars['right']) ? ' wide' : '';
 
   // Add path-based class for a last line of defense
   if (!empty($_GET['q'])) {
@@ -49,9 +49,9 @@ function eldir_preprocess_page(&$vars) {
   }
 
   // Add special body class for error pages
-  if (menu_get_active_item() === 0) {
-    $vars['body_classes'] .= ' error-page';
-  }
+#  if (menu_get_active_item() === 0) {
+#    $vars['body_classes'] .= ' error-page';
+#  }
 
   // Add IE 6 compatibility stylesheet
   $vars['styles_ie6'] = base_path() . path_to_theme() . '/ie6.css';

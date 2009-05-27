@@ -1,5 +1,5 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="<?php print $language ?>" lang="<?php print $language ?>">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="<?php print $language->language ?>" lang="<?php print $language->language ?>">
   <head>
     <?php print $head ?>
     <?php print $styles ?>
@@ -46,12 +46,12 @@
       </div>
     </div><!-- /main -->
 
-    <?php if (!empty($sidebar_right)): ?>
-      <div id="right" class="sidebar"><?php print $sidebar_right ?></div>
+    <?php if (!empty($right)): ?>
+      <div id="right" class="sidebar"><?php print $right ?></div>
     <?php endif; ?>
 
-    <?php if (!empty($sidebar_left)): ?>
-      <div id="left" class="sidebar"><?php print $sidebar_left ?></div>
+    <?php if (!empty($left)): ?>
+      <div id="left" class="sidebar"><?php print $left ?></div>
     <?php endif; ?>
 
   </div></div>

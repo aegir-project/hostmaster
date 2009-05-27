@@ -1,0 +1,11 @@
+; $Id$
+name = Eldir
+description = Companion theme for the Aegir hosting system.
+version = VERSION
+core = 6.x
+engine = phptemplate
+stylesheets[all][] = style.css
+regions[left] = Left sidebar
+regions[right] = Right sidebar
+regions[content] = Content
+regions[header] = Header
