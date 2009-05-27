@@ -1,0 +1,31 @@
+/* $Id$ */
+
+div.sidebar ul.menu li,
+div.sidebar ul.menu li a,
+#hosting-site-edit-info div.form-item,
+body.ntype-task #page div.node div#hosting-task-info div.form-item,
+body.aegir #page div.node div.content div.form-item,
+form div.form-item {
+  height:1%;
+  }
+
+/* Fieldsets... a nest of headaches */
+html.js body.aegir fieldset.collapsible,
+html.js body.aegir fieldset {
+  height:1%;
+  }
+
+html.js body.aegir fieldset.collapsible legend a {
+  top:0px;
+  }
+
+body.aegir fieldset legend {
+  position:absolute;
+  left:0px;
+  top:0px;
+  margin:0px;
+  }
+
+  html.js body.aegir fieldset.collapsible legend { position:static; }
+
+body.aegir fieldset { position:relative; }
