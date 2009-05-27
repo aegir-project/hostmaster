@@ -378,14 +378,19 @@ function hosting_setup() {
   }
 }
 
+
 function _hosting_setup_cron() {
-  $newcron = array();
   $existing = FALSE;
-  exec('crontab -l 2> /dev/null', $oldcron);
-  if (sizeof($oldcron)) {
-    foreach ($oldcron as $line => $entry) {
+  exec('crontab -l 2> /dev/null', $cron);
+
+  variable_set('hosting_cron_backup', $cron);
+  if (sizeof($cron)) {
+    foreach ($cron as $line => $entry) {
       if (preg_match('/hosting dispatch/', $entry)) {
-        drush_log(dt("Existing hosting dispatch cron entry was found. Not replacing"));
+        $pattern = "+(.*)'(.*)/drush.php'(.*)--root='(.*)'.*+";
+        $replace = sprintf("$1 '%s' --root='$4' $3 > /dev/null)", DRUSH_COMMAND);
+        $cron[$line] = preg_replace($pattern, $replace, $entry);
+        drush_log(dt("Existing hosting dispatch cron entry was found. Replacing"));
         $existing = TRUE;
         break;
       }
@@ -395,23 +400,21 @@ function _hosting_setup_cron() {
     drush_log("message", t("No existing crontab was found"));
   }
 
+  
   if (!$existing) {
-    if (sizeof($oldcron)) {
-      $newcron = $oldcron;
-      variable_set('hosting_cron_backup', $oldcron);
-    }
-    $newcron[] = hosting_queues_cron_cmd();
-    $tmpnam = tempnam('hostmaster', 'hm.cron');
-    $fp = fopen($tmpnam, "w");
-    foreach ($newcron as $line) {
-      fwrite($fp, $line . "\n");
-    }
-    fclose($fp);
-    system(sprintf('crontab %s', escapeshellarg($tmpnam)));
-    unlink($tmpnam);
-    drush_log("Notice", t("Installed hosting dispatch cron entry to run every minute"));
+    $cron[] = hosting_queues_cron_cmd();
   }
+  $tmpnam = tempnam('hostmaster', 'hm.cron');
+  $fp = fopen($tmpnam, "w");
+  foreach ($cron as $line) {
+    fwrite($fp, $line . "\n");
+  }
+  fclose($fp);
+  system(sprintf('crontab %s', escapeshellarg($tmpnam)));
+  unlink($tmpnam);
+  drush_log("Notice", t("Installed hosting dispatch cron entry to run every minute"));
 }
+
 
 /**
  * Replacement node/add page.
