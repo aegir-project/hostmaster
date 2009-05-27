@@ -6,27 +6,56 @@
 /**
  * Implementation of hook_menu().
  */
-function hosting_task_menu($may_cache) {
+function hosting_task_menu() {
   $items = array();
-  
-  if (!$may_cache) {
-    if ( arg(0) == 'node' && is_numeric(arg(1))) {
-      $node = node_load(arg(1));
-      foreach (hosting_available_tasks($node) as $type => $task) {
-          $items[] = array(
-            'path' => 'node/' . arg(1) . '/task_' . $type,
-            'title' => $task['title'],
-            'description' => $task['description'],
-            'callback' => 'drupal_get_form',
-            'callback arguments' => array('hosting_task_confirm_form', $node, $type),
-            'access' => user_access('create ' .$type. ' task'),
-            'type' => MENU_LOCAL_TASK,
-            'weight' => ($task['weight']) ? $task['weight'] : 0, 
-          );
-        }
+  foreach (node_get_types() as $node_type) {
+    $type = $node_type->type;
+    foreach (hosting_available_tasks($type) as $task => $info) {
+      $path = sprintf("node/%%hosting_task_%s/%s_%s", $type, $type, $task);
+      $items[$path] = array(
+         'title' => $info['title'],
+         'description' => $info['description'],
+         'page callback' => 'drupal_get_form',
+         'page arguments' => array('hosting_task_confirm_form', 1, $task),
+         'access callback' => 'hosting_task_menu_access',
+         'access arguments' => array(1, $task),
+         'type' => MENU_LOCAL_TASK,
+         'weight' => ($info['weight']) ? $info['weight'] : 0, 
+       );
      }
   }
   return $items;
+}
+
+function hosting_task_menu_access($node, $task) {
+  if (user_access("create " . $task . " node")) {
+    return TRUE;
+  }
+  return FALSE;
+}
+
+function hosting_task_site_load($arg) {
+ if (!is_numeric($arg)) {
+    return FALSE;
+  }
+  if ($node = node_load($arg)) {
+    if ($node->type == 'site') {
+      return $node;
+    }
+  }
+  return FALSE;
+}
+
+function hosting_task_platform_load($arg) {
+ if (!is_numeric($arg)) {
+    return FALSE;
+  }
+  if ($node = node_load($arg)) {
+    if ($node->type == 'platform') {
+      return $node;
+    }
+  }
+  return FALSE;
 }
 
 function hosting_task_node_info() {
@@ -41,8 +70,8 @@ function hosting_task_node_info() {
   return $types;
 }
 
-function hosting_task_access($op, $node) {
-  if(user_access('administer tasks')) {
+function hosting_task_access($op, $node, $account) {
+  if(user_access('administer tasks', $account)) {
     return TRUE;
   }
 }
@@ -108,8 +137,8 @@ function hosting_add_task($nid, $type, $args = null) {
 /**
  * Implementation of hook_form().
  */
-function hosting_task_confirm_form(&$node, $task) {
-  $tasks = hosting_available_tasks($node);
+function hosting_task_confirm_form($form_state, &$node, $task) {
+  $tasks = hosting_available_tasks($node->type);
   $form['help'] = array('#value' => $tasks[$task]['description']); 
   $form['nid'] = array('#type' => 'value', '#value' => $node->nid);
   $form['task'] = array('#type' => 'value', '#value' => $task); 
@@ -120,9 +149,9 @@ function hosting_task_confirm_form(&$node, $task) {
   }
   $func = $func . '_validate';
   if (function_exists($func)) {
-    $form['#validate'] = array(
-      $func => array($node, $task),
-    );
+    $form['#validate'][] = $func;
+    $form['#func_param_1'] = $node;
+    $form['#func_param_2'] = $task;
   }
   $question = t("Are you sure you want to @task @object?", array('@task' => $task, '@object' => $node->title));
   return confirm_form($form, $question, 'node/' . $node->nid, '', $tasks[$task]['title']);
@@ -149,9 +178,10 @@ function hosting_task_restore_form($node) {
 }
 
 
-function hosting_task_confirm_form_submit($form_id, $values) {
+function hosting_task_confirm_form_submit($form, &$form_state) {
+  $values = $form_state['values'];
   hosting_add_task($values['nid'], $values['task'], $values['parameters']);
-  return 'node/' . $values['nid'];
+  $form_state['redirect'] = 'node/' . $values['nid'];
 }
 
 function hosting_task_set_title(&$node) {
@@ -260,7 +290,7 @@ function hosting_task_delete($node) {
 function hosting_task_load($node) {
   $additions = db_fetch_object(db_query('SELECT task_type, executed, task_status, rid, q.status as queued FROM {hosting_task} t LEFT JOIN {hosting_task_queue} q ON t.nid=q.nid WHERE vid = %d', $node->vid));
   $result = db_query("SELECT name, value FROM {hosting_task_arguments} WHERE vid=%d", $node->vid);
-  if (db_num_rows($result)) {
+  if ($result) {
     while ($arg = db_fetch_object($result)) {
       $additions->task_args[$arg->name] = $arg->value;
     }
@@ -282,8 +312,8 @@ function hosting_task_retry_form($nid) {
   return $form;
 }
 
-function hosting_task_retry_form_submit($form_id, $edit) {
-  hosting_task_retry($edit['task']);
+function hosting_task_retry_form_submit($form, &$form_state) {
+  hosting_task_retry($form_state['values']['task']);
 }
 
 /**
@@ -366,7 +396,7 @@ function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
  */ 
 function _hosting_task_log_table($vid) {
   $result = db_query("SELECT * FROM {hosting_task_log} WHERE vid=%d", $vid);
-  if (db_num_rows($result)) {
+  if ($result) {
     $header = array('data' => 'Log message');
     while ($entry = db_fetch_object($result)) {
       if (strlen($entry->message) > 300) {

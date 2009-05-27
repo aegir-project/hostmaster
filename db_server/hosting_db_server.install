@@ -1,18 +1,48 @@
 <?php
 // $Id$
 
+
+/**
+ * Implementation of hook_schema().
+ */
+function hosting_db_server_schema() {
+  $schema['hosting_db_server'] = array(
+    'fields' => array(
+      'vid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'db_type' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => TRUE,
+      ),
+      'db_user' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => TRUE,
+      ),
+      'db_passwd' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('vid'),
+  );
+
+  return $schema;
+}
+
 function hosting_db_server_install() {
-  switch ($GLOBALS['db_type']) {
-    case 'mysql':
-    case 'mysqli':
-      db_query("CREATE TABLE {hosting_db_server} (
-        vid int(10) unsigned NOT NULL default '0',
-        nid int(10) unsigned NOT NULL default '0',
-        db_type longtext NOT NULL, 
-        db_user longtext NOT NULL,
-        db_passwd longtext NOT NULL,
-        PRIMARY KEY  (vid)
-      ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
-      break;
-  }
+  // Create tables.
+  drupal_install_schema('hosting_db_server');
 }

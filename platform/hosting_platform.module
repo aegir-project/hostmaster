@@ -18,9 +18,9 @@ function hosting_platform_node_info() {
 /**
  * Implementation of hook_hosting_tasks
  */
-function hosting_platform_hosting_tasks($node) {
+function hosting_platform_hosting_tasks($type) {
   $options = array();
-  if (($node->type == 'platform') & !hosting_task_outstanding($node->nid, 'verify')) {
+  if ($type == 'platform') {
     $options['verify'] = array(
       'title' => t('Verify'),
       'description' => t('Verify that the platform is correctly installed and working.'),
@@ -45,20 +45,20 @@ function hosting_platform_perm() {
   return array('create platform', 'view platform', 'edit platform', 'delete platform');
 }
 
-function hosting_platform_access($op, $node) {
+function hosting_platform_access($op, $node, $account) {
   if (!hosting_feature('platform')) {
     return FALSE;
   }
 
   switch ($op) {
     case 'create':
-      return user_access('create platform');
+      return user_access('create platform', $account);
       break;
     case 'update':
-      return user_access('edit platform');
+      return user_access('edit platform', $account);
       break;
     case 'delete':
-      return user_access('delete platform');
+      return user_access('delete platform', $account);
       break;
   }  
 }

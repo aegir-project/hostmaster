@@ -87,11 +87,11 @@ function theme_hosting_task_migrate_form(&$form) {
   return $output;
 }
 
-function hosting_task_migrate_form_validate($form_id, $form_values, $form, $site) {
-  if (!$form_values['parameters']['target_platform']) {
+function hosting_task_migrate_form_validate($form, &$form_state) {
+  if (!$form_state['values']['parameters']['target_platform']) {
     form_set_error('parameters][target_platform', t('You need to select a valid platform to migrate your site to.'));
   }
-  if ($form_values['parameters']['target_platform'] == $site->platform) {
+  if ($form_state['values']['parameters']['target_platform'] == $site->platform) {
     form_set_error('parameters][target_platform', t('You may not select your current platform to migrate your site to.'));
   }
 }

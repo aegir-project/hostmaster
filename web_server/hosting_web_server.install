@@ -1,24 +1,70 @@
 <?php
 // $Id$
 
+
+/**
+ * Implementation of hook_schema().
+ */
+function hosting_web_server_schema() {
+  $schema['hosting_web_server'] = array(
+    'fields' => array(
+      'vid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'ip_address' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+      ),
+      'script_user' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+      ),
+      'web_group' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+      ),
+      'config_path' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+      ),
+      'backup_path' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+      ),
+      'restart_cmd' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+      ),
+      'drush_path' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+      ),
+    ),
+    'primary key' => array('vid'),
+  );
+
+  return $schema;
+}
+
 function hosting_web_server_install() {
-  switch ($GLOBALS['db_type']) {
-    case 'mysql' :
-    case 'mysqli' :
-      db_query("CREATE TABLE {hosting_web_server} (
-        vid int(10) unsigned NOT NULL default '0',
-        nid int(10) unsigned NOT NULL default '0',
-        ip_address longtext,
-        script_user longtext,
-        web_group longtext,
-        config_path longtext,
-        backup_path longtext,
-        restart_cmd longtext,
-        drush_path longtext,
-        PRIMARY KEY  (vid)
-      ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
-      break;
-  }
+  // Create tables.
+  drupal_install_schema('hosting_web_server');
 }
 
 /**

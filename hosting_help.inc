@@ -83,8 +83,8 @@ function hosting_hosting_service() {
 /**
  * Implementation of hook_help()
  */
-function hosting_help($section) {
-  switch ($section) {
+function hosting_help($path, $arg) {
+  switch ($path) {
     case 'admin/help#hosting':
       $output .= t('<p>The Hostmaster system is a set of modules that provide an interface to the <a href="@hosting_help">Provisioning framework</a>.</p>', 
                   array('@hosting_help' => url('admin/help/provision')));
@@ -460,7 +460,7 @@ function hosting_elements() {
       HOSTING_STATUS_SUCCESS => t("You have met this requirement."),
       HOSTING_STATUS_WARNING => t("This requirement has a non critical error."),
       HOSTING_STATUS_ERROR => t("This requirement has a critical error. This system will not operate until it has been fixed")),
-    '#process' => array('hosting_requirement_process' => array()),
+    '#process' => array('hosting_requirement_process'),
   );
   return $type;
 }

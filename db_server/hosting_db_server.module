@@ -82,24 +82,24 @@ function hosting_db_server_perm() {
   return array('create database server','view database server', 'edit database server', 'delete database server');
 }
 
-function hosting_db_server_access($op, $node) {
-  global $user;
+function hosting_db_server_access($op, $node, $account) {
+
 
   switch($op) {
     case 'create':
-      return user_access('create database server');
+      return user_access('create database server', $account);
       break;
     case 'update':
-      return user_access('edit database server');
+      return user_access('edit database server', $account);
       break;
     case 'delete':
-      return user_access('delete database server');
+      return user_access('delete database server', $account);
       break;
     default:
       break;
   }
 
-//  return hosting_access($op, $node);
+//  return hosting_access($op, $node, $account);
 }
 
 /**
@@ -155,15 +155,18 @@ function hosting_db_server_form(&$node) {
 }
 
 /**
- * Implementation of hook_submit().
-  */
-function hosting_db_server_submit(&$node) {
-  if (empty($node->db_passwd) && $node->nid) {
-    $old = node_load($node->nid);
-    $node->db_passwd = $old->db_passwd;
+ * Implementation hook_nodeapi().
+ */
+function hosting_db_server_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+  switch ($op) {
+    case 'presave':
+      if (empty($node->db_passwd) && $node->nid) {
+        $old = node_load($node->nid);
+        $node->db_passwd = $old->db_passwd;
+      }
+      break;
   }
 }
-
 
 /**
  * Implementation of hook_insert().

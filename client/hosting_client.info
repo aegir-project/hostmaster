@@ -1,4 +1,6 @@
 name = Client
 description = Allow Hostmaster to configure clients.
 package = Hosting
-dependencies = hosting
+dependencies[] = hosting
+
+core = 6.x

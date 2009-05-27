@@ -73,18 +73,18 @@ function hosting_wizard_steps($step = null) {
  * Branches off from hosting using the referenced &$items parameter.
  * I'm not entirely sure the wizard is big enough to need it's own
  * module yet.
-function hosting_wizard_menu($may_cache, &$items) {
-  $items[] = array(
-    'path' => 'hosting/wizard',
-    'title' => t('Hosting wizard'),
-    'description' => t('Configuration wizard'),
-    'callback' => 'drupal_get_form',
-    'callback arguments' => array('hosting_wizard_intro'),
+ */
+function hosting_wizard_menu() {
+  $items['hosting/wizard'] = array(
+    'title' => 'Hosting wizard',
+    'description' => 'Configuration wizard',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('hosting_wizard_intro'),
     'type' => MENU_NORMAL_ITEM,
-    'access' => user_access('access hosting wizard'), 
+    'access arguments' => array('access hosting wizard'), 
   );
 
-  if (!$may_cache && (sprintf("%s/%s", arg(0), arg(1)) == 'hosting/wizard')) {
+  if (sprintf("%s/%s", arg(0), arg(1)) == 'hosting/wizard') {
     hosting_wizard_dummy_theme_block();
     $steps = hosting_wizard_steps();
     $x = 1;
@@ -94,24 +94,23 @@ function hosting_wizard_menu($may_cache, &$items) {
         'path' => 'hosting/wizard/' . $key,
         'title' => $step['title'],
         'description' => $step['message'],
-        'callback' => 'drupal_get_form',
-        'callback arguments' => $form_id,
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array($form_id),
         'type' => ($step['type']) ? $step['type'] : MENU_LOCAL_TASK,
-        'access' => user_access('access hosting wizard'),
+        'access arguments' => array('access hosting wizard'),
         'weight' => $x++
       );
       if ($step['type'] == MENU_DEFAULT_LOCAL_TASK) {
         $parts = explode("/", $key);
         if (sizeof($parts) >= 2) {
           $parent = array_shift($parts);
-          $wizard_items[$parent]['callback arguments'] = $form_id;
+          $wizard_items[$parent]['page arguments'] = $form_id;
         }
       }
     }
     $items =  array_merge($items, $wizard_items);
   }
 }
- */
 
 /**
  * Introduction form.
@@ -180,7 +179,7 @@ function hosting_wizard_account() {
 /**
  * Ensure a valid user
  */
-function hosting_wizard_account_validate($form_id, $values, $form) {
+function hosting_wizard_account_validate($form, &$form_state) {
   global $user;
   _user_edit_validate($user->uid, $values);
 }
@@ -188,7 +187,7 @@ function hosting_wizard_account_validate($form_id, $values, $form) {
 /**
  * Save the user account, and update the default client node
  */
-function hosting_wizard_account_submit($form_id, $values) {
+function hosting_wizard_account_submit($form, &$form_state) {
   global $user;
   user_save($user, $values);
   $node = node_load(HOSTING_DEFAULT_CLIENT);
@@ -220,7 +219,8 @@ function hosting_wizard_provision() {
  * @todo pull changes in the form upstream
  */
 function hosting_wizard_provision_paths() {
-  $form = drupal_retrieve_form('web_server_node_form', node_load(HOSTING_OWN_WEB_SERVER));
+/* TODO drupal_retrieve_form() now accepts a form_state parameter. */
+  $form = drupal_retrieve_form('web_server_node_form', $form_state, node_load(HOSTING_OWN_WEB_SERVER));
   _hosting_wizard_cleanse_node_form($form);
 
   $own_link = _hosting_node_link(HOSTING_OWN_WEB_SERVER);
@@ -264,7 +264,7 @@ function hosting_wizard_provision_paths() {
 /**
  * Save the changes to the default web server node
  */
-function hosting_wizard_provision_paths_submit($form_id, $values) {
+function hosting_wizard_provision_paths_submit($form, &$form_state) {
   $node = node_load(HOSTING_OWN_WEB_SERVER);
   $node->config_path = $values['config_path'];
   $node->restart_cmd = $values['restart_cmd'];
@@ -280,7 +280,8 @@ function hosting_wizard_provision_paths_submit($form_id, $values) {
  * @todo pull changes in the form upstream
  */
 function hosting_wizard_provision_web() {
-  $form = drupal_retrieve_form('web_server_node_form', node_load(HOSTING_OWN_WEB_SERVER));
+/* TODO drupal_retrieve_form() now accepts a form_state parameter. */
+  $form = drupal_retrieve_form('web_server_node_form', $form_state, node_load(HOSTING_OWN_WEB_SERVER));
   _hosting_wizard_cleanse_node_form($form);
 
   $own_link = _hosting_node_link(HOSTING_OWN_WEB_SERVER);
@@ -314,7 +315,7 @@ function hosting_wizard_provision_web() {
   return hosting_wizard_form('provision/web', $form);
 }
 
-function hosting_wizard_provision_web_validate($form_id, $values) {
+function hosting_wizard_provision_web_validate($form, &$form_state) {
   $node = node_load(HOSTING_OWN_WEB_SERVER);
   $node->title = $values['title'];
   $node->ip_address = $values['ip_address'];
@@ -327,7 +328,7 @@ function hosting_wizard_provision_web_validate($form_id, $values) {
 /**
  * Save the changes to the default web server node
  */
-function hosting_wizard_provision_web_submit($form_id, $values) {
+function hosting_wizard_provision_web_submit($form, &$form_state) {
   $node = node_load(HOSTING_OWN_WEB_SERVER);
   $node->title = $values['title'];
   $node->ip_address = $values['ip_address'];
@@ -344,7 +345,8 @@ function hosting_wizard_provision_web_submit($form_id, $values) {
  * Perhaps those changes need to go in upstream?
  */
 function hosting_wizard_provision_db() {
-  $form = drupal_retrieve_form('db_server_node_form', node_load(HOSTING_OWN_DB_SERVER));
+/* TODO drupal_retrieve_form() now accepts a form_state parameter. */
+  $form = drupal_retrieve_form('db_server_node_form', $form_state, node_load(HOSTING_OWN_DB_SERVER));
   _hosting_wizard_cleanse_node_form($form);
 
   $own_link = _hosting_node_link(HOSTING_OWN_DB_SERVER);
@@ -379,7 +381,7 @@ function hosting_wizard_provision_db() {
 /**
  * Save the modified db_server
  */
-function hosting_wizard_provision_db_submit($form_id, $values) {
+function hosting_wizard_provision_db_submit($form, &$form_state) {
   $node = node_load(HOSTING_OWN_DB_SERVER);
   $node->title = $values['title'];
   $node->db_user = $values['db_user'];
@@ -420,7 +422,7 @@ function hosting_wizard_hosting_init() {
   return hosting_wizard_form('hosting', $form);
 }
 
-function hosting_wizard_hosting_init_validate() {
+function hosting_wizard_hosting_init_validate($form, &$form_state) {
   if (!variable_get('hosting_dispatch_last_run', false)) {
     drupal_goto('hosting/wizard/hosting/init');
   }
@@ -453,7 +455,7 @@ function hosting_wizard_hosting_verify() {
   return hosting_wizard_form('hosting/verify', $form, $next);
 }
 
-function hosting_wizard_hosting_verify_validate() {
+function hosting_wizard_hosting_verify_validate($form, &$form_state) {
   $node = hosting_get_most_recent_task(HOSTING_OWN_PLATFORM, 'verify');
   if (!($node->task_status == HOSTING_TASK_SUCCESS)) {
     drupal_goto('/hosting/wizard/hosting/verify');
@@ -476,13 +478,14 @@ function hosting_wizard_hosting_import() {
 }
 
 function hosting_wizard_hosting_features() {
-  $form = drupal_retrieve_form('hosting_features_form');
+/* TODO drupal_retrieve_form() now accepts a form_state parameter. */
+  $form = drupal_retrieve_form('hosting_features_form', $form_state);
   unset($form['buttons']);
   return hosting_wizard_form('hosting/features', $form);
 }
 
-function hosting_wizard_hosting_features_submit($form_id, $values) {
-  hosting_features_form_submit($form_id, $values);
+function hosting_wizard_hosting_features_submit($form, &$form_state) {
+  hosting_features_form_submit($form_state['values']['form_id'], $values);
 }
 
 /**
@@ -539,8 +542,8 @@ function hosting_wizard_form($step, $form, $next = null) {
   drupal_add_css(drupal_get_path("module", "hosting") . '/hosting.wizard.js');
   // @todo: add a message to exit the wizard.
   hosting_wizard_set_title($step);
-  $form['#submit']['hosting_wizard_' . str_replace('/', '_', $step) . '_submit'] = array(); 
-  $form['#submit']['hosting_wizard_form_submit'] = array();
+  $form['#submit'][] = 'hosting_wizard_' . str_replace('/', '_', $step) . '_submit'; 
+  $form['#submit'][] = 'hosting_wizard_form_submit';
   $form['#prefix'] = '<div id="hosting-wizard-form">';
   $form['#suffix'] = '</div>';
   $form['step'] = array('#type' => 'value', '#value' => $step);
@@ -566,7 +569,7 @@ function hosting_wizard_form($step, $form, $next = null) {
  *
  * This redirects the user to the next step in the wizard
  */
-function hosting_wizard_form_submit($form_id, $values) {
+function hosting_wizard_form_submit($form, &$form_state) {
   $values = (array) $values;
   variable_set('hosting_wizard_completed_' . $values['step'], mktime());
 

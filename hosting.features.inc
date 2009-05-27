@@ -1,5 +1,6 @@
 <?php
 // $Id$
+
 /**
  * @file Hosting features
  *
@@ -56,11 +57,12 @@ function hosting_features_form() {
 
   }
   $form['experimental'] = $experimental;
-
+  $form['#submit'][] = 'hosting_features_form_submit';
   return system_settings_form($form);
 }
 
-function hosting_features_form_submit($form_id, $values) {
+function hosting_features_form_submit($form, &$form_state) {
+  $values = $form_state['values'];
   $features = hosting_get_features(TRUE);
   foreach ($features  as $feature => $info) {
     $value = $values[$feature];
@@ -114,12 +116,11 @@ function hosting_get_features($refresh = FALSE) {
     foreach ($hooks as $func) {
       $features = array_merge($features, $func());
     }
-    $serialized = serialize($features);
-    cache_set('hosting_features', 'cache', $serialized);
+    cache_set('hosting_features', $features);
     return $features;
   }
   else {
-    return unserialize($cache->data);
+    return $cache->data;
   }
 }
 
@@ -130,7 +131,7 @@ function hosting_feature_node_types($refresh = FALSE) {
     $features = hosting_get_features($refresh);
     foreach ($features as $feature => $info) {
       if ($info['node']) {
-        $types[] = $info['node'];
+        $types[$feature] = $info['node'];
       }
     }
   }

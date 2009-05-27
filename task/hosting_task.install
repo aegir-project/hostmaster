@@ -1,48 +1,143 @@
 <?php
 // $Id$
 
+
+/**
+ * Implementation of hook_schema().
+ */
+function hosting_task_schema() {
+  $schema['hosting_task'] = array(
+    'fields' => array(
+      'vid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'task_type' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+      ),
+      'rid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'task_status' => array(
+        'type' => 'int',
+        'not null' => FALSE,
+      ),
+      'executed' => array(
+        'type' => 'int',
+        'not null' => FALSE,
+      ),
+    ),
+    'primary key' => array('vid'),
+  );
+
+  $schema['hosting_task_arguments'] = array(
+    'fields' => array(
+      'vid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'name' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+      ),
+      'value' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+      ),
+    ),
+  );
+
+  $schema['hosting_task_log'] = array(
+    'fields' => array(
+      'lid' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+      ),
+      'vid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'type' => array(
+        'type' => 'varchar',
+        'length' => 16,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'message' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => TRUE,
+      ),
+      'error' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'timestamp' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'indexes' => array(
+      'type' => array('type'),
+    ),
+    'primary key' => array('lid'),
+  );
+
+  $schema['hosting_task_queue'] = array(
+    'fields' => array(
+      'nid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'timestamp' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'status' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('nid'),
+  );
+
+  return $schema;
+}
+
 function hosting_task_install() {
-  switch ($GLOBALS['db_type']) {
-    case 'mysql' :
-    case 'mysqli' :
-    db_query("CREATE TABLE {hosting_task} (
-      vid int(10) unsigned NOT NULL default '0',
-      nid int(10) unsigned NOT NULL default '0',
-      task_type longtext,
-      rid int(11) NOT NULL default '0',
-      task_status int(11) default NULL,
-      executed int(11) default NULL,
-    PRIMARY KEY  (vid)
-    ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
-
-    db_query("CREATE TABLE {hosting_task_arguments} (
-      vid int(10) unsigned NOT NULL default '0',
-      nid int(10) unsigned NOT NULL default '0',
-      name longtext,
-      value longtext
-    ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
-
-    # Logging table for backend task calls
-    db_query("CREATE TABLE {hosting_task_log} (
-      lid int NOT NULL auto_increment,
-      vid int NOT NULL default '0',
-      type varchar(16) NOT NULL default '',
-      message longtext NOT NULL,
-      error longtext NOT NULL default '',
-      timestamp int NOT NULL default '0',
-      PRIMARY KEY (lid),
-      KEY (type)
-    ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
-
-    # Task queue
-    db_query("CREATE TABLE {hosting_task_queue} (
-      nid int NOT NULL default '0',
-      timestamp int NOT NULL default '0',
-      status tinyint unsigned NOT NULL default 0,
-      PRIMARY KEY (nid)
-    ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
-    break;
-  }
+  // Create tables.
+  drupal_install_schema('hosting_task');
 }
 
 /**

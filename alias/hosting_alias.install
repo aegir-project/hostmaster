@@ -1,22 +1,52 @@
 <?php
 // $Id$
+
+/**
+ * Implementation of hook_schema().
+ */
+function hosting_alias_schema() {
+  $schema['hosting_site_alias'] = array(
+    'fields' => array(
+      'vid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'alias' => array(
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+      ),
+      'automatic' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'indexes' => array(
+      'vid' => array('vid'),
+      'alias' => array('alias'),
+    ),
+  );
+
+  return $schema;
+}
+
 function hosting_alias_install() {
-  switch ($GLOBALS['db_type']) {
-    case 'mysql' :
-    case 'mysqli' :
-      db_query("CREATE TABLE {hosting_site_alias} (
-        vid int NOT NULL DEFAULT '0',
-        nid int(10) unsigned NOT NULL DEFAULT '0',
-        alias varchar(128) NOT NULL,
-        automatic INT(1) NOT NULL DEFAULT '0',
-        KEY (vid, alias)
-      ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
-      break;
-  }
+  // Create tables.
+  drupal_install_schema('hosting_alias');
 }
 
 function hosting_alias_uninstall() {
-  db_query("DROP TABLE {hosting_site_alias}");
+  // Remove tables.
+  drupal_uninstall_schema('hosting_alias');
+
 }
 
 /**

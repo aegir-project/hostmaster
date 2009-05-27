@@ -1,21 +1,55 @@
 <?php
 // $Id$
 
+
+/**
+ * Implementation of hook_schema().
+ */
+function hosting_platform_schema() {
+  $schema['hosting_platform'] = array(
+    'fields' => array(
+      'vid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'publish_path' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+      ),
+      'web_server' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'release_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'verified' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('vid'),
+  );
+
+  return $schema;
+}
+
 function hosting_platform_install() {  
-  switch ($GLOBALS['db_type']) {
-    case 'mysql' :
-    case 'mysqli' :
-      db_query("CREATE TABLE {hosting_platform} (
-        vid int(10) unsigned NOT NULL default '0',
-        nid int(10) unsigned NOT NULL default '0',
-        publish_path longtext,
-        web_server int(11) NOT NULL default '0',
-        release_id int(11) NOT NULL default '0',
-        verified int(11) NOT NULL default '0',
-        PRIMARY KEY  (vid)
-      ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
-      break;
-   }
+  // Create tables.
+  drupal_install_schema('hosting_platform');
 }
 
 /**

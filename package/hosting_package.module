@@ -26,63 +26,68 @@ function hosting_package_node_info() {
   return $types;
 }
 
-function hosting_package_menu($may_cache) {
+function hosting_package_menu() {
   $items = array();
-  
-  if (!$may_cache) {
-    if ( arg(0) == 'node' && is_numeric(arg(1))) {
-      $node = node_load(arg(1));
-      if (in_array($node->type, array('site', 'platform', 'package'))) {
-        $items[] = array(
-          'path' => 'node/' . arg(1) . '/packages',
-          'title' => t('Packages'),
-          'description' => t('List of packages available for this platform'),
-          'callback' => 'hosting_package_list',
-          'callback arguments' => array(arg(1)),
-          'type' => MENU_LOCAL_TASK,
-          'access' => user_access('view package'),
-          'weight' => 1, 
-        );
-        $items[] = array(
-          'path' => 'node/' . arg(1) . '/packages/all',
-          'title' => t('All packages'),
-          'description' => t('List of all packages'),
-          'callback' => 'hosting_package_list',
-          'callback arguments' => array(arg(1)),
-          'type' => MENU_DEFAULT_LOCAL_TASK,
-          'weight' => -1, 
-        );
-        foreach (_hosting_package_types() as $type => $description) {
-          $items[] = array(
-            'path' => 'node/' . arg(1) . '/packages/' . $type,
-            'title' => $description,
-            'description' => $description,
-            'callback' => 'hosting_package_list',
-            'callback arguments' => array(arg(1), $type),
-            'type' => MENU_LOCAL_TASK,
-            'weight' => $x++, 
-          );           
-        }
-      }
-     }
+
+
+ 
+  $items['node/%hosting_package_node/packages'] = array(
+    'title' => 'Packages',
+    'description' => 'List of packages available for this platform',
+    'page callback' => 'hosting_package_list',
+    'page arguments' => array(1),
+    'type' => MENU_LOCAL_TASK,
+    'access arguments' => array('view package'),
+    'weight' => 1, 
+  );
+  $items['node/%hosting_package_node/packages/all'] = array(
+    'title' => 'All packages',
+    'description' => 'List of all packages',
+    'page callback' => 'hosting_package_list',
+    'page arguments' => array(1),
+    'access arguments' => array('view package'),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -1, 
+  );
+  foreach (_hosting_package_types() as $type => $description) {
+    $items['node/%hosting_package_node/packages/' . $type] = array(
+      'title' => $description,
+      'description' => $description,
+      'page callback' => 'hosting_package_list',
+      'page arguments' => array(1, $type),
+      'access arguments' => array('view package'),
+      'type' => MENU_LOCAL_TASK,
+      'weight' => $x++, 
+    );           
   }
   return $items;
 }
 
+function hosting_package_node_load($arg) {
+ if (!is_numeric($arg)) {
+    return FALSE;
+  }
+  if ($node = node_load($arg)) {
+    if (in_array($node->type, array('site', 'platform'))) {
+      return $node;
+    }
+  }
+  return FALSE;
+}
 
-function hosting_package_access($op, $node) {
+function hosting_package_access($op, $node, $account) {
   switch ($op) {
   case 'create':
-    return user_access('create package');
+    return user_access('create package', $account);
     break;
   case 'view':
-    return user_access('view package');
+    return user_access('view package', $account);
     break;
   case 'update':
-    return user_access('edit package');
+    return user_access('edit package', $account);
     break;
   case 'delete':
-    return user_access('delete package');
+    return user_access('delete package', $account);
     break;
   default:
     break;
@@ -260,7 +265,7 @@ function _hosting_language_names($languages) {
 
 function _hosting_language_name($language) {
   include_once './includes/locale.inc';
-  $locales = _locale_get_iso639_list();
+  $locales = _locale_get_predefined_list();
   return $locales[$language][0] . (isset($locales[$language][1]) ? ' '. t('(@language)', array('@language' => $locales[$language][1])) : '');
 }
 
@@ -319,17 +324,15 @@ function hosting_package_sync(&$data) {
  * @TODO Add ability to filter by additional fields
  * @TODO Add paging.
  */
-function hosting_package_list($rid, $type = null) {
-  $ref = node_load($rid);
+function hosting_package_list($ref, $type = null) {
   drupal_set_title(t('Packages on @reference', array('@reference' => $ref->title)));
-
   $header = array(
     array('data' => t('Status'), 'field' => 'status', 'sort' => 'DESC'),
     array('data' => t('Package'), 'field' => 'short_name'),
     array('data' => t('Release'), 'field' => 'version'),
     array('data' => t('Package type'), 'field' => 'package_type'),
     );
-  $args[] = $rid;
+  $args[] = $ref->nid;
 
   if (!is_null($type)) {
     $cond = " AND n.package_type = '%s'";
@@ -339,12 +342,11 @@ function hosting_package_list($rid, $type = null) {
   $sql = "SELECT n.nid as 'package', i.status, n.short_name, i.version, n.package_type, i.status FROM {hosting_package} n
     LEFT JOIN {hosting_package_instance} i ON i.package_id=n.nid WHERE i.rid=%d" . $cond;
   $sql .= tablesort_sql($header);
-
   // @TODO hide deleted sites
   $result = pager_query(db_rewrite_sql($sql), 25, 2, null, $args);
   $view_package_perm = user_access('view package');
 
-  if (!db_num_rows($result)) {
+  if (!$result) {
     return t('No packages are associated with @reference', array('@reference' => $ref->title));
   }
   $rows = array();
@@ -357,7 +359,7 @@ function hosting_package_list($rid, $type = null) {
     $row[] = filter_xss($package->package_type);
     $rows[] = array('data' => $row, 'class' => $row_class);
   }
-  
+
   return theme('table',  $header, $rows, array('class' => 'hosting-table')) . theme('pager', null, 25, 2);
 }
 

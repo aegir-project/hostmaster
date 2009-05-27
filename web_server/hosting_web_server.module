@@ -10,8 +10,8 @@ function hosting_web_server_hosting_service() {
 /**
  * Implementation of hook_help().
  */
-function hosting_web_server_help($section) {
-  switch ($section) {
+function hosting_web_server_help($path, $arg) {
+  switch ($path) {
     case 'admin/help/provision#requirements':
       $output .= _hosting_requirements('drush_path');
       $output .= _hosting_requirements('config_path');
@@ -128,22 +128,22 @@ function hosting_web_server_perm() {
   return array('create web server', 'view web server', 'edit web server', 'delete web server');
 }
 
-function hosting_web_server_access($op, $node) {
+function hosting_web_server_access($op, $node, $account) {
   if (!hosting_feature('web_server')) {
     return FALSE;
   }
   switch ($op) {
     case 'create':
-      return user_access('create web server');
+      return user_access('create web server', $account);
       break;
     case 'view':
-      return user_access('view web server');
+      return user_access('view web server', $account);
       break;
     case 'update':
-      return user_access('edit web server');
+      return user_access('edit web server', $account);
       break;
     case 'delete':
-      return user_access('delete web server');
+      return user_access('delete web server', $account);
       break;
     default:
       break;
@@ -261,37 +261,44 @@ function hosting_web_server_form(&$node) {
   return $form;
 }
 
-/**
- * Implementation of hook_validate().
-  */
-function hosting_web_server_validate(&$node, &$form) {
-  if ($node->script_user == 'root') {
-    form_set_error('script_user', t('For security reasons, you should not run drush commands as the root user. Please choose a different system account name.'));
-  }
+function hosting_nodeapi_web_server_presave(&$node) {
+
   if (!$node->ip_address) {
-    if (!_hosting_valid_fqdn($node->title)) {
-      form_set_error('title', t('Invalid valid domain name. Either choose a proper domain name or hardcode the IP address of the webserver.'));
-    }
     $ip = gethostbyname($node->title);
+
     // setup IP only if resolution succeeded
     if ($ip != $node->title) {
-      form_set_value($form['ip_address'], $ip);
       $node->ip_address = $ip; // required to fool the ip check below
       drupal_set_message(t('Initialized the webserver IP to %ip based on hostname %name', array('%ip' => $ip, '%name' => $node->title)), 'message');
     } else {
       form_set_error('title', t('Could not resolve IP address of webserver %name. Either set the web server name to a FQDN (Fully Qualified Domain Name) or hardcode the IP here.', array('%name' => $node->title)));
     }
   }
-  if (!_hosting_valid_ip($node->ip_address)) {
-    form_set_error('ip_address', t('Invalid IP address'));
-  }
 
+}
+
+/**
+ * Implementation of hook_validate().
+  */
+function hosting_web_server_validate(&$node, &$form) {
+  if (!_hosting_valid_fqdn($node->title)) {
+    form_set_error('title', t('Invalid valid domain name. Either choose a proper domain name or hardcode the IP address of the webserver.'));
+  }
+  if ($node->script_user == 'root') {
+    form_set_error('script_user', t('For security reasons, you should not run drush commands as the root user. Please choose a different system account name.'));
+  }
+  if ($node->ip_address) {
+    if (!_hosting_valid_ip($node->ip_address)) {
+      form_set_error('ip_address', t('Invalid IP address'));
+    }
+  }
 }
 
 /**
  * Implementation of hook_insert().
  */
 function hosting_web_server_insert($node) {
+  print_r($form);
   db_query("INSERT INTO {hosting_web_server} (vid, nid, ip_address, script_user, web_group, config_path, backup_path, restart_cmd, drush_path) 
       VALUES (%d, %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s')", 
         $node->vid, $node->nid, $node->ip_address, $node->script_user, $node->web_group, $node->config_path, $node->backup_path, $node->restart_cmd, $node->drush_path);
@@ -341,6 +348,8 @@ function hosting_web_server_load($node) {
   return $additions;
 }
 
+/**
+ *
 /**
  * Implementation of hook_view().
  */

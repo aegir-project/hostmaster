@@ -1,5 +1,26 @@
 <?php
 // $Id$
+
+/**
+ * Implementation of hook_theme().
+ */
+function hosting_theme() {
+  return array(
+    'hosting_summary_block' => array(
+      'file' => 'hosting.module',
+      'arguments' => array(
+        'components' => NULL,
+      ),
+    ),
+    'hosting_queues_configure' => array(
+      'file' => 'hosting.module',
+      'arguments' => array(
+        'form' => NULL,
+      ),
+    ),
+  );
+}
+
 /**
  * @file Hosting module
  *
@@ -12,111 +33,98 @@
  */
 
 include_once('hosting_help.inc');
-include_once('hosting.wizard.inc');
+//include_once('hosting.wizard.inc');
 include_once('hosting.queues.inc');
 include_once('hosting.features.inc');
 
 /**
  * Implementation of hook_menu()
  */
-function hosting_menu($may_cache) {
+function hosting_menu() {
   global $user;
   $items = array();
-#  hosting_wizard_menu($may_cache, $items);
-  if ($may_cache) {
- 
-    $items[] = array(
-      'path' => 'hosting/disabled',
-      'title' => t('Site disabled'),
-      'callback' => 'hosting_disabled_site',
-      'access' => TRUE,
-      'type' => MENU_CALLBACK
-    );
-
- 
-    $items[] = array(
-      'path' => 'hosting/maintenance',
-      'title' => t('Site maintenance'),
-      'callback' => 'hosting_site_maintenance',
-      'access' => TRUE,
-      'type' => MENU_CALLBACK
-    );
-
-    
-    $items[] = array(
-      'path' => 'admin/help/provision/requirements',
-      'title' => t('Provisioning requirements'),
-      'description' => t("Information of how to configure the provisioning system."),
-      'callback' => 'hosting_help_requirements',
-      'type' => MENU_CALLBACK
-    );
 
 
-    $items[] = array(
-      'path' => 'admin/hosting',
-      'title' => t('Hosting'),
-      'description' => t('Configure and manage the hosting system'),
-      'callback' => 'drupal_get_form',
-      'callback arguments' => array('hosting_features_form'),
-      'access' => user_access('administer hosting'),
-      'type' => MENU_NORMAL_ITEM
-    );
+  $items['hosting/disabled'] = array(
+    'title' => 'Site disabled',
+    'page callback' => 'hosting_disabled_site',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK
+  );
 
-    $items[] = array(
-      'path' => 'admin/hosting/features',
-      'title' => t('Features'),
-      'description' => t('Configure the exposed functionality of the Hosting system'),
-      'weight' => -100,
-      'callback' => 'drupal_get_form',
-      'callback arguments' => array('hosting_features_form'),
-      'type' => MENU_DEFAULT_LOCAL_TASK,
-      'access' => user_access('administer hosting features'),
-    );
 
-    $items[] = array(
-      'path' => 'admin/hosting/queues',
-      'title' => t('Queues'),
-      'description' => t('Configure the frequency that cron, backup and task events are process'),
-      'callback' => 'drupal_get_form',
-      'callback arguments' => array('hosting_queues_configure'),
-      'type' => MENU_LOCAL_TASK,
-      'access' => user_access('administer hosting queues'),
-    );
-    // Kludge : Replace node/add page to hide functionality.
-    $items[] = array('path' => 'node/add',
-      'title' => t('Create content'),
-      'callback' => '_hosting_node_add',
-      'access' => user_access('access content'),
-      'type' => MENU_ITEM_GROUPING,
-      'weight' => 1);
-   
-    // Queue page & task lists
-    
-    $items[] = array(
-       'path' => 'hosting/queues',
-       'callback' => 'hosting_queues',
-       'type' => MENU_CALLBACK,
-       'access' => user_access('access task logs')
-      );
-    // Disable unsupported features.
-    $features = hosting_get_features();
-    $types = node_get_types();
-    foreach ($features as $type => $feature) {
-      if (isset($feature['node'])) {
-        $type_url_str = str_replace('_', '-', $feature['node']);
-        
-        $items[] = array(
-          'path' => 'node/add/'. $type_url_str,
-          'title' => drupal_ucfirst($types[$feature['node']]->name),
-          'access' => (($user->uid == 1) || user_access('create ' . $feature['node'])) && (hosting_feature($type) != HOSTING_FEATURE_DISABLED),
-        ); 
-      }
-    }
+  $items['hosting/maintenance'] = array(
+    'title' => 'Site maintenance',
+    'page callback' => 'hosting_site_maintenance',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK
+  );
 
-  } else {
-    drupal_add_css(drupal_get_path('module', 'hosting') . '/hosting.css');
-  }
+  
+  $items['admin/help/provision/requirements'] = array(
+    'title' => 'Provisioning requirements',
+    'description' => "Information of how to configure the provisioning system.",
+    'page callback' => 'hosting_help_requirements',
+    'type' => MENU_CALLBACK
+  );
+
+
+  $items['admin/hosting'] = array(
+    'title' => 'Hosting',
+    'description' => 'Configure and manage the hosting system',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('hosting_features_form'),
+    'access arguments' => array('administer hosting'),
+    'type' => MENU_NORMAL_ITEM
+  );
+
+  $items['admin/hosting/features'] = array(
+    'title' => 'Features',
+    'description' => 'Configure the exposed functionality of the Hosting system',
+    'weight' => -100,
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('hosting_features_form'),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'access arguments' => array('administer hosting features'),
+  );
+
+  $items['admin/hosting/queues'] = array(
+    'title' => 'Queues',
+    'description' => 'Configure the frequency that cron, backup and task events are process',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('hosting_queues_configure'),
+    'type' => MENU_LOCAL_TASK,
+    'access arguments' => array('administer hosting queues'),
+  );
+
+  
+  $items['hosting/queues'] = array(
+     'page callback' => 'hosting_queues',
+     'type' => MENU_CALLBACK,
+     'access arguments' => array('access task logs')
+   );
+
   return $items;
+}
+
+function hosting_menu_alter(&$items) {
+  $items['node/add']['page callback'] = '_hosting_node_add';
+
+  $types = hosting_feature_node_types(TRUE);
+  foreach ($types as $feature => $type) {
+    $path = sprintf('node/add/%s', str_replace('_', '-', $type));
+    $items[$path]['access callback'] = 'hosting_menu_access';
+    $items[$path]['access arguments'] = array($type, $feature);
+  }
+  
+  // These node types should remain hidden, and provide no user interface.
+  unset($items['node/add/package']);
+  unset($items['node/add/task']);
+}
+
+function hosting_menu_access($type, $feature) {
+  global $user;
+  return  (($user->uid == 1) || user_access('create ' . $type)) && (hosting_feature($feature) != HOSTING_FEATURE_DISABLED);
 }
 
 function hosting_disabled_site($url) {
@@ -184,6 +192,9 @@ function hosting_init() {
   define('HOSTING_DEFAULT_BACKUP_PATH', HOSTING_DEFAULT_PARENT_PATH . '/backups');
   define('HOSTING_DEFAULT_CONFIG_PATH', HOSTING_DEFAULT_PARENT_PATH .'/config');
   define('HOSTING_DEFAULT_VHOST_PATH', HOSTING_DEFAULT_CONFIG_PATH .'/vhost.d');
+ 
+  // moved from hook_menu()
+  drupal_add_css(drupal_get_path('module', 'hosting') . '/hosting.css');
 }
 
 
@@ -273,10 +284,6 @@ function hosting_queue_summary_block() {
         $disp[] = $title . ": " . $info[$key]; 
       }
       $output .= theme('item_list', $disp, $info['name']);
-      /* to print all stats of the queue... */
-      #$lambda = create_function('$k,$v', 'return "$k: $v";');
-      #$output .= theme('item_list', array_map($lambda, array_keys($info), $info), $info['name']);
-    
     }
     return $output;
   }
@@ -432,7 +439,7 @@ function _hosting_node_add($type = '') {
       if (function_exists($type->module .'_form') && user_access('create ' . $type->type) && (hosting_feature($type->type) !== HOSTING_FEATURE_DISABLED)) {
         $type_url_str = str_replace('_', '-', $type->type);
         $title = t('Add a new @s.', array('@s' => $type->name));
-        $out = '<dt>'. l(drupal_ucfirst($type->name), "node/add/$type_url_str", array('title' => $title)) .'</dt>';
+        $out = '<dt>'. l(drupal_ucfirst($type->name), "node/add/$type_url_str", array('attributes' => array('title' => $title))) .'</dt>';
         $out .= '<dd>'. filter_xss_admin($type->description) .'</dd>';
         $item[$type->name] = $out;
       }
@@ -594,13 +601,13 @@ function theme_hosting_queues_configure($form) {
   return $output;
 }
 
-function hosting_queues_configure_submit($form_id, $values) {
+function hosting_queues_configure_submit($form, &$form_state) {
   foreach (hosting_get_queues() as $queue => $info) {
-    if ($values[$queue]) {
-      variable_set("hosting_queue_" . $queue . "_enabled", $values[$queue]['enabled']);
-      variable_set("hosting_queue_" . $queue . "_frequency", $values[$queue]['frequency']['ticks'] * $values[$queue]['frequency']['unit']);
+    if ($form_state['values'][$queue]) {
+      variable_set("hosting_queue_" . $queue . "_enabled", $form_state['values'][$queue]['enabled']);
+      variable_set("hosting_queue_" . $queue . "_frequency", $form_state['values'][$queue]['frequency']['ticks'] * $form_state['values'][$queue]['frequency']['unit']);
       if ($info['type'] == 'serial') {
-        variable_set("hosting_queue_" . $queue . "_items", $values[$queue]['frequency']['items']);
+        variable_set("hosting_queue_" . $queue . "_items", $form_state['values'][$queue]['frequency']['items']);
       }
 
     }

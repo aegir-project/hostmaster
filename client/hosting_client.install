@@ -1,29 +1,73 @@
 <?php
 // $Id$
+
+/**
+ * Implementation of hook_schema().
+ */
+function hosting_client_schema() {
+  $schema['hosting_client'] = array(
+    'fields' => array(
+      'vid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'name' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+      ),
+      'organization' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+      ),
+      'email' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+    ),
+    'primary key' => array('vid'),
+  );
+
+  $schema['hosting_client_user'] = array(
+    'fields' => array(
+      'user' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'client' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'contact_type' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('user'),
+  );
+
+  return $schema;
+}
+
 function hosting_client_install() {
-  switch ($GLOBALS['db_type']) {
-    case 'mysql' :
-    case 'mysqli':
-      db_query("CREATE TABLE {hosting_client} (
-        vid int(10) unsigned NOT NULL default '0',
-        nid int(10) unsigned NOT NULL default '0',
-        name longtext,
-        organization longtext,
-        email varchar(255) NOT NULL default '',
-        PRIMARY KEY  (vid)
-      ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
-      db_query("CREATE UNIQUE INDEX hosting_client_email_idx ON hosting_client (email)");
-
-      db_query("CREATE TABLE {hosting_client_user} (
-         user int(10) unsigned NOT NULL default '0',
-         client int(10) unsigned NOT NULL default '0',
-         contact_type longtext NOT NULL,
-         PRIMARY KEY (user, client)
-       ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
-      db_query("INSERT INTO {hosting_client_user} VALUES (1, 1, 'admin')");
-      break;
-   }
-
+  // Create tables.
+  drupal_install_schema('hosting_client');
 }
 
 /**
