@@ -26,7 +26,6 @@ function hosting_drush_command() {
     'description' => 'execute a specific queue item',
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL
   );
-  
   return $items;
 }
 

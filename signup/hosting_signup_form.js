@@ -4,13 +4,13 @@ if (Drupal.jsEnabled) {
     * initialize the form
     */
     hostingSitePopulate('profile');
-    $('div.hosting-site-form-language-options').parent().hide();
+    $('div.hosting-site-form-site-language-options').parent().hide();
     $('input[@name=platform]').change(function() {
       hostingSitePopulate('profile');
-      $('div.hosting-site-form-language-options').parent().hide();
+      $('div.hosting-site-form-site-language-options').parent().hide();
     });
     $('input[@name=profile]').change(function() {
-      hostingSitePopulate('language');
+      hostingSitePopulate('site_language');
     }); 
   });
 }
@@ -31,7 +31,7 @@ function hostingSitePopulate(option) {
   var resultOptions = function (data) {
     var result = Drupal.parseJson(data);
     if (result['status'] == 'TRUE') {
-      resultID = 'hosting-site-form-' + option + '-options'; 
+      resultID = 'hosting-site-form-' + option.replace('_', '-') + '-options'; 
       if (result['data']) {
         // replace form element options
         if ($('div.' + resultID).html()) {
@@ -47,11 +47,11 @@ function hostingSitePopulate(option) {
         // bind on-change event
         if (option == 'profile') {
           if (($('input[@name=profile]:checked').val()) || (result['type'] != 'radios')) {
-            hostingSitePopulate('language');
+            hostingSitePopulate('site_language');
           }
           if (result['type'] == 'radios') {
             $('input[@name=profile]').change(function() {
-              hostingSitePopulate('language');
+              hostingSitePopulate('site_language');
             }); 
           }
         }
@@ -65,7 +65,7 @@ function hostingSitePopulate(option) {
   }
   // prepare url params
   params = (option == 'profile') ? $(obj).val() : ($(obj).val() + '/' + $(_hostingSiteField('platform')).val());
-  $.get('/hosting/signup/form_populate/' + option + '/' + params, null, resultOptions);
+  $.get('/hosting/hosting/signup/form_populate/' + option + '/' + params, null, resultOptions);
 }
 
 function _hostingSiteField(name) {
@@ -75,3 +75,4 @@ function _hostingSiteField(name) {
   }
   return obj;
 }
+

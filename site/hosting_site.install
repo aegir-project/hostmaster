@@ -68,8 +68,7 @@ function hosting_site_schema() {
   $schema['hosting_site_backups'] = array(
     'fields' => array(
       'bid' => array(
-        'type' => 'int',
-        'unsigned' => TRUE,
+        'type' => 'serial',
         'not null' => TRUE,
       ),
       'site' => array(
@@ -170,5 +169,22 @@ function hosting_site_update_4() {
   $now = mktime();
   $ret[] = update_sql("ALTER TABLE {hosting_site} ADD COLUMN verified int(10) NOT NULL default '0'");
   db_query("UPDATE {hosting_site} SET verified=%d WHERE status=1", $now);
+  return $ret;
+}
+
+/**
+ * Turn the bid column of hosting_site_backups into a serial field
+ *
+ * Required by Drupal 6 update.
+ */
+function hosting_site_update_5() {
+  $ret = array();
+
+  db_drop_primary_key($ret, 'hosting_site_backups');
+  db_field_set_no_default($ret, 'hosting_site_backups', 'bid');
+  db_change_field($ret, 'hosting_site_backups', 'bid', 'bid',
+    array('type' => 'serial', 'not null' => TRUE),
+    array('primary key' => array('bid')));
+
   return $ret;
 }

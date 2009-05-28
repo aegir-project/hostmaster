@@ -12,7 +12,7 @@ function drush_hosting_site_pre_hosting_task($task) {
     $task->args[0] = $task->ref->title;
     $task->options['site_id'] = $task->ref->nid;
     if ($task->task_type != 'import') {
-      $task->options['language'] = $task->ref->language;
+      $task->options['language'] = $task->ref->site_language;
     }
   }
   if ($task->task_type == 'restore') {

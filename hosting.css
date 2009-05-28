@@ -234,3 +234,19 @@ html.js input.throbbing {
   background-position: 100% -18px;
 }
 */
+
+#hosting-wizard-form-buttons { 
+  text-align: right;
+  font-size: 4em;
+  clear: both;
+}
+
+#hosting-wizard-form, div.error, div.messages {
+margin-left: auto;
+margin-right: auto;
+}
+
+#hosting-wizard-account-details { width : 45%; float: left; padding: 0 10px; }
+#hosting-wizard-account-passwd { width : 45%; float: right; padding: 0 10px; }
+
+div.hosting-wizard-glossary { padding: 0 2em; display: none; }

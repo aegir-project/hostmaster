@@ -492,7 +492,7 @@ function theme_requirement_help(&$element) {
   //place anchor so user can be directed to right page.
   $output .= "<a name='hosting-help-$req'></a>";
 
-  $output .= '<div class="hosting-'. form_clean_id($element["#type"]) . 
+  $output .= '<div class="hosting-requirement-help' . 
     ' '. _hosting_status_class($element['#status']) .'">';
 
   if ($element['#status'] != HOSTING_STATUS_NONE) {

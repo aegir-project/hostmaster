@@ -1,13 +1,4 @@
 <?php
-// $Id$
-/* TODO Automatically add Drupal.settings.basePath
-   In Drupal 5, you would have to add the base path to Drupal.settings yourself
-   if you needed it (it's needed for just about every AHAH/AJAX enabled module
-   if you did it right). Now in Drupal 6, it's added automatically. You can always
-   find it at Drupal.settings.basePath (actually, as soon as drupal_add_js() is
-   called at least once, so this is similar to the way we automatically add
-   drupal.js and jquery.js. */
-
 /**
  * @file Provides a signup form that can be run on remote sites
  */
@@ -69,7 +60,7 @@ function hosting_signup_menu() {
       'description' => 'Create your own hosted site',
       'page callback' => 'drupal_get_form',
       'page arguments' => array('hosting_signup_form'),
-      'access arguments' => ($user->uid == 0) && user_access('access hosting signup form'),
+      'access arguments' => array('access hosting signup form'),
     );
   //}
   //else {
@@ -192,7 +183,6 @@ function hosting_signup_singleton($data = null) {
  */
 function hosting_signup_form() {
   drupal_add_js(drupal_get_path('module', 'hosting_signup') . '/hosting_signup_form.js');
-
   $form = xmlrpc(_hosting_signup_get_url(), 'hosting_signup.getForm', _hosting_signup_get_key(), $_POST);
   $form['#action'] = '/hosting/signup';
   $form['#submit'] = array('hosting_signup_form_submit' => array());

@@ -145,7 +145,10 @@ function hosting_import_site($site_id, $data, $platform = HOSTING_DEFAULT_PLATFO
   $site->client = $client->nid;
   $db_server = hosting_get_db_server($data['db_id']);
   $site->db_server = ($db_server) ? $db_server->nid : HOSTING_DEFAULT_DB_SERVER;
-  $site->language = $data['language'] ? $data['language'] : 'en';
+  $site->site_language = $data['language'] ? $data['language'] : 'en';
+
+  // Drupal 6 introduced a language field on nodes
+  unset($data['language']);
 
   // This should really be handled via a hook system, to allow hosting_alias to see these fields, but later.
   #$site->aliases = $data['aliases'] ? $data['aliases'] : array();
@@ -220,6 +223,7 @@ function hosting_site_form($node) {
 
   # find the right client
   global $user;
+  $current_client_id = HOSTING_DEFAULT_CLIENT;
   if ($user->uid) {
     $client_ids = hosting_get_client_from_user($user->uid);
     $clients = array();
@@ -231,17 +235,20 @@ function hosting_site_form($node) {
         $current_client_id = $client_id;
       }
     }
+    if (!$current_client_id && ($user->uid != 1)) {
+      form_set_error('client', t('This user is not associated with any clients , and will not be able to create new sites'));
+    }
   }
   else {
     $current_client_id = HOSTING_DEFAULT_CLIENT;
   }
+
   // allow admins to override
   if ($node->client && user_access('administer site')) {
     $current_client_id = $node->client;
   }
 
   $client = node_load($current_client_id);
-
   if ((!$node->client || $node->nid) && user_access('administer site')) {
     $form['client'] = array(
       '#type' => 'textfield',
@@ -286,7 +293,7 @@ function hosting_site_form($node) {
       $form['platform'] = array('#type' => 'hidden', '#value' => key($platforms));
     }
     $form['profile'] = _hosting_site_form_profile();
-    $form['language'] = _hosting_site_form_language();
+    $form['site_language'] = _hosting_site_form_site_language();
   }
   else {
     $form['info']['platform'] = array(
@@ -302,12 +309,12 @@ function hosting_site_form($node) {
        '#value' => _hosting_node_link($node->profile),
     );
     $form['profile'] = array('#type' => 'hidden', '#value' => $node->profile);
-    $form['info']['language'] = array(
+    $form['info']['site_language'] = array(
       '#type' => 'item',
       '#title' => t('Language'),
-      '#value' => _hosting_language_name($node->language),
+      '#value' => _hosting_language_name($node->site_language),
     );
-    $form['language'] = array('#type' => 'hidden', '#value' => $node->language);
+    $form['site_language'] = array('#type' => 'hidden', '#value' => $node->site_language);
   }
 
   if (!$node->nid) {
@@ -361,8 +368,8 @@ function hosting_site_validate($node, &$form) {
   if (!array_key_exists($node->profile, hosting_get_profiles($node->platform))) {
     form_set_error('profile', t('Please fill in a valid profile'));
   }
-  if (!array_key_exists($node->language, hosting_get_profile_languages($node->profile, $node->platform))) {
-    form_set_error('language', t('Please fill in a valid language'));
+  if (!array_key_exists($node->site_language, hosting_get_profile_languages($node->profile, $node->platform))) {
+    form_set_error('site_language', t('Please fill in a valid language'));
   }
 
 }
@@ -381,10 +388,10 @@ function hosting_site_nodeapi(&$node, $op, $teaser, $page) {
 function hosting_site_insert(&$node) {
   $client = hosting_get_client($node->client);
   $node->client = $client->nid;
-  $node->language = ($node->language) ? $node->language : 'en';
+  $node->site_language = ($node->site_language) ? $node->site_language : 'en';
 
   db_query("INSERT INTO {hosting_site} (vid, nid, client, db_server, platform, profile, language, last_cron, status, verified) VALUES (%d, %d, %d, %d, %d, %d, '%s', %d, %d, %d)",
-    $node->vid, $node->nid, $node->client, $node->db_server, $node->platform, $node->profile, $node->language, $node->last_cron, $node->site_status, $node->verified);
+    $node->vid, $node->nid, $node->client, $node->db_server, $node->platform, $node->profile, $node->site_language, $node->last_cron, $node->site_status, $node->verified);
   if ((!$node->old_vid)) {
     if ($node->import) {
       hosting_add_task($node->nid, 'import');
@@ -404,7 +411,7 @@ function hosting_site_update(&$node) {
     $client = hosting_get_client($node->client);
     $node->client = $client->nid;
     db_query("UPDATE {hosting_site} SET client = %d, db_server = %d, platform = %d, last_cron = %d, status = %d, profile = %d, language = '%s', verified = %d WHERE vid=%d",
-              $node->client, $node->db_server, $node->platform, $node->last_cron, $node->site_status, $node->profile, $node->language, $node->verified, $node->vid);
+              $node->client, $node->db_server, $node->platform, $node->last_cron, $node->site_status, $node->profile, $node->site_language, $node->verified, $node->vid);
   }
   if (!$node->no_verify) {
     hosting_add_task($node->nid, 'verify');
@@ -412,7 +419,7 @@ function hosting_site_update(&$node) {
 }
 
 function hosting_site_load($node) {
-  $additions = db_fetch_object(db_query('SELECT  client, db_server, platform, profile, language, last_cron, status AS site_status, verified FROM {hosting_site} WHERE vid = %d', $node->vid));
+  $additions = db_fetch_object(db_query('SELECT  client, db_server, platform, profile, language as site_language, last_cron, status AS site_status, verified FROM {hosting_site} WHERE vid = %d', $node->vid));
   return $additions;
 }
 
@@ -471,11 +478,11 @@ function hosting_site_view(&$node, $teaser = false) {
       '#value' => _hosting_node_link($node->profile),
     );
   }
-  if ($node->language) {
-    $node->content['info']['language'] = array(
+  if ($node->site_language) {
+    $node->content['info']['site_language'] = array(
       '#type' => 'item',
       '#title' => t('Language'),
-      '#value' => _hosting_language_name($node->language),
+      '#value' => _hosting_language_name($node->site_language),
     );
   }
   if ($node->db_server) {
@@ -524,9 +531,9 @@ function _hosting_site_status($node) {
  * Builds a list of backups of the site that have been generated.
  */
 function hosting_site_add_backup($site, $web_server, $filename, $description = '') {
-  $bid = db_next_id("{hosting_site_backups}_bid");
-  db_query("INSERT INTO {hosting_site_backups} (bid, site, web_server, filename, description, timestamp) VALUES (%d, %d, %d, '%s', '%s', %d)",
-    $bid, $site, $web_server, $filename, $description, mktime());
+  db_query("INSERT INTO {hosting_site_backups} (site, web_server, filename, description, timestamp) VALUES (%d, %d, '%s', '%s', %d)",
+    $site, $web_server, $filename, $description, mktime());
+  $bid = db_last_insert_id('hosting_site_backups', 'bid');
   return $bid;
 }
 
@@ -627,7 +634,7 @@ function hosting_site_list($filter_by = null, $filter_value = null) {
   $header = array(
     array('data' => t('Site'), 'field' => 'title'),
     array('data' => t('Profile'), 'field' => 'profile'),
-    array('data' => t('Language'), 'field' => 'language'),
+    array('data' => t('Language'), 'field' => 'site_language'),
     array('data' => t('Created'), 'field' => 'created', 'sort' => 'desc'),
   );
   $platforms = _hosting_get_platforms();
@@ -635,7 +642,7 @@ function hosting_site_list($filter_by = null, $filter_value = null) {
     $header[] = array('data' => t('Platform'), 'field' => 'platform');
   }
 
-  $sql = "SELECT n.nid, n.title, n.created, s.status as site_status, profile, s.language, platform, verified FROM {node} n left join {hosting_site} s ON n.vid=s.vid WHERE type='%s' AND s.status != -2 " . $cond;
+  $sql = "SELECT n.nid, n.title, n.created, s.status as site_status, profile, s.language as site_language, platform, verified FROM {node} n left join {hosting_site} s ON n.vid=s.vid WHERE type='%s' AND s.status != -2 " . $cond;
   $sql .= tablesort_sql($header);
 
   // @TODO hide deleted sites
@@ -649,7 +656,7 @@ function hosting_site_list($filter_by = null, $filter_value = null) {
     $row = array();
     $row[] =  array('data' => l($node->title, 'node/' . $node->nid), 'class'=> 'hosting-status');
     $row[] = ($node->profile) ? _hosting_node_link($node->profile) : t('n/a');
-    $row[] = ($node->language) ? _hosting_language_name($node->language) : t('n/a');
+    $row[] = ($node->site_language) ? _hosting_language_name($node->site_language) : t('n/a');
     $row[] = t("@interval ago", array('@interval' => format_interval(mktime() - $node->created, 1)));
     if (sizeof($platforms) > 1) {
       $row[] = ($node->platform) ? _hosting_node_link($node->platform) : t('n/a');
@@ -731,34 +738,35 @@ function _hosting_site_form_profile($platform = NULL) {
 /**
  * generate hosting site node form element 'language'
  */
-function _hosting_site_form_language($profile = NULL, $platform = null) {
+function _hosting_site_form_site_language($profile = NULL, $platform = null) {
   $languages = hosting_get_profile_languages($profile, $platform);
   if (sizeof($languages) > 1) {
-    $form['language'] = array(
+    $form['site_language'] = array(
       '#type' => 'radios',
       '#title' => t('Language'),
       '#description' => t('The type of site to install.'),
       '#options' => $languages,
       '#required' => TRUE,
       '#default_value' => 'en',
-      '#attributes' => array('class' => "hosting-site-form-language-options"),
+      '#attributes' => array('class' => "hosting-site-form-site-language-options"),
     );
   }
   else {
-    $form['language'] = array('#type' => 'hidden', '#default_value' => 'en', '#attributes' => array('class' => "hosting-site-form-language-options"));
+    $form['site_language'] = array('#type' => 'hidden', '#default_value' => 'en', '#attributes' => array('class' => "hosting-site-form-site-language-options"));
   }
-  return $form['language'];
+  return $form['site_language'];
 }
 
 /**
  * populate hosting site node form element with specified arguments
  */
 function _hosting_site_form_populate($element, $value, $value2 = null) {
+  $element = str_replace('-', '_', $element);
   $form[$element] = call_user_func('_hosting_site_form_'. $element, $value, $value2);
 
   $GLOBALS['devel_shutdown'] = FALSE;
   $form_state = array();
-  $built = form_builder('hosting-site-form', $form, $form_state);
+  $built = form_builder('hosting_site_form', $form, $form_state);
   print drupal_to_js(
     array(
       'status' => 'TRUE',

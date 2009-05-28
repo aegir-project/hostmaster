@@ -129,7 +129,12 @@ function hosting_db_server_form(&$node) {
     '#maxlength' => 64,
     '#weight' => 0,
   );
-  
+
+  $form['db_type'] = array(
+    '#type' => 'value',
+    '#value' => ($node->db_type) ? $node->db_type : 'mysqli'
+  );
+
   $form['db_user'] = array(
     '#type' => 'textfield',
     '#required' => TRUE,
