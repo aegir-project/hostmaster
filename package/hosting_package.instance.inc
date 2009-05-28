@@ -77,14 +77,13 @@ function hosting_package_instance_update(&$instance) {
 }
 
 function hosting_package_instance_create(&$instance) {
-   $instance->iid = db_next_id("{hosting_package_instance}_iid");
    db_query("INSERT INTO {hosting_package_instance} (
-      iid, rid, package_id, filename,
+      rid, package_id, filename,
       schema_version, version, status)
-      VALUES (%d, %d, %d, '%s', %d, '%s', %d)", 
-      $instance->iid, $instance->rid, $instance->package_id, $instance->filename, 
+      VALUES (%d, %d, '%s', %d, '%s', %d)", 
+      $instance->rid, $instance->package_id, $instance->filename, 
       $instance->schema_version, $instance->version, $instance->status);
-
+   $instance->iid = db_last_insert_id('hosting_package_instance', 'iid');
    _hosting_package_instance_languages($instance);
 }
 

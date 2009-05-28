@@ -43,9 +43,8 @@ function hosting_package_schema() {
   $schema['hosting_package_instance'] = array(
     'fields' => array(
       'iid' => array(
-        'type' => 'int',
+        'type' => 'serial',
         'not null' => TRUE,
-        'default' => 0,
       ),
       'rid' => array(
         'type' => 'int',
@@ -223,3 +222,19 @@ function hosting_package_update_6() {
   return $ret;
 }
 
+/**
+ * Turn the iid column of hosting_package_instance into a serial field
+ *
+ * Required by Drupal 6 update.
+ */
+function hosting_package_update_7() {
+  $ret = array();
+
+  db_drop_primary_key($ret, 'hosting_package_instance');
+  db_field_set_no_default($ret, 'hosting_package_instance', 'iid');
+  db_change_field($ret, 'hosting_package_instance', 'iid', 'iid',
+    array('type' => 'serial', 'not null' => TRUE),
+    array('primary key' => array('iid')));
+
+  return $ret;
+}

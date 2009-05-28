@@ -522,7 +522,7 @@ function hosting_client_configure() {
 
 function _hosting_get_clients() {
   $return = array();
-  $result = pager_query(db_rewrite_sql('SELECT nid, name from {hosting_client} AS h INNER JOIN {node} n ON n.nid = h.nid AND n.vid = h.vid'), 25);
+  $result = pager_query(db_rewrite_sql('SELECT n.nid, name from {hosting_client} AS h INNER JOIN {node} n ON n.nid = h.nid AND n.vid = h.vid'), 25);
   while ($client = db_fetch_object($result)) {
     $return[$client->nid] = $client->name;
   }

@@ -18,6 +18,12 @@ function hosting_theme() {
         'form' => NULL,
       ),
     ),
+    'requirement_help' => array(
+      'file' => 'hosting_help.inc',
+      'arguments' => array(
+        'form' => NULL,
+      ),
+    ),
   );
 }
 
@@ -33,7 +39,6 @@ function hosting_theme() {
  */
 
 include_once('hosting_help.inc');
-//include_once('hosting.wizard.inc');
 include_once('hosting.queues.inc');
 include_once('hosting.features.inc');
 

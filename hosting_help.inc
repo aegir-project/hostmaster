@@ -450,6 +450,7 @@ EOF;
 function hosting_elements() {
   $type['requirement_help'] = array(
     '#requirement' => NULL,
+    '#input' => FALSE,
     '#status' => HOSTING_STATUS_NONE,
     '#heading' => HOSTING_HELP_ENABLED,
     '#summary' => HOSTING_HELP_ENABLED,
