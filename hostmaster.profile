@@ -9,9 +9,11 @@
  */
 function hostmaster_profile_modules() {
   return array(
-    /* core */ 'block', 'color', 'filter', 'help', 'menu', 'node', 'system', 'user', 'watchdog',
+    /* core */ 'block', 'color', 'filter', 'help', 'menu', 'node', 'system', 'user',
+    /* contrib */ 'install_profile_api',
     /* custom */ 'hosting', 'hosting_task', 'hosting_client', 'hosting_db_server', 'hosting_package', 'hosting_platform', 'hosting_site', 'hosting_web_server');
 }
+
 
 /**
  * Return a description of the profile for the initial installation screen.
@@ -26,38 +28,178 @@ function hostmaster_profile_details() {
   );
 }
 
+function pr($var) {
+  echo "<pre>";
+  print_r($var);
+  echo "</pre>";
+}
+
+function hostmaster_profile_task_list() {
+  return array(
+    'intro' => st('Getting started'),
+    'webserver' => st('Web server'),
+    'filesystem' => st('Filesystem'),
+    'dbserver' => st('Database server'),
+    'features' => st('Features'),
+    'init' => st('Initialize system'),
+    'verify' => st('Verify settings'),
+    'import' => st('Import sites')
+  );
+}
+
+function hostmaster_get_task($task, $offset = 0) {
+  static $tasks;
+  static $keys;
+  if (!$tasks) {
+    $tasks = hostmaster_profile_task_list();
+    $keys = array_keys($tasks);
+  }
+
+
+  if (($task == $keys[sizeof($keys) - 1]) && ($offset > 0)) {
+    return 'profile-finished';
+  }
+
+  // finish if the task is the last one and the offset is positive
+  if (($tid = array_search($task, $keys)) === FALSE ) {
+    // at beginning 
+    $tid = 0;
+  }
+
+  $tid = $tid + $offset;
+  
+  // reset to beginning if it tries to go back too far 
+  if ($tid < 0) {
+    $tid = 0;
+  }
+
+
+  return $keys[$tid];
+}
+
+
+
+function hostmaster_profile_tasks(&$task, $url) {
+  include_once(dirname(__FILE__) . '/hostmaster.forms.inc');
+  define("HOSTMASTER_FORM_REDIRECT", $url);
+  if ($task == 'profile') {
+    hostmaster_bootstrap();
+  }
+  include_once(drupal_get_path('module', 'node') . '/node.pages.inc');
+  $task = hostmaster_get_task($task, variable_get('hostmaster_wizard_offset', 0));
+  variable_del('hostmaster_wizard_offset');
+  define("HOSTMASTER_CURRENT_TASK", $task);
+
+  install_include(hostmaster_profile_modules());
+
+   $func = sprintf("hostmaster_task_%s", $task);
+  if (function_exists($func)) {
+    return drupal_get_form($func);
+  }
+
+
+  return $task;
+  return "123";
+
+
+  if ($tid == (sizeof($keys) - 1)) {
+  #  $task = 'profile-finished';
+  }
+}
+
+function hostmaster_requirement_help($requirement, $options = array()) {
+  $form = array_merge(_element_info('requirement_help'), $options);
+  $form['#requirement'] = $requirement;
+  $form['#help'] = hosting_get_requirement($requirement);
+  $form['#value'] = theme_requirement_help($form);
+  return $form;
+}
+
 /**
- * Perform any final installation tasks for this profile.
+ * Form modifier similar to confirm_form
  *
- * @return
- *   An optional HTML string to display to the user on the final installation
- *   screen.
+ * Handles some bookkeeping like adding the js and css, 
+ * embedded the right classes, and most importantly : adding the wizard_form_submit
+ * to the #submit element. Without this, you would never be forwarded to the next
+ * page.
  */
-function hostmaster_profile_final() {
+function hostmaster_form($form) {
+  global $task;
+
+  $form['#redirect'] = HOSTMASTER_FORM_REDIRECT;
+
+  $form['#prefix'] = '<div id="hosting-wizard-form">';
+  $form['#suffix'] = '</div>';
+
+
+  $form['wizard_form'] = array(
+    '#prefix' => '<div id="hosting-wizard-form-buttons">',
+    '#suffix' => '</div>',
+    '#weight' => 100
+  );
+
+  if (HOSTMASTER_CURRENT_TASK != 'intro') {
+    // add a back button
+    $button = array(
+      '#type' => 'submit',
+      '#value' =>  '<- Previous',
+    );
+    $button['#submit'][] = 'hostmaster_form_previous';
+
+    $form['wizard_form']['back'] = $button;
+  }
+
+  // add a next button
+  $button = array(
+    '#type' => 'submit',
+    '#value' =>  'Next ->',
+  );
+
+  // only validate when next is pressed
+  // also inherit the whole form's validate callback
+  $button['#validate'] = $form['#validate'];
+  $button['#validate'][] = 'hostmaster_form_validate';
+  unset($form['#validate']);
+
+  if ($form['#node']) {
+    $button['#submit'][] = 'node_form_submit';
+  }
+  $button['#submit'][] = 'hostmaster_form_next';
+
+  $form['wizard_form']['submit'] = $button;
+  return $form;
+}
+
+function hostmaster_form_next($form, $form_state) {
+  // move forward a page
+  variable_set('hostmaster_wizard_offset', 1);
+}
+
+function hostmaster_form_previous($form, $form_state) {
+  // move forward a page
+  variable_set('hostmaster_wizard_offset', -1);
+}
+
+
+
+function hostmaster_form_validate($form, &$form_state) {
+}
+
+function hostmaster_bootstrap() {
   /* Default node types and default node */
   $types =  node_types_rebuild();
 
+  variable_set('install_profile', 'hostmaster');
+  global $user;
   // Initialize the hosting defines
   hosting_init();
-
-  /**
-  * Generate administrator account
-  */
-  $user = new stdClass();
-  $edit['name'] = 'Administrator';
-  $edit['pass'] = user_password();
-  $edit['mail'] = valid_email_address($_SERVER['SERVER_ADMIN']) ? $_SERVER['SERVER_ADMIN'] : 'changeme@example.com';
-  $edit['status'] = 1;
-  $user = user_save($user,  $edit);
-  $GLOBALS['user'] = $user;
-
   
   /* Default client */
   $node = new stdClass();
   $node->uid = 1;
   $node->type = 'client';
-  $node->email = ($_SERVER['SERVER_ADMIN']) ? $_SERVER['SERVER_ADMIN'] : 'changeme@example.com';
-  $node->client_name = 'Administrator';
+  $node->email = $user->mail;
+  $node->client_name = $user->name;
   $node->status = 1;
   node_save($node);
   variable_set('hosting_default_client', $node->nid);  
@@ -119,21 +261,25 @@ function hostmaster_profile_final() {
   $instance->status = 0;
   hosting_package_instance_save($instance);
 
-
-  #initial configuration of hostmaster - todo
-  variable_set('site_name', t('Hostmaster'));
   variable_set('site_frontpage', 'hosting/sites');
 
   // do not allow user registration: the signup form will do that
   variable_set('user_register', 0);
 
-  // This is set to true, because the node/add/site form needs
-  // to use AHAH to create a valid node, and ahah_forms requires clean_urls
-  variable_set('clean_url', TRUE);
-
   // This is saved because the config generation script is running via drush, and does not have access to this value
   variable_set('install_url' , $GLOBALS['base_url']);
 
+}
+
+
+/**
+ * Perform any final installation tasks for this profile.
+ *
+ * @return
+ *   An optional HTML string to display to the user on the final installation
+ *   screen.
+ */
+function hostmaster_profile_final() {
   // add default blocks
   hostmaster_install_add_block('hosting', 'hosting_summary', 'garland', 1, 10, 'left');
   hostmaster_install_add_block('hosting', 'hosting_queues', 'garland', 1, 0, 'right');
@@ -166,34 +312,6 @@ function hostmaster_profile_final() {
 function hostmaster_install_set_permissions($rid, $perms) {
   db_query('DELETE FROM {permission} WHERE rid = %d', $rid);
   db_query("INSERT INTO {permission} (rid, perm) VALUES (%d, '%s')", $rid, implode(', ', $perms));
-}
-
-/**
- * Get the role id for the role name
- */
-function hostmaster_install_get_rid($name) {
-  return db_result(db_query("SELECT rid FROM {role} WHERE name ='%s' LIMIT 1", $name));
-}
-
-
-/**
- * Create a role
- */
-function hostmaster_install_create_role($role_name) {
-  db_query("INSERT INTO {role} (name) VALUES ('%s')", $role_name);
-}
-
-/**
- * Creates a new block.
- */
-function hostmaster_install_add_block($module, $delta, $theme, $status, $weight, $region, $visibility = 0, $pages = '', $custom = 0, $throttle = 0, $title = '') {
-  db_query("INSERT INTO {blocks} (module, delta, theme, status, weight, region, visibility, pages, custom, throttle, title) 
-     VALUES ('%s', '%s', '%s', %d, %d, '%s', %d, '%s', %d, %d, '%s')", 
-     $module, $delta, $theme, $status, $weight, $region, $visibility, $pages, $custom, $throttle, $title);
-  if ($module == 'block') {
-    $box = db_fetch_object(db_query('SELECT * FROM {boxes} WHERE bid=%d', $delta));
-    db_query("INSERT INTO {boxes} (bid, body, info, format) VALUES (%d, '%s', '%s', '%s')", $box->bid, $box->body, $box->info, $box->format);
-  }
 }
 
 /**
@@ -248,73 +366,25 @@ function hostmaster_setup_optional_modules() {
   }
 }
 
-/**
- * Create a new top-level menu
- *
- * @return  integer    The database ID of the newly created menu
- */
-function hostmaster_create_menu($title, $weight = 0) {
-  $mid = db_next_id('{menu}_mid');
-  // Check explicitly for mid <= 2. If the database was improperly prefixed,
-  // this would cause a nasty infinite loop or duplicate mid errors.
-  // TODO: have automatic prefixing through an installer to prevent this.
-  while ($mid <= 2) {
-    $mid = db_next_id('{menu}_mid');
-  }
-  db_query("INSERT INTO {menu} (mid, pid, title, weight, type) VALUES (%d, 0, '%s', %d, 115)", $mid, $title, $weight);
-  // not sure if this is needed, but we've seen problems without it.
-  menu_rebuild();
-  // this is important to add new items to this menu.
-  return $mid;
-}
-
 
 /**
- * Get the menu ID, searching on path
- *
- * @return  integer    The database ID of a menu item based on its path
+ * Take a node form and get rid of all the crud that we don't
+ * need on a wizard form, in a non destructive manner.
  */
-function hostmaster_menu_get_mid($path) {
-  return db_result(db_query("SELECT mid FROM {menu} WHERE path = '%s' LIMIT 1", $path));  
-}
+function _hostmaster_clean_node_form(&$form) {
+  $form['revision_information']['revision']['#type'] = 'value';
+  $form['revision_information']['log']['#type'] = 'value';
+  $form['revision_information']['#type'] = 'markup';
 
+  $form['author']['name']['#type'] = 'value';
+  $form['author']['date']['#type'] = 'value';
+  $form['author']['#type'] = 'markup';
 
-/**
- * Update a menu item.
- *
- * @param  $mid          Menu item id
- * @param  $properties   A keyed array of only the values you want to change.
- *
- * @return FALSE if menu does not exist, otherwise return the status returned
- *         by menu_save_item() in menu.module
- */
-function hostmaster_update_menu_item($mid, $properties) {
-  $existing_item = menu_get_item($mid);
-  if (empty($existing_item)) {
-    drupal_set_message(t('Menu item '. $mid .' did not exist in install_menu_update_menu().'));
-    return FALSE;
-  }
-  $edit = array_merge($existing_item, $properties);
-  $edit['mid'] = $mid;
-  // Tell menu this is an updated item.
-  $edit['type'] = 54;
+  $form['options']['sticky']['#type'] = 'value';
+  $form['options']['status']['#type'] = 'value';
+  $form['options']['promote']['#type'] = 'value';
+  $form['options']['#type'] = 'markup';
 
-  $status = menu_save_item($edit);
-  menu_rebuild();
-  return $status;
-}
-
-/**
- * Remove the specified filter from the specified format 
- * @param  $mid  The ID of the menu item to disable
- */
-function hostmaster_disable_menu_item($mid) { 
-  $item = menu_get_item($mid);
-  $type = $item['type'];
-  $type &= ~MENU_VISIBLE_IN_TREE;
-  $type &= ~MENU_VISIBLE_IN_BREADCRUMB;
-  $type |= MENU_MODIFIED_BY_ADMIN;
-  db_query('UPDATE {menu} SET type = %d WHERE mid = %d', $type, $mid);
-  menu_rebuild();
+  unset($form['buttons']);
 }
 
