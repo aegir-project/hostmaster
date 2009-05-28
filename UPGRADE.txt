@@ -13,30 +13,38 @@ Upgrading the Drupal core safely
 
 If you want to use provision to upgrade your Aegir installation, you
 can, but it's a bit more tricky than a usual site because you cannot
-(yet?) use the regular frontend to do that. The first step is to
+(yet) use the regular frontend to do that. The first step is to
 import and verify the "default" site so it has a proper
 configuration. Then it can be migrated to a new platform.
 
 Shell commands::
  cd /var/aegir
- ./drush/drush.php dl drupal-5.17 --package-handler=cvs
- mv drupal drupal-5.17
- cd drupal-5.17
+ ./drush/drush.php dl drupal
+ cd drupal-6.12
  cvs co -d profiles/hostmaster contributions/profiles/hostmaster
- cvs co -d sites/default/modules/hosting contributions/modules/hosting
- crontab -e # disable cronjob
+ cvs co -d profiles/hostmaster/modules/hosting contributions/modules/hosting
+ cvs co -d profiles/hostmaster/themes/eldir contributions/themes/eldir
+ # also checkout any modules you may have enabled in the d5 platform
+ # now you want to add the platform in the frontend (Create content -> platform) and wait for the task to be processed
  cd ../drupal-5.x
+ /var/hostmaster/drush/drush.php --verbose=2 provision verify
  /var/hostmaster/drush/drush.php --verbose=2 provision import default
  /var/hostmaster/drush/drush.php --verbose=2 provision verify default
- /var/hostmaster/drush/drush.php --verbose=2 provision migrate default /var/hostmaster/drupal-5.17/
- crontab -e # enable cronjob and change root to new platform
+ /var/hostmaster/drush/drush.php --verbose=2 provision backup default ~/default.tar.gz
+ cd ../drupal-6.12
+ /var/hostmaster/drush/drush.php --verbose=2 provision verify
+ /var/hostmaster/drush/drush.php --verbose=2 provision deploy d6.aegir.example.com ~/default.tar.gz
+ # review changes, see if it works to your liking, when you're done:
+ /var/hostmaster/drush/drush.php --verbose=2 provision deploy default ~/default.tar.gz
+ /var/hostmaster/drush/drush.php --verbose=2 provision delete d6.aegir.example.com
+ crontab -e # change root to new platform, make sure you have a --uri
+ vi /var/hostmaster/config/vhost.d/aegir.example.com # change the document root to the new platform
 
 This will likely create a new vhost named "default" in
-/var/hostmaster/config/vhost.d. This will likely conflict with your
-already existing vhost there (which is probably more something like
-aegir.example.com). The recommended way is to remove the
-aegir.example.com config file and add "ServerAlias aegir.example.com"
-to the 'default' file.
+/var/hostmaster/config/vhost.d. This will likely conflict with your already
+existing vhost there (which is probably more something like aegir.example.com).
+The recommended way is to remove the 'default' file. Make sure you fix your
+existing config file to point to the right path however.
 
 See http://drupal.org/node/453540 for more details about this issue.
 
