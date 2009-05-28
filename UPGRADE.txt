@@ -34,19 +34,19 @@ Shell commands::
  cd ../drupal-6.12
  /var/aegir/drush/drush.php --verbose=2 provision verify
  /var/aegir/drush/drush.php --verbose=2 provision deploy d6.aegir.example.com ~/default.tar.gz
+ /var/aegir/drush/drush.php --verbose=2 provision verify d6.aegir.example.com --site-url=d6.aegir.example.com
  # review changes, see if it works to your liking, when you're done:
- /var/aegir/drush/drush.php --verbose=2 provision deploy default ~/default.tar.gz
+ /var/aegir/drush/drush.php --verbose=2 provision deploy aegir.example.com ~/default.tar.gz
+ /var/aegir/drush/drush.php --verbose=2 provision verify aegir.example.com --site-url=aegir.example.com
  /var/aegir/drush/drush.php --verbose=2 provision delete d6.aegir.example.com
- crontab -e # change root to new platform, make sure you have a --uri
- vi /var/aegir/config/vhost.d/aegir.example.com # change the document root to the new platform
+ crontab -e # change root to new platform, make sure you have a --uri=aegir.example.com
 
-This will likely create a new vhost named "default" in
-/var/aegir/config/vhost.d. This will likely conflict with your already
-existing vhost there (which is probably more something like aegir.example.com).
-The recommended way is to remove the 'default' file. Make sure you fix your
-existing config file to point to the right path however.
-
-See http://drupal.org/node/453540 for more details about this issue.
+Note that the --site-url above is required only when you're migrating from an
+old "default" site. Aegir can now run in a regular Drupal site (outside of the
+'default') directory without problems and that procedure ensures you migrate
+away from the (bad?) practice of running the frontend in the sites/default
+directory. See http://drupal.org/node/453540 and http://drupal.org/node/454312
+for details.
 
 Upgrading Hostmaster from 0.1
 -----------------------------
