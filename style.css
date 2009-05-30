@@ -61,6 +61,7 @@ body.aegir {
   font: 13px/20px "Helvetica Neue",Arial,sans-serif;
   margin:0px;
   padding:0px;
+  min-width: 950px;
   }
 
 a {
