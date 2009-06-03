@@ -13,20 +13,10 @@ NameVirtualHost *:80
     AllowOverride None
 </Directory>
 
-# This only covers the base platforms, extra platforms should deploy
-# their own configuration
-# XXX: see http://drupal.org/node/384972
-<Directory /var/aegir/drupal-5.x>
-    Options Indexes FollowSymLinks MultiViews
-    AllowOverride All
-    Order allow,deny
-    allow from all
-</Directory>
-
 <VirtualHost *:80>
     RewriteEngine On
     ServerAdmin webmaster@localhost
     ServerName aegir.example.com
 
-    DocumentRoot /var/aegir/drupal-5.x
+    DocumentRoot /var/aegir/drupal-6.x
 </VirtualHost>
