@@ -83,14 +83,14 @@ directory. This may require running those steps as root.
 Shell commands::
  export CVSROOT=:pserver:anonymous:anonymous@cvs.drupal.org:/cvs/drupal
  cd /var
- cvs co -d aegir/drupal-5.x -r DRUPAL-5-17 drupal
- cd aegir/drupal-5.x/
- cvs co -d profiles/hostmaster -rDRUPAL-5--0-2-BETA1 contributions/profiles/hostmaster
- cvs co -d profiles/hostmaster/modules/hosting -rDRUPAL-5--0-2-BETA1 contributions/modules/hosting
+ cvs co -d aegir/drupal-6.x -r DRUPAL-6-12 drupal
+ cd aegir/drupal-6.x
+ cvs co -d profiles/hostmaster contributions/profiles/hostmaster
+ cvs co -d profiles/hostmaster/modules/hosting contributions/modules/hosting
  cd /var/aegir
  cvs co -d drush -rDRUPAL-6--2-0-RC1 contributions/modules/drush
  mkdir .drush
- cvs co -d .drush/provision -rDRUPAL-6--0-2-BETA1 contributions/modules/provision
+ cvs co -d .drush/provision contributions/modules/provision
 
 Checking out the theme
 ----------------------
@@ -98,7 +98,7 @@ Checking out the theme
 Aegir now has its own theme which you can use. This is optional:
 
 Shell commands::
- cvs co -d drupal-5.x/profiles/hostmaster/themes/eldir -rDRUPAL-5--0-2-BETA1 contributions/themes/eldir
+ cvs co -d drupal-6.x/profiles/hostmaster/themes/eldir contributions/themes/eldir
 
 Apache configuration
 --------------------
@@ -120,7 +120,7 @@ Shell commands::
  mkdir -p config/vhost.d/
  a2enmod rewrite
  echo "Include /var/aegir/config/vhost.d/" > /etc/apache2/conf.d/aegir
- cp drupal-5.x/profiles/hostmaster/apache2.conf.txt config/vhost.d/aegir.example.com
+ cp drupal-6.x/profiles/hostmaster/apache2.conf.txt config/vhost.d/aegir.example.com
  /etc/init.d/apache2 restart
 
 Database configuration
@@ -144,18 +144,19 @@ profile. Point your browser to http://aegir.example.com/ , assuming
 DNS is properly configured to point to your webserver, otherwise you
 may want to try http://localhost/ .
 
-The installer is going to complain about the permissions of
-settings.php, just fix the permissions:
+The installer is going to complain about the missing settings.php. It
+is recommended that you create the aegir site as a real site.
 
 Shell commands::
- chmod a+w /var/aegir/drupal-5.x/sites/default/settings.php
+ mkdir drupal-6.x/sites/aegir.example.com
+ chmod a+w drupal-6.x/sites/aegir.example.com/settings.php
 
 Select the hostmaster install profile, enter the database credentials
 you setup above and then the installer will prompt you to secure the
 permissions on the settings.php file again:
 
 Shell commands::
- chmod a-w /var/aegir/drupal-5.x/sites/default/settings.php
+ chmod a-w /var/aegir/drupal-6.x/sites/aegir.example.com/settings.php
 
 Follow the wizard
 -----------------
