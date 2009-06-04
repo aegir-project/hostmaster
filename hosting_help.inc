@@ -380,7 +380,7 @@ function _hosting_user_requirements() {
     sudo adduser $username
 EOF;
   $chmod_cmd = <<<EOF
-    sudo chown $username $path
+    sudo chown -R $username $path
 EOF;
   $help['title'] = t('A separate system account for the scripts');
   $help['summary'] = t('The provision framework requires that the scripts run as a non-root system account, to ensure that
