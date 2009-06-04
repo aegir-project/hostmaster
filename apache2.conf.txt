@@ -18,7 +18,7 @@ NameVirtualHost *:80
     ServerAdmin webmaster@localhost
     ServerName aegir.example.com
 
-    DocumentRoot /var/aegir/drupal-6.x
+    DocumentRoot /var/aegir/drupal-5.x
 
     RewriteEngine on
     RewriteCond %{DOCUMENT_ROOT}%{REQUEST_FILENAME} !-f
