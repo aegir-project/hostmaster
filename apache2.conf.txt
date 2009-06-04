@@ -8,9 +8,15 @@
 
 NameVirtualHost *:80
 
-<Directory />
-    Options FollowSymLinks
-    AllowOverride None
+# This only covers the base platforms, extra platforms should deploy
+# their own configuration
+#
+# This will be replaced by aegir when the base platform will be verified
+<Directory /var/aegir/drupal-6.x>
+    Options Indexes FollowSymLinks MultiViews
+    AllowOverride All
+    Order allow,deny
+    allow from all
 </Directory>
 
 <VirtualHost *:80>
@@ -19,9 +25,4 @@ NameVirtualHost *:80
     ServerName aegir.example.com
 
     DocumentRoot /var/aegir/drupal-6.x
-
-    RewriteEngine on
-    RewriteCond %{DOCUMENT_ROOT}%{REQUEST_FILENAME} !-f
-    RewriteCond %{DOCUMENT_ROOT}%{REQUEST_FILENAME} !-d
-    RewriteRule ^/(.*)$ /index.php?q=$1 [L,QSA]
 </VirtualHost>
