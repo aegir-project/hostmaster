@@ -269,7 +269,7 @@ function hosting_nodeapi_web_server_presave(&$node) {
     // setup IP only if resolution succeeded
     if ($ip != $node->title) {
       $node->ip_address = $ip; // required to fool the ip check below
-      drupal_set_message(t('Initialized the webserver IP to %ip based on hostname %name', array('%ip' => $ip, '%name' => $node->title)), 'message');
+      drupal_set_message(t('Initialized the webserver IP to %ip based on hostname %name. This will be used to create database grants so make sure it is the right address, as seen from the database server.', array('%ip' => $ip, '%name' => $node->title)), 'message');
     } else {
       form_set_error('title', t('Could not resolve IP address of webserver %name. Either set the web server name to a FQDN (Fully Qualified Domain Name) or hardcode the IP here.', array('%name' => $node->title)));
     }
