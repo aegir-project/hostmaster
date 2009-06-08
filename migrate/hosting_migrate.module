@@ -93,6 +93,11 @@ function hosting_task_migrate_form_validate($form, &$form_state) {
     form_set_error('parameters][target_platform', t('You may not select your current platform to migrate your site to.'));
   }
 }
+
+function hosting_migrate_theme($existing, $type, $theme, $path) {
+  return array('hosting_task_migrate_form' => array('arguments' => array('form' => NULL)));
+}
+
 function hosting_task_migrate_form($node) {
   $site_instances = hosting_package_instances_load(
     array('rid' => $node->nid, 'i.status' => 1));
