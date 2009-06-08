@@ -77,14 +77,14 @@ wizard) has this directory configured as its home directory.
 Checking out the code
 ---------------------
 
-This assumes you have installed CVS and have access to the /var
-directory. This may require running those steps as root.
+This assumes you have installed CVS. Those commands should be ran as the
+aegir user and assume it can write to /var/aegir.
 
 Shell commands::
  export CVSROOT=:pserver:anonymous:anonymous@cvs.drupal.org:/cvs/drupal
- cd /var
- cvs co -d aegir/drupal-5.x -r DRUPAL-5-18 drupal
- cd aegir/drupal-5.x/
+ cd /var/aegir
+ cvs co -d drupal-5.x -r DRUPAL-5-18 drupal
+ cd drupal-5.x/
  cvs co -d profiles/hostmaster -rDRUPAL-5--0-2-RC1 contributions/profiles/hostmaster
  cvs co -d profiles/hostmaster/modules/hosting -rDRUPAL-5--0-2-RC1 contributions/modules/hosting
  cd /var/aegir
