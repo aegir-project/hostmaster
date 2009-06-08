@@ -92,13 +92,21 @@ Shell commands::
  mkdir .drush
  cvs co -d .drush/provision contributions/modules/provision
 
-Checking out the theme
-----------------------
+Checking out the optional components
+------------------------------------
 
-Aegir now has its own theme which you can use. This is optional:
+Aegir now has its own theme which you can use. It is also suggested
+that you install admin_menu to ease administration.
+
+Note that now your drush installation should be up and running so you
+can start using it to download modules directly. This is how
+admin_menu is installed below. The theme is installed using CVS
+because the release may not yet be available when you read this
+document.
 
 Shell commands::
  cvs co -d drupal-6.x/profiles/hostmaster/themes/eldir contributions/themes/eldir
+ cd drupal-6.x ; /var/aegir/drush/drush.php dl admin_menu
 
 Apache configuration
 --------------------
