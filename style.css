@@ -40,10 +40,8 @@ div.form-checkboxes div.form-item,
 div.hosting-task-retry,
 
 h1, h2, h3, h4, h5, h6,
-.block ul, .block ol, .block li,
+ul, ol, li,
 p, blockquote {
-  list-style:none;
-  list-style-image:none;
 
   background-image:none;
   background-color:transparent;
@@ -54,6 +52,11 @@ p, blockquote {
   margin:0px;
   padding:0px;
   }
+
+.block ul, .block ol, .block li {
+  list-style:none;
+  list-style-image:none;
+}
 
 body.aegir {
   color:#444;
