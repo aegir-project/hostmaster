@@ -34,19 +34,15 @@ Shell commands::
  cd ../drupal-6.12
  /var/aegir/drush/drush.php --verbose=2 provision verify
  /var/aegir/drush/drush.php --verbose=2 provision deploy d6.aegir.example.com ~/default.tar.gz
- /var/aegir/drush/drush.php --verbose=2 provision verify d6.aegir.example.com --site-url=d6.aegir.example.com
  # review changes, see if it works to your liking, when you're done:
  /var/aegir/drush/drush.php --verbose=2 provision deploy aegir.example.com ~/default.tar.gz
- /var/aegir/drush/drush.php --verbose=2 provision verify aegir.example.com --site-url=aegir.example.com
  /var/aegir/drush/drush.php --verbose=2 provision delete d6.aegir.example.com
  crontab -e # change root to new platform, make sure you have a --uri=aegir.example.com
 
-Note that the --site-url above is required only when you're migrating from an
-old "default" site. Aegir can now run in a regular Drupal site (outside of the
-'default') directory without problems and that procedure ensures you migrate
-away from the (bad?) practice of running the frontend in the sites/default
-directory. See http://drupal.org/node/453540 and http://drupal.org/node/454312
-for details.
+Note that the import/verify of the 'default' site is required only
+because that site is typically ignored in Aegir. This procedure will
+migrate your main frontend away from that 'default' setup. See
+http://drupal.org/node/453540 for details.
 
 Upgrading Hostmaster from 0.1
 -----------------------------
@@ -58,7 +54,8 @@ can remove the drush.php symlink.
 
 You will also need to update the hosting module and run update.php so
 that new changes to the database are taken into account. This will
-trigger platform verification and other cleanup tasks.
+trigger platform verification and other cleanup tasks. Starting with
+0.2, this process will be automated (see the above process).
 
 Finally, you will need to put the path to that new drush in the
 webserver node configuration. Rerunning the wizard will prompt you for
