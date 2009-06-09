@@ -40,7 +40,7 @@ div.form-checkboxes div.form-item,
 div.hosting-task-retry,
 
 h1, h2, h3, h4, h5, h6,
-ul, ol, li,
+.block ul, .block ol, .block li,
 p, blockquote {
   list-style:none;
   list-style-image:none;
