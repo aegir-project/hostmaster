@@ -84,13 +84,13 @@ Shell commands::
  export CVSROOT=:pserver:anonymous:anonymous@cvs.drupal.org:/cvs/drupal
  cd /var/aegir
  cvs co -d drupal-5.x -r DRUPAL-5-18 drupal
- cd drupal-5.x/
- cvs co -d profiles/hostmaster -rDRUPAL-5--0-2-RC1 contributions/profiles/hostmaster
- cvs co -d profiles/hostmaster/modules/hosting -rDRUPAL-5--0-2-RC1 contributions/modules/hosting
+ cd drupal-5.x
+ cvs co -d profiles/hostmaster -rDRUPAL-5--0-2 contributions/profiles/hostmaster
+ cvs co -d profiles/hostmaster/modules/hosting -rDRUPAL-5--0-2 contributions/modules/hosting
  cd /var/aegir
- cvs co -d drush -rDRUPAL-6--2-0-RC1 contributions/modules/drush
+ cvs co -d drush -rDRUPAL-6--2-0 contributions/modules/drush
  mkdir .drush
- cvs co -d .drush/provision -rDRUPAL-6--0-2-RC1 contributions/modules/provision
+ cvs co -d .drush/provision -rDRUPAL-6--0-2 contributions/modules/provision
 
 Checking out the optional components
 ------------------------------------
@@ -107,7 +107,7 @@ document.
 This is optional.
 
 Shell commands::
- cvs co -d drupal-5.x/profiles/hostmaster/themes/eldir -rDRUPAL-5--0-2-RC1 contributions/themes/eldir
+ cvs co -d drupal-5.x/profiles/hostmaster/themes/eldir -rDRUPAL-5--0-2 contributions/themes/eldir
  cd drupal-5.x ; /var/aegir/drush/drush.php dl admin_menu
 
 Apache configuration
