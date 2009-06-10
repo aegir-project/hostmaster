@@ -85,12 +85,12 @@ Shell commands::
  cd /var
  cvs co -d aegir/drupal-6.x -r DRUPAL-6-12 drupal
  cd aegir/drupal-6.x
- cvs co -d profiles/hostmaster contributions/profiles/hostmaster
- cvs co -d profiles/hostmaster/modules/hosting contributions/modules/hosting
+ cvs co -d profiles/hostmaster -rDRUPAL-6--0-2-BETA1 contributions/profiles/hostmaster
+ cvs co -d profiles/hostmaster/modules/hosting -rDRUPAL-6--0-2-BETA1 contributions/modules/hosting
  cd /var/aegir
- cvs co -d drush -rDRUPAL-6--2-0-RC1 contributions/modules/drush
+ cvs co -d drush -rDRUPAL-6--2-0 contributions/modules/drush
  mkdir .drush
- cvs co -d .drush/provision contributions/modules/provision
+ cvs co -d .drush/provision -rDRUPAL-6--0-2 contributions/modules/provision
 
 Checking out the optional components
 ------------------------------------
@@ -105,7 +105,7 @@ because the release may not yet be available when you read this
 document.
 
 Shell commands::
- cvs co -d drupal-6.x/profiles/hostmaster/themes/eldir contributions/themes/eldir
+ cvs co -d drupal-6.x/profiles/hostmaster/themes/eldir -rDRUPAL-6--0-2-BETA1 contributions/themes/eldir
  cd drupal-6.x ; /var/aegir/drush/drush.php dl admin_menu
 
 Apache configuration
