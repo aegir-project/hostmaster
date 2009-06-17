@@ -24,6 +24,9 @@ Shell commands::
  cvs co -d profiles/hostmaster contributions/profiles/hostmaster
  cvs co -d profiles/hostmaster/modules/hosting contributions/modules/hosting
  cvs co -d profiles/hostmaster/themes/eldir contributions/themes/eldir
+ cd profiles/hostmaster
+ /var/aegir/drush dl install_profile_api
+ cd /var/aegir
  # also checkout any modules you may have enabled in the d5 platform
  # now you want to add the platform in the frontend (Create content -> platform) and wait for the task to be processed
  cd ../drupal-5.x
@@ -43,6 +46,12 @@ Note that the import/verify of the 'default' site is required only
 because that site is typically ignored in Aegir. This procedure will
 migrate your main frontend away from that 'default' setup. See
 http://drupal.org/node/453540 for details.
+
+Upgrading Hostmaster from Drupal 5
+----------------------------------
+
+This is basically like performing a Drupal core upgrade. Make sure you
+also checkout the install_profile_api module as it is a new dependency.
 
 Upgrading Hostmaster from 0.1
 -----------------------------
