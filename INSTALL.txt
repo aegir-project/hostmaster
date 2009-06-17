@@ -77,8 +77,9 @@ wizard) has this directory configured as its home directory.
 Checking out the code
 ---------------------
 
-This assumes you have installed CVS and have access to the /var
-directory. This may require running those steps as root.
+This assumes you have installed CVS. Those commands should be ran as the
+aegir user and assume it can write to /var/aegir.
+
 
 Shell commands::
  export CVSROOT=:pserver:anonymous:anonymous@cvs.drupal.org:/cvs/drupal
