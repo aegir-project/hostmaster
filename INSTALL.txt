@@ -129,6 +129,7 @@ Shell commands::
  mkdir -p config/vhost.d/
  a2enmod rewrite
  echo "Include /var/aegir/config/vhost.d/" > /etc/apache2/conf.d/aegir
+ echo "NameVirtualHost *:80" >> /etc/apache2/conf.d/aegir
  cp drupal-6.x/profiles/hostmaster/apache2.conf.txt config/vhost.d/aegir.example.com
  /etc/init.d/apache2 restart
 
