@@ -59,7 +59,7 @@ function hosting_client_schema() {
         'not null' => TRUE,
       ),
     ),
-    'primary key' => array('user'),
+    'primary key' => array('user', 'client'),
   );
 
   return $schema;
