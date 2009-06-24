@@ -215,8 +215,8 @@ function hosting_task_count() {
   return db_result(db_query("SELECT COUNT(nid) FROM {hosting_task_queue} q WHERE q.status = 1"));
 }
 
-function hosting_available_tasks($node) {
-  return module_invoke_all('hosting_tasks', $node);
+function hosting_available_tasks($type) {
+  return module_invoke_all('hosting_tasks', $type);
 }
 
 
