@@ -29,7 +29,12 @@ function hosting_task_menu() {
 
 function hosting_task_menu_access($node, $task) {
   if (user_access("create " . $task . " node")) {
-    return TRUE;
+    if (hosting_task_outstanding($node->nid, 'delete') || ($node->site_status ==  HOSTING_SITE_DELETED)) {
+      return FALSE;
+    }
+    $on_delete_task = ($task == 'enable' || $task == 'delete');
+    $site_enabled = (hosting_task_outstanding($node->nid, 'enable') || ($node->site_status == HOSTING_SITE_ENABLED));
+    return (!$site_enabled && $on_delete_task) || ($site_enabled && !$on_delete_task);
   }
   return FALSE;
 }
