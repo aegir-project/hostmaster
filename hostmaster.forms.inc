@@ -162,7 +162,8 @@ function hostmaster_task_dbserver() {
     '#collapsed' => false,
     '#title' => t('Database account details'),
   );
-  $form['db_details']['help'] = array('#type' => 'requirement_help', '#requirement' => 'mysql_user', '#configuration' => HOSTING_HELP_COLLAPSED, '#summary' => HOSTING_HELP_COLLAPSED);
+  $form['db_details']['help'] = hostmaster_requirement_help('mysql_user', array('#configuration' => HOSTING_HELP_COLLAPSED, '#summary' => HOSTING_HELP_COLLAPSED));
+
   $form['db_details']['db_user'] = $form['db_user'];
   unset($form['db_user']);
   $form['db_details']['db_passwd'] = $form['db_passwd'];
