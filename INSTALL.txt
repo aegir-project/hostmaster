@@ -92,6 +92,7 @@ Shell commands::
  cvs co -d drush -rDRUPAL-6--2-0 contributions/modules/drush
  mkdir .drush
  cvs co -d .drush/provision -rDRUPAL-6--0-2 contributions/modules/provision
+ /var/aegir/drush/drush.php dl install_profile_api
 
 Checking out the optional components
 ------------------------------------
