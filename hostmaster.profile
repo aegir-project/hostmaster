@@ -161,8 +161,13 @@ function hostmaster_form($form) {
   $button['#validate'][] = 'hostmaster_form_validate';
   unset($form['#validate']);
 
+  $button['#submit'] = array();
   if ($form['#node']) {
     $button['#submit'][] = 'node_form_submit';
+  }
+  // hook the regular form submit hooks on the wizard submit hook
+  if ($form['#submit']) {
+    $button['#submit'] = array_merge($button['#submit'], $form['#submit']);
   }
   $button['#submit'][] = 'hostmaster_form_next';
 
@@ -178,11 +183,6 @@ function hostmaster_form_next($form, $form_state) {
 function hostmaster_form_previous($form, $form_state) {
   // move forward a page
   variable_set('hostmaster_wizard_offset', -1);
-}
-
-
-
-function hostmaster_form_validate($form, &$form_state) {
 }
 
 function hostmaster_bootstrap() {
