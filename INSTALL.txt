@@ -88,11 +88,11 @@ Shell commands::
  cd aegir/drupal-6.x
  cvs co -d profiles/hostmaster -rDRUPAL-6--0-2-BETA1 contributions/profiles/hostmaster
  cvs co -d profiles/hostmaster/modules/hosting -rDRUPAL-6--0-2-BETA1 contributions/modules/hosting
+ cvs co -d profiles/hostmaster/modules/install_profile_api -rDRUPAL-6--2 contributions/modules/install_profile_api
  cd /var/aegir
  cvs co -d drush -rDRUPAL-6--2-0 contributions/modules/drush
  mkdir .drush
  cvs co -d .drush/provision -rDRUPAL-6--0-2 contributions/modules/provision
- /var/aegir/drush/drush.php dl install_profile_api
 
 Checking out the optional components
 ------------------------------------
@@ -107,7 +107,7 @@ because the release may not yet be available when you read this
 document.
 
 Shell commands::
- cvs co -d drupal-6.x/profiles/hostmaster/themes/eldir -rDRUPAL-6--0-2-BETA1 contributions/themes/eldir
+ cvs co -d drupal-6.x/sites/all/themes/eldir -rDRUPAL-6--0-2-BETA1 contributions/themes/eldir
  cd drupal-6.x ; /var/aegir/drush/drush.php dl admin_menu
 
 Apache configuration
