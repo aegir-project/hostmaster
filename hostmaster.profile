@@ -281,25 +281,24 @@ function hostmaster_bootstrap() {
  *   screen.
  */
 function hostmaster_profile_final() {
-  drupal_set_message(st('Adding default blocks'));
-  install_set_block('hosting', 'hosting_summary', 'garland', 'left', 10);
-  install_set_block('hosting', 'hosting_queues', 'garland', 'right', 0);
-  install_set_block('hosting', 'hosting_queues_summary', 'garland', 'right', 2);
-
   // enable the eldir theme, if present
   $themes = system_theme_data();
   if ($themes['eldir']) {
     drupal_set_message(st("Enabling optional Eldir theme"));
     install_disable_theme('garland');
     install_default_theme('eldir');
+    $theme = 'eldir';
   } else {
+    $theme = 'garland';
     drupal_set_message(st("Could not find optional Eldir theme"));
   }
   // not sure this is necessary
   system_theme_data();
 
-  drupal_set_message(st('Enabling optional, yet recommended modules'));
-  hostmaster_setup_optional_modules();
+  drupal_set_message(st('Adding default blocks'));
+  install_add_block('hosting', 'hosting_summary', $theme, 1, 10, 'left', 1);
+  install_add_block('hosting', 'hosting_queues', $theme, 1, 0, 'right', 1);
+  install_add_block('hosting', 'hosting_queues_summary', $theme, 1, 2, 'right', 1);
 
   drupal_set_message(st('Setting up roles'));
   install_add_permissions(install_get_rid('anonymous user'), array('access content', 'access all views'));
@@ -310,7 +309,8 @@ function hostmaster_profile_final() {
   install_add_role('aegir account manager');
   install_add_permissions(install_get_rid('aegir account manager'), array('create client', 'edit client users', 'view client'));
 
-  menu_rebuild();
+  drupal_set_message(st('Enabling optional, yet recommended modules'));
+  hostmaster_setup_optional_modules();
 
   node_access_rebuild();
 
@@ -328,6 +328,7 @@ function hostmaster_setup_optional_modules() {
     drupal_install_modules(array($name));
 
     if ($exists == $name) {
+      drupal_set_message(st("Enabling module !module", array('!module' => $name)));
       switch ($name) {
         case 'admin_menu' :
           variable_set('admin_menu_margin_top', 1);
@@ -340,7 +341,7 @@ function hostmaster_setup_optional_modules() {
           $new_admin = install_menu_get_items($menu_mid);
           $admin = install_menu_get_items('admin');
           install_menu_set_menu($admin, $new_admin['mlid']);
-          install_menu_disable_item($admin['mlid']);
+          install_menu_disable_item($admin[0]['mlid']);
           break;
       }
     }
