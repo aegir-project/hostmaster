@@ -26,7 +26,7 @@ function _hosting_mysql_user_requirements() {
      Query OK, 0 rows affected (0.00 sec)
 
 EOF;
-   $help['title'] = t('Mysql user account capable of creating new databases.');
+   $help['title'] = t('Mysql user account capable of creating new databases');
    $help['summary'] = t('To be able to create new sites, the provisioning framework will need to be able
      to create new databases and users. It is not recommended using the mysql root password for this, 
      but any account with the correct permissions will do.');
