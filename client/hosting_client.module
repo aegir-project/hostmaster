@@ -455,7 +455,7 @@ function hosting_client_menu() {
   $items['admin/hosting/client'] = array(
     'title' => 'Clients',
     'page callback' => 'drupal_get_form',
-    'page arguments' => 'hosting_client_configure', 
+    'page arguments' => array('hosting_client_configure'),
     'access callback' => '_hosting_client_configure_access',
     'type' => MENU_LOCAL_TASK
   );
