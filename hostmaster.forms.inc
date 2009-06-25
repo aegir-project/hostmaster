@@ -294,3 +294,10 @@ function hostmaster_task_import() {
   return hostmaster_form($form);
 }
 
+function hostmaster_task_finalize() {
+
+  drupal_set_title(st("Configuring roles, blocks and theme"));
+
+  hostmaster_profile_final();
+  return hostmaster_form(array());
+}

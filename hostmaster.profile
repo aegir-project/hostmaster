@@ -43,7 +43,8 @@ function hostmaster_profile_task_list() {
     'features' => st('Features'),
     'init' => st('Initialize system'),
     'verify' => st('Verify settings'),
-    'import' => st('Import sites')
+    'import' => st('Import sites'),
+    'finalize' => st('Finalize')
   );
 }
 
@@ -280,61 +281,40 @@ function hostmaster_bootstrap() {
  *   screen.
  */
 function hostmaster_profile_final() {
-  // add default blocks
-  hostmaster_install_add_block('hosting', 'hosting_summary', 'garland', 1, 10, 'left');
-  hostmaster_install_add_block('hosting', 'hosting_queues', 'garland', 1, 0, 'right');
-  hostmaster_install_add_block('hosting', 'hosting_queues_summary', 'garland', 1, 2, 'right');
+  drupal_set_message(st('Adding default blocks'));
+  install_set_block('hosting', 'hosting_summary', 'garland', 'left', 10);
+  install_set_block('hosting', 'hosting_queues', 'garland', 'right', 0);
+  install_set_block('hosting', 'hosting_queues_summary', 'garland', 'right', 2);
 
   // enable the eldir theme, if present
-  hostmaster_setup_theme('eldir');
+  $themes = system_theme_data();
+  if ($themes['eldir']) {
+    drupal_set_message(st("Enabling optional Eldir theme"));
+    install_disable_theme('garland');
+    install_default_theme('eldir');
+  } else {
+    drupal_set_message(st("Could not find optional Eldir theme"));
+  }
+  // not sure this is necessary
+  system_theme_data();
 
-  // Enable optional, yet recommended modules.
+  drupal_set_message(st('Enabling optional, yet recommended modules'));
   hostmaster_setup_optional_modules();
 
-  // @todo create proper roles, and set up views to be role based
-  hostmaster_install_set_permissions(hostmaster_install_get_rid('anonymous user'), array('access content', 'access all views'));
-  hostmaster_install_set_permissions(hostmaster_install_get_rid('authenticated user'), array('access content', 'access all views'));
-  hostmaster_install_create_role('aegir client');
+  drupal_set_message(st('Setting up roles'));
+  install_add_permissions(install_get_rid('anonymous user'), array('access content', 'access all views'));
+  install_add_permissions(install_get_rid('authenticated user'), array('access content', 'access all views'));
+  install_add_role('aegir client');
   // @todo we may need to have a hook here to consider plugins
-  hostmaster_install_set_permissions(hostmaster_install_get_rid('aegir client'), array('access content', 'access all views', 'edit own client', 'view client', 'create site', 'delete site', 'view site', 'create backup task', 'create delete task', 'create disable task', 'create enable task', 'create restore task', 'view own tasks', 'view task'));
-  hostmaster_install_create_role('aegir account manager');
-  hostmaster_install_set_permissions(hostmaster_install_get_rid('aegir account manager'), array('create client', 'edit client users', 'view client'));
+  install_add_permissions(install_get_rid('aegir client'), array('access content', 'access all views', 'edit own client', 'view client', 'create site', 'delete site', 'view site', 'create backup task', 'create delete task', 'create disable task', 'create enable task', 'create restore task', 'view own tasks', 'view task'));
+  install_add_role('aegir account manager');
+  install_add_permissions(install_get_rid('aegir account manager'), array('create client', 'edit client users', 'view client'));
 
   menu_rebuild();
 
   node_access_rebuild();
-  drupal_goto('hosting/wizard');
-}
 
-/**
- * Set the permission for a certain role
- */
-function hostmaster_install_set_permissions($rid, $perms) {
-  db_query('DELETE FROM {permission} WHERE rid = %d', $rid);
-  db_query("INSERT INTO {permission} (rid, perm) VALUES (%d, '%s')", $rid, implode(', ', $perms));
 }
-
-/**
- * Enable a theme, if present
- *
- * @param mixed The theme name or an array of preferred themes, that
- * will be tried in order.
- */
-function hostmaster_setup_theme($name) {
-  if (!is_array($name)) {
-    $name = array($name);
-  }
-  $themes = system_theme_data();
-  // In preference descending order
-  foreach ($name as $theme) {
-    if (array_key_exists($theme, $themes)) {
-      system_initialize_theme_blocks($theme);
-      db_query("UPDATE {system} SET status = 1 WHERE type = 'theme' and name = '%theme'", array('%theme' => $theme));
-      variable_set('theme_default', $theme);
-    }
-  }
-}
-
 
 /**
  * Enable optional modules, if present
@@ -356,10 +336,11 @@ function hostmaster_setup_optional_modules() {
           variable_set('admin_menu_tweak_modules', 0);
           variable_set('admin_menu_tweak_tabs', 0);
 
-          $menu_mid = hostmaster_create_menu(t('Administration'));
-          $admin_mid = hostmaster_menu_get_mid('admin');
-          hostmaster_update_menu_item($admin_mid, array('pid' => $menu_mid));
-          hostmaster_disable_menu_item($admin_mid);
+          $menu_mid = install_menu_create_menu(t('Administration'));
+          $new_admin = install_menu_get_items($menu_mid);
+          $admin = install_menu_get_items('admin');
+          install_menu_set_menu($admin, $new_admin['mlid']);
+          install_menu_disable_item($admin['mlid']);
           break;
       }
     }
