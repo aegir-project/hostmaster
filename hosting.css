@@ -142,6 +142,11 @@ tr.hosting-warning td, tr.hosting-info td, tr.hosting-error td, tr.hosting-queue
 /*
  * Package statuses
  */
+
+tr.hosting-migrate-summary td {
+  border-top: 2px solid black !important;
+}
+
 div#hosting-package-comparison th {
   border-bottom: 2px solid black !important;
 }

@@ -21,69 +21,7 @@ function hosting_migrate_perm() {
 }
 
 
-function theme_hosting_task_migrate_form(&$form) {
-  $node = $form['#node'];
-  $packages = $form['#packages'];
-  $headers = array();
-  $rows = array();
 
-  $headers[] = t("Type");
-  $headers[] = t("Package");
-  $errors = array();
-  $warnings = array();
-  foreach (array_keys($packages[$node->platform]) as $package) {
-    $row = array();
-    $row[] = array('class' => 'hosting-package-name', 'data' => $packages[$node->platform][$package]->package_type);
-    $row[] = array('class' => 'hosting-package-name', 'data' => $packages[$node->platform][$package]->title);
-    foreach (array_keys($packages) as $platform) {
-      if (array_key_exists($package, $packages[$platform])) {
-        $comparison = hosting_package_instance_version_compare($packages[$node->platform][$package], $packages[$platform][$package]);
-        $display = $packages[$platform][$package]->version;
-        if ($packages[$platform][$package]->schema_version) {
-          $display .= " (" . $packages[$platform][$package]->schema_version . ")";
-        }
-        if ($comparison > 0) {
-          $row[] = array('class' => 'hosting-package-upgrade', 'data' => $display);
-        }
-        elseif ($comparison == 0) {
-          $row[] = array('class' => 'hosting-package-same', 'data' => $display);
-        }
-        else {
-          $row[] = array('class' => 'hosting-package-downgrade', 'data' => $display);
-          $errors[$platform] = TRUE;
-        }
-      }
-      else {
-        $row[] = array('class' => 'hosting-package-missing', 'data' => t("Missing"));
-        $warnings[$platform] = TRUE;
-      }
-    }
-     $rows[] = $row;
-  }
-  foreach (array_keys($packages) as $platform) {
-    $header = array();
-    $header['class'] = 'hosting-package-upgrade';
-    if ($platform == $node->platform) {
-      $header['class'] = 'hosting-package-same';
-    }
-    elseif (array_key_exists($platform, $errors)) {
-      $header['class'] = 'hosting-package-downgrade';
-      $form['radios'][$platform]['parameters']['target_platform']['#attributes']['disabled'] = 'disabled';
-    }
-    elseif (array_key_exists($platform, $warnings)) {
-      $header['class'] = 'hosting-package-missing';
-    }
-    $header['data'] = drupal_render($form['radios'][$platform]['parameters']['target_platform']);
-    $headers[] = $header;
-  }
-
-
-
-  $output .= "<div id='hosting-package-comparison'>" . theme('table', $headers, $rows) . "</div>";
-
-  $output .= drupal_render($form);
-  return $output;
-}
 
 function hosting_task_migrate_form_validate($form, &$form_state) {
   if (!$form_state['values']['parameters']['target_platform']) {
@@ -169,4 +107,71 @@ function hosting_task_migrate_form($node) {
   return $form;
 }
 
+function theme_hosting_task_migrate_form(&$form) {
+  $node = $form['#node'];
+  $packages = $form['#packages'];
+  $headers = array();
+  $rows = array();
+
+  $headers[] = t("Type");
+  $headers[] = t("Package");
+  $errors = array();
+  $warnings = array();
+  foreach (array_keys($packages[$node->platform]) as $package) {
+    $row = array();
+    $row[] = array('class' => 'hosting-package-name', 'data' => $packages[$node->platform][$package]->package_type);
+    $row[] = array('class' => 'hosting-package-name', 'data' => $packages[$node->platform][$package]->title);
+    foreach (array_keys($packages) as $platform) {
+      if (array_key_exists($package, $packages[$platform])) {
+        $comparison = hosting_package_instance_version_compare($packages[$node->platform][$package], $packages[$platform][$package]);
+        $display = $packages[$platform][$package]->version;
+        if ($packages[$platform][$package]->schema_version) {
+          $display .= " (" . $packages[$platform][$package]->schema_version . ")";
+        }
+        if ($comparison > 0) {
+          $row[] = array('class' => 'hosting-package-upgrade', 'data' => $display);
+        }
+        elseif ($comparison == 0) {
+          $row[] = array('class' => 'hosting-package-same', 'data' => $display);
+        }
+        else {
+          $row[] = array('class' => 'hosting-package-downgrade', 'data' => $display);
+          $errors[$platform] = TRUE;
+        }
+      }
+      else {
+        $row[] = array('class' => 'hosting-package-missing', 'data' => t("Missing"));
+        $warnings[$platform] = TRUE;
+      }
+    }
+     $rows[] = $row;
+  }
+  $row = array('','');
+
+     
+  foreach (array_keys($packages) as $platform) {
+    $header = array();
+    $header['class'] = 'hosting-package-upgrade';
+    if ($platform == $node->platform) {
+      $header['class'] = 'hosting-package-same';
+    }
+    elseif (array_key_exists($platform, $errors)) {
+      $header['class'] = 'hosting-package-downgrade';
+      $form['radios'][$platform]['parameters']['target_platform']['#attributes']['disabled'] = 'disabled';
+    }
+    elseif (array_key_exists($platform, $warnings)) {
+      $header['class'] = 'hosting-package-missing';
+    }
+    $header['data'] = $form['radios'][$platform]['parameters']['target_platform']['#title'];
+    $headers[] = $header;
+    $row[] = array('class' => $header['class'], 'data' =>  drupal_render($form['radios'][$platform]['parameters']['target_platform']));
+  }
+  $rows[] = array('class' => 'hosting-migrate-summary', 'data' => $row);
+
+
+  $output .= "<div id='hosting-package-comparison'>" . theme('table', $headers, $rows) . "</div>";
+
+  $output .= drupal_render($form);
+  return $output;
+}
 
