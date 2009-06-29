@@ -294,10 +294,49 @@ function hostmaster_task_import() {
   return hostmaster_form($form);
 }
 
-function hostmaster_task_finalize() {
+function hostmaster_task_import_submit() {
+  drupal_set_message(conf_path() , conf_path());
+  hostmaster_settings_php();
+}
 
+function hostmaster_task_finalize() {
+  variable_set('install_profile', 'hostmaster');
   drupal_set_title(st("Configuring roles, blocks and theme"));
 
-  hostmaster_profile_final();
+  // enable the eldir theme, if present
+  $themes = system_theme_data();
+  if ($themes['eldir'] || file_exists("profiles/hostmaster/themes/eldir/eldir.info")) {
+    drupal_set_message(st("Enabling optional Eldir theme"));
+    install_disable_theme('garland');
+    install_default_theme('eldir');
+    $theme = 'eldir';
+  } else {
+    $theme = 'garland';
+    drupal_set_message(st("Could not find optional Eldir theme"));
+  }
+  // not sure this is necessary
+  system_theme_data();
+  db_query("DELETE FROM {cache}");
+
+  drupal_set_message(st('Adding default blocks'));
+  install_add_block('hosting', 'hosting_summary', $theme, 1, 10, 'left', 1);
+  install_add_block('hosting', 'hosting_queues', $theme, 1, 0, 'right', 1);
+  install_add_block('hosting', 'hosting_queues_summary', $theme, 1, 2, 'right', 1);
+
+  drupal_set_message(st('Setting up roles'));
+  install_add_permissions(install_get_rid('anonymous user'), array('access content', 'access all views'));
+  install_add_permissions(install_get_rid('authenticated user'), array('access content', 'access all views'));
+  install_add_role('aegir client');
+  // @todo we may need to have a hook here to consider plugins
+  install_add_permissions(install_get_rid('aegir client'), array('access content', 'access all views', 'edit own client', 'view client', 'create site', 'delete site', 'view site', 'create backup task', 'create delete task', 'create disable task', 'create enable task', 'create restore task', 'view own tasks', 'view task'));
+  install_add_role('aegir account manager');
+  install_add_permissions(install_get_rid('aegir account manager'), array('create client', 'edit client users', 'view client'));
+
+  drupal_set_message(st('Enabling optional, yet recommended modules'));
+  hostmaster_setup_optional_modules();
+
+  node_access_rebuild();
+
+  variable_set('install_profile_task', 'profile-finished');
   return hostmaster_form(array());
 }
