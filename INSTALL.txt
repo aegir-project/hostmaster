@@ -88,7 +88,6 @@ Shell commands::
  cd aegir/drupal-6.x
  cvs co -d profiles/hostmaster -rDRUPAL-6--0-2-BETA1 contributions/profiles/hostmaster
  cvs co -d profiles/hostmaster/modules/hosting -rDRUPAL-6--0-2-BETA1 contributions/modules/hosting
- cvs co -d profiles/hostmaster/modules/install_profile_api -rDRUPAL-6--2 contributions/modules/install_profile_api
  cd /var/aegir
  cvs co -d drush -rDRUPAL-6--2-0 contributions/modules/drush
  mkdir .drush

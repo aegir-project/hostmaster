@@ -228,7 +228,7 @@ function hostmaster_task_init() {
 
 function hostmaster_task_init_validate($form, &$form_state) {
   if (!variable_get('hosting_dispatch_last_run', false)) {
-    #form_set_error("submit");
+    form_set_error("submit");
   }
 }
 
@@ -269,7 +269,7 @@ function hostmaster_task_verify() {
 function hostmaster_task_verify_validate($form, &$form_state) {
   $node = hosting_get_most_recent_task(HOSTING_OWN_PLATFORM, 'verify');
   if (!($node->task_status == HOSTING_TASK_SUCCESS)) {
-#    form_set_error("submit");
+    form_set_error("submit");
   }
 }
 
