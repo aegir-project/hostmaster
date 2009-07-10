@@ -2,7 +2,7 @@
 
 This document is formatted using the ReST syntax.
 
-Aegir 0.2 upgrade instructions
+Aegir 0.3 upgrade instructions
 ==============================
 
 This document describes briefly how to upgrade existing Aegir
@@ -17,13 +17,16 @@ can, but it's a bit more tricky than a usual site because you cannot
 import and verify the "default" site so it has a proper
 configuration. Then it can be migrated to a new platform.
 
+Note that those commands assume you have already updated provision to a proper
+version, see below.
+
 Shell commands::
  cd /var/aegir
  ./drush/drush.php dl drupal
  cd drupal-6.12
- cvs co -d profiles/hostmaster contributions/profiles/hostmaster
- cvs co -d profiles/hostmaster/modules/hosting contributions/modules/hosting
- cvs co -d profiles/hostmaster/themes/eldir contributions/themes/eldir
+ cvs co -d profiles/hostmaster -rDRUPAL-6--0-3 contributions/profiles/hostmaster
+ cvs co -d profiles/hostmaster/modules/hosting -rDRUPAL-6--0-3 contributions/modules/hosting
+ cvs co -d profiles/hostmaster/themes/eldir -rDRUPAL-6--0-3 contributions/themes/eldir
  cd /var/aegir
  # also checkout any modules you may have enabled in the d5 platform
  # now you want to add the platform in the frontend (Create content -> platform) and wait for the task to be processed
@@ -71,9 +74,9 @@ that. Make sure you also run the hosting setup command.
 Shell commands::
  export CVSROOT=:pserver:anonymous:anonymous@cvs.drupal.org:/cvs/drupal
  cd /var/aegir
- cvs co -d drush  contributions/modules/drush
+ cvs co -d drush -rDRUPAL-6--2-0 contributions/modules/drush
  mkdir .drush
- cvs co -d .drush/provision  contributions/modules/provision
+ cvs co -d .drush/provision -rDRUPAL-6--0-3 contributions/modules/provision
  rm drupal-5.x/drush.php
  rm -r drupal-5.x/profiles/hostmaster/modules/provision
  rm -r drupal-5.x/profiles/hostmaster/modules/drush
