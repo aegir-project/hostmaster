@@ -106,8 +106,8 @@ because the release may not yet be available when you read this
 document.
 
 Shell commands::
- cvs co -d drupal-6.x/sites/all/themes/eldir -rDRUPAL-6--0-3 contributions/themes/eldir
- cd drupal-6.x ; /var/aegir/drush/drush.php dl admin_menu
+ cvs co -d drupal-6.*/sites/all/themes/eldir -rDRUPAL-6--0-3 contributions/themes/eldir
+ cd drupal-6.* ; /var/aegir/drush/drush.php dl admin_menu
 
 Apache configuration
 --------------------
@@ -130,7 +130,7 @@ Shell commands::
  a2enmod rewrite
  echo "Include /var/aegir/config/vhost.d/" > /etc/apache2/conf.d/aegir
  echo "NameVirtualHost *:80" >> /etc/apache2/conf.d/aegir
- cp drupal-6.x/profiles/hostmaster/apache2.conf.txt config/vhost.d/aegir.example.com
+ cp drupal-6.*/profiles/hostmaster/apache2.conf.txt config/vhost.d/aegir.example.com
  /etc/init.d/apache2 restart
 
 Database configuration
@@ -158,15 +158,15 @@ The installer is going to complain about the missing settings.php. It
 is recommended that you create the aegir site as a real site.
 
 Shell commands::
- mkdir drupal-6.x/sites/aegir.example.com
- chmod a+w drupal-6.x/sites/aegir.example.com/settings.php
+ mkdir drupal-6.*/sites/aegir.example.com
+ chmod a+w drupal-6.*/sites/aegir.example.com/settings.php
 
 Select the hostmaster install profile, enter the database credentials
 you setup above and then the installer will prompt you to secure the
 permissions on the settings.php file again:
 
 Shell commands::
- chmod a-w /var/aegir/drupal-6.x/sites/aegir.example.com/settings.php
+ chmod a-w /var/aegir/drupal-6.*/sites/aegir.example.com/settings.php
 
 Follow the wizard
 -----------------
