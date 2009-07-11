@@ -83,15 +83,15 @@ aegir user and assume it can write to /var/aegir.
 
 Shell commands::
  export CVSROOT=:pserver:anonymous:anonymous@cvs.drupal.org:/cvs/drupal
- cd /var
- cvs co -d aegir/drupal-6.x -r DRUPAL-6-12 drupal
- cd aegir/drupal-6.x
- cvs co -d profiles/hostmaster -rDRUPAL-6--0-3 contributions/profiles/hostmaster
- cvs co -d profiles/hostmaster/modules/hosting -rDRUPAL-6--0-3 contributions/modules/hosting
+ mkdir /var/aegir
  cd /var/aegir
  cvs co -d drush -rDRUPAL-6--2-0 contributions/modules/drush
  mkdir .drush
  cvs co -d .drush/provision -rDRUPAL-6--0-3 contributions/modules/provision
+ /var/aegir/drush/drush.php dl drupal
+ cd drupal-6.*
+ cvs co -d profiles/hostmaster -rDRUPAL-6--0-3 contributions/profiles/hostmaster
+ cvs co -d profiles/hostmaster/modules/hosting -rDRUPAL-6--0-3 contributions/modules/hosting
 
 Checking out the optional components
 ------------------------------------
@@ -106,7 +106,7 @@ because the release may not yet be available when you read this
 document.
 
 Shell commands::
- cvs co -d drupal-6.x/sites/all/themes/eldir -rDRUPAL-6--0-2-BETA1 contributions/themes/eldir
+ cvs co -d drupal-6.x/sites/all/themes/eldir -rDRUPAL-6--0-3 contributions/themes/eldir
  cd drupal-6.x ; /var/aegir/drush/drush.php dl admin_menu
 
 Apache configuration
