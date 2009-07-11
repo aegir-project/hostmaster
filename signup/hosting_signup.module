@@ -157,6 +157,9 @@ function hosting_signup_singleton($data = null) {
 function hosting_signup_form() {
   drupal_add_js(drupal_get_path('module', 'hosting_signup') . '/hosting_signup_form.js');
   $form = xmlrpc(_hosting_signup_get_url(), 'hosting_signup.getForm', _hosting_signup_get_key(), $_POST);
+  if (!$form) {
+    drupal_set_message(t("XMLRPC request failed: %error", array('%error' => xmlrpc_error_msg())), 'error');
+  }
   $form['#action'] = '/hosting/signup';
   $form['#submit'] = array('hosting_signup_form_submit' => array());
   $form['#validate'] = array('hosting_signup_form_validate' => array());
