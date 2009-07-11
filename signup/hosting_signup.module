@@ -31,67 +31,40 @@ function hosting_signup_xmlrpc() {
  * Implementation of hook_menu
  */
 function hosting_signup_menu() {
+  $items['hosting/signup'] = array(
+    'title' => 'Sign up for a site',
+    'description' => 'Create your own hosted site',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('hosting_signup_form'),
+    'access arguments' => array('access hosting signup form'),
+  );
+  $items['admin/hosting/signup'] = array(
+    'title' => 'Signup form',
+    'description' => 'Configure the behaviour of the simplified hosting signup form',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('hosting_signup_settings'),
+    'access arguments' => array('administer hosting signup form'),
+    'type' => MENU_LOCAL_TASK,
+  );
+  $items['hosting/signup/get_form'] = array(
+    'title' => 'Sign up for a site',
+    'description' => 'Create your own hosted site',
+    'page callback' => 'hosting_signup_get_form',
+    'type' => MENU_CALLBACK,
+    'access arguments' => array('access content')
+  );
 
-/* TODO
-   Non menu code that was placed in hook_menu under the '!$may_cache' block
-   so that it could be run during initialization, should now be moved to hook_init.
-   Previously we called hook_init twice, once early in the bootstrap process, second
-   just after the bootstrap has finished. The first instance is now called boot
-   instead of init.
-   
-   In Drupal 6, there are now two hooks that can be used by modules to execute code
-   at the beginning of a page request. hook_boot() replaces hook_boot() in Drupal 5
-   and runs on each page request, even for cached pages. hook_boot() now only runs
-   for non-cached pages and thus can be used for code that was previously placed in
-   hook_menu() with $may_cache = FALSE:
-   
-   Dynamic menu items under a '!$may_cache' block can often be simplified
-   to remove references to arg(n) and use of '%<function-name>' to check
-   conditions. See http://drupal.org/node/103114.
-   
-   The title and description arguments should not have strings wrapped in t(),
-   because translation of these happen in a later stage in the menu system.
-*/
-  //if (!$may_cache) {
-    global $user;
+  $items['hosting/signup/form_populate'] = array(
+    'page callback' =>'_hosting_signup_form_populate',
+    'type' => MENU_CALLBACK,
+    'access arguments' => array('access content'),
+  );
 
-    $items['hosting/signup'] = array(
-      'title' => 'Sign up for a site',
-      'description' => 'Create your own hosted site',
-      'page callback' => 'drupal_get_form',
-      'page arguments' => array('hosting_signup_form'),
-      'access arguments' => array('access hosting signup form'),
-    );
-  //}
-  //else {
-    $items['admin/hosting/signup'] = array(
-      'title' => 'Signup form',
-      'description' => 'Configure the behaviour of the simplified hosting signup form',
-      'page callback' => 'drupal_get_form',
-      'page arguments' => array('hosting_signup_settings'),
-      'access arguments' => array('administer hosting signup form'),
-      'type' => MENU_LOCAL_TASK,
-    );
-    $items['hosting/signup/get_form'] = array(
-      'title' => 'Sign up for a site',
-      'description' => 'Create your own hosted site',
-      'page callback' => 'hosting_signup_get_form',
-      'type' => MENU_CALLBACK,
-      'access arguments' => array('access content')
-    );
-
-    $items['hosting/signup/form_populate'] = array(
-      'page callback' =>'_hosting_signup_form_populate',
-      'type' => MENU_CALLBACK,
-      'access arguments' => array('access content'),
-    );
-
-    $items['hosting/signup/thanks'] = array(
-      'page callback' =>'hosting_signup_thanks',
-      'type' => MENU_CALLBACK,
-      'access arguments' => array('access content'),
-    );
-  //}
+  $items['hosting/signup/thanks'] = array(
+    'page callback' =>'hosting_signup_thanks',
+    'type' => MENU_CALLBACK,
+    'access arguments' => array('access content'),
+  );
 
   return $items; 
 }
