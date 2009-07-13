@@ -187,7 +187,7 @@ function hosting_platform_delete($node) {
  * Implementation of hook_validate()
  */
 function hosting_platform_validate($node, &$form) {
-  if ($node->op != t('Delete') && $result = db_fetch_object(db_query("SELECT n.title AS name FROM {hosting_platform} AS h INNER JOIN {node} AS n ON n.nid = h.nid WHERE publish_path = '%s' AND web_server = %d", $node->publish_path, $node->web_server))) {
+  if ($node->op != t('Delete') && $result = db_fetch_object(db_query("SELECT n.title AS name FROM {hosting_platform} AS h INNER JOIN {node} AS n ON n.nid = h.nid WHERE publish_path = '%s' AND web_server = %d AND n.nid <> %d", $node->publish_path, $node->web_server, $node->nid))) {
     form_set_error('publish_path', t('Path already defined in platform %name', array('%name' => $result->name)));
   }
 }
