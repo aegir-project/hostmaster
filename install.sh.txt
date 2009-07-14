@@ -1,79 +1,77 @@
 #!/usr/bin/env sh
 
-AEGIR_VERSION=0.2
-DRUPAL_VERSION=5.18
+AEGIR_VERSION=0.3
+DRUPAL_VERSION=6.13
 
 DRUSH_TAG=DRUPAL-6--2-0
 PROVISION_TAG=DRUPAL-6--0-2
-HOSTING_TAG=DRUPAL-5--0-2
-AMENU_TAG=DRUPAL-5--2-8
-
-NO_COLOR='\e[0m'
-UL='\E[0;4m'
-BOLD='\E[0;1m'
+HOSTING_TAG=DRUPAL-6--0-3-RC1
+AMENU_TAG=DRUPAL-6--3
 
 aegir_title () {
-  echo "$BOLD$UL$1$NO_COLOR"; 
+  echo "$1"
 }
 
 aegir_prompt () {
-  echo "\n$BOLD$1$NO_COLOR \c";
+  echo "$1 "
 }
 
-SUDO_PASS=''
-root_sudo () {
-  while [ -z $SUDO_PASS ]; do
-    echo "Enter sudo password: \c";
-    read -s TEMP_SUDO_PASS;
-    echo ""
-    echo $TEMP_SUDO_PASS | sudo -S true 2> /dev/null
-    if [ $? != 1 ]; then
-      SUDO_PASS=$TEMP_SUDO_PASS;
-    else
-      echo "Sudo password incorrect, please try again.";
+aegir_environment () {
+  AEGIR_USER=''
+  aegir_prompt "Initialize Ubuntu (or similar with apt-get) Aegir environment? yes/no (Y/n) :"
+  read yesno
+  if `echo $yesno | grep -qi y`; then
+    # basic server maintenance
+    apt-get -y update;
+    apt-get -y upgrade;
+
+    # Specific to this environment
+    apt-get -y install openssh-server;
+    apt-get -y install sendmail;
+
+    # Required components
+    apt-get -y install wget cvs;
+    apt-get -y install mysql-server-5.0;
+    apt-get -y install apache2;
+    apt-get -y install php5 php5-cli php5-mysql;
+
+    # Extra php components
+    apt-get -y install php5-gd php5-imap php5-xcache;
+
+    # Code tools.
+    apt-get -y install build-essential subversion git-core;
+
+    ###
+    ### Aegir user setup
+    ###
+    
+    AEGIR_USER="aegir"
+    create_user
+    
+    a2enmod php5;
+    a2enmod rewrite;
+    
+    #increase php memory limit
+    aegir_prompt "Increase php.ini memory limits to 64M for apache2 and 128M for cli? yes/no (Y/n) :"
+    read yesno
+    if `echo $yesno | grep -qi y`; then
+      if [ -f /etc/php5/apache2/php.ini ]; then
+        mv /etc/php5/apache2/php.ini /etc/php5/apache2/php.ini.aegir.bak
+        sed -e 's+^memory_limit[ ]*=[ ]*[0-9]*[M]*+memory_limit = 64M+' /etc/php5/apache2/php.ini.aegir.bak > /etc/php5/apache2/php.ini
+      else
+        echo "Set your apache2 php.ini file to have a larger memory limit manually if needed."
+      fi;
+    
+      phpclipath=`php --ini | grep "Loaded Configuration File" | awk '{print $4}'`
+      if [ -f $phpclipath ]; then
+        mv $phpclipath $phpclipath.aegir.bak
+        sed -e 's+^memory_limit[ ]*=[ ]*[0-9]*[M]*+memory_limit = 128M+' $phpclipath.aegir.bak > $phpclipath
+      else 
+        echo "Set your cli php.ini file to have a larger memory limit manually if needed."
+      fi;
     fi;
-  done;
-
-  if [ -n $1 ]; then
-    echo $SUDO_PASS | sudo -S "$1";
+    $APACHECTL_BIN restart;
   fi;
-}
-
-
-AEGIR_PASS=''
-aegir_sudo () {
-  while [ -z $AEGIR_PASS ]; do
-    echo "Enter password $AEGIR_USER user: \c";
-    read -s TEMP_AEGIR_PASS;
-    echo ""
-    echo $TEMP_AEGIR_PASS | sudo -H -u $AEGIR_USER -S - true 2> /dev/null
-    if [ $? != 1 ]; then
-      AEGIR_PASS=$TEMP_AEGIR_PASS;
-    else
-      echo "Sudo password incorrect, please try again.";
-    fi;
-  done;
-  if [ -n $1 ]; then
-    echo $AEGIR_PASS | sudo -H -u $AEGIR_USER -S - "$1";
-  fi;
-}
-
-find_apachectl () {
-  found=`which apache2ctl || which apachectl`
-  if [ $? = 1 ]; then
-    echo "Could not find apache2ctl or apachectl in your path. exiting";
-    exit;
-  fi;
-  export APACHECTL_BIN=$found
-}
-
-find_phpcli () {
-  found=`which php5 || which php`
-  if [ $? = 1 ]; then
-    echo "Could not find php5 or php binaries in your path. exiting";
-    exit;
-  fi;
-  export PHP_BIN=$found
 }
 
 find_httpd () {
@@ -85,61 +83,91 @@ find_httpd () {
   export HTTPD_BIN=$found
 }
 
-find_httpdconf () {
-  HTTPD_CONF=`$APACHECTL_BIN -V | grep SERVER_CONFIG_FILE | sed -e 's/.*=//' -e 's/"//g'`
-}
-
 find_web_group () {
   bnfound=`basename $HTTPD_BIN`
-  group=`ps -eo user,group,comm  | grep $bnfound | grep -v 'root' | awk '{print $2}'`
+  group=`ps -eo user,group,comm  | grep $bnfound | grep -v 'root' | awk '{print $2}' | head -n 1`
+  if [ $group = '' ]; then
+    echo "Could not find web group"
+    exit;
+  fi;
+  export WEB_GROUP=$group
+}
+
+create_user () {
+  aegir_prompt "Enter the $AEGIR_USER user data and type exit once you see a blank command prompt to return to the script. Press enter to continue."
+  read whatever
+  adduser $AEGIR_USER --home /var/$AEGIR_USER;
+  su - $AEGIR_USER;
+  
+  find_httpd
+  find_web_group
+
+  echo "Adding $AEGIR_USER to group $WEB_GROUP"
+
+  adduser $AEGIR_USER $WEB_GROUP
+
+  find_apachectl
+  edit_visudo
+}
+
+find_apachectl () {
+  found=`which apache2ctl || which apachectl`
+  if [ $? = 1 ]; then
+    echo "Could not find apache2ctl or apachectl in your path. exiting";
+    exit;
+  fi;
+  export APACHECTL_BIN=$found
 }
 
 edit_visudo () {
-  sudo cat /etc/sudoers > /tmp/sudoers; 
-  echo "$AEGIR_USER ALL= NOPASSWD: $APACHECTL_BIN" >> /tmp/sudoers
-  sudo visudo -c -f /tmp/sudoers
-  if [ $? != 0 ]; then
-    sudo rm /tmp/sudoers;
-    exit 1;
-  fi
-  if [ -e /etc/sudoers.tmp ]; 
-    sudo rm /tmp/sudoers;
-    then exit 1; 
-  fi
-  sudo mv /tmp/sudoers /etc/sudoers
-}
-
-edit_httpdconf () {
-  echo "\nInclude $CONF_DIR" >> $HTTPD_CONF
+  echo "$AEGIR_USER ALL= NOPASSWD: $APACHECTL_BIN" >> /etc/sudoers
 }
 
 aegir_user () {
-
-  AEGIR_USER=''
-
   aegir_title "SECTION 1 : Aegir user account"
   echo "Aegir is designed to run as it's own user that was created specifically for it."
-  echo "This script will not create the user account, but will install Aegir for the currently logged in user."
+  if [ $AEGIR_USER != '' ]; then
+    echo "Installing Aegir as the $AEGIR_USER user, already created."
+    aegir_user_home
+    return;
+  fi;
   aegir_prompt "Install Aegir as the $USER user? yes/no (Y/n) :"
   read yesno
   if `echo $yesno | grep -qi y`; then
     AEGIR_USER=$USER;
     aegir_user_home
-  else
+  else 
     while [ -z $AEGIR_USER ]; do
       aegir_prompt "Which user do you want to install aegir as? [aegir] :"
       read USER_CHECK
       if [ -z $USER_CHECK ]; then
-        USER_CHECK=aegir;
+        USER_CHECK="aegir";
       fi;
 
       AEGIR_UID=`id -u $USER_CHECK 2> /dev/null`
       if [ $? = 0 ]; then
-        echo "User $USER_CHECK already exists.";
-        AEGIR_USER=USER_CHECK
-        aegir_user_home
+        aegir_prompt "User $USER_CHECK already exists. This script will assume it was properly configured. Maybe you are rerunning the script accidentally. Stopping now will leave your system unchanged. Continue? yes/no (Y/n) :";
+        read yesno
+        if `echo $yesno | grep -qi y`; then
+          AEGIR_USER=$USER_CHECK
+          aegir_user_home
+        else
+          echo "Nothing was changed."
+          exit;
+        fi;
       else
-        echo "User does not exist, do you want to create this user?"
+        find_httpd
+        find_web_group
+        aegir_prompt "User $USER_CHECK does not exist, do you want to create this user? It will have a home directory of /var/$USER_CHECK and will be part of the $WEB_GROUP group. yes/no (Y/n) :"
+        read yesno
+        if `echo $yesno | grep -qi y`; then
+          AEGIR_USER=$USER_CHECK
+          create_user
+          aegir_user_home
+        else
+          echo "Nothing was changed."
+          exit;
+        fi;
       fi;
     done;
   fi;
@@ -151,15 +179,13 @@ aegir_user_home() {
   else
     AEGIR_HOME=`cat /etc/passwd | grep $AEGIR_USER | awk -F: '{print $6}'`
   fi;
+  
   if [ -z $AEGIR_HOME ]; then
     echo "Aegir requires the user to have a home directory";
     exit 1;
   fi;
+  
   return $?;
-}
-
-aegir_password() {
-
 }
 
 
@@ -210,35 +236,48 @@ check_requirements () {
 
 
 aegir_download () {
+  DRUPAL_DIR=$AEGIR_HOME/drupal-$DRUPAL_VERSION
+  
   aegir_title "SECTION 3 : Downloading Aegir"
   echo "Logging in to Drupal CVS"
+  
   export CVSROOT=:pserver:anonymous:anonymous@cvs.drupal.org:/cvs/drupal-contrib
+  
   cvs login
-
+  cd $AEGIR_HOME
   echo "Downloading Drush"
-  cvs_co modules/drush $DRUSH_TAG ~/drush
+  cvs_co modules/drush $DRUSH_TAG $AEGIR_HOME/drush
 
   echo "Downloading Provision"
-  cvs_co modules/provision $PROVISION_TAG ~/.drush/provision
+  mkdir $AEGIR_HOME/.drush
+  cvs_co modules/provision $PROVISION_TAG $AEGIR_HOME/.drush/provision
 
   echo "Download hostmaster install profile"
-  cvs_co profiles/hostmaster $HOSTING_TAG ~/hostmaster
+  cvs_co profiles/hostmaster $HOSTING_TAG $AEGIR_HOME/hostmaster
+  
+  mkdir $AEGIR_HOME/hostmaster/modules
+  mkdir $AEGIR_HOME/hostmaster/themes
 
   echo "Download hosting front end"
-  cvs_co modules/hosting $HOSTING_TAG ~/hostmaster/modules/hosting
+  cvs_co modules/hosting $HOSTING_TAG $AEGIR_HOME/hostmaster/modules/hosting
 
   echo "Download eldir theme"
-  cvs_co themes/eldir $HOSTING_TAG ~/hostmaster/themes/eldir
+  cvs_co themes/eldir $HOSTING_TAG $AEGIR_HOME/hostmaster/themes/eldir
 
   echo "Download admin_menu module"
-  cvs_co modules/admin_menu $AMENU_TAG ~/hostmaster/modules/admin_menu
+  cvs_co modules/admin_menu $AMENU_TAG $AEGIR_HOME/hostmaster/modules/admin_menu
 
   echo "Downloading Drupal"
-  drush/drush.php dl drupal-$DRUPAL_VERSION
-  mv hostmaster $DRUPAL_DIR/profiles/
+  cd $AEGIR_HOME
+  $AEGIR_HOME/drush/drush.php dl drupal-$DRUPAL_VERSION
+  mv $AEGIR_HOME/hostmaster $DRUPAL_DIR/profiles/
 
   echo "Making settings.php file writeable"
+  cp $DRUPAL_DIR/sites/default/default.settings.php $DRUPAL_DIR/sites/default/settings.php
   chmod 777 $DRUPAL_DIR/sites/default/settings.php
+  mkdir $DRUPAL_DIR/sites/default/files
+  chmod 777 $DRUPAL_DIR/sites/default/files
+  chown -R $AEGIR_USER:$AEGIR_USER $AEGIR_HOME/{.,*}[!.]*
 }
 
 cvs_co () {
@@ -249,52 +288,89 @@ cvs_co () {
 
 aegir_vhost () {
   aegir_title "SECTION 4 : Creating Virtual host configuration file"
-
-  aegir_prompt "Choose a domain for your hosting site: "
-  read $DOMAIN
-
-  CONF_DIR=~/config/vhost.d
-  DRUPAL_DIR=~/drupal-$DRUPAL_VERSION
+  DOMAIN=""
+  while [ -z $DOMAIN ]; do
+    aegir_prompt "Choose a domain for your hosting site. It should be already pointed to this computer: "
+    read DOMAIN
+  done;
+  CONF_DIR=$AEGIR_HOME/config/vhost.d
 
   echo Creating $CONF_DIR to store configuration files
-  mkdir -p $CONF_DIR
+  sudo -u $AEGIR_USER mkdir -p $CONF_DIR
 
-  sed -e "s+aegir.example.com+$DOMAIN+g" $DRUPAL_DIR/profiles/hostmaster/apache2.conf.txt |
-  sed -e "s+/var/aegir/drupal-5.x+$DRUPAL_DIR+g" |
+  sudo -u $AEGIR_USER sed -e "s+aegir.example.com+$DOMAIN+g" $DRUPAL_DIR/profiles/hostmaster/apache2.conf.txt |
+  sed -e "s+/var/aegir/drupal-6.x+$DRUPAL_DIR+g" |
   sed -e "s+/var/aegir/config/vhost.d+$CONF_DIR+g" > $CONF_DIR/$DOMAIN
+  
+  find_apachectl
+  find_httpdconf
+  echo "Include $CONF_DIR" >> $HTTPD_CONF
+  $APACHECTL_BIN restart;
+}
 
-  echo "You will need to modify your http.conf file to add the following line to it :"
-  echo "Include $CONF_DIR"
+find_httpdconf () {
+  HTTPD_CONF=`$APACHECTL_BIN -V | grep SERVER_CONFIG_FILE | sed -e 's/.*=//' -e 's/"//g'`
 }
 
 aegir_database () {
   aegir_title "SECTION 5 : Setting up MySQL"
-  aegir_prompt "MySQL root user password : "
-  read DBPASS
-
+  found=""
+  while [ -z "$found" ]; do
+    aegir_prompt "MySQL root user password : "
+    read DBPASS
+    found=`mysqladmin -uroot -p$DBPASS ping`
+  done;
+  
   echo "Creating mysql database for hostmaster site :"
-  mysqladmin -uroot -p$DBPASS create hostmaster
+  aegir_prompt "Database [hostmaster]:"
+  read HMDB
+  if [ -z $HMDB ]; then
+    HMDB="hostmaster";
+  fi;
+  
+  mysqladmin -uroot -p$DBPASS create $HMDB
 
-  echo "Creating hostmaster user account :"
+  echo "Creating $HMDB user account :"
   aegir_prompt "Username [hostmaster]:"
   read HMUSER
+  if [ -z $HMUSER ]; then
+    HMUSER="hostmaster";
+  fi;
 
   aegir_prompt "Password:"
   read HMPASS
 
-  echo "GRANT ALL ON hostmaster.* TO '$HMUSER'@'localhost' IDENTIFIED BY '$HMPASS'" | 
-   mysql -uroot  -p$DBPASS hostmaster
+  echo "GRANT ALL ON $HMDB.* TO '$HMUSER'@'localhost' IDENTIFIED BY '$HMPASS'" | 
+  mysql -uroot  -p$DBPASS $HMDB
+  
+  echo "Creating aegir mysql superuser account :"
+  aegir_prompt "Username [aegir]:"
+  read AEUSER
+  if [ -z $AEUSER ]; then
+    AEUSER="aegir";
+  fi;
+
+  aegir_prompt "Password:"
+  read AEPASS
+
+  echo "GRANT ALL PRIVILEGES ON *.* TO '$AEUSER'@'localhost' IDENTIFIED BY '$AEPASS' WITH GRANT OPTION" | 
+  mysql -uroot  -p$DBPASS $HMDB
 }
 
+aegir_install () {
+  echo "Please access $DOMAIN and run the hostmaster install profile there. Use $HMUSER as the site mysql user, $AEUSER as the aegir super mysql user, and $AEGIR_USER as the site unix user. Also, run the drush command as instructed at the end of Aegir's install profile that initializes the hostmaster--all other suggested commands have already been run and can be ignored."
+}
 clear
 aegir_title "Installing Aegir $AEGIR_VERSION"
-echo "This script is not safe to use yet, please follow the instructions in install.txt"
-exit
-
-#cd ~/
-root_sudo ls
-#aegir_user
-#check_requirements
-#aegir_download
-#aegir_vhost
-#aegir_database
+if [ $USER != "root" ]; then
+  aegir_title "Must be run as root, exiting"
+  exit;
+fi;
+cd ~/
+aegir_environment
+aegir_user
+check_requirements
+aegir_download
+aegir_vhost
+aegir_database
+aegir_install
