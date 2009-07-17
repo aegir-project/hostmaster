@@ -65,7 +65,7 @@ function hostingSitePopulate(option) {
   }
   // prepare url params
   params = (option == 'profile') ? $(obj).val() : ($(obj).val() + '/' + $(_hostingSiteField('platform')).val());
-  $.get('/hosting/hosting/signup/form_populate/' + option + '/' + params, null, resultOptions);
+  $.get('/hosting/signup/form_populate/' + option + '/' + params, null, resultOptions);
 }
 
 function _hostingSiteField(name) {

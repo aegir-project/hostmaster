@@ -280,10 +280,10 @@ function _hosting_signup_form() {
     '#type' => 'hidden',
     '#value' => HOSTING_DEFAULT_PLATFORM
   );
-  
+  $state = array(); 
   foreach (module_implements('form_alter') as $module) {
     $function = $module .'_form_alter';
-    $function('site_node_form', $form['site']);
+    $function($form['site'], $state, 'site_node_form');
   }
   unset($form['site']['info']['client']);
 
@@ -291,7 +291,8 @@ function _hosting_signup_form() {
   
   foreach (module_implements('form_alter') as $module) {
     $function = $module .'_form_alter';
-    $function('client_node_form', $form['client']);
+
+    $function($form['site'], $state, 'client_node_form');
   }
 
   $form['new_client'] = array('#type' => 'value', '#value' => TRUE);
