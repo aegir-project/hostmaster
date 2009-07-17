@@ -106,7 +106,7 @@ because the release may not yet be available when you read this
 document.
 
 Shell commands::
- cvs co -d drupal-6.*/sites/all/themes/eldir -rDRUPAL-6--0-3 contributions/themes/eldir
+ cvs co -d drupal-6.*/profiles/hostmaster/themes/eldir -rDRUPAL-6--0-3 contributions/themes/eldir
  cd drupal-6.* ; /var/aegir/drush/drush.php dl admin_menu
 
 Apache configuration
