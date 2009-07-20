@@ -280,7 +280,7 @@ function hosting_site_form($node) {
     $form['client'] = array(
       '#type' => 'radios',
       '#title' => t('Client'),
-      '#default_value' => key($clients),
+      '#default_value' => key((array) $clients),
       '#options' => $clients,
       '#description' => t('The client who this site belongs to.'),
     );
