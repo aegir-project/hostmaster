@@ -183,6 +183,16 @@ function hosting_import_site($site_id, $data, $platform = HOSTING_DEFAULT_PLATFO
   node_save($site);
 }
 
+/**
+ * pre_render form callback
+ *
+ * Add the needed .js and .css files to render the form correctly before printing it
+ */
+function _hosting_site_form_pre_render($elements) {
+  drupal_add_js(drupal_get_path('module', 'hosting_site') . '/hosting_site_form.js');
+  drupal_add_css(drupal_get_path('module', 'hosting_site') . '/hosting_site_form.css');
+  return $elements;
+}
 
 /**
  * Implementation of hook_form
@@ -190,8 +200,7 @@ function hosting_import_site($site_id, $data, $platform = HOSTING_DEFAULT_PLATFO
  * TODO: additional nested logic. Certain profiles are available only on certain platforms, and certain languages on certain profiles.
  */
 function hosting_site_form($node) {
-  drupal_add_js(drupal_get_path('module', 'hosting_site') . '/hosting_site_form.js');
-  drupal_add_css(drupal_get_path('module', 'hosting_site') . '/hosting_site_form.css');
+  $form['#pre_render'][] = '_hosting_site_form_pre_render';
 
   $type = node_get_types('type', $node);
 
