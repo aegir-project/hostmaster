@@ -256,7 +256,7 @@ function hosting_client_register_user($node) {
   $pass = user_password();
   $user = new stdClass();
   $edit['name'] = $node->email;
-  $edit['hosting_client'] = array($node->nid);
+  $edit['hosting_client'] = $node->nid;
   $edit['mail'] = $node->email;
   $edit['pass'] = $pass;
   $edit['status'] = 1;
