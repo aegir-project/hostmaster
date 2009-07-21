@@ -424,27 +424,17 @@ function hosting_import_client($email, $name = '', $organization = '') {
  * Implementation of hook_menu()
  */
 function hosting_client_menu() {
-/* TODO
-
-    if (arg(0) == 'node' && is_numeric(arg(1))) {
-      $node = node_load(arg(1));
-      if ($node->type == 'client') {
-        $site = new stdClass();
-        $site->type = 'site';
-        $site->client = arg(1);
-        $items['node/'. $node->nid .'/site/add'] = array(
+  $items['node/%node/site/add'] = array(
           'title' => 'Add site',
           'description' => 'Add a site to the current client',
-          'page callback' => 'drupal_get_form',
-          'page arguments' => array('site_node_form', $site),
-          'access arguments' => array('create site'),
+          'page callback' => 'hosting_client_site_form',
+          'page arguments' => array('site_node_form', 1),
+	  'access callback' => 'hosting_client_menu_access',
+          'access arguments' => array('create site', 1),
           'type' => MENU_LOCAL_TASK,
           'weight' => 5,
-        );
-      }
-    }
+	);
 
-*/
   $items['hosting_client/autocomplete'] = array(
     'title' => 'hosting client get client autocomplete',
     'page callback' => 'hosting_client_autocomplete', 
@@ -460,6 +450,24 @@ function hosting_client_menu() {
     'type' => MENU_LOCAL_TASK
   );
   return $items;
+}
+
+/**
+ * wrapper around the regular site_node_form that passes a dummy site with a proper client
+ */
+function hosting_client_site_form($form, $node) {
+  $site = new stdClass();
+  $site->type = 'site';
+  $site->client = $node->nid;
+  return drupal_get_form('site_node_form', $site);
+}
+
+function hosting_client_menu_access($perm, $node) {
+  if ($node->type == 'client') {
+    return user_access($perm, $node);
+  } else {
+    return false;
+  }
 }
 
 function _hosting_client_configure_access() {
