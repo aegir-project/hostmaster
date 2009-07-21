@@ -32,6 +32,18 @@ function hosting_client_hosting_feature() {
   return $features;
 }
 
+function hosting_client_theme($existing, $type, $theme, $path) {
+  return array(
+    'hosting_client_user_form' => array(
+      'file' => 'hosting_client.access.inc',
+      'arguments' => array('form' => NULL),
+    ),
+    'hosting_client_form' => array(
+      'file' => 'hosting_client.module',
+      'arguments' => array('form' => NULL),
+    ),
+  );
+}
 
 function hosting_client_perm() {
   return array('create client','view client', 'edit own client', 'delete own client', 'administer clients', 'edit client users');
