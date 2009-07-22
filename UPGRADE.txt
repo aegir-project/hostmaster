@@ -25,8 +25,7 @@ Shell commands::
  ./drush/drush.php dl drupal
  cd drupal-6.12
  cvs co -d profiles/hostmaster -rDRUPAL-6--0-3 contributions/profiles/hostmaster
- cvs co -d profiles/hostmaster/modules/hosting -rDRUPAL-6--0-3 contributions/modules/hosting
- cvs co -d profiles/hostmaster/themes/eldir -rDRUPAL-6--0-3 contributions/themes/eldir
+ /var/aegir/drush/drush.php dl hosting eldir install_profile_api
  cd /var/aegir
  # also checkout any modules you may have enabled in the d5 platform
  # now you want to add the platform in the frontend (Create content -> platform) and wait for the task to be processed
@@ -48,11 +47,17 @@ because that site is typically ignored in Aegir. This procedure will
 migrate your main frontend away from that 'default' setup. See
 http://drupal.org/node/453540 for details.
 
-Upgrading Hostmaster from Drupal 5
-----------------------------------
+Upgrading Hostmaster from 0.2 (Drupal 5)
+----------------------------------------
 
-This is basically like performing a Drupal core upgrade. Make sure you
-also checkout the install_profile_api module as it is a new dependency.
+The major change between 0.3 and 0.2 is that 0.3 now targets the
+Drupal 6 platform on the frontend (the backend still supports both
+Drupal 5 and 6). We also switch away from using the sites/default/ for
+Aegir in 0.3. So the upgrade procedure is basically the "Upgrading the
+Drupal core safely" procedure detailed above.
+
+Make sure you also checkout the install_profile_api module (>=2.1) as
+it is a new dependency.
 
 Upgrading Hostmaster from 0.1
 -----------------------------

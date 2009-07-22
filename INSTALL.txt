@@ -87,11 +87,20 @@ Shell commands::
  cd /var/aegir
  cvs co -d drush -rDRUPAL-6--2-0 contributions/modules/drush
  mkdir .drush
- cvs co -d .drush/provision -rDRUPAL-6--0-3 contributions/modules/provision
+ cd .drush && /var/aegir/drush/drush.php dl provision
+ cd ../
  /var/aegir/drush/drush.php dl drupal
  cd drupal-6.*
  cvs co -d profiles/hostmaster -rDRUPAL-6--0-3 contributions/profiles/hostmaster
- cvs co -d profiles/hostmaster/modules/hosting -rDRUPAL-6--0-3 contributions/modules/hosting
+ /var/aegir/drush/drush.php dl hosting install_profile_api 
+
+We still use CVS to checkout the hostmaster profile because drush has
+problems downloading profiles: http://drupal.org/node/500324
+
+The above should install version 2.1 of install_profile_api and the
+proper versions (0.3) of the hosting, hostmaster and provision
+projets. Make sure the versions reported by drush in the output seem
+right.
 
 Checking out the optional components
 ------------------------------------
@@ -106,8 +115,7 @@ because the release may not yet be available when you read this
 document.
 
 Shell commands::
- cvs co -d drupal-6.*/profiles/hostmaster/themes/eldir -rDRUPAL-6--0-3 contributions/themes/eldir
- cd drupal-6.* ; /var/aegir/drush/drush.php dl admin_menu
+ cd drupal-6.* ; /var/aegir/drush/drush.php dl eldir admin_menu
 
 Apache configuration
 --------------------
