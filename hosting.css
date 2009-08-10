@@ -8,7 +8,6 @@
   padding: 2% 5%;
   margin:25px 0;
   background:#F1F1F1;
-  border:solid 3px #CCC;
 }
 
 #hosting-webserver-info, #hosting-dbserver-info, #hosting-client-info {
@@ -54,167 +53,99 @@
   clear:both;
 }
 
-table.hosting-table {
-  border:solid 1px #F1F1F1;
-  border-bottom:solid 1px #F1F1F1;
-}
-
-table.hosting-table th {
-  border:solid 1px #808080;
-  border-bottom-width: 2px;
-  border-bottom-color: #333333;
-  border-top-width: 2px;
-  background:#4D4D4D !important;
-  padding:5px 5px 5px 10px;
-  margin:3px 2px;
-  color:#FFF;
-}
-
-table.hosting-table th a {
-  color:#FFF;
-}
-
-table.hosting-table tr {
-  border-color:#CCC !important;
-}
-
-table.hosting-table td {
-  padding:5px 5px 5px 10px;
-  margin:3px 2px;
-  border-left:solid 1px #F1F1F1;
-  border-bottom:solid 1px #F1F1F1;
-}
-
-/*
- *  Status icons
+/**
+ * Status icons, colors.
  */
-
-tr.hosting-warning {
-  background: #FFD !important;
-}
-
-tr.hosting-info {
-  background: #EDF5FA !important;
-}
-
-tr.hosting-error {
-  background: #FCC !important;
-}
-
-tr.hosting-queue {
-  background: #FFE6D5 !important;
-}
-
-tr.hosting-success {
-  background: #DFD !important;
-}
-
-td.hosting-status {
-  padding-left:30px !important;
-  background-position:10px 7px;
+td.hosting-status,
+td.hosting-package-upgrade,
+td.hosting-package-downgrade,
+td.hosting-package-same,
+td.hosting-package-missing,
+th.hosting-package-upgrade,
+th.hosting-package-downgrade,
+th.hosting-package-same,
+th.hosting-package-missing {
+  padding-left:25px !important;
+  background-position:5px 7px;
   background-repeat:no-repeat;
 }
 
-tr.hosting-warning td.hosting-status {
-  background-image: url(warning.png);
+tr.hosting-warning,
+th.hosting-package-missing,
+td.hosting-package-missing {
+  background-color: #fe8 !important;
 }
 
-tr.hosting-info td.hosting-status {
-  background-image: url(notice.png);
+tr.hosting-error,
+th.hosting-package-downgrade,
+td.hosting-package-downgrade {
+  background-color: #fa8 !important;
 }
 
-tr.hosting-queue td.hosting-status {
-  background-image: url(queue.png);
+tr.hosting-queue,
+th.hosting-package-same,
+td.hosting-package-same {
+  background-color: #e0e8f0 !important;
 }
 
-tr.hosting-error td.hosting-status {
-  background-image: url(error.png);
+tr.hosting-info { background-color: #f8f8f8 !important; }
+
+tr.hosting-success,
+th.hosting-package-upgrade,
+td.hosting-package-upgrade {
+  background-color: #dfc !important;
 }
 
-tr.hosting-success td.hosting-status {
-  background-image: url(ok.png);
+tr.hosting-warning td.hosting-status,
+th.hosting-package-missing,
+td.hosting-package-missing {  
+  background-image: url(images/icon-warning.png);
 }
 
-tr.hosting-warning td, tr.hosting-info td, tr.hosting-error td, tr.hosting-queue td, tr.hosting-success td {
+tr.hosting-info td.hosting-status { background-image: url(images/icon-notice.png); }
+
+tr.hosting-queue td.hosting-status,
+th.hosting-package-same,
+td.hosting-package-same {
+  background-image: url(images/icon-queue.png);
+}
+
+tr.hosting-error td.hosting-status,
+th.hosting-package-downgrade,
+td.hosting-package-downgrade {
+  background-image: url(images/icon-error.png);
+}
+
+tr.hosting-success td.hosting-status,
+th.hosting-package-upgrade,
+td.hosting-package-upgrade {
+  background-image: url(images/icon-ok.png);
+}
+
+tr.hosting-warning td,
+tr.hosting-info td,
+tr.hosting-error td,
+tr.hosting-queue td,
+tr.hosting-success td {
   background-color:transparent !important;
 }
 
-/*
- * Package statuses
- */
-
-tr.hosting-migrate-summary td {
-  border-top: 2px solid black !important;
-}
-
-div#hosting-package-comparison th {
-  border-bottom: 2px solid black !important;
-}
-div#hosting-package-comparison div.form-item {
-  margin: 3px 0 !important;
-}
 div#hosting-package-comparison div.form-item label {
   font-weight : bold;
-}
-th.hosting-package-upgrade, td.hosting-package-upgrade,
-th.hosting-package-downgrade, td.hosting-package-downgrade,
-th.hosting-package-same, td.hosting-package-same,
-th.hosting-package-missing, td.hosting-package-missing {
-  padding-left:30px !important;
-  margin: 5px 0 !important;
-  background-position:10px 7px !important;
-  background-repeat:no-repeat !important;
-}
-
-th.hosting-package-upgrade, td.hosting-package-upgrade {
-  background-image: url(ok.png) !important;
-  background-color: #DFD !important;
-  border: 1px solid #ADA;
-}
-
-th.hosting-package-downgrade, td.hosting-package-downgrade {
-  background-image: url(error.png) !important;
-  background-color: #FCC !important;
-  border: 1px solid #DAA;
-}
-
-th.hosting-package-same, td.hosting-package-same {
-  background-image: url(same.png) !important; 
-  background-color: #D9E9FF !important;
-  border: 1px solid #B7C7DD;
-}
-
-th.hosting-package-missing, td.hosting-package-missing {
-  background-image: url(warning.png) !important;
-  background-color: #FFD !important;
-  border: 1px solid #DDA;
 }
 
 /*
  *  Retry button
  */
 
-div.hosting-task-retry {
-  padding: 0 0 0 23px;
-  background:url(warning.png) 0 4px no-repeat;
-  margin:0 0 20px;
-  height:20px;
-  display:block;
-}
-
-td div.hosting-task-retry {
-  margin:0;
-}
-
 div.hosting-task-retry form, div.hosting-task-retry form input {
-  margin:0;
-  padding:0;
+  margin:0 !important;
+  padding:0 !important;
 }
 
 /*
  *  Unknown
  */
-
 
 .hosting-queue-frequency div ,.hosting-queue-frequency label{
   display: inline;
@@ -224,7 +155,6 @@ div.hosting-task-retry form, div.hosting-task-retry form input {
   text-align: right;
   padding-right: 2em;
 }
-
 
 .hosting-task-full { display: none }
 
