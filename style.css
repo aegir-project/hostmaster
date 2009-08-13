@@ -794,31 +794,6 @@ table.hosting-table {
     padding:0px;
     }
 
-/**
- * Status icons, colors.
- */
-td.hosting-status {
-  padding-left:25px !important;
-  background-position:5px 7px;
-  }
-
-tr.hosting-warning { background: #fe8 !important; }
-tr.hosting-error {   background: #fa8 !important; }
-tr.hosting-queue {   background: #e0e8f0 !important; }
-tr.hosting-info {    background: #f8f8f8 !important; }
-tr.hosting-success { background: #dfc !important; }
-
-tr.hosting-warning,
-tr.hosting-error,
-tr.hosting-warning a,
-tr.hosting-error a { color:#444; }
-
-tr.hosting-warning td.hosting-status {  background-image: url(images/icon-warning.png); }
-tr.hosting-info td.hosting-status {     background-image: url(images/icon-notice.png); }
-tr.hosting-queue td.hosting-status {    background-image: url(images/icon-queue.png); }
-tr.hosting-error td.hosting-status {    background-image: url(images/icon-error.png); }
-tr.hosting-success td.hosting-status {  background-image: url(images/icon-ok.png); }
-
 /* Forms */
 .hosting-queue-frequency,
 .hosting-queue-frequency-head {
