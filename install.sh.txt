@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 AEGIR_VERSION=0.3
 DRUPAL_VERSION=6.13
@@ -27,8 +27,10 @@ aegir_environment () {
 
     # Specific to this environment
     apt-get -y install openssh-server;
-    apt-get -y install sendmail;
-
+    # Install exim4 if no sendmail is present.
+    if [ -z `which sendmail` ]; then
+      apt-get -y install exim4;
+    fi
     # Required components
     apt-get -y install wget cvs;
     apt-get -y install mysql-server-5.0;
@@ -44,13 +46,13 @@ aegir_environment () {
     ###
     ### Aegir user setup
     ###
-    
+
     AEGIR_USER="aegir"
     create_user
-    
+
     a2enmod php5;
     a2enmod rewrite;
-    
+
     #increase php memory limit
     aegir_prompt "Increase php.ini memory limits to 64M for apache2 and 128M for cli? yes/no (Y/n) :"
     read yesno
@@ -61,7 +63,7 @@ aegir_environment () {
       else
         echo "Set your apache2 php.ini file to have a larger memory limit manually if needed."
       fi;
-    
+
       phpclipath=`php --ini | grep "Loaded Configuration File" | awk '{print $4}'`
       if [ -f $phpclipath ]; then
         mv $phpclipath $phpclipath.aegir.bak
@@ -94,11 +96,11 @@ find_web_group () {
 }
 
 create_user () {
-  aegir_prompt "Enter the $AEGIR_USER user data and type exit once you see a blank command prompt to return to the script. Press enter to continue."
+  aegir_prompt "Enter the $AEGIR_USER user data and type \"exit\" once you see a blank command prompt to return to the script. Press enter to continue."
   read whatever
   adduser $AEGIR_USER --home /var/$AEGIR_USER;
   su - $AEGIR_USER;
-  
+
   find_httpd
   find_web_group
 
@@ -125,7 +127,7 @@ edit_visudo () {
 
 aegir_user () {
   aegir_title "SECTION 1 : Aegir user account"
-  echo "Aegir is designed to run as it's own user that was created specifically for it."
+  echo "Aegir is designed to run as its own user that was created specifically for it."
   if [ $AEGIR_USER != '' ]; then
     echo "Installing Aegir as the $AEGIR_USER user, already created."
     aegir_user_home
@@ -304,8 +306,13 @@ aegir_vhost () {
   
   find_apachectl
   find_httpdconf
-  echo "Include $CONF_DIR" >> $HTTPD_CONF
-  $APACHECTL_BIN restart;
+  if grep -q "Include $CONF_DIR" $HTTPD_CONF
+  then 
+    echo "$CONF_DIR has already been included in $HTTPD_CONF, possibly from a previous installation, skipping.."
+  else
+    echo "Include $CONF_DIR" >> $HTTPD_CONF 
+    $APACHECTL_BIN restart
+  fi
 }
 
 find_httpdconf () {
@@ -316,9 +323,16 @@ aegir_database () {
   aegir_title "SECTION 5 : Setting up MySQL"
   found=""
   while [ -z "$found" ]; do
+    aegir_prompt "MySQL root username [root]:"
+    read MYSQLUSER
+    if [ -z $MYSQLUSER ]; then
+      MYSQLUSER="root";
+    fi;
     aegir_prompt "MySQL root user password : "
-    read DBPASS
-    found=`mysqladmin -uroot -p$DBPASS ping`
+    stty -echo
+    read DBPASS; echo
+    stty echo
+    found=`mysqladmin -u$MYSQLUSER -p$DBPASS ping`
   done;
   
   echo "Creating mysql database for hostmaster site :"
@@ -328,7 +342,7 @@ aegir_database () {
     HMDB="hostmaster";
   fi;
   
-  mysqladmin -uroot -p$DBPASS create $HMDB
+  mysqladmin -u$MYSQLUSER -p$DBPASS create $HMDB
 
   echo "Creating $HMDB user account :"
   aegir_prompt "Username [hostmaster]:"
@@ -338,10 +352,12 @@ aegir_database () {
   fi;
 
   aegir_prompt "Password:"
-  read HMPASS
+  stty -echo
+  read HMPASS; echo
+  stty echo
 
   echo "GRANT ALL ON $HMDB.* TO '$HMUSER'@'localhost' IDENTIFIED BY '$HMPASS'" | 
-  mysql -uroot  -p$DBPASS $HMDB
+  mysql -u$MYSQLUSER  -p$DBPASS $HMDB
   
   echo "Creating aegir mysql superuser account :"
   aegir_prompt "Username [aegir]:"
@@ -351,10 +367,12 @@ aegir_database () {
   fi;
 
   aegir_prompt "Password:"
-  read AEPASS
+  stty -echo
+  read AEPASS; echo
+  stty echo
 
   echo "GRANT ALL PRIVILEGES ON *.* TO '$AEUSER'@'localhost' IDENTIFIED BY '$AEPASS' WITH GRANT OPTION" | 
-  mysql -uroot  -p$DBPASS $HMDB
+  mysql -u$MYSQLUSER  -p$DBPASS $HMDB
 }
 
 aegir_install () {
