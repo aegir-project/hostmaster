@@ -82,6 +82,7 @@ function hostmaster_get_task($task, $offset = 0) {
 
 
 function hostmaster_profile_tasks(&$task, $url) {
+  install_include(hostmaster_profile_modules());
   include_once(dirname(__FILE__) . '/hostmaster.forms.inc');
   define("HOSTMASTER_FORM_REDIRECT", $url);
   if ($task == 'profile') {
