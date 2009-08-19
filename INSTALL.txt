@@ -92,6 +92,7 @@ Shell commands::
  /var/aegir/drush/drush.php dl drupal
  cd drupal-6.*
  cvs co -d profiles/hostmaster -rDRUPAL-6--0-3 contributions/profiles/hostmaster
+ cd profiles/hostmaster
  /var/aegir/drush/drush.php dl hosting install_profile_api 
 
 We still use CVS to checkout the hostmaster profile because drush has
@@ -115,7 +116,8 @@ because the release may not yet be available when you read this
 document.
 
 Shell commands::
- cd drupal-6.* ; /var/aegir/drush/drush.php dl eldir admin_menu
+ cd drupal-6.*/profiles/hostmaster
+ /var/aegir/drush/drush.php dl eldir admin_menu
 
 Apache configuration
 --------------------
