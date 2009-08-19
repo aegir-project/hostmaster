@@ -63,6 +63,13 @@ Shell commands::
     
 Once that is done you should be able to install a site to the new platform. 
 
+Other requirements
+------------------
+
+* never run drush as root. aegir is designed to be ran as its own user.
+* the "aegir directory" (/var/aegir) *must* be the home directory of
+  that user (the "aegir user", below)
+
 Aegir 0.2 installation instructions
 ===================================
 
@@ -142,6 +149,10 @@ Shell commands::
  echo "NameVirtualHost *:80" >> /etc/apache2/conf.d/aegir
  cp drupal-6.*/profiles/hostmaster/apache2.conf.txt config/vhost.d/aegir.example.com
  /etc/init.d/apache2 restart
+
+You MUST modify the config/vhost.d/aegir.example.com to suit your
+needs (particularly the path leading to the Drupal core
+(/var/aegir/drupal-6.* in the example above).
 
 Database configuration
 ----------------------
