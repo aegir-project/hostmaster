@@ -154,6 +154,30 @@ You MUST modify the config/vhost.d/aegir.example.com to suit your
 needs (particularly the path leading to the Drupal core
 (/var/aegir/drupal-6.* in the example above).
 
+Checkpoint!
+-----------
+
+At this point, you have checked out all the code and setup your basic
+Drupal (Drupal core, hosting, hostmaster and eldir) that will be the
+Aegir frontend and the backend system (provision and drush). Your
+filesystem layout should look something like that:
+
+/var/aegir/drupal-6.13
+/var/aegir/drupal-6.13/profiles/hostmaster
+/var/aegir/drupal-6.13/profiles/hostmaster/modules/hosting
+/var/aegir/drupal-6.13/profiles/hostmaster/modules/install_profile_api
+/var/aegir/drupal-6.13/profiles/hostmaster/themes/eldir
+/var/aegir/drupal-6.13/sites/aegir.example.com
+/var/aegir/config/vhost.d
+/var/aegir/backups
+/var/aegir/drush/drush.php
+/var/aegir/.drush/provision
+
+Variations on this are acceptable (for example, the Drush Debian
+package works out of /usr/bin/drush and that's fine), but you are
+better to stick with those if you really want to get through this. The
+remaining of the documentation here will assume that layout.
+
 Database configuration
 ----------------------
 
