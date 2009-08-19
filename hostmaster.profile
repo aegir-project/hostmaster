@@ -117,7 +117,14 @@ function hostmaster_requirement_help($requirement, $options = array()) {
   return $form;
 }
 
-
+/**
+ * modify the settings.php
+ *
+ * add the install_profile variable to the settings.php so that Drupal
+ * picks up the theme in our install profile
+ *
+ * This is a bug in the Drupal core: http://drupal.org/node/330297
+ */
 function hostmaster_settings_php() {
   $settings_file = realpath(conf_path() . '/settings.php');
   drupal_verify_install_file($settings_file, FILE_READABLE|FILE_WRITABLE);
