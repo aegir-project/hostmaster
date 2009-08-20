@@ -28,7 +28,7 @@ function hosting_task_menu() {
 }
 
 function hosting_task_menu_access($node, $task) {
-  if (user_access("create " . $task . " node")) {
+  if (user_access("create " . $task . " task")) {
     if ($node->type == 'site') {
       if (hosting_task_outstanding($node->nid, 'delete') || ($node->site_status ==  HOSTING_SITE_DELETED)) {
         return FALSE;
