@@ -164,7 +164,7 @@ If you have sudo privileges:
 
  sudo -u aegir bash
 
-Aditionnally to make following instructions generic and not dependant on
+Additionally to make following instructions generic and not dependant on
 a concrete Drupal or Aegir version. We will use bash environment
 variables for this. So current Drupal is 6.13 and Aegir release is
 0.3-RC3.
@@ -200,7 +200,7 @@ Shell commands for package download:
  wget http://ftp.drupal.org/files/projects/drush-All-Versions-2.0.tar.gz
  tar -xvzf drush-All-Versions-2.0.tar.gz
 
-Aditionnally we will export another environment variable for the purpose
+Additionally we will export another environment variable for the purpose
 of referencing drush executable in a shorter way.
 
 Shell commands:
