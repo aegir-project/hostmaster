@@ -1,24 +1,27 @@
--*-rst-*-
+.. This document is formatted using the ReST syntax.
 
-This document is formatted using the ReST syntax.
+==========================
+Aegir Upgrade Instructions
+==========================
 
-Aegir 0.3 upgrade instructions
-==============================
-
-This document describes briefly how to upgrade existing Aegir
-platforms.
+-----------------------------------------------------------------------------
+This document describes briefly how to upgrade an existing Aegir installation
+-----------------------------------------------------------------------------
 
 Upgrading the Drupal core safely
---------------------------------
+================================
 
 If you want to use provision to upgrade your Aegir installation, you
-can, but it's a bit more tricky than a usual site because you cannot
-(yet) use the regular frontend to do that. The first step is to
-import and verify the "default" site so it has a proper
-configuration. Then it can be migrated to a new platform.
+can, but it's a bit more tricky than with a usual site because you
+cannot (yet) use the regular frontend to drive the backend. So you need to go through some extra steps and the commandline to upgrade Aegir.
 
-Note that those commands assume you have already updated provision to a proper
-version, see below.
+The first step is to import and verify the "default" site so it has a
+proper configuration. Then it can be migrated to a new platform. We
+use backup and deploy because the upgrade is likely to fail and want
+to test the new site first.
+
+Note that those commands assume you have already updated provision to
+a proper version, see below.
 
 Shell commands::
  cd /var/aegir
@@ -48,7 +51,7 @@ migrate your main frontend away from that 'default' setup. See
 http://drupal.org/node/453540 for details.
 
 Upgrading Hostmaster from 0.2 (Drupal 5)
-----------------------------------------
+========================================
 
 The major change between 0.3 and 0.2 is that 0.3 now targets the
 Drupal 6 platform on the frontend (the backend still supports both
@@ -60,7 +63,7 @@ Make sure you also checkout the install_profile_api module (>=2.1) as
 it is a new dependency.
 
 Upgrading Hostmaster from 0.1
------------------------------
+=============================
 
 Upgrading hostmaster should be as simple as removing the provision and
 drush modules from your profiles/hostmaster/modules directory. You
@@ -93,7 +96,7 @@ The above commands need to be ran as your "aegir" user, especially the
 last step.
 
 Upgrading Hostslave platforms from 0.1
---------------------------------------
+======================================
 
 Provision has been migrated out of the platforms. It used to be
 installed in the profiles/hostslave/modules directory. It is now in
