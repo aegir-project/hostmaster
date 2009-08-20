@@ -218,12 +218,12 @@ it must be placed in ``/var/aegir/.drush`` for drush to be able to find it.
 Shell commands for cvs:
 ::
 
- mkdir .drush
  cvs co -d .drush/provision -r$AEGIR_TAG contributions/modules/provision
 
 Shell commands for drush:
 ::
 
+ mkdir .drush
  $DRUSH dl provision --destination=.drush
 
 
