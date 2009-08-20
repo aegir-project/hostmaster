@@ -450,13 +450,21 @@ Shell commands:
 Now point your browser to ``http://aegir.example.com/``, select the
 hostmaster install profile, enter the database credentials you setup 
 above and then the installer will prompt you to secure the permissions
-on the settings.php file again:
+on the settings.php file again. Do **not** change the permissions just
+yet, and wait until the next step is finished, then change the
+permissions back to normal.
 
 Shell commands:
 ::
 
  chmod a-w sites/aegir.example.com/settings.php
 
+The delay is due to an issue with the Drupal 6 core that doesn't see the
+themes in profiles directories. We had to install a workaround for this
+to work that needs settings.php writable a bit longer. See:
+
+http://drupal.org/node/534302
+http://drupal.org/node/330297
 
 Follow the wizard
 -----------------
