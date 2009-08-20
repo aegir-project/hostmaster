@@ -167,7 +167,7 @@ If you have sudo privileges:
 Additionally to make following instructions generic and not dependant on
 a concrete Drupal or Aegir version. We will use bash environment
 variables for this. So current Drupal is 6.13 and Aegir release is
-0.3-RC3.
+0.3-RC4.
 
 You should replace following command for current versions at the time
 you are reading this document.
@@ -176,7 +176,7 @@ Shell commands:
 ::
 
   export DRUPAL_DIR=/var/aegir/drupal-6.13
-  export AEGIR_TAG=DRUPAL-6--0-3-RC3
+  export AEGIR_TAG=DRUPAL-6--0-3-RC4
 
 
 Installing drush 2.0
