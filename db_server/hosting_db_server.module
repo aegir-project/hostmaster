@@ -22,9 +22,13 @@ function _hosting_mysql_user_requirements() {
    $command = <<<EOF
      mysql -uroot -pXXXXXXXXX mysql
 
-     mysql> GRANT ALL PRIVILEGES ON *.* TO 'username_here'@'%' IDENTIFIED BY 'mypassword' WITH GRANT OPTION;
-     Query OK, 0 rows affected (0.00 sec)
+     mysql> GRANT ALL PRIVILEGES ON *.* TO 'username_here'@'localhost' IDENTIFIED BY 'mypassword' WITH GRANT OPTION;
 
+     Note: If your database server is not running on localhost alongside the webserver but on a remote host, you may
+     wish to change the query to allow these privileges by the user from the specific IP address, or more generally,
+     grant them access from the wildcard '%' per the following query:
+
+     mysql> GRANT ALL PRIVILEGES ON *.* TO 'username_here'@'%' IDENTIFIED BY 'mypassword' WITH GRANT OPTION;
 EOF;
    $help['title'] = t('Mysql user account capable of creating new databases');
    $help['summary'] = t('To be able to create new sites, the provisioning framework will need to be able
