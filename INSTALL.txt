@@ -26,7 +26,7 @@ very far beyond what is commonly available to users with shared hosting.
 
 Following instructions will provide example commands for a Debian-like
 distribution. They are assumed to be run as root user. Prefix them with
-sudo if you are working with a privileges user instead of root.
+sudo if you are working with a privileged user instead of root.
 
 
 Web server
@@ -76,7 +76,7 @@ Mail transfer agent
 
 Aegir requires an MTA (Mail Transfer Agent) installed on your webserver
 in order to be able to install new sites to your new platform. If you
-don't have an MTA you the site installation will fail with message like
+don't have an MTA, the site installation will fail with message like
 "could not send email". Additional messages will show that site has been
 removed because of this problem. To remedy the situation simply install
 an MTA like sendmail, postfix, or exim and do the minimal configuration.
@@ -164,10 +164,11 @@ If you have sudo privileges:
 
  sudo -u aegir bash
 
-Aditionally to make following instructions generic and not dependant on
+Aditionnally to make following instructions generic and not dependant on
 a concrete Drupal or Aegir version. We will use bash environment
-variables for this. So current Drupal is 6.13 and Aegir release
-is 0.3-RC3.
+variables for this. So current Drupal is 6.13 and Aegir release is
+0.3-RC3.
+
 You should replace following command for current versions at the time
 you are reading this document.
 
@@ -199,7 +200,7 @@ Shell commands for package download:
  wget http://ftp.drupal.org/files/projects/drush-All-Versions-2.0.tar.gz
  tar -xvzf drush-All-Versions-2.0.tar.gz
 
-Aditionally we will export another envorinment variable for the purpose
+Aditionnally we will export another environment variable for the purpose
 of referencing drush executable in a shorter way.
 
 Shell commands:
@@ -345,11 +346,12 @@ Configuring Aegir in Apache
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Aegir VirtualHosts for Apache are stored at ``/var/aegir/config/vhost.d``
-(if you have not changed default locations). So Apache must be instruct
-to read configurations from there. In Debian systems each configuration
-file located at ``/etc/apache2/conf.d`` is read on inilialization. If you
-are using another system, you can put ``Include /var/aegir/config/vhost.d``
-in a file inside /etc/httpd/conf.d/ or directly at the end of httpd.conf.
+(if you have not changed default locations). So Apache must be
+instructed to read configurations from there. In Debian systems each 
+configuration file located at ``/etc/apache2/conf.d`` is read on
+initialization. If you are using another system, you can put ``Include
+/var/aegir/config/vhost.d`` in a file inside /etc/httpd/conf.d/ or
+directly at the end of httpd.conf.
 
 Aditionally rewrite module must be enabled and apache restarted.
 
