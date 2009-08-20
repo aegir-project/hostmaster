@@ -197,7 +197,13 @@ function hosting_init() {
   define('HOSTING_DEFAULT_BACKUP_PATH', HOSTING_DEFAULT_PARENT_PATH . '/backups');
   define('HOSTING_DEFAULT_CONFIG_PATH', HOSTING_DEFAULT_PARENT_PATH .'/config');
   define('HOSTING_DEFAULT_VHOST_PATH', HOSTING_DEFAULT_CONFIG_PATH .'/vhost.d');
- 
+
+  /** 
+   * Find the base URL, this is used by the initial 'hosting setup' drush command
+   * This gets defined in the bootstrap, so just using the global definition.
+   */
+  define('HOSTING_DEFAULT_BASE_URL', $GLOBALS['base_url']); 
+
   // moved from hook_menu()
   drupal_add_css(drupal_get_path('module', 'hosting') . '/hosting.css');
 }

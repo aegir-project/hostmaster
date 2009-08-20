@@ -181,7 +181,7 @@ function _hosting_hosting_setup_requirements() {
   $username = HOSTING_DEFAULT_SCRIPT_USER;
   $setup_cmd = <<<EOF
     cd $docroot
-    $drush_path hosting setup
+    $drush_path --uri=$uri hosting setup
 EOF;
   $help['title'] = t('Perform initial configuration by running the <code>Hosting Setup</code> command');
 
