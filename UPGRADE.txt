@@ -8,6 +8,9 @@ Aegir Upgrade Instructions
 This document describes briefly how to upgrade an existing Aegir installation
 -----------------------------------------------------------------------------
 
+Conventions and tips
+====================
+
 All instructions and in general all commands must be run as aegir user,
 so all permissions are always set correctly.
 
@@ -48,8 +51,16 @@ Shell commands:
 
   export DRUSH=/var/aegir/drush/drush.php
 
-Upgrading the backend safely
+Generic upgrade instructions
 ============================
+
+We aim to create a generic upgrade process that will be consistent
+across versions. This section describes this process. However, there
+are version-specific upgrade instructions that may be more relevant to
+your installation in the next section.
+
+Upgrading the backend
+---------------------
 
 In general, we try to keep the backend and the frontend compatible
 with each other during release cycles. That is: provision 0.3 and
@@ -68,8 +79,8 @@ Drush and Provision over the old ones. Follow the instructions in
 INSTALL.txt for that. Keep a copy of the old provision and drush in
 case something goes wrong in the frontend.
 
-Upgrading the frontend safely
-=============================
+Upgrading the frontend
+----------------------
 
 Those are generic instructions to upgrade your hosting, hostmaster,
 eldir or Drupal core installation to new versions. This is still a
@@ -119,8 +130,15 @@ Shell commands::
  $DRUSH --verbose=2 provision delete d6.aegir.example.com
  crontab -e # change platform path to $DRUPAL_DIR
 
+Specific upgrade procedures
+===========================
+
+This section describes specific upgrade steps that must be taken
+between certain point releases. If one of those section applies to
+your installation, disregard the generic instructions and use those.
+
 Upgrading the frontend from 0.2 (Drupal 5)
-==========================================
+------------------------------------------
 
 The major change between 0.3 and 0.2 is that 0.3 now targets the
 Drupal 6 platform on the frontend (note the backend still supports
@@ -180,7 +198,7 @@ migrate your main frontend away from that 'default' setup. See
 http://drupal.org/node/453540 for details.
 
 Upgrading Aegir from 0.1
-========================
+------------------------
 
 Note: to upgrade from 0.1 to 0.3, it is highly recommended that you
 first upgrade to 0.2.
@@ -215,7 +233,7 @@ Shell commands::
  cd drupal-5.x && ../drush/drush.php hosting setup
 
 Upgrading Hostslave platforms from 0.1
-======================================
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Provision has been migrated out of the platforms. It used to be
 installed in the profiles/hostslave/modules directory. It is now in
