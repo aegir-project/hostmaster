@@ -353,7 +353,7 @@ initialization. If you are using another system, you can put ``Include
 /var/aegir/config/vhost.d`` in a file inside /etc/httpd/conf.d/ or
 directly at the end of httpd.conf.
 
-Aditionally rewrite module must be enabled and apache restarted.
+Additionally rewrite module must be enabled and apache restarted.
 
 Following commands are to be run as root.
 
