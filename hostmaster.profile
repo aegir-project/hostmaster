@@ -86,7 +86,6 @@ function hostmaster_profile_tasks(&$task, $url) {
   include_once(dirname(__FILE__) . '/hostmaster.forms.inc');
   define("HOSTMASTER_FORM_REDIRECT", $url);
   if ($task == 'profile') {
-    hostmaster_settings_php();
     hostmaster_bootstrap();
   }
   include_once(drupal_get_path('module', 'node') . '/node.pages.inc');
@@ -347,4 +346,15 @@ function _hostmaster_clean_node_form(&$form) {
   $form['options']['#type'] = 'markup';
 
   unset($form['buttons']);
+}
+
+function hostmaster_form_alter($form, $values, $form_id) {
+  if ($form_id == 'install_configure') {
+    // Put the install profile into settings.php so that it will pick up
+    // the eldir theme in profiles/hostmaster/themes
+    if (!variable_get('hostmaster_settings_php_alter', FALSE)) {
+      hostmaster_settings_php();
+      variable_set('hostmaster_settings_php_alter', TRUE);
+    }
+  }
 }

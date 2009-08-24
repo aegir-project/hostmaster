@@ -296,7 +296,6 @@ function hostmaster_task_import() {
 
 function hostmaster_task_import_submit() {
   drupal_set_message(conf_path() , conf_path());
-  hostmaster_settings_php();
 }
 
 function hostmaster_task_finalize() {
