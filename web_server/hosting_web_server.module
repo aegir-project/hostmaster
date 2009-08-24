@@ -67,13 +67,20 @@ function _hosting_httpd_conf_requirements() {
   $vhost_line = <<<EOF
     Include $vhost_path
 EOF;
-  $help['title'] = t('Modify the server\'s httpd.conf file');
+  $help['title'] = t('Modify the web server\'s configuration file');
   $help['summary'] = t('To allow the system to load additional virtual hosts that are generated,
-                        you are required to add a line to your httpd.conf file.</p>
-                        The location of this file differs between distributions, 
-                        but is most commonly found in <code>/etc/httpd</code> or <code>/etc/apache</code>.');
+			you are required to add a line to your Apache configuration.</p>
+			If you followed the instructions in the hostmaster INSTALL.txt prior to
+			starting this wizard, you will already have placed a file into
+			<code>/etc/apache2/conf.d/</code>, in which case you can skip this step.
+			If you have not yet done this, or this option is not available due to your 
+			Apache configuration differing based on your distribution, put this configuration 
+			change in the relevant configuration file.
+			The location of this file differs between distributions, but is most commonly
+			found in <code>/etc/httpd</code>, <code>/etc/apache</code> or <code>/etc/apache2</code>.
+			It may be called <code>apache2.conf</code> or <code>httpd.conf</code>.');
 
-  $help['configuration'] = t('Once you have determined the location of your httpd.conf file, add the following line to it:
+  $help['configuration'] = t('Once you have determined the location of your configuration file, add the following line to it:
                             <pre>@vhost_line</pre>', array('@vhost_line' => $vhost_line));
 
   return $help;
