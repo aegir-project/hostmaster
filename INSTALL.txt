@@ -39,8 +39,7 @@ be reserved for Aegir. Sharing the server with other control panels
 such as Cpanel, Plesk or AlternC will very likely create problems and
 is not supported.
 
-Shell commands:
-::
+Shell commands::
 
  apt-get install apache2
 
@@ -52,8 +51,7 @@ Since Aegir strongly depends on Drush, we therefore depend on PHP 5.2
 or above. You also need to have the commandline version of PHP to run
 Drush properly and the MySQL extensions.
 
-Shell commands:
-::
+Shell commands::
 
  apt-get install php5 php5-cli php5-mysql
 
@@ -65,8 +63,7 @@ You will require a database server, obviously. Aegir currently only
 supports MySQL. It is preferable to use a dedicated server since Aegir 
 will create database users and will require a privileged user.
 
-Shell commands:
-::
+Shell commands::
 
  apt-get install mysql-server
 
@@ -81,8 +78,7 @@ don't have an MTA, the site installation will fail with message like
 removed because of this problem. To remedy the situation simply install
 an MTA like sendmail, postfix, or exim and do the minimal configuration.
 
-Shell commands:
-::
+Shell commands::
 
  apt-get install postfix
 
@@ -110,10 +106,10 @@ another username if desired.
 In addition we will create a directory layout for Aegir configuration
 and backups.
 
-Shell commands:
-::
+Shell commands::
 
- adduser --system --home /var/aegir --ingroup www-data aegir
+ adduser --system --group aegir --home /var/aegir aegir
+ adduser aegir www-data    #make aegir a user of group www-data
  mkdir -p /var/aegir/config/vhost.d
  mkdir -p /var/aegir/backups
  chmod -R 0700 /var/aegir/{config,backups}
@@ -126,8 +122,7 @@ CVS commands
 If you want to install Aegir from CVS you will need to install ``cvs``
 command in the server system.
 
-Shell commands:
-::
+Shell commands::
 
  apt-get install cvs
 
@@ -150,19 +145,11 @@ release, drush will not catch up the correct versions.
 All instructions and in general all commands must be run as aegir user,
 so all permissions are always set correctly.
 
-To become aegir user depends on your system configuration: if you have
-root password (usually debian) or alternatively you have a privileged
-user with sudo (usually ubuntu).
+To become aegir user you can issue this command::
 
-If you have root password:
-::
+  su -s /bin/bash aegir
 
- su -c "su -s /bin/bash aegir"
-
-If you have sudo privileges:
-::
-
- sudo -u aegir bash
+(Note you must run this as root or prefix with sudo).
 
 Additionally to make following instructions generic and not dependant on
 a concrete Drupal or Aegir version. We will use bash environment
@@ -172,8 +159,7 @@ variables for this. So current Drupal is 6.13 and Aegir release is
 You should replace following command for current versions at the time
 you are reading this document.
 
-Shell commands:
-::
+Shell commands::
 
   export DRUPAL_DIR=/var/aegir/drupal-6.13
   export AEGIR_TAG=DRUPAL-6--0-3-RC4
@@ -186,25 +172,23 @@ At the time this document is being written current drush stable version
 is 2.0. Perhaps a newer version does exist and this document is not
 updated yet. You should use the latest stable version of the 2.x branch.
 
-Shell commands for cvs:
-::
+Shell commands for cvs::
 
  cd /var/aegir
  export CVSROOT=:pserver:anonymous:anonymous@cvs.drupal.org:/cvs/drupal
  cvs co -d drush -rDRUPAL-6--2-0 contributions/modules/drush
 
-Shell commands for package download:
-::
+Shell commands for package download::
 
  cd /var/aegir
  wget http://ftp.drupal.org/files/projects/drush-All-Versions-2.0.tar.gz
  tar -xvzf drush-All-Versions-2.0.tar.gz
+ rm drush-All-Versions-2.0.tar.gz
 
 Additionally we will export another environment variable for the purpose
 of referencing drush executable in a shorter way.
 
-Shell commands:
-::
+Shell commands::
 
   export DRUSH=/var/aegir/drush/drush.php
 
@@ -215,13 +199,11 @@ Downloading provision framework
 The provision framework is not a drupal module but a drush extension. So
 it must be placed in ``/var/aegir/.drush`` for drush to be able to find it.
 
-Shell commands for cvs:
-::
+Shell commands for cvs::
 
  cvs co -d .drush/provision -r$AEGIR_TAG contributions/modules/provision
 
-Shell commands for drush:
-::
+Shell commands for drush::
 
  mkdir .drush
  $DRUSH dl provision --destination=.drush
@@ -233,8 +215,7 @@ Installing drupal
 Drush is able to download latest version of Drupal. Be sure that the
 downloaded version is the same you put in $DRUPAL_DIR in above.
 
-Shell commands:
-::
+Shell commands::
 
  $DRUSH dl drupal
  cd $DRUPAL_DIR
@@ -243,13 +224,11 @@ Shell commands:
 Installing hostmaster profile
 -----------------------------
 
-Shell commands for cvs:
-::
+Shell commands for cvs::
 
  cvs co -d profiles/hostmaster -r$AEGIR_TAG contributions/profiles/hostmaster
  
-Shell commands for drush:
-::
+Shell commands for drush::
 
  $DRUSH dl --destination=./profiles hostmaster
 
@@ -257,13 +236,11 @@ Shell commands for drush:
 Installing hosting module
 -------------------------
 
-Shell commands for cvs:
-::
+Shell commands for cvs::
 
  cvs co -d profiles/hostmaster/modules/hosting -r$AEGIR_TAG contributions/modules/hosting
 
-Shell commands for drush:
-::
+Shell commands for drush::
 
  mkdir profiles/hostmaster/modules
  $DRUSH dl --destination=./profiles/hostmaster/modules hosting
@@ -275,8 +252,7 @@ Installing install_profile_api module
 Hostmaster profile depends on Install Profile API module version 2.1. 
 Following command will force to download correct version.
 
-Shell commands:
-::
+Shell commands::
 
  $DRUSH dl --destination=./profiles/hostmaster/modules install_profile_api-6.x-2.1
 
@@ -291,40 +267,44 @@ also suggested that you install admin_menu to ease administration.
 Installing Eldir theme
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Shell commands for cvs:
-::
+Shell commands for cvs::
 
  cvs co -d profiles/hostmaster/themes/eldir -r$AEGIR_TAG contributions/themes/eldir
  
-Shell commands for drush:
-::
+Shell commands for drush::
 
  mkdir profiles/hostmaster/themes
- $DRUSH dl --destination=$DRUPAL_DIR/profiles/hostmaster/themes eldir
+ $DRUSH dl --destination=./profiles/hostmaster/themes eldir
 
 
 Installing Admin menu module
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Shell commands:
-::
+Shell commands::
 
- $DRUSH dl --destination=$DRUPAL_DIR/profiles/hostmaster/modules admin_menu
+ $DRUSH dl --destination=./profiles/hostmaster/modules admin_menu
 
 
 Apache configuration
 --------------------
 
-Those instructions assume you are installing aegir in http://aegir.example.com
+Those instructions assume you are installing aegir in ``$AEGIR_DOMAIN``,
+where ``AEGIR_DOMAIN = aegir.example.com``.
+
 If you are running another non-Debian system you basically need to:
 
- 1. create a virtual host for Aegir in /var/aegir/config/vhost.d/aegir.example.com
+ 1. create a virtual host for Aegir in /var/aegir/config/vhost.d/$AEGIR_DOMAIN
  2. include the Aegir apache configurations in Apache
  3. activate the mod_rewrite engine
  4. restart apache
 
 Note some of those instructions must be run as a privileged user (root)
-instead of Aegir's user.
+instead of Aegir's user. For the commands that need to be run as root,
+run these in a separate terminal, to ensure that the Aegir user retains
+the environment variables defined before in the installation process.
+The instructions to be run as the aegir user assume that the commands
+will be run against the current directory (i.e they may assume
+environment variables and relative paths).
 
 
 Creating Aegir's virtualhost
@@ -335,10 +315,9 @@ virtual hosts directory and **modify** it to suit your needs,
 particularly the path leading to the Drupal core ($DRUPAL_DIR in the
 examples above).
 
-Shell commands:
-::
-
- cp profiles/hostmaster/apache2.conf.txt ../config/vhost.d/aegir.example.com
+Shell commands::
+ export AEGIR_DOMAIN=aegir.example.com
+ cp profiles/hostmaster/apache2.conf.txt ../config/vhost.d/$AEGIR_DOMAIN
  # edit and configure
 
 
@@ -355,10 +334,7 @@ directly at the end of httpd.conf.
 
 Additionally rewrite module must be enabled and apache restarted.
 
-Following commands are to be run as root.
-
-Shell commands:
-::
+Shell commands as root::
 
  a2enmod rewrite
  echo "Include /var/aegir/config/vhost.d/" > /etc/apache2/conf.d/aegir
@@ -371,9 +347,7 @@ Checkpoint!
 At this point, you have checked out all the code and setup your basic
 Drupal (Drupal core, hosting, hostmaster and eldir) that will be the
 Aegir frontend and the backend system (provision and drush). Your
-filesystem layout should look something like that:
-
-::
+filesystem layout should look something like that::
 
  /var/aegir/drupal-6.x
  /var/aegir/drupal-6.x/profiles/hostmaster
@@ -399,8 +373,7 @@ Here you want to make a basic database configuration for the Drupal
 you are going to install. You want to run those commands using your
 database 'root' user.
 
-SQL commands:
-::
+SQL commands::
 
  CREATE DATABASE aegir;
  GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER, \
@@ -421,7 +394,7 @@ line of this file looks like:
 
 Simply add all domains you want to this line. Ej:
 
-``127.0.0.1  localhost your-machine-name aegir.example.com other1 other2``
+``127.0.0.1  localhost your-machine-name $AEGIR_DOMAIN other1 other2``
 
 
 Install the Drupal
@@ -438,33 +411,24 @@ permissions to proceed through the installer.
 
 Run these commands as the aegir user.
 
-Shell commands:
-::
+Shell commands::
 
- mkdir sites/aegir.example.com
- cp sites/default/default.settings.php sites/aegir.example.com/settings.php
- chmod g+w sites/aegir.example.com/settings.php
- mkdir sites/aegir.example.com/files
- chmod 2770 sites/aegir.example.com/files
-
-Now point your browser to ``http://aegir.example.com/``, select the
+ mkdir sites/$AEGIR_DOMAIN
+ cp sites/default/default.settings.php sites/$AEGIR_DOMAIN/settings.php
+ chmod g+w sites/$AEGIR_DOMAIN/settings.php
+ mkdir sites/$AEGIR_DOMAIN/files
+ chmod 2770 sites/$AEGIR_DOMAIN/files
+ chgrp www-data sites/$AEGIR_DOMAIN/{settings.php,files}
+ 
+Now point your browser to ``http://$AEGIR_DOMAIN/``, select the
 hostmaster install profile, enter the database credentials you setup 
 above and then the installer will prompt you to secure the permissions
-on the settings.php file again. Do **not** change the permissions just
-yet, and wait until the next step is finished, then change the
-permissions back to normal.
+on the settings.php file again.
 
-Shell commands:
-::
+Shell commands::
 
- chmod a-w sites/aegir.example.com/settings.php
+ chmod a-w sites/$AEGIR_DOMAIN/settings.php
 
-The delay is due to an issue with the Drupal 6 core that doesn't see the
-themes in profiles directories. We had to install a workaround for this
-to work that needs settings.php writable a bit longer. See:
-
-http://drupal.org/node/534302
-http://drupal.org/node/330297
 
 Follow the wizard
 -----------------
