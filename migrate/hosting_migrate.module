@@ -27,7 +27,7 @@ function hosting_task_migrate_form_validate($form, &$form_state) {
   if (!$form_state['values']['parameters']['target_platform']) {
     form_set_error('parameters][target_platform', t('You need to select a valid platform to migrate your site to.'));
   }
-  if ($form_state['values']['parameters']['target_platform'] == $site->platform) {
+  if ($form_state['values']['parameters']['hidden']) {
     form_set_error('parameters][target_platform', t('You may not select your current platform to migrate your site to.'));
   }
 }
@@ -62,8 +62,10 @@ function hosting_task_migrate_form($node) {
     array('r.type' => 'platform', 'n.nid' => $node->profile));
   if (sizeof($profile_platform_instances) <= 1) {
     $form['no_targets'] = array(
-      '#value' => t('<br />There are no platforms that can meet the depdendencies for this site'));
-    return $form;
+      '#value' => t('<br />There are no platforms that can meet the dependencies for this site<br />'));
+    $form['hidden'] = array(
+      '#type' => 'hidden',
+      '#value' => t('no_targets')); 
   }
 
   foreach ($profile_platform_instances as $profile_instance) {
