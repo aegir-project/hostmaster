@@ -120,10 +120,10 @@ Shell commands::
  # content -> platform) and wait for the task to be processed
  $DRUSH -r $OLD_DRUPAL_DIR provision backup aegir.example.com ~/aegir.tar.gz
  $DRUSH -r $DRUPAL_DIR provision verify
- $DRUSH -r $DRUPAL_DIR provision deploy d6.aegir.example.com ~/default.tar.gz
+ $DRUSH -r $DRUPAL_DIR provision deploy d6.aegir.example.com ~/aegir.tar.gz
  # review changes, see if it works to your liking, when you're done
  $DRUSH -r $OLD_DRUPAL_DIR delete aegir.example.com
- $DRUSH -r $DRUPAL_DIR provision deploy aegir.example.com ~/default.tar.gz
+ $DRUSH -r $DRUPAL_DIR provision deploy aegir.example.com ~/aegir.tar.gz
  $DRUSH -r $DRUPAL_DIR provision delete d6.aegir.example.com
  crontab -e # change platform path to $DRUPAL_DIR
 
