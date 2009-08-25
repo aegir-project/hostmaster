@@ -41,6 +41,13 @@ Shell commands::
 
   export DRUSH=/var/aegir/drush/drush.php
 
+Finally, we use CVS to install some packages, so this needs to be
+installed for upgrades. On Debian, this means:
+
+Shell commands::
+
+ apt-get install cvs
+
 Generic upgrade instructions
 ============================
 
@@ -102,8 +109,9 @@ Shell commands::
  cd /var/aegir
  $DRUSH dl drupal
  cd $DRUPAL_DIR
+ export CVSROOT=:pserver:anonymous:anonymous@cvs.drupal.org:/cvs/drupal
  cvs co -d profiles/hostmaster -r$AEGIR_TAG contributions/profiles/hostmaster
- mkdir profiles/hostmaster/modules
+ mkdir profiles/hostmaster/modules profiles/modules/themes
  $DRUSH dl --destination=./profiles/hostmaster/modules hosting install_profile_api
  $DRUSH dl --destination=./profiles/hostmaster/themes eldir 
  # also checkout any modules you may have enabled in the old platform
