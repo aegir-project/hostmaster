@@ -108,7 +108,7 @@ and backups.
 
 Shell commands::
 
- adduser --system --group aegir --home /var/aegir aegir
+ adduser --system --ingroup aegir --home /var/aegir aegir
  adduser aegir www-data    #make aegir a user of group www-data
  mkdir -p /var/aegir/config/vhost.d
  mkdir -p /var/aegir/backups
