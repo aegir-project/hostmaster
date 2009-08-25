@@ -115,16 +115,14 @@ Shell commands::
  # also checkout any modules you may have enabled in the old platform
  #
  # now you want to add the new platform in the frontend (Create
- #  content -> platform) and wait for the task to be processed
- cd $OLD_DRUPAL_DIR
- $DRUSH --verbose=2 provision backup aegir.example.com ~/aegir.tar.gz
- cd $DRUPAL_DIR
- $DRUSH --verbose=2 provision verify
- $DRUSH --verbose=2 provision deploy d6.aegir.example.com ~/default.tar.gz
+ # content -> platform) and wait for the task to be processed
+ $DRUSH -r $OLD_DRUPAL_DIR provision backup aegir.example.com ~/aegir.tar.gz
+ $DRUSH -r $DRUPAL_DIR provision verify
+ $DRUSH -r $DRUPAL_DIR provision deploy d6.aegir.example.com ~/default.tar.gz
  # review changes, see if it works to your liking, when you're done
- # disable then DELETE the old aegir site in the frontend
- $DRUSH --verbose=2 provision deploy aegir.example.com ~/default.tar.gz
- $DRUSH --verbose=2 provision delete d6.aegir.example.com
+ $DRUSH -r $OLD_DRUPAL_DIR delete aegir.example.com
+ $DRUSH -r $DRUPAL_DIR provision deploy aegir.example.com ~/default.tar.gz
+ $DRUSH -r $DRUPAL_DIR provision delete d6.aegir.example.com
  crontab -e # change platform path to $DRUPAL_DIR
 
 Specific upgrade procedures
@@ -174,19 +172,18 @@ Shell commands::
  # also checkout any modules you may have enabled in the d5 platform
  # now you want to add the platform in the frontend (Create content -> platform) and wait for the task to be processed
  cd $OLD_DRUPAL_DIR
- $DRUSH --verbose=2 provision verify
- $DRUSH --verbose=2 provision import default
- $DRUSH --verbose=2 provision verify default
- $DRUSH --verbose=2 provision backup default ~/default.tar.gz
+ $DRUSH -r $OLD_DRUPAL_DIR provision verify
+ $DRUSH -r $OLD_DRUPAL_DIR provision import default
+ $DRUSH -r $OLD_DRUPAL_DIR provision verify default
+ $DRUSH -r $OLD_DRUPAL_DIR provision backup default ~/default.tar.gz
  cd $DRUPAL_DIR
- $DRUSH --verbose=2 provision verify
- $DRUSH --verbose=2 provision deploy d6.aegir.example.com ~/default.tar.gz
+ $DRUSH -r $DRUPAL_DIR provision verify
+ $DRUSH -r $DRUPAL_DIR provision deploy d6.aegir.example.com ~/default.tar.gz
  # review changes, see if it works to your liking, when you're done:
- cd $OLD_DRUPAL_DIR
- $DRUSH --verbose=2 provision delete aegir.example.com
+ $DRUSH -r $OLD_DRUPAL_DIR provision delete aegir.example.com
  cd $DRUPAL_DIR
- $DRUSH --verbose=2 provision deploy aegir.example.com ~/default.tar.gz
- $DRUSH --verbose=2 provision delete d6.aegir.example.com
+ $DRUSH -r $DRUPAL_DIR provision deploy aegir.example.com ~/default.tar.gz
+ $DRUSH -r $DRUPAL_DIR provision delete d6.aegir.example.com
  crontab -e # change root to new platform, make sure you have a --uri=aegir.example.com
 
 Note that the import/verify of the 'default' site is required only
