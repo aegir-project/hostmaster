@@ -16,7 +16,7 @@ so all permissions are always set correctly.
 
 To become aegir user you can issue this command::
 
-  su -s /bin/bash aegir
+  su -s /bin/sh aegir
 
 (Note you must run this as root or prefix with sudo).
 
