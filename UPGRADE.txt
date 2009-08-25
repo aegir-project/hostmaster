@@ -14,17 +14,11 @@ Conventions and tips
 All instructions and in general all commands must be run as aegir user,
 so all permissions are always set correctly.
 
-To become aegir user depends on your system configuration: if you have
-root password (usually debian) or alternatively you have a privileged
-user with sudo (usually ubuntu).
+To become aegir user you can issue this command::
 
-If you have root password::
+  su -s /bin/bash aegir
 
- su -c "su -s /bin/bash aegir"
-
-If you have sudo privileges::
-
- sudo -u aegir bash
+(Note you must run this as root or prefix with sudo).
 
 Aditionnally to make following instructions generic and not dependant on
 a concrete Drupal or Aegir version. We will use bash environment
