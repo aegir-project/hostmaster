@@ -18,13 +18,11 @@ To become aegir user depends on your system configuration: if you have
 root password (usually debian) or alternatively you have a privileged
 user with sudo (usually ubuntu).
 
-If you have root password:
-::
+If you have root password::
 
  su -c "su -s /bin/bash aegir"
 
-If you have sudo privileges:
-::
+If you have sudo privileges::
 
  sudo -u aegir bash
 
@@ -36,8 +34,7 @@ variables for this. So current Drupal is 6.13 and Aegir release is
 You should replace following command for current versions at the time
 you are reading this document.
 
-Shell commands:
-::
+Shell commands::
 
   export DRUPAL_DIR=/var/aegir/drupal-6.13
   export OLD_DRUPAL_DIR=/var/aegir/drupal-6.12
@@ -46,8 +43,7 @@ Shell commands:
 This document also assumes drush is installed properly and we use a
 environment variable to simplify the documentation again.
 
-Shell commands:
-::
+Shell commands::
 
   export DRUSH=/var/aegir/drush/drush.php
 
@@ -108,6 +104,7 @@ Note that this assumes you have already updated provision to a proper
 version, see above.
 
 Shell commands::
+
  cd /var/aegir
  $DRUSH dl drupal
  cd $DRUPAL_DIR
@@ -157,8 +154,7 @@ now and needs to be transfered now.
 
 In this case, the old drupal is a drupal 5:
 
-Shell commands:
-::
+Shell commands::
 
   export DRUPAL_DIR=/var/aegir/drupal-6.13
   export OLD_DRUPAL_DIR=/var/aegir/drupal-5.9
@@ -167,6 +163,7 @@ Note that this assumes you have already updated provision to a proper
 version, see above.
 
 Shell commands::
+
  cd /var/aegir
  $DRUSH dl drupal
  cd $DRUPAL_DIR
@@ -220,6 +217,7 @@ that. Make sure you also run the hosting setup command.
 Those commands need to be ran as your "aegir" user.
 
 Shell commands::
+
  export CVSROOT=:pserver:anonymous:anonymous@cvs.drupal.org:/cvs/drupal
  cd /var/aegir
  cvs co -d drush -rDRUPAL-6--2-0 contributions/modules/drush
@@ -242,6 +240,7 @@ and the virtual host created for the hostslave profile. You can also
 remove the drush symlink.
 
 Shell commands::
+
  cd /var/aegir
  rm -r drupal-6.x/profiles/hostslave
  rm config/vhost.d/hostslave
@@ -251,4 +250,5 @@ You should also delete the database created during the hostslave
 install:
 
 SQL commands::
+
  DROP DATABASE hostslave;
