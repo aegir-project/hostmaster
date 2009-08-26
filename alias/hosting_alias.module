@@ -41,7 +41,7 @@ function hosting_alias_form_alter(&$form, $form_state, $form_id) {
       $form['aliases'] = array(
         '#type' => 'textarea',
         '#title' => t('Domain aliases'),
-        '#description' => t('Your site can also be accessed through these domain names. This field requires each domain to be alias to be on it\'s own line'),
+        '#description' => t('Your site can also be accessed through these domain names. This field requires each domain alias to be on its own line'),
         '#default_value' => implode("\n", (array) $form['#node']->aliases)
       );
     }
