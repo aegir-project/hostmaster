@@ -122,9 +122,11 @@ Shell commands::
  $DRUSH -r $DRUPAL_DIR provision verify
  $DRUSH -r $DRUPAL_DIR provision deploy d6.aegir.example.com ~/aegir.tar.gz
  # review changes, see if it works to your liking, when you're done
- $DRUSH -r $OLD_DRUPAL_DIR delete aegir.example.com
- $DRUSH -r $DRUPAL_DIR provision deploy aegir.example.com ~/aegir.tar.gz
  $DRUSH -r $DRUPAL_DIR provision delete d6.aegir.example.com
+ $DRUSH -r $OLD_DRUPAL_DIR delete aegir.example.com
+ # here you should really use the backup generated in the above step,
+ # but the old backups also works, it's just not up to date
+ $DRUSH -r $DRUPAL_DIR provision deploy aegir.example.com ~/aegir.tar.gz
  crontab -e # change platform path to $DRUPAL_DIR
 
 Specific upgrade procedures
