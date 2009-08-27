@@ -123,6 +123,7 @@ Shell commands::
  $DRUSH -r $DRUPAL_DIR provision deploy d6.aegir.example.com ~/aegir.tar.gz
  # review changes, see if it works to your liking, when you're done
  $DRUSH -r $DRUPAL_DIR provision delete d6.aegir.example.com
+ crontab -e # disable the cronjob to avoid warnings
  $DRUSH -r $OLD_DRUPAL_DIR delete aegir.example.com
  # here you should really use the backup generated in the above step,
  # but the old backups also works, it's just not up to date
@@ -175,19 +176,19 @@ Shell commands::
  $DRUSH dl --destination=./profiles/hostmaster/themes eldir 
  # also checkout any modules you may have enabled in the d5 platform
  # now you want to add the platform in the frontend (Create content -> platform) and wait for the task to be processed
- cd $OLD_DRUPAL_DIR
  $DRUSH -r $OLD_DRUPAL_DIR provision verify
  $DRUSH -r $OLD_DRUPAL_DIR provision import default
  $DRUSH -r $OLD_DRUPAL_DIR provision verify default
  $DRUSH -r $OLD_DRUPAL_DIR provision backup default ~/default.tar.gz
- cd $DRUPAL_DIR
  $DRUSH -r $DRUPAL_DIR provision verify
  $DRUSH -r $DRUPAL_DIR provision deploy d6.aegir.example.com ~/default.tar.gz
  # review changes, see if it works to your liking, when you're done:
- $DRUSH -r $OLD_DRUPAL_DIR provision delete aegir.example.com
- cd $DRUPAL_DIR
- $DRUSH -r $DRUPAL_DIR provision deploy aegir.example.com ~/default.tar.gz
  $DRUSH -r $DRUPAL_DIR provision delete d6.aegir.example.com
+ crontab -e # disable the cronjob to avoid warnings
+ $DRUSH -r $OLD_DRUPAL_DIR provision delete aegir.example.com
+ # here you should really use the backup generated in the above step,
+ # but the old backups also works, it's just not up to date
+ $DRUSH -r $DRUPAL_DIR provision deploy aegir.example.com ~/default.tar.gz
  crontab -e # change root to new platform, make sure you have a --uri=aegir.example.com
 
 Note that the import/verify of the 'default' site is required only
