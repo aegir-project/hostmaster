@@ -23,7 +23,7 @@ To become aegir user you can issue this command::
 Additionally to make following instructions generic and not dependant on
 a concrete Drupal or Aegir version. We will use bash environment
 variables for this. So current Drupal is 6.13 and Aegir release is
-0.3-RC4. We assume we are upgrading from a Drupal 6.12.
+0.3. We assume we are upgrading from a Drupal 6.12.
 
 You should replace following command for current versions at the time
 you are reading this document.
@@ -32,7 +32,7 @@ Shell commands::
 
   export DRUPAL_DIR=/var/aegir/drupal-6.13
   export OLD_DRUPAL_DIR=/var/aegir/drupal-6.12
-  export AEGIR_TAG=DRUPAL-6--0-3-RC4
+  export AEGIR_TAG=DRUPAL-6--0-3
 
 This document also assumes drush is installed properly and we use a
 environment variable to simplify the documentation again.
