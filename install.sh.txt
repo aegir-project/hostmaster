@@ -278,12 +278,6 @@ aegir_download () {
   $AEGIR_HOME/drush/drush.php dl drupal-$DRUPAL_VERSION
   mv $AEGIR_HOME/hostmaster $DRUPAL_DIR/profiles/
 
-  echo "Making settings.php file writeable"
-  cp $DRUPAL_DIR/sites/default/default.settings.php $DRUPAL_DIR/sites/default/settings.php
-  chmod 777 $DRUPAL_DIR/sites/default/settings.php
-  mkdir $DRUPAL_DIR/sites/default/files
-  chmod 777 $DRUPAL_DIR/sites/default/files
-  chown -R $AEGIR_USER:$AEGIR_USER $AEGIR_HOME/{.,*}[!.]*
 }
 
 cvs_co () {
@@ -307,6 +301,15 @@ aegir_vhost () {
   sudo -u $AEGIR_USER sed -e "s+aegir.example.com+$DOMAIN+g" $DRUPAL_DIR/profiles/hostmaster/apache2.conf.txt |
   sed -e "s+/var/aegir/drupal-6.x+$DRUPAL_DIR+g" |
   sed -e "s+/var/aegir/config/vhost.d+$CONF_DIR+g" > $CONF_DIR/$DOMAIN
+
+  echo "Setting up aegir site $DOMAIN in $DRUPAL_DIR/sites/"
+  mkdir $DRUPAL_DIR/sites/$DOMAIN
+  echo "Making settings.php writable"
+  cp $DRUPAL_DIR/sites/default/default.settings.php $DRUPAL_DIR/sites/$DOMAIN/settings.php
+  chmod 777 $DRUPAL_DIR/sites/$DOMAIN/settings.php
+  mkdir $DRUPAL_DIR/sites/$DOMAIN/files
+  chmod 777 $DRUPAL_DIR/sites/$DOMAIN/files
+  chown -R $AEGIR_USER:$AEGIR_USER $AEGIR_HOME/{.,*}[!.]*
   
   find_apachectl
   find_httpdconf
