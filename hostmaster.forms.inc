@@ -251,7 +251,7 @@ function hostmaster_task_verify() {
   }
   else {
     $form['provision']['#status'] = HOSTING_STATUS_ERROR;
-    $form['provision']['#message'] = t('One of more errors has occurred during platform verification.');
+    $form['provision']['#message'] = t('One or more errors have occurred during platform verification.');
     $form['retry_id'] = array('#type' => 'hidden', '#value' => $node->nid);
     $form['log_tip']['#value'] = t('Underneath is the log output and status of your verification task.
       Check your settings on the previous pages of the wizard, and follow the applicable examples from the configuration
