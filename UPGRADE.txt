@@ -20,10 +20,10 @@ To become aegir user you can issue this command::
 
 (Note you must run this as root or prefix with sudo).
 
-Additionally to make following instructions generic and not dependant on
-a concrete Drupal or Aegir version. We will use bash environment
-variables for this. So current Drupal is 6.13 and Aegir release is
-0.3. We assume we are upgrading from a Drupal 6.12.
+Additionally, to make following instructions generic and not dependant on
+a concrete Drupal or Aegir version, we will make use of bash environment
+variables. So current Drupal is 6.13 and Aegir release is 0.3. We assume 
+we are upgrading from a Drupal 6.12.
 
 You should replace following command for current versions at the time
 you are reading this document.

@@ -219,7 +219,7 @@ function hostmaster_task_init() {
   }
   else {
     $options['#status'] = HOSTING_STATUS_SUCCESS;
-    $options['#message'] = t('The dispatch process has been succesfully executed');
+    $options['#message'] = t('The dispatch process has been successfully executed');
   }
 
   $form['cron'] = hostmaster_requirement_help('hosting_setup', $options);
@@ -245,7 +245,7 @@ function hostmaster_task_verify() {
   $form['provision'] = array('#type' => 'requirement_help', '#requirement' => 'platform');
   if ($node->task_status == HOSTING_TASK_SUCCESS) {
     $form['provision']['#status'] = HOSTING_STATUS_SUCCESS;
-    $form['provision']['#message'] = t('Your platform has been succesfully configured. You can now create sites.');
+    $form['provision']['#message'] = t('Your platform has been successfully configured. You can now create sites.');
 
     $form['import']['#value'] = t('On the next page we will import any existing sites on this platform.');
   }
