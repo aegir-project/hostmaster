@@ -582,9 +582,12 @@ function hosting_site_backup_list($site) {
  * Hide the delete button on site nodes
  */
 function hosting_site_form_alter(&$form, &$form_state, $form_id) {
-  // Remove delete button from site edit form
+  // Remove delete button from site edit form, unless the site's already been deleted via the Delete task
   if ($form_id == 'site_node_form') {
-    $form['delete']['#type'] = 'hidden';
+    $node = $form['#node'];
+    if ($node->site_status !== '-2') {
+      $form['buttons']['delete']['#type'] = 'hidden';
+    }
   }
 }
 
