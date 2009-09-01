@@ -115,14 +115,12 @@ function theme_hosting_task_migrate_form(&$form) {
   $headers = array();
   $rows = array();
 
-  $headers[] = t("Type");
   $headers[] = t("Package");
   $errors = array();
   $warnings = array();
   foreach (array_keys($packages[$node->platform]) as $package) {
     $row = array();
-    $row[] = array('class' => 'hosting-package-name', 'data' => $packages[$node->platform][$package]->package_type);
-    $row[] = array('class' => 'hosting-package-name', 'data' => $packages[$node->platform][$package]->title);
+    $row[] = array('class' => 'hosting-package-name', 'data' => '<acronym title=' . $packages[$node->platform][$package]->package_type . '>' . $packages[$node->platform][$package]->title . '</acronym>');
     foreach (array_keys($packages) as $platform) {
       if (array_key_exists($package, $packages[$platform])) {
         $comparison = hosting_package_instance_version_compare($packages[$node->platform][$package], $packages[$platform][$package]);
@@ -148,7 +146,7 @@ function theme_hosting_task_migrate_form(&$form) {
     }
      $rows[] = $row;
   }
-  $row = array('','');
+  $row = array('');
 
      
   foreach (array_keys($packages) as $platform) {
