@@ -375,7 +375,7 @@ function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
     $node->content['info']['notexecuted'] = array(
       '#type' => 'item',
       '#title' => t('This task has not been processed yet'),
-      '#value' => t('It will be processed around %date, if the queue is not too crowded. The queue is currently ran every %freq, was last ran %last and processes %items items at a time. Server time is %time.', array('%freq' => format_interval($freq), '%date' => $date, '%last' => hosting_format_interval($last), '%items' => $items, '%time' => format_date($now, 'custom', 'H:i:sO'))),
+      '#value' => t('It will be processed around %date, if the queue is not too crowded. The queue is currently run every %freq, was last run %last and processes %items items at a time. Server time is %time.', array('%freq' => format_interval($freq), '%date' => $date, '%last' => hosting_format_interval($last), '%items' => $items, '%time' => format_date($now, 'custom', 'H:i:sO'))),
     );
   }
   if ($node->task_status) {
