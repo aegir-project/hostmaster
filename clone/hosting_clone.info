@@ -1,0 +1,7 @@
+name = Site cloning
+description = Clone sites between platforms, performing upgrades when necessary.
+package = Hosting
+dependencies[] = hosting
+dependencies[] = hosting_migrate
+
+core = 6.x
