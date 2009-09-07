@@ -128,6 +128,11 @@ function hosting_web_server_hosting_feature() {
       'status' => HOSTING_FEATURE_DISABLED,
       'node' => 'web_server',
     'group' => 'experimental');
+  $features['ports'] = array(
+      'title' => t('Ports'),
+      'description' => t('Allow configuration of multiple ports per server and non-default ports for sites.'),
+      'status' => HOSTING_FEATURE_ENABLED,
+  );
   return $features;
 }
 
@@ -206,7 +211,24 @@ function hosting_web_server_form(&$node) {
     '#weight' => -8,
   );
 
-
+  if (hosting_feature('ports') == HOSTING_FEATURE_ENABLED) {
+    $form['ports'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Ports'),
+      '#required' => TRUE,
+      '#size' => 40,
+      '#default_value' => ($node->ports) ? $node->ports : '80',
+      '#description' => t("All the ports enabled on this server, comma separated. Port 80 is the default http, 443 is https."),
+      '#maxlength' => 255,
+      '#weight' => -8,
+    );
+  } else {
+    $form['ports'] = array(
+      '#type' => 'value',
+      '#value' => '80',
+    );
+  }
+  
   $form['restart_cmd'] = array(
       '#type' => 'textfield',
       '#title' => t('Restart command'),
@@ -291,6 +313,16 @@ function hosting_web_server_validate(&$node, &$form) {
   if (!_hosting_valid_fqdn($node->title)) {
     form_set_error('title', t('Invalid valid domain name. Either choose a proper domain name or hardcode the IP address of the webserver.'));
   }
+  $ports = explode(",", $node->ports);
+  if (count($ports) < 1) {
+    form_set_error('ports', t('At least one port must be provided.'));
+  }
+  foreach($ports as $port) {
+    if ($port < 1) {
+      form_set_error('ports', t('Invalid port specified'));
+    }
+  }
+  
   if ($node->script_user == 'root') {
     form_set_error('script_user', t('For security reasons, you should not run drush commands as the root user. Please choose a different system account name.'));
   }
@@ -306,9 +338,9 @@ function hosting_web_server_validate(&$node, &$form) {
  */
 function hosting_web_server_insert($node) {
   print_r($form);
-  db_query("INSERT INTO {hosting_web_server} (vid, nid, ip_address, script_user, web_group, config_path, backup_path, restart_cmd, drush_path) 
-      VALUES (%d, %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s')", 
-        $node->vid, $node->nid, $node->ip_address, $node->script_user, $node->web_group, $node->config_path, $node->backup_path, $node->restart_cmd, $node->drush_path);
+  db_query("INSERT INTO {hosting_web_server} (vid, nid, ip_address, script_user, web_group, config_path, backup_path, restart_cmd, drush_path, ports) 
+      VALUES (%d, %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')", 
+        $node->vid, $node->nid, $node->ip_address, $node->script_user, $node->web_group, $node->config_path, $node->backup_path, $node->restart_cmd, $node->drush_path, $node->ports);
 }
 
 /**
@@ -323,15 +355,22 @@ function hosting_web_server_update($node) {
     hosting_web_server_insert($node);
   }
   else {
+    $oldports = db_result(db_query("SELECT ports FROM {hosting_web_server} WHERE vid = %d", $node->vid));
+    if ($oldports != $node->ports) {
+      $query = db_query("SELECT {nid} FROM hosting_platform WHERE web_server = %d", $node->nid);
+      while($nid = db_fetch_object($query)) {
+        hosting_add_task($nid->nid, 'verify');
+      }
+    }
     db_query("UPDATE {hosting_web_server} SET 
                   ip_address = '%s', script_user = '%s', web_group = '%s', 
                   config_path = '%s', backup_path = '%s', restart_cmd = '%s',
-                  drush_path = '%s'
+                  drush_path = '%s', ports = '%s'
               WHERE 
                   vid = %d", 
                   $node->ip_address, $node->script_user, $node->web_group,
                   $node->config_path, $node->backup_path, $node->restart_cmd, 
-                  $node->drush_path,
+                  $node->drush_path, $node->ports,
                   $node->vid);
   }
 }
@@ -351,12 +390,10 @@ function hosting_web_server_delete($node) {
  * Implementation of hook_load().
  */
 function hosting_web_server_load($node) {
-  $additions = db_fetch_object(db_query('SELECT ip_address, script_user, web_group, config_path, backup_path, restart_cmd, drush_path FROM {hosting_web_server} WHERE vid = %d', $node->vid));
+  $additions = db_fetch_object(db_query('SELECT ip_address, script_user, web_group, config_path, backup_path, restart_cmd, drush_path, ports FROM {hosting_web_server} WHERE vid = %d', $node->vid));
   return $additions;
 }
 
-/**
- *
 /**
  * Implementation of hook_view().
  */
@@ -377,6 +414,11 @@ function hosting_web_server_view($node, $teaser = FALSE, $page = FALSE) {
     '#type' => 'item',
     '#title' => t('Drush path'),
     '#value' => filter_xss($node->drush_path),
+  );
+  $node->content['info']['ports'] = array(
+    '#type' => 'item',
+    '#title' => t('Ports'),
+    '#value' => $node->ports,
   );
   $node->content['info']['script_user'] = array(
     '#type' => 'item',

@@ -133,7 +133,7 @@ function hosting_alias_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
         $aliases = explode("\n", $node->aliases);
         foreach ($aliases as $alias) {
           if ($alias = trim($alias)) {
-            if (hosting_site_exists($alias, $node->nid)) {
+            if (hosting_site_exists($alias, $node->port, $node->nid)) {
               form_set_error('aliases', t('The domain name @alias is already in use by another site', array('@alias' => $alias)));
             }
           }
@@ -220,7 +220,7 @@ function hosting_alias_automatic_aliases($url) {
  * This function will check the existing aliases and the automatically
  * generated aliases to ensure that this url has not been used before
  */
-function hosting_alias_allow_domain($url, $nid = null) {
+function hosting_alias_allow_domain($url, $port = null, $nid = null) {
   $query = "SELECT COUNT(n.nid) FROM {node} n 
       LEFT JOIN {hosting_site} h ON h.nid=n.nid 
       LEFT JOIN {hosting_site_alias} a  ON n.vid = a.vid 
@@ -230,6 +230,11 @@ function hosting_alias_allow_domain($url, $nid = null) {
   $args[] = $url;
   $args[] = ~HOSTING_SITE_DELETED;
 
+  if ($port) {
+    $query .= ' AND h.port = %d';
+    $args[] = $port;
+  }
+  
   if ($nid) {
     $query .= ' AND n.nid <> %d';
     $args[] = $nid;

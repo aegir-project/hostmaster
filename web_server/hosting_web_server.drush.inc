@@ -15,6 +15,14 @@ function drush_hosting_web_server_pre_hosting_task() {
     $task->options['web_id'] = $web->nid;
     $task->options['web_host'] = $web->title;
     $task->options['web_ip'] = $web->ip_address;
+    $task->options['web_ports'] = explode(",", $web->ports);
+    foreach($task->options['web_ports'] as $key=>$val) {
+      $val = trim($val);
+      $task->options['web_ports'][$key] = $val;
+      if(!is_numeric($val)) {
+        unset($task->options['web_ports'][$key]);
+      }
+    }
     $task->options['script_user'] = $web->script_user;
 
     if ($task->task_type == 'verify' && $task->ref->type == 'platform') {

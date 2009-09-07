@@ -61,6 +61,11 @@ function hosting_site_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'port' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
     ),
     'primary key' => array('vid'),
   );
@@ -186,5 +191,12 @@ function hosting_site_update_5() {
     array('type' => 'serial', 'not null' => TRUE),
     array('primary key' => array('bid')));
 
+  return $ret;
+}
+
+function hosting_site_update_6() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE {hosting_site} ADD COLUMN port int(10) NOT NULL default '0'");
+  db_query("UPDATE {hosting_site} SET port=80");
   return $ret;
 }

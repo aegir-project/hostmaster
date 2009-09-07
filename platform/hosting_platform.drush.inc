@@ -5,6 +5,7 @@ function drush_hosting_platform_pre_hosting_task($task) {
   $task =& drush_get_context('HOSTING_TASK');
   if ($task->ref->type == 'site') {
     $node = node_load($task->ref->platform);
+    $task->options['site_port'] = $task->ref->port;
   }
   elseif ($task->ref->type == 'platform') {
     $node = $task->ref;
