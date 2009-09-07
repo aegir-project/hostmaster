@@ -28,6 +28,12 @@ function hosting_alias_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'redirection' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
     ),
     'indexes' => array(
       'vid' => array('vid'),
@@ -55,6 +61,15 @@ function hosting_alias_uninstall() {
 function hosting_alias_update_1() {
   $ret = array();
   $ret[] = update_sql("DELETE FROM {hosting_site_alias} WHERE alias='Array'");
+  return $ret;
+}
+
+/**
+ * Add the redirection field
+ */
+function hosting_alias_update_2() {
+  $ret = array();
+  db_add_field($ret, 'hosting_site_alias', 'redirection', array('type' => 'int', 'not null' => TRUE, 'default' => 0, 'size' => 'tiny'));
   return $ret;
 }
 
