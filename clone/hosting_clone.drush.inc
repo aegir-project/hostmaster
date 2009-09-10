@@ -16,7 +16,7 @@ function hosting_clone_post_hosting_clone_task($task, $data) {
     $target = $task->task_args['target_platform'];
     $clone = new stdClass();
     # copy some of the settings of the cloned site ($task->ref) to $clone
-    foreach (array('type', 'status', 'uid', 'comment', 'promote', 'moderate', 'sticky', 'name', 'format', 'client', 'db_server', 'profile', 'site_status') as $field) {
+    foreach (array('type', 'status', 'uid', 'comment', 'promote', 'moderate', 'sticky', 'name', 'format', 'client', 'db_server', 'profile', 'site_status', 'port') as $field) {
       $clone->$field = $task->ref->$field;
     }
     $clone->title = $task->task_args['new_name'];
