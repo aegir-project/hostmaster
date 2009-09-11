@@ -368,7 +368,7 @@ function hosting_site_validate($node, &$form) {
     form_set_error('title', t("You have not specified a valid url for this site."));
   }
   
-  if ($node->port < 1 || $node->port > 65535) {
+  if ($node->port < 1 || $node->port > 65536) {
     form_set_error('title', t("You have not specified a valid port for this site."));
   }
   if (!array_key_exists($node->port, _hosting_site_allowed_ports($node->platform))) {
