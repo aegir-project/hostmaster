@@ -42,7 +42,8 @@ function hosting_alias_form_alter(&$form, $form_state, $form_id) {
         '#type' => 'textarea',
         '#title' => t('Domain aliases'),
         '#description' => t('Your site can also be accessed through these domain names. This field requires each domain alias to be on its own line'),
-        '#default_value' => implode("\n", (array) $form['#node']->aliases)
+        '#default_value' => implode("\n", (array) $form['#node']->aliases),
+        '#weight' => 10,
       );
       $form['redirection'] = array(
         '#type' => 'checkbox',

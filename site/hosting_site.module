@@ -805,6 +805,7 @@ function _hosting_site_form_port($platform = HOSTING_DEFAULT_PLATFORM) {
       '#required' => TRUE,
       '#default_value' => $defport,
       '#options' => $showports,
+      '#weight' => 5,
       '#attributes' => array('class' => "hosting-site-form-port-options"),
      );
   } else {

@@ -7,7 +7,13 @@
 
 function hosting_ssl_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'site_node_form') {
-    $form['ssl'] = array('#type' => 'radios', '#title' => 'SSL encryption', '#default_value' => $form['#node']->ssl, '#options' => array('disabled', 'enabled'));
+    if (isset($form['#node']->ssl)) {
+      $default = $form['#node']->ssl;
+    }
+    else {
+      $default = 0;
+    }    
+    $form['ssl'] = array('#type' => 'radios', '#title' => 'SSL encryption', '#default_value' => $default, '#options' => array('disabled', 'enabled'), '#weight' => 6);
   }
 }
 
