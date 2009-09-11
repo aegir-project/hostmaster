@@ -132,14 +132,14 @@ function hosting_menu_access($type, $feature) {
   return  (($user->uid == 1) || user_access('create ' . $type)) && (hosting_feature($feature) != HOSTING_FEATURE_DISABLED);
 }
 
-function hosting_disabled_site($url) {
+function hosting_disabled_site() {
   drupal_set_breadcrumb(array());
-  return t("!url has been disabled by the site administrators", array('!url' => $url));
+  return t("This site has been disabled by the site administrators");
 }
 
-function hosting_site_maintenance($url) {
+function hosting_site_maintenance() {
   drupal_set_breadcrumb(array());
-  return t("!url has being worked on presently. Check back later.", array('!url' => $url));
+  return t("This site is currently in maintenance. Check back later.");
 }
 
 /**
