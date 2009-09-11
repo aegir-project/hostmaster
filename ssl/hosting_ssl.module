@@ -1,0 +1,20 @@
+<?php
+
+/**
+ * @file
+ * SSL certificate management frontend
+ */
+
+function hosting_ssl_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'site_node_form') {
+    $form['ssl'] = array('#type' => 'radios', '#title' => 'SSL encryption', '#default_value' => $form['#node']->ssl, '#options' => array('disabled', 'enabled'));
+  }
+}
+
+function hosting_ssl_nodeapi(&$node, $op, $teaser, $page) {
+  switch($op) {
+    case 'view':
+      $node->content['info']['ssl'] = array('#type' => 'item', '#title' => 'SSL encryption', '#value' => ( $node->ssl ? t('Enabled') : t('Disabled') ));
+      break;
+  }
+}

@@ -413,8 +413,8 @@ function hosting_site_insert(&$node) {
   $node->client = $client->nid;
   $node->site_language = ($node->site_language) ? $node->site_language : 'en';
 
-  db_query("INSERT INTO {hosting_site} (vid, nid, client, db_server, platform, profile, language, last_cron, status, verified, port) VALUES (%d, %d, %d, %d, %d, %d, '%s', %d, %d, %d, %d)",
-    $node->vid, $node->nid, $node->client, $node->db_server, $node->platform, $node->profile, $node->site_language, $node->last_cron, $node->site_status, $node->verified, $node->port);
+  db_query("INSERT INTO {hosting_site} (vid, nid, client, db_server, platform, profile, language, last_cron, status, verified, port, `ssl`) VALUES (%d, %d, %d, %d, %d, %d, '%s', %d, %d, %d, %d)",
+           $node->vid, $node->nid, $node->client, $node->db_server, $node->platform, $node->profile, $node->site_language, $node->last_cron, $node->site_status, $node->verified, $node->port, $node->ssl);
   if ((!$node->old_vid)) {
     if ($node->import) {
       hosting_add_task($node->nid, 'import');
@@ -446,8 +446,8 @@ function hosting_site_update(&$node) {
   else {
     $client = hosting_get_client($node->client);
     $node->client = $client->nid;
-    db_query("UPDATE {hosting_site} SET client = %d, db_server = %d, platform = %d, last_cron = %d, status = %d, profile = %d, language = '%s', verified = %d, port = %d WHERE vid=%d",
-              $node->client, $node->db_server, $node->platform, $node->last_cron, $node->site_status, $node->profile, $node->site_language, $node->verified, $node->port, $node->vid);
+    db_query("UPDATE {hosting_site} SET client = %d, db_server = %d, platform = %d, last_cron = %d, status = %d, profile = %d, language = '%s', verified = %d, port = %d, `ssl` = %d WHERE vid=%d",
+             $node->client, $node->db_server, $node->platform, $node->last_cron, $node->site_status, $node->profile, $node->site_language, $node->verified, $node->port, $node->ssl, $node->vid);
   }
   if (!$node->no_verify) {
     hosting_add_task($node->nid, 'verify');
@@ -455,7 +455,7 @@ function hosting_site_update(&$node) {
 }
 
 function hosting_site_load($node) {
-  $additions = db_fetch_object(db_query('SELECT  client, db_server, platform, profile, language as site_language, last_cron, status AS site_status, verified, port FROM {hosting_site} WHERE vid = %d', $node->vid));
+  $additions = db_fetch_object(db_query('SELECT  client, db_server, platform, profile, language as site_language, last_cron, status AS site_status, verified, port, `ssl` FROM {hosting_site} WHERE vid = %d', $node->vid));
   return $additions;
 }
 
@@ -798,14 +798,6 @@ function _hosting_site_form_profile($platform = NULL) {
 function _hosting_site_form_port($platform = HOSTING_DEFAULT_PLATFORM) {
   $showports = _hosting_site_allowed_ports($platform);
   $defport = reset($showports);
-  foreach($showports as $key => $val) {
-    if ($key == 80 ){
-      $showports[$key] .= " (http)";
-    }
-    if ($key == 443) {
-      $showports[$key] .= " (https)";
-    }
-  }
   if (sizeof($showports) > 1 && user_access('change site port')) {
     $form['port'] = array(
       '#type' => 'radios',

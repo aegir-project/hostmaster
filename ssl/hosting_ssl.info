@@ -1,0 +1,5 @@
+name = SSL
+description = Allow Aegir to manage SSL certificates and sites.
+package = Hosting
+dependencies[] = hosting
+core = 6.x
