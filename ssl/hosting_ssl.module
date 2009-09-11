@@ -8,12 +8,13 @@
 function hosting_ssl_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'site_node_form') {
     if (isset($form['#node']->ssl)) {
-      $default = $form['#node']->ssl;
+      $default = array($form['#node']->ssl);
     }
     else {
-      $default = 0;
+      $default = array();
     }    
-    $form['ssl'] = array('#type' => 'radios', '#title' => 'SSL encryption', '#default_value' => $default, '#options' => array('disabled', 'enabled'), '#weight' => 6);
+    $form['port']['ssl'] = array('#type' => 'checkbox', '#title' => 'Enable SSL encryption', '#default_value' => $default, '#weight' => 4, '#attributes' => array('onClick' => '$("#edit-port-80").attr("checked", !this.checked);$("#edit-port-443").attr("checked", this.checked);'),);
+    $form['port']['#title'] = t("Port and encryption");
   }
 }
 
