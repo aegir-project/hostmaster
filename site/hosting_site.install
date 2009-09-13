@@ -70,6 +70,10 @@ function hosting_site_schema() {
         'type' => 'int',
         'not null' => TRUE,
       ),
+      'ssl_redirect' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
     ),
     'primary key' => array('vid'),
   );
@@ -208,5 +212,11 @@ function hosting_site_update_6() {
 function hosting_site_update_6001() {
   $ret = array();
   db_add_field($ret, 'hosting_site', 'ssl', array('type' => 'int', 'not null' => TRUE, 'default' => 0));
+  return $ret;
+}
+
+function hosting_site_update_6002() {
+  $ret = array();
+  db_add_field($ret, 'hosting_site', 'ssl_redirect', array('type' => 'int', 'not null' => TRUE, 'default' => 0));
   return $ret;
 }
