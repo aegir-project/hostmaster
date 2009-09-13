@@ -376,8 +376,8 @@ function hosting_site_validate($node, &$form) {
   }
   
   # TODO: maybe we should allow creation of sites that conflict with HOSTING_SITE_DISABLED (which would then need to be renamed before being re-enabled)
-  if (hosting_site_exists($url, $node->port, $node->nid)) {
-    form_set_error('title', t("The domain name you have specified is not unique."));
+  if (!hosting_domain_allowed($url, $node->port, $node->nid)) {
+    form_set_error('title', t("The domain name you have specified is already in use."));
   }
   if (!$node->new_client) {
     $client = hosting_get_client($node->client);
@@ -635,21 +635,28 @@ function hosting_site_form_alter(&$form, &$form_state, $form_id) {
 }
 
 /**
- * Check if site with URL already exists.
+ * Check if a site exists in a somehow wrong way
  *
- * This function hooks into hook_allow_domain to let contrib modules
- * weigh in on whether the site should be created.
+ * @see hosting_domain_allowed()
+ * @deprecated
  */
 function hosting_site_exists($url, $port = null, $nid = null) {
-  $results = module_invoke_all('allow_domain', $url, $port, $nid);
-  $result = in_array(TRUE, $results);
-  return $result; 
+  return !hosting_domain_allowed($url, $port, $nid);
 }
 
-/*
- * Check if a site with a specific url exists, ignoring deleted sites
+/**
+ * Implementation of hook_allow_domain().
+ *
+ * @see hosting_domain_allowed()
  */
 function hosting_site_allow_domain($url, $port = null, $nid=null) {
+  return !hosting_site_count_sites($url, $port, $nid);
+}
+
+/**
+ * Count the number of sites with a specific url, ignoring deleted sites
+ */
+function hosting_site_count_sites($url, $port = null, $nid=null) {
   $query = "SELECT COUNT(n.nid) FROM 
     {node} n JOIN {hosting_site} h 
     ON n.nid = h.nid WHERE type='site'

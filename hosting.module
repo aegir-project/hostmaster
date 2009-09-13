@@ -352,6 +352,20 @@ function _hosting_valid_fqdn($fqdn) {
   return preg_match("/^([a-z0-9]([a-z0-9-]*[a-z0-9])?\.?)+$/i", $fqdn);
 }
 
+/**
+ * Check site URL is allowed
+ *
+ * This function hooks into hook_allow_domain to let contrib modules
+ * weigh in on whether the site should be created.
+ *
+ * All the hooks must return true for the domain to be allowed.
+ */
+function hosting_domain_allowed($url, $port = null, $nid = null) {
+  $results = module_invoke_all('allow_domain', $url, $port, $nid);
+  $return = !in_array(FALSE, $results);
+  return $return;
+}
+
 function hosting_format_interval($ts) {
   if ($ts==mktime()) { 
     return t('Now');
