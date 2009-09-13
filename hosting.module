@@ -360,8 +360,8 @@ function _hosting_valid_fqdn($fqdn) {
  *
  * All the hooks must return true for the domain to be allowed.
  */
-function hosting_domain_allowed($url, $port = null, $nid = null) {
-  $results = module_invoke_all('allow_domain', $url, $port, $nid);
+function hosting_domain_allowed($url, $params = array()) {
+  $results = module_invoke_all('allow_domain', $url, $params);
   $return = !in_array(FALSE, $results);
   return $return;
 }

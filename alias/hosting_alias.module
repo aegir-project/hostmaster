@@ -140,7 +140,7 @@ function hosting_alias_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
         $aliases = explode("\n", $node->aliases);
         foreach ($aliases as $alias) {
           if ($alias = trim($alias)) {
-            if (!hosting_domain_allowed($alias, $node->port, $node->nid)) {
+            if (!hosting_domain_allowed($alias, (array) $node)) {
               form_set_error('aliases', t('The domain name @alias is already in use', array('@alias' => $alias)));
             }
           }
@@ -245,28 +245,61 @@ function hosting_alias_automatic_aliases($url) {
  * This function will check the existing aliases and the automatically
  * generated aliases to ensure that this url has not been used before
  */
-function hosting_alias_allow_domain($url, $port = null, $nid = null) {
-  return !hosting_alias_count_sites($url, $port, $nid);
-}
-
-function hosting_alias_count_sites($url, $port = null, $nid = null) {
+function hosting_alias_allow_domain($url, $params = array()) {
   $query = "SELECT COUNT(n.nid) FROM {node} n 
       LEFT JOIN {hosting_site} h ON h.nid=n.nid 
       LEFT JOIN {hosting_site_alias} a  ON n.vid = a.vid 
     WHERE 
-      type='site' AND alias='%s' AND h.status & %d";
+      type='site' AND alias='%s' AND h.status <> %d";
+  $args[] = $url;
+  $args[] = HOSTING_SITE_DELETED;
+  
+  if (isset($params['client'])) {
+    if (isset($params['port'])) {
+      $query .= ' AND ( h.client <> %d OR h.port = %d )';
+      $args[] = $params['client'];
+      $args[] = $params['port'];
+    }
+    else {
+      $query .= ' AND h.client <> %d';
+      $args[] = $params['client'];
+    }
+  }
+  // check for ports only if we have no client provided
+  else {
+    if (isset($params['port'])) {
+      $query .= ' AND h.port = %d';
+      $args[] = $params['port'];
+    }
+  }
+
+  if (isset($params['nid'])) {
+    $query .= ' AND n.nid <> %d';
+    $args[] = $params['nid'];
+  }
+  $result = !db_result(db_query($query, $args));
+  return $result;
+
+}
+
+function hosting_alias_count_sites($url, $params = array()) {
+  $query = "SELECT COUNT(n.nid) FROM {node} n 
+      LEFT JOIN {hosting_site} h ON h.nid=n.nid 
+      LEFT JOIN {hosting_site_alias} a  ON n.vid = a.vid 
+    WHERE 
+      type='site' AND alias='%s' AND h.status <> %d";
 
   $args[] = $url;
-  $args[] = ~HOSTING_SITE_DELETED;
+  $args[] = HOSTING_SITE_DELETED;
 
-  if ($port) {
+  if (isset($params['port'])) {
     $query .= ' AND h.port = %d';
-    $args[] = $port;
+    $args[] = $params['port'];
   }
   
-  if ($nid) {
+  if (isset($params['nid'])) {
     $query .= ' AND n.nid <> %d';
-    $args[] = $nid;
+    $args[] = $params['nid'];
   }
 
   return db_result(db_query($query, $args));

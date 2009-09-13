@@ -375,10 +375,6 @@ function hosting_site_validate($node, &$form) {
     form_set_error('title', t("This port is forbidden by the administrators."));
   }
   
-  # TODO: maybe we should allow creation of sites that conflict with HOSTING_SITE_DISABLED (which would then need to be renamed before being re-enabled)
-  if (!hosting_domain_allowed($url, $node->port, $node->nid)) {
-    form_set_error('title', t("The domain name you have specified is already in use."));
-  }
   if (!$node->new_client) {
     $client = hosting_get_client($node->client);
     if (!$node->client || !$client) {
@@ -387,7 +383,13 @@ function hosting_site_validate($node, &$form) {
     if (!user_access('administer clients') && !array_key_exists($client->nid, hosting_get_client_from_user($user->uid))) {
       form_set_error('client', t('Access denied to client @client', array('@client' => $client->title)));
     }
+    $node->client = $client->nid;
   }
+  # TODO: maybe we should allow creation of sites that conflict with HOSTING_SITE_DISABLED (which would then need to be renamed before being re-enabled)
+  if (!hosting_domain_allowed($url, (array) $node)) {
+    form_set_error('title', t("The domain name you have specified is already in use."));
+  }
+
   if (!array_key_exists($node->profile, hosting_get_profiles($node->platform))) {
     form_set_error('profile', t('Please fill in a valid profile'));
   }
@@ -641,7 +643,7 @@ function hosting_site_form_alter(&$form, &$form_state, $form_id) {
  * @deprecated
  */
 function hosting_site_exists($url, $port = null, $nid = null) {
-  return !hosting_domain_allowed($url, $port, $nid);
+  return !hosting_domain_allowed($url, array('port' => $port, 'nid' => $nid));
 }
 
 /**
@@ -649,14 +651,46 @@ function hosting_site_exists($url, $port = null, $nid = null) {
  *
  * @see hosting_domain_allowed()
  */
-function hosting_site_allow_domain($url, $port = null, $nid=null) {
-  return !hosting_site_count_sites($url, $port, $nid);
+function hosting_site_allow_domain($url, $params = array()) {
+  $query = "SELECT COUNT(n.nid) FROM {node} n 
+    JOIN {hosting_site} h ON n.nid = h.nid
+    WHERE type='site' AND title='%s' AND h.status <> %d ";
+  $args[] = $url;
+  $args[] = HOSTING_SITE_DELETED;
+  
+  if (isset($params['client'])) {
+    drupal_set_message("client set: ". $params['client']);
+    if (isset($params['port'])) {
+      $query .= ' AND ( h.client <> %d OR h.port = %d )';
+      $args[] = $params['client'];
+      $args[] = $params['port'];
+    }
+    else {
+      $query .= ' AND h.client <> %d';
+      $args[] = $params['client'];
+    }
+  }
+  // check for ports only if we have no client provided
+  else {
+    if (isset($params['port'])) {
+      $query .= ' AND h.port = %d';
+      $args[] = $params['port'];
+    }
+  }
+
+  if (isset($params['nid'])) {
+    $query .= ' AND n.nid <> %d';
+    $args[] = $params['nid'];
+  }
+  $result = !db_result(db_query($query, $args));
+  drupal_set_message($query. " : " . $result);
+  return $result;
 }
 
 /**
  * Count the number of sites with a specific url, ignoring deleted sites
  */
-function hosting_site_count_sites($url, $port = null, $nid=null) {
+function hosting_site_count_sites($url, $params = array()) {
   $query = "SELECT COUNT(n.nid) FROM 
     {node} n JOIN {hosting_site} h 
     ON n.nid = h.nid WHERE type='site'
@@ -664,14 +698,14 @@ function hosting_site_count_sites($url, $port = null, $nid=null) {
   $args[] = $url;
   $args[] = HOSTING_SITE_DELETED;
   
-  if ($port) {
+  if (isset($params['port'])) {
     $query .= ' AND h.port = %d';
-    $args[] = $port;
+    $args[] = $params['port'];
   }
 
-  if ($nid) {
+  if (isset($params['nid'])) {
     $query .= ' AND n.nid <> %d';
-    $args[] = $nid;
+    $args[] = $params['nid'];
   }
   return db_result(db_query($query, $args));
 }
