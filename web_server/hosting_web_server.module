@@ -415,11 +415,13 @@ function hosting_web_server_view($node, $teaser = FALSE, $page = FALSE) {
     '#title' => t('Drush path'),
     '#value' => filter_xss($node->drush_path),
   );
-  $node->content['info']['ports'] = array(
-    '#type' => 'item',
-    '#title' => t('Ports'),
-    '#value' => $node->ports,
-  );
+  if (hosting_feature('ports') == HOSTING_FEATURE_ENABLED) {
+    $node->content['info']['ports'] = array(
+      '#type' => 'item',
+      '#title' => t('Ports'),
+      '#value' => $node->ports,
+    );
+  }
   $node->content['info']['script_user'] = array(
     '#type' => 'item',
     '#title' => t('Script user'),
