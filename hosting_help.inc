@@ -3,17 +3,28 @@
  * @file Hosting help subsystem
  */
 
-
 /**
  * Constants used to generate the requirement help documentation.
  */
-/** Status is irrelevant. Can't be checked **/
+
+/**
+ * Status is irrelevant. Can't be checked
+ */
 define('HOSTING_STATUS_NONE', 0);
-/** Requirement is met. **/
+
+/**
+ * Requirement is met
+ */
 define('HOSTING_STATUS_SUCCESS', 1);
-/** Requirement not met. Less severe than an error. */
+
+/**
+ * Requirement not met. Less severe than an error.
+ */
 define('HOSTING_STATUS_WARNING', 2);
-/** Requirement failed. Fix before site will function. */
+
+/**
+ * Requirement failed. Fix before site will function
+ */
 define('HOSTING_STATUS_ERROR', 4);
 
 /**
@@ -37,12 +48,21 @@ function _hosting_status_class($status)  {
 /**
  * Constants used to configure contextual hosting help
  */
-/** Display component of help **/
+
+/**
+ * Display component of help
+ **/
 define('HOSTING_HELP_ENABLED', 1);
-/** Don't show help component **/
+
+/**
+ * Don't show help component
+ **/
 define('HOSTING_HELP_DISABLED', ~HOSTING_HELP_ENABLED);
 
-/** These are internally used to test against. Use the COLLAPSIBLE AND COLLAPSED instead **/
+/**
+ * These are internally used to test against. Use the COLLAPSIBLE AND
+ * COLLAPSED instead
+ **/
 define('_HOSTING_HELP_CAN_COLLAPSE', 2);
 define('_HOSTING_HELP_HAS_COLLAPSED', 4);
 
@@ -51,6 +71,7 @@ define('_HOSTING_HELP_HAS_COLLAPSED', 4);
  * This automatically enables the help component
  **/
 define('HOSTING_HELP_COLLAPSIBLE', HOSTING_HELP_ENABLED | _HOSTING_HELP_CAN_COLLAPSE);
+
 /** 
  * Display help component with an initial collapsed state.
  * This automatically enables and sets the help component to be collapsible
@@ -59,7 +80,7 @@ define('HOSTING_HELP_COLLAPSED', HOSTING_HELP_COLLAPSIBLE | _HOSTING_HELP_HAS_CO
 
 
 /**
- * Returns a class name for the output of the form elementG
+ * Returns a class name for the output of the form element
  */
 function _hosting_help_class($state) {
   static $map;
@@ -74,8 +95,9 @@ function _hosting_help_class($state) {
   return $map[$state];
 }
 
-
-
+/**
+ * Implementation of hook_hosting_service()
+ */
 function hosting_hosting_service() {
   return array('hosting' => t("Basic configuration"));
 } 
@@ -173,6 +195,9 @@ function hosting_help($path, $arg) {
   }
 }
 
+/**
+ * Implementation of hook_requirements()
+ */
 function _hosting_hosting_setup_requirements() {
   $node = node_load(HOSTING_OWN_WEB_SERVER);
   $drush_path = $node->drush_path;
@@ -197,6 +222,9 @@ EOF;
   return $help;
 }
 
+/**
+ * Implementation of hook_requirements()
+ */
 function _hosting_cron_requirements() {
   $cron_cmd['!queueconf'] = l(t("Queue administration"), "admin/settings/queues");
   $cron_cmd['@cron_line'] = hosting_queues_cron_cmd();
@@ -209,7 +237,9 @@ function _hosting_cron_requirements() {
   return $help;
 }
 
-
+/**
+ * Implementation of hook_requirements()
+ */
 function _hosting_platform_requirements() {
   $platform = node_load(HOSTING_OWN_PLATFORM);
   $web_server = node_load(HOSTING_OWN_WEB_SERVER);
@@ -303,8 +333,15 @@ function hosting_node_help($type) {
       break;      
   }
 }
+
 /**
  * Page callback with in depth requirement documentation
+ *
+ * This will invoke hook_help() for every module implementing
+ * hook_hosting_service()
+ *
+ * @see hook_hosting_service()
+ * @see hook_hosting_help()
  */
 function hosting_help_requirements() {
   $output .= _hosting_requirements("basic_drupal");  
@@ -343,6 +380,16 @@ function _hosting_requirements($req, $section = 'all') {
   return theme("requirement_help", hosting_requirement_process($item);
 }
 
+/**
+ * Find the requirements help document for the given element
+ *
+ * This will call hook_requirements() for the given element. The
+ * function name should be _hosting_$req_requirements() for this to
+ * function properly.
+ *
+ * @see hook_requirements()
+ * @see _hosting_requirements()
+ */
 function hosting_get_requirement($req) {
   $func = '_hosting_'. $req .'_requirements';
   if (function_exists($func)) {
@@ -353,6 +400,9 @@ function hosting_get_requirement($req) {
 
 /**
  * Places the various help components info the $element array
+ *
+ * @see hosting_get_requirement()
+ * @return array a form item with '#help' properly filled in with hosting_get_requirement() analysis
  */
 function hosting_requirement_process(&$element) {
   if (!$element['#requirement']) {
@@ -534,18 +584,27 @@ function _hosting_basic_requirements() {
 }
  */
 
+/**
+ * Implementation of hook_requirements()
+ */
 function _hosting_basic_drupal_requirements() {
   $help['title'] = t('A system capable of running Drupal');
   $help['summary'] = t('If you are reading this via the inline help, this would be kind of obvious. This system is entirely Drupal based, and has the same base requirements that Drupal does.');
   return $help;
 }
 
+/**
+ * Implementation of hook_requirements()
+ */
 function _hosting_basic_server_requirements() {
   $help['title'] = t('Your own server');
   $help['summary'] = t('The level of access required to be able to configure this system is very far beyond what is commonly available to users with shared hosting.');
   return $help;
 }
 
+/**
+ * Implementation of hook_requirements()
+ */
 function _hosting_basic_unix_requirements() {
   $help['title'] = t('A unix based operating system');
   $help['summary'] = t('The majority of functionality in this system occurs in the back-end, through command line scripting. There are several features (such as symlinks), that are not available to users on Windows. There are no plans currently to add windows support.</p>');
