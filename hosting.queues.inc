@@ -102,26 +102,6 @@ function hosting_get_queues($refresh = false) {
   return $cache;
 }
 
-
-/**
- * Implementation of hook_hosting_queues
- *
- * Return a list of queues that this module needs to manage.
- */
-function hosting_hosting_queues() {
-  $queue['tasks'] = array(
-    'name' => t('Task queue'),
-    'description' => t('Process the queue of outstanding hosting tasks.'),
-    'type' => 'serial',  # run queue sequentially. always with the same parameters.
-    'frequency' => strtotime("1 minute", 0),  # run queue every minute.
-    'items' => 20, # process 20 queue items per execution.
-    'total_items' => hosting_task_count(),
-    'singular' => t('task'),
-    'plural' => t('tasks'),
-  );
-  return $queue;
-}
-
 /**
  * Run a queue specified by hook_hosting_queues
  *
