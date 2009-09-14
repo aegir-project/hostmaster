@@ -352,6 +352,18 @@ function hosting_get_requirement($req) {
   return $help;
 }
 
+/**
+ * Places the various help components info the $element array
+ */
+function hosting_requirement_process(&$element) {
+  if (!$element['#requirement']) {
+    return element;
+  }
+
+  $element['#help'] = hosting_get_requirement($element['#requirement']);
+  return $element;
+}
+
 function _hosting_backup_path_requirements() {
     $username = HOSTING_DEFAULT_SCRIPT_USER;
     $group = HOSTING_DEFAULT_WEB_GROUP;
@@ -464,18 +476,6 @@ function hosting_elements() {
     '#process' => array('hosting_requirement_process'),
   );
   return $type;
-}
-
-/**
- * Places the various help components info the $element array
- */
-function hosting_requirement_process(&$element) {
-  if (!$element['#requirement']) {
-    return element;
-  }
-
-  $element['#help'] = hosting_get_requirement($element['#requirement']);
-  return $element;
 }
 
 /**
