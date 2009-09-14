@@ -97,7 +97,7 @@ function hosting_features_form_submit($form, &$form_state) {
         $files = module_rebuild_cache();
         foreach ($files as $dependency => $file) {
           if (isset($file->info['dependencies']) && is_array($file->info['dependencies'])) {
-            if (in_array($module, $file->info['dependencies'])) {
+            if (in_array($module, $file->info['dependencies']) && $file->status) {
               $dependencies[] = $dependency;
             }
           }
