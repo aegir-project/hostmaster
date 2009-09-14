@@ -111,8 +111,7 @@ function hosting_hosting_service() {
 function hosting_help($path, $arg) {
   switch ($path) {
     case 'admin/help#hosting':
-      $output .= t('<p>The Hostmaster system is a set of modules that provide an interface to the <a href="@hosting_help">Provisioning framework</a>.</p>', 
-                  array('@hosting_help' => url('admin/help/provision')));
+      $output .= '<p>' . t('The Hostmaster system is a set of modules that provide an interface to the Provisioning framework.') . '</p>';
       $output .= '</dl>';      
       $output .= '<a name=\'requirements\'></a><h3>' . t('Requirements') . '</h3></a>';
       // @TODO: make this more clear
@@ -314,7 +313,7 @@ function _hosting_requirements($req, $section = 'all') {
     }
   }
  */
-  return theme("requirement_help", hosting_requirement_process($item);
+  return theme("requirement_help", hosting_requirement_process($item));
 }
 
 /**
