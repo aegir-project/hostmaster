@@ -196,68 +196,6 @@ function hosting_help($path, $arg) {
 }
 
 /**
- * Implementation of hook_requirements()
- */
-function _hosting_hosting_setup_requirements() {
-  $node = node_load(HOSTING_OWN_WEB_SERVER);
-  $drush_path = $node->drush_path;
-  $docroot = HOSTING_DEFAULT_DOCROOT_PATH;
-  $uri = HOSTING_DEFAULT_BASE_URL;
-  $username = HOSTING_DEFAULT_SCRIPT_USER;
-  $setup_cmd = <<<EOF
-    cd $docroot
-    $drush_path --uri=$uri hosting setup
-EOF;
-  $help['title'] = t('Perform initial configuration by running the <code>Hosting Setup</code> command');
-
-  $help['summary'][] = t('The hosting setup command performs several useful installation functions, but it\'s primary responsibility
-        is adding the crontab entry for the queue dispatcher and ensuring that has been correctly installed.');
-
-  $help['summary'][] = t('The queue dispatcher runs every minute. It keeps track of what work needs to be done on the system 
-    and instructs the provisioning framework to perform the needed tasks in the task queue.');
-  $help['summary'][] = t('Otherwise said, without the dispatcher, changes on the front end will not translate in the required backend configuration preventing actual sites management.');
-  $help['configuration'] = t('Ensure that you are logged into the shell as %script_user, and then execute the following commands :<pre>@setup_cmd</pre>', 
-     array('%script_user' => $username, '@setup_cmd' => $setup_cmd));
-
-  return $help;
-}
-
-/**
- * Implementation of hook_requirements()
- */
-function _hosting_cron_requirements() {
-  $cron_cmd['!queueconf'] = l(t("Queue administration"), "admin/settings/queues");
-  $cron_cmd['@cron_line'] = hosting_queues_cron_cmd();
-  $help['title'] = t('A cron entry for queue dispatcher.');
-  $help['summary'][] = t('Changes to this system are executed via a back end script which needs to be called by a user other than 
-    the web server user for security reasons at regular intervals.');
-  $help['summary'][] = t('The intervals at which these commands are run can be customised by going to the !queueconf section.', $cron_cmd);
-  $help['summary'][] = t('The <code>hosting setup</code> command installs the required cron entry for you.', $cron_cmd);
-  $help['configuration'] = t('Add the following line to your crontab : <code>@cron_line</code>', $cron_cmd);
-  return $help;
-}
-
-/**
- * Implementation of hook_requirements()
- */
-function _hosting_platform_requirements() {
-  $platform = node_load(HOSTING_OWN_PLATFORM);
-  $web_server = node_load(HOSTING_OWN_WEB_SERVER);
-  $db_server = node_load(HOSTING_OWN_DB_SERVER);
-
-  $task = hosting_get_most_recent_task($platform->nid, 'verify');
-  
-  $help['title'] = t('Provisioning framework status');
-  $help['summary'][] = t('In order for the hosting system to be able to create sites, it needs a platform to publish these sites on. A platform is a Drupal site that has the provision back end installed. Each platform also requires one correctly configured web server and one correctly configured database server. Once a new platform has been created, Hosting will automatically schedule a task that will verify the new platform is working properly.');
-  $help['summary'][] = t('As hosting is also running on a platform, it is suggested that you succesfully configure your <a href="@platform">primary platform</a>
-    before creating additional platforms and servers.', array('@platform' => url('node/' . HOSTING_OWN_PLATFORM)));
-  $help['summary'][] = t('Each platform must be verified at least once, but if you find your platform is not being verified, look at the error log on the <a href="@verify_link">Verify platform task of this platform</a>', array("@verify_link" => url("node/" . $task->nid)));
-
-   return $help;
-
-}
-
-/**
  * TODO: replace. this is OLD OLD OLD
  */
 function _hosting_introduction() {
@@ -413,6 +351,88 @@ function hosting_requirement_process(&$element) {
   return $element;
 }
 
+/**
+ * Implementation of hook_elements.
+ *
+ * Defines a number of form elements that are used for formatting the contextual help
+ * in forms.
+ */
+function hosting_elements() {
+  $type['requirement_help'] = array(
+    '#requirement' => NULL,
+    '#input' => FALSE,
+    '#status' => HOSTING_STATUS_NONE,
+    '#heading' => HOSTING_HELP_ENABLED,
+    '#summary' => HOSTING_HELP_ENABLED,
+    '#summary_prefix' => t("What is this?"),
+    '#configuration' => HOSTING_HELP_COLLAPSED,
+    '#configuration_prefix' => t("How do I configure this?"),
+    '#default_messages' => array(
+      HOSTING_STATUS_SUCCESS => t("You have met this requirement."),
+      HOSTING_STATUS_WARNING => t("This requirement has a non critical error."),
+      HOSTING_STATUS_ERROR => t("This requirement has a critical error. This system will not operate until it has been fixed")),
+    '#process' => array('hosting_requirement_process'),
+  );
+  return $type;
+}
+
+/**
+ * Theme function for displaying contextual help.
+ *
+ * Can control individual components of the help, for display in various places.
+ */
+function theme_requirement_help(&$element) {
+  drupal_add_js(drupal_get_path('module', 'hosting') .'/hosting_help.js');
+  drupal_add_css(drupal_get_path('module', 'hosting') .'/hosting_help.css');
+  $req = $element['#requirement'];
+  $help = $element['#help']; // this is just to make it easier to work with.
+
+  //place anchor so user can be directed to right page.
+  $output .= "<a name='hosting-help-$req'></a>";
+
+  $output .= '<div class="hosting-requirement-help' . 
+    ' '. _hosting_status_class($element['#status']) .'">';
+
+  if ($element['#status'] != HOSTING_STATUS_NONE) {
+    $output .= "<div class='message'>". (($element['#message']) ? $element['#message'] : $element['#default_messages'][$element['#status']]) ."</div>";
+  }
+
+  $components = array('summary', 'suggestion', 'configuration');
+  foreach ($components as $key) {
+    if (($element["#$key"] & HOSTING_HELP_ENABLED) && !is_null($help[$key])) {
+      $display_type = _hosting_help_class($element["#$key"]);
+      $output .= "<div class='hosting-help-$key $display_type'>";
+      if (!is_array($help[$key])) {
+        // it is simpler if there's only one way to print the component
+        $help[$key] = array($help[$key]);  
+      }
+      if ($element["#$key".'_prefix'] && ($element["#$key"] & _HOSTING_HELP_CAN_COLLAPSE)) {
+        $output .= '<a href="javascript:void(0)" class="hosting-help-toggle">'. $element["#$key".'_prefix'] .'</a>';
+      }
+
+      $output .= "<div class='hosting-help'><p>". implode("</p><p>", $help[$key]) ."</p></div>"; 
+      $output .= '</div>';
+    } 
+  }
+  $output .= '</div>';
+  if (($element['#heading'] & HOSTING_HELP_ENABLED) && $help['title'] && !$element['#title']) {
+    $element['#title'] = $help['title'];
+  }
+  $element['#value'] = $output;
+  return theme('item', $element);
+}
+
+/**
+ * @TODO: handle element children for requirement help
+function _hosting_basic_requirements() {
+  $help['drupal'] = _hosting_basic_drupal_requirements();
+  $help['unix'] = _hosting_basic_unix_requirements();
+  $help['server'] = _hosting_basic_server_requirements();
+
+  return $help;
+}
+ */
+
 function _hosting_backup_path_requirements() {
     $username = HOSTING_DEFAULT_SCRIPT_USER;
     $group = HOSTING_DEFAULT_WEB_GROUP;
@@ -503,88 +523,6 @@ EOF;
 }
 
 /**
- * Implementation of hook_elements.
- *
- * Defines a number of form elements that are used for formatting the contextual help
- * in forms.
- */
-function hosting_elements() {
-  $type['requirement_help'] = array(
-    '#requirement' => NULL,
-    '#input' => FALSE,
-    '#status' => HOSTING_STATUS_NONE,
-    '#heading' => HOSTING_HELP_ENABLED,
-    '#summary' => HOSTING_HELP_ENABLED,
-    '#summary_prefix' => t("What is this?"),
-    '#configuration' => HOSTING_HELP_COLLAPSED,
-    '#configuration_prefix' => t("How do I configure this?"),
-    '#default_messages' => array(
-      HOSTING_STATUS_SUCCESS => t("You have met this requirement."),
-      HOSTING_STATUS_WARNING => t("This requirement has a non critical error."),
-      HOSTING_STATUS_ERROR => t("This requirement has a critical error. This system will not operate until it has been fixed")),
-    '#process' => array('hosting_requirement_process'),
-  );
-  return $type;
-}
-
-/**
- * Theme function for displaying contextual help.
- *
- * Can control individual components of the help, for display in various places.
- */
-function theme_requirement_help(&$element) {
-  drupal_add_js(drupal_get_path('module', 'hosting') .'/hosting_help.js');
-  drupal_add_css(drupal_get_path('module', 'hosting') .'/hosting_help.css');
-  $req = $element['#requirement'];
-  $help = $element['#help']; // this is just to make it easier to work with.
-
-  //place anchor so user can be directed to right page.
-  $output .= "<a name='hosting-help-$req'></a>";
-
-  $output .= '<div class="hosting-requirement-help' . 
-    ' '. _hosting_status_class($element['#status']) .'">';
-
-  if ($element['#status'] != HOSTING_STATUS_NONE) {
-    $output .= "<div class='message'>". (($element['#message']) ? $element['#message'] : $element['#default_messages'][$element['#status']]) ."</div>";
-  }
-
-  $components = array('summary', 'suggestion', 'configuration');
-  foreach ($components as $key) {
-    if (($element["#$key"] & HOSTING_HELP_ENABLED) && !is_null($help[$key])) {
-      $display_type = _hosting_help_class($element["#$key"]);
-      $output .= "<div class='hosting-help-$key $display_type'>";
-      if (!is_array($help[$key])) {
-        // it is simpler if there's only one way to print the component
-        $help[$key] = array($help[$key]);  
-      }
-      if ($element["#$key".'_prefix'] && ($element["#$key"] & _HOSTING_HELP_CAN_COLLAPSE)) {
-        $output .= '<a href="javascript:void(0)" class="hosting-help-toggle">'. $element["#$key".'_prefix'] .'</a>';
-      }
-
-      $output .= "<div class='hosting-help'><p>". implode("</p><p>", $help[$key]) ."</p></div>"; 
-      $output .= '</div>';
-    } 
-  }
-  $output .= '</div>';
-  if (($element['#heading'] & HOSTING_HELP_ENABLED) && $help['title'] && !$element['#title']) {
-    $element['#title'] = $help['title'];
-  }
-  $element['#value'] = $output;
-  return theme('item', $element);
-}
-
-/**
- * @TODO: handle element children for requirement help
-function _hosting_basic_requirements() {
-  $help['drupal'] = _hosting_basic_drupal_requirements();
-  $help['unix'] = _hosting_basic_unix_requirements();
-  $help['server'] = _hosting_basic_server_requirements();
-
-  return $help;
-}
- */
-
-/**
  * Implementation of hook_requirements()
  */
 function _hosting_basic_drupal_requirements() {
@@ -611,3 +549,64 @@ function _hosting_basic_unix_requirements() {
   return $help;
 }
 
+/**
+ * Implementation of hook_requirements()
+ */
+function _hosting_hosting_setup_requirements() {
+  $node = node_load(HOSTING_OWN_WEB_SERVER);
+  $drush_path = $node->drush_path;
+  $docroot = HOSTING_DEFAULT_DOCROOT_PATH;
+  $uri = HOSTING_DEFAULT_BASE_URL;
+  $username = HOSTING_DEFAULT_SCRIPT_USER;
+  $setup_cmd = <<<EOF
+    cd $docroot
+    $drush_path --uri=$uri hosting setup
+EOF;
+  $help['title'] = t('Perform initial configuration by running the <code>Hosting Setup</code> command');
+
+  $help['summary'][] = t('The hosting setup command performs several useful installation functions, but it\'s primary responsibility
+        is adding the crontab entry for the queue dispatcher and ensuring that has been correctly installed.');
+
+  $help['summary'][] = t('The queue dispatcher runs every minute. It keeps track of what work needs to be done on the system 
+    and instructs the provisioning framework to perform the needed tasks in the task queue.');
+  $help['summary'][] = t('Otherwise said, without the dispatcher, changes on the front end will not translate in the required backend configuration preventing actual sites management.');
+  $help['configuration'] = t('Ensure that you are logged into the shell as %script_user, and then execute the following commands :<pre>@setup_cmd</pre>', 
+     array('%script_user' => $username, '@setup_cmd' => $setup_cmd));
+
+  return $help;
+}
+
+/**
+ * Implementation of hook_requirements()
+ */
+function _hosting_cron_requirements() {
+  $cron_cmd['!queueconf'] = l(t("Queue administration"), "admin/settings/queues");
+  $cron_cmd['@cron_line'] = hosting_queues_cron_cmd();
+  $help['title'] = t('A cron entry for queue dispatcher.');
+  $help['summary'][] = t('Changes to this system are executed via a back end script which needs to be called by a user other than 
+    the web server user for security reasons at regular intervals.');
+  $help['summary'][] = t('The intervals at which these commands are run can be customised by going to the !queueconf section.', $cron_cmd);
+  $help['summary'][] = t('The <code>hosting setup</code> command installs the required cron entry for you.', $cron_cmd);
+  $help['configuration'] = t('Add the following line to your crontab : <code>@cron_line</code>', $cron_cmd);
+  return $help;
+}
+
+/**
+ * Implementation of hook_requirements()
+ */
+function _hosting_platform_requirements() {
+  $platform = node_load(HOSTING_OWN_PLATFORM);
+  $web_server = node_load(HOSTING_OWN_WEB_SERVER);
+  $db_server = node_load(HOSTING_OWN_DB_SERVER);
+
+  $task = hosting_get_most_recent_task($platform->nid, 'verify');
+  
+  $help['title'] = t('Provisioning framework status');
+  $help['summary'][] = t('In order for the hosting system to be able to create sites, it needs a platform to publish these sites on. A platform is a Drupal site that has the provision back end installed. Each platform also requires one correctly configured web server and one correctly configured database server. Once a new platform has been created, Hosting will automatically schedule a task that will verify the new platform is working properly.');
+  $help['summary'][] = t('As hosting is also running on a platform, it is suggested that you succesfully configure your <a href="@platform">primary platform</a>
+    before creating additional platforms and servers.', array('@platform' => url('node/' . HOSTING_OWN_PLATFORM)));
+  $help['summary'][] = t('Each platform must be verified at least once, but if you find your platform is not being verified, look at the error log on the <a href="@verify_link">Verify platform task of this platform</a>', array("@verify_link" => url("node/" . $task->nid)));
+
+   return $help;
+
+}
