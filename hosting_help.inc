@@ -357,7 +357,7 @@ function hosting_get_requirement($req) {
  */
 function hosting_requirement_process(&$element) {
   if (!$element['#requirement']) {
-    return element;
+    return $element;
   }
 
   $element['#help'] = hosting_get_requirement($element['#requirement']);
