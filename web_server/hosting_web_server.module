@@ -55,7 +55,7 @@ EOF;
 }
 
 function _hosting_drush_path_requirements() {
-  $help['title'] = t('Full path to the Drush installation on this server.');
+  $help['title'] = t('Full path to the Drush script on this server.');
   $help['summary'] = t('<a href="http://drupal.org/project/drush">Drush</a> is a command line script that is used to
                        interact with Drupal sites through the unix shell.<br />
                        To be able to use Aegir, you need to download Drush, and place it somewhere on your server
