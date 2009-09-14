@@ -3,12 +3,20 @@
  * @file Web server node type is defined here.
  */
 
+/**
+ * Implementation of hook_hosting_service()
+ *
+ * @see hosting_help_requirements()
+ */
 function hosting_web_server_hosting_service() {
   return array( "web_server" => t("Web Server"));
 }
 
 /**
  * Implementation of hook_help().
+ *
+ * @see _hosting_requirements()
+ * @se hosting_help_requirements()
  */
 function hosting_web_server_help($path, $arg) {
   switch ($path) {
@@ -121,6 +129,11 @@ function hosting_web_server_node_info() {
   return $types;
 }
 
+/**
+ * "Feature" definition
+ *
+ * @see hosting.features.inc
+ */
 function hosting_web_server_hosting_feature() {
   $features['web_server'] = array(
       'title' => t('Web servers'), 
@@ -136,10 +149,16 @@ function hosting_web_server_hosting_feature() {
   return $features;
 }
 
+/**
+ * Implementation of hook_perm()
+ */
 function hosting_web_server_perm() {
   return array('create web server', 'view web server', 'edit web server', 'delete web server');
 }
 
+/**
+ * Implementation of hook_access()
+ */
 function hosting_web_server_access($op, $node, $account) {
   if (!hosting_feature('web_server')) {
     return FALSE;
@@ -164,7 +183,9 @@ function hosting_web_server_access($op, $node, $account) {
 
 /**
  * Small helper function to get web servers.
-*/ 
+ *
+ * @return array pairs of nid -> title of enabled webservers
+ */ 
 function _hosting_get_web_servers() {
   $return = array();
   $result = db_query("SELECT nid, title FROM {node} WHERE type='web_server' AND status=1");
@@ -348,6 +369,8 @@ function hosting_web_server_insert($node) {
  *
  * As an existing node is being updated in the database, we need to do our own
  * database updates.
+ *
+ * This will fire up a verify task if the webserver ports have changed.
  */
 function hosting_web_server_update($node) {
   // if this is a new node or we're adding a new revision,
@@ -375,6 +398,9 @@ function hosting_web_server_update($node) {
   }
 }
 
+/**
+ * Implementation of hook_delete_revision().
+ */
 function hosting_nodeapi_web_server_delete_revision(&$node) {
   db_query('DELETE FROM {hosting_web_server} WHERE vid = %d', $node->vid);
 }
@@ -451,6 +477,9 @@ function hosting_web_server_view($node, $teaser = FALSE, $page = FALSE) {
   return $node;
 }
 
+/**
+ * Implementation of hook_hosting_summary().
+ */
 function hosting_web_server_hosting_summary() {
   $summary = array();
   $web_servers = _hosting_get_web_servers();
@@ -458,6 +487,15 @@ function hosting_web_server_hosting_summary() {
   return $summary;
 }
 
+/**
+ * Implementation of hook_form_alter()
+ *
+ * This makes sure we have a proper IP address defined for the webserver. It
+ * will change the IP address field only if:
+ *
+ * 1. it is not already set, and;
+ * 2. if it resolves properly
+ */
 function hosting_web_server_form_alter($form_id, &$form) {
   switch ($form_id) {
     case 'web_server_node_form':
