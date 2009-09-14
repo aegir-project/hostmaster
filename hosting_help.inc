@@ -113,64 +113,25 @@ function hosting_help($path, $arg) {
     case 'admin/help/hosting':
       $output .= '<p>' . t('The Hostmaster system is a set of modules that provide an interface to the Provisioning framework.') . '</p>';
       $output .= '</dl>';      
-      $output .= '<a name=\'requirements\'></a><h3>' . t('Requirements') . '</h3></a>';
+      $output .= '<a name="requirements"></a><h3>' . t('Requirements') . '</h3></a>';
       // @TODO: make this more clear
       $output .= _hosting_requirements('provision');
       $output .= _hosting_requirements('hosting_setup');
       $output .= _hosting_requirements('cron');
+      $output .= _hosting_requirements('user');
+      $output .= _hosting_requirements('group');
+      $output .= _hosting_requirements('backup_path');
 
-      $output .= '<a name=\'requirements\'></a><h3>' . t('Glossary') . '</h3></a>';
+      $output .= '<a name="glossary"></<h3>' . t('Glossary') . '</h3></a>';
       $output .= '<dl>';
       $types = node_get_types();
 
       foreach ($types as $type => $info) {
         if ($info->description) {
-          $output .= "<dt><a name='glossary-$type'></a>" . $info->name . '</dt>';
+          $output .= "<dt><a name=\"glossary-$type\"></a>" . $info->name . '</dt>';
           $output .= '<dd>' . $info->description . '</dd>';
         }
       }
-      return $output;
-    case 'admin/help/provision#requirements' :
-      $output .= _hosting_requirements('user');
-      $output .= _hosting_requirements('group');
-      $output .= _hosting_requirements('backup_path');
-      return $output;
-    case 'admin/help#provision':
-      $output .= t('<p>The Provision framework is a powerful set of modules that lets you to accomplish a lot of maintenance tasks through the unix command line such as installing new sites, backing them up, rolling back to previous backups and facilitating upgrades.</p>');
-      $output .= t('<p>Additionally, the Provision framework is one component of the distributed hosting infrastructure provided by the <code>hostmaster</code> install profile. 
-                    The Hostmaster profile is capable of driving several provision backends, in a distributed manner, and provides an interface for the functionality of provision.</p>');
-      $output .= t('<p>It is not required to run the hosting front end to use the Provision framework, but the system does not provide much in the way of a web accessible front end, by design.</p>');
-
-      $output .= '<a name=\'requirements\'><h3>'. t('Requirements') .'</h3></a>';
-      $output .= t('<p>For a more detailed breakdown of steps that need to be taken to configure Provisioning to run with your system, please read the <a href="@url">in depth requirement documentation</a></p>',
-                  array('@url' => url('admin/help/provision/requirements')));
-      $output .= '<a name=\'commands\'><h3>'. t('Commands') .'</h3></a>';
-      $commands = module_invoke_all('drush_command');
-      $output .= "<dl>";
-      foreach ($commands as $command => $info) {
-        if (preg_match('/^provision/', $command)) {
-          if (sizeof($info['arguments'])) {
-            $command .= ' '. implode(' ', (array) key($info['arguments']));            
-          }
-          if (sizeof($info['optional arguments'])) {
-            $command .= ' ['. implode('] [', (array) key($info['optional arguments'])) .']';  
-          }
-          $output .= '<dt>'."<code>drush.php $command</code>".'</dt>';
-          $output .= '<dd>'.  $info["description"] .'</dd>';
-        }
-      }
-      $output .= "</dl>";
-
-      $output .= '<a name=\'options\'><h3>'. t('Options') .'</h3></a>';
-
-      $options = module_invoke_all('value_list');
-
-      $output .= "<dl>";
-      foreach ($options as $option => $description) {
-        $output .= '<dt>'."<code>--$option</code>".'</dt>';
-        $output .= '<dd>'.  $description .'</dd>';
-      }
-      $output .= "</dl>";
       return $output;
   }
 }
