@@ -1,4 +1,7 @@
 <?php
+
+// $Id$
+
 /**
  * @file Hosting help subsystem
  */
@@ -115,7 +118,7 @@ function hosting_help($path, $arg) {
       // @TODO: make this more clear
       $output .= _hosting_requirements('provision');
       $output .= _hosting_requirements('hosting_setup');
-      $output .=  _hosting_requirements('cron');
+      $output .= _hosting_requirements('cron');
 
       $output .= '<a name=\'requirements\'></a><h3>' . t('Glossary') . '</h3></a>';
       $output .= '<dl>';
@@ -179,7 +182,6 @@ function hosting_help($path, $arg) {
 
       $output .= '<a name=\'options\'><h3>'. t('Options') .'</h3></a>';
 
-      
       $options = module_invoke_all('value_list');
 
       $output .= "<dl>";
@@ -189,9 +191,6 @@ function hosting_help($path, $arg) {
       }
       $output .= "</dl>";
       return $output;
-
-
-
   }
 }
 
