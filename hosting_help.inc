@@ -110,7 +110,7 @@ function hosting_hosting_service() {
  */
 function hosting_help($path, $arg) {
   switch ($path) {
-    case 'admin/help#hosting':
+    case 'admin/help/hosting':
       $output .= '<p>' . t('The Hostmaster system is a set of modules that provide an interface to the Provisioning framework.') . '</p>';
       $output .= '</dl>';      
       $output .= '<a name=\'requirements\'></a><h3>' . t('Requirements') . '</h3></a>';
@@ -129,29 +129,11 @@ function hosting_help($path, $arg) {
           $output .= '<dd>' . $info->description . '</dd>';
         }
       }
-      
-      $output .= '<a name=\'commands\'><h3>' . t('Commands') . '</h3></a>';
-      $commands = module_invoke_all('drush_command');
-      $output .= "<dl>";
-      foreach ($commands as $command => $info) {
-        if (preg_match('/^hosting/', $command)) {
-          if (sizeof($info['arguments'])) {
-            $command .= ' ' . implode(' ', (array) key($info['arguments']));  
-          }
-          
-          if (sizeof($info['optional arguments'])) {
-            $command .= ' [' . implode('] [', (array) key($info['optional arguments'])) . ']';  
-          }
-          $output .= '<dt>' . "<code>drush.php $command</code>" . '</dt>';
-          $output .= '<dd>' .  $info["description"] . '</dd>';
-        }
-      }
-      $output .= "</dl>";
       return $output;
     case 'admin/help/provision#requirements' :
       $output .= _hosting_requirements('user');
       $output .= _hosting_requirements('group');
-      $output .=  _hosting_requirements('backup_path');
+      $output .= _hosting_requirements('backup_path');
       return $output;
     case 'admin/help#provision':
       $output .= t('<p>The Provision framework is a powerful set of modules that lets you to accomplish a lot of maintenance tasks through the unix command line such as installing new sites, backing them up, rolling back to previous backups and facilitating upgrades.</p>');
