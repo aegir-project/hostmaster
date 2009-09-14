@@ -415,7 +415,7 @@ function hosting_site_insert(&$node) {
   $node->client = $client->nid;
   $node->site_language = ($node->site_language) ? $node->site_language : 'en';
 
-  db_query("INSERT INTO {hosting_site} (vid, nid, client, db_server, platform, profile, language, last_cron, status, verified, port, `ssl`, ssl_redirect) VALUES (%d, %d, %d, %d, %d, %d, '%s', %d, %d, %d, %d, %d)",
+  db_query("INSERT INTO {hosting_site} (vid, nid, client, db_server, platform, profile, language, last_cron, status, verified, port, `ssl`, ssl_redirect) VALUES (%d, %d, %d, %d, %d, %d, '%s', %d, %d, %d, %d, %d, %d)",
            $node->vid, $node->nid, $node->client, $node->db_server, $node->platform, $node->profile, $node->site_language, $node->last_cron, $node->site_status, $node->verified, $node->port, $node->ssl, $node->ssl_redirect);
   if ((!$node->old_vid)) {
     if ($node->import) {
@@ -659,7 +659,6 @@ function hosting_site_allow_domain($url, $params = array()) {
   $args[] = HOSTING_SITE_DELETED;
   
   if (isset($params['client'])) {
-    drupal_set_message("client set: ". $params['client']);
     if (isset($params['port'])) {
       $query .= ' AND ( h.client <> %d OR h.port = %d )';
       $args[] = $params['client'];
