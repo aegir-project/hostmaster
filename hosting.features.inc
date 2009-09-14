@@ -71,23 +71,49 @@ function hosting_features_form_submit($form, &$form_state) {
     if ((!$current) && $value) {
       if ($module = $features[$feature]['module']) {
         include_once('includes/install.inc');
+
+        $modules = array($module);
+        $files = module_rebuild_cache();
+        $file = $files[$module];
+        if (isset($file->info['dependencies']) && is_array($file->info['dependencies'])) {
+          foreach ($file->info['dependencies'] as $dependency) {
+            $modules[] = $dependency;
+          }
+        }
+
         // turn on module
-        drupal_set_message(t("Enabling %module module", array('%module' => $module)));
-        drupal_install_modules(array($module));
-        module_enable(array($module));
+        drupal_set_message(t("Enabling %module module", array('%module' => implode(",", $modules))));
+        drupal_install_modules($modules);
+        module_enable($modules);
       }
       if (function_exists($callback = $features[$feature]['enable'])) {
         $callback();
       }
     }
     if ($current && !$value) {
+      $dependencies = array();
       if ($module = $features[$feature]['module']) {
-        drupal_set_message(t("Disabling %module module", array('%module' => $module)));
-        // turn off module
-        module_disable(array($module));
-      }
-      if (function_exists($callback = $features[$feature]['disable'])) {
-        $callback();
+        $modules = array($module);
+        $files = module_rebuild_cache();
+        foreach ($files as $dependency => $file) {
+          if (isset($file->info['dependencies']) && is_array($file->info['dependencies'])) {
+            if (in_array($module, $file->info['dependencies'])) {
+              $dependencies[] = $dependency;
+            }
+          }
+        }
+
+        if ($dependencies) {
+          form_set_error('', t("You cannot disable %module because %dep depends on it", array('%module' => $module, '%dep' => implode(',', $dependencies))));
+        }
+        else {
+          drupal_set_message(t("Disabling %module module", array('%module' => implode(",", $modules))));
+          // turn off module
+          module_disable($modules);
+          if (function_exists($callback = $features[$feature]['disable'])) {
+            $callback();
+          }
+        }
       }
     }
     #print("$feature $current $value $module <br />");
