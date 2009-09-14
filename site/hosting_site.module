@@ -98,7 +98,7 @@ function hosting_site_access($op, $node, $account) {
  * This is used by cron and statistics to batch the number of sites that are processed with each call
  */
 function hosting_site_count() {
-  return db_result(db_query("SELECT count(nid) FROM {node} WHERE type='site' AND status=1"));
+  return db_result(db_query("SELECT count(nid) FROM {hosting_site} WHERE status = %d", HOSTING_SITE_ENABLED));
 }
 
 /**
