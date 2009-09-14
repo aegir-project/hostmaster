@@ -340,8 +340,7 @@ function _hosting_requirements($req, $section = 'all') {
     }
   }
  */
-  $item = hosting_requirement_process($item);
-  return theme("requirement_help", $item);
+  return theme("requirement_help", hosting_requirement_process($item);
 }
 
 function hosting_get_requirement($req) {
