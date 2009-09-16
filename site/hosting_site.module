@@ -682,7 +682,6 @@ function hosting_site_allow_domain($url, $params = array()) {
     $args[] = $params['nid'];
   }
   $result = !db_result(db_query($query, $args));
-  drupal_set_message($query. " : " . $result);
   return $result;
 }
 
