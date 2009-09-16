@@ -357,6 +357,9 @@ function hosting_site_form($node) {
     );
     $form['db_server'] = array('#type' => 'hidden', '#value' => $node->db_server);
   }
+    foreach(array('verified', 'last_cron', 'site_status') as $extra_attribute) {
+      $form["$extra_attribute"] = array('#type' => 'value', '#value' => $node->$extra_attribute);
+    }
 
   return $form;
 }
