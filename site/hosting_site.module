@@ -366,7 +366,7 @@ function hosting_site_form($node) {
 
 function hosting_site_validate($node, &$form) {
   global $user;
-  $url = strtolower($node->title); // domain names are case-insensitive
+  $url = strtolower(trim($node->title)); // domain names are case-insensitive
   if (!_hosting_valid_fqdn($url)) {
     form_set_error('title', t("You have not specified a valid url for this site."));
   }
@@ -408,7 +408,7 @@ function hosting_site_validate($node, &$form) {
 function hosting_site_nodeapi(&$node, $op, $teaser, $page) {
   switch($op) {
     case 'submit':
-      $node->title = strtolower($node->title); // domain names are case-insensitive
+      $node->title = strtolower(trim($node->title)); // domain names are case-insensitive
       break;
   }
 }
