@@ -676,8 +676,6 @@ div#hosting-wizard-form,
 div.error,
 div.message { width:auto; }
 
-div#hosting-package-comparison { overflow-x : auto }
-
 #hosting-task-log { clear:both; }
 
 table,
