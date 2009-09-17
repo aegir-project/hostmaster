@@ -130,6 +130,8 @@ tr.hosting-success td {
   background-color:transparent !important;
 }
 
+#hosting-package-comparison {overflow-x:auto;}
+
 div#hosting-package-comparison div.form-item label {
   font-weight : bold;
 }
