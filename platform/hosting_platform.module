@@ -197,7 +197,7 @@ function hosting_platform_validate($node, &$form) {
  */
 function hosting_platform_load($node) {
   $additions = db_fetch_object(db_query('SELECT publish_path, verified, web_server FROM {hosting_platform} WHERE vid = %d', $node->vid));
-  $iid = db_result(db_query("SELECT iid FROM hosting_package_instance i left join hosting_package p on p.nid=i.package_id WHERE p.package_type='platform' AND i.rid=%d", $node->nid));
+  $iid = db_result(db_query("SELECT iid FROM {hosting_package_instance} i left join {hosting_package} p on p.nid=i.package_id WHERE p.package_type='platform' AND i.rid=%d", $node->nid));
   $additions->release = hosting_package_instance_load($iid);
   return $additions;
 }
