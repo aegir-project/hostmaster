@@ -380,7 +380,7 @@ function hosting_web_server_update($node) {
   else {
     $oldports = db_result(db_query("SELECT ports FROM {hosting_web_server} WHERE vid = %d", $node->vid));
     if ($oldports != $node->ports) {
-      $query = db_query("SELECT {nid} FROM hosting_platform WHERE web_server = %d", $node->nid);
+      $query = db_query("SELECT {nid} FROM {hosting_platform} WHERE web_server = %d", $node->nid);
       while($nid = db_fetch_object($query)) {
         hosting_add_task($nid->nid, 'verify');
       }
