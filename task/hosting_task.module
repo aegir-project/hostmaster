@@ -541,7 +541,7 @@ define('HOSTING_TASK_ERROR', 2);
  */
 function _hosting_parse_error_code($code) {
   $messages = array(
-    HOSTING_TASK_SUCCESS => t('Succesful'),
+    HOSTING_TASK_SUCCESS => t('Successful'),
     HOSTING_TASK_QUEUED => t('Queued'),
     HOSTING_TASK_ERROR => t('Failed')
   );
