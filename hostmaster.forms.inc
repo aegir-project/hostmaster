@@ -82,6 +82,7 @@ function hostmaster_task_filesystem() {
 
   $own_link = _hosting_node_link(HOSTING_OWN_WEB_SERVER);
 
+  $form['ports']['#type'] = 'value';
   $form['script_user']['#type'] = 'value';
   $form['web_group']['#type'] = 'value';
 
