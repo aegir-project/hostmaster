@@ -526,7 +526,7 @@ function hosting_get_tasks($filter_by = null, $filter_value = null, $count = 5, 
 
 /** The task is queued **/
 define('HOSTING_TASK_QUEUED', 0);
-/** The command completed succesfully. */
+/** The command completed successfully. */
 define('HOSTING_TASK_SUCCESS', 1);
 /** The command was not successfully completed. This is the default error status. */
 define('HOSTING_TASK_ERROR', 2);

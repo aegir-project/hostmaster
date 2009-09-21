@@ -543,8 +543,8 @@ function _hosting_platform_requirements() {
   $task = hosting_get_most_recent_task($platform->nid, 'verify');
   
   $help['title'] = t('Provisioning framework status');
-  $help['summary'][] = t('In order for the hosting system to be able to create sites, it needs a platform to publish these sites on. A platform is a Drupal site that has the provision back end installed. Each platform also requires one correctly configured web server and one correctly configured database server. Once a new platform has been created, Hosting will automatically schedule a task that will verify the new platform is working properly.');
-  $help['summary'][] = t('As hosting is also running on a platform, it is suggested that you succesfully configure your <a href="@platform">primary platform</a>
+  $help['summary'][] = t('In order for the hosting system to be able to create sites, it needs a platform to publish these sites on. A platform is a Drupal site that has the provision backend installed. Each platform also requires one correctly configured web server and one correctly configured database server. Once a new platform has been created, Hosting will automatically schedule a task that will verify the new platform is working properly.');
+  $help['summary'][] = t('As hosting is also running on a platform, it is suggested that you successfully configure your <a href="@platform">primary platform</a>
     before creating additional platforms and servers.', array('@platform' => url('node/' . HOSTING_OWN_PLATFORM)));
   $help['summary'][] = t('Each platform must be verified at least once, but if you find your platform is not being verified, look at the error log on the <a href="@verify_link">Verify platform task of this platform</a>', array("@verify_link" => url("node/" . $task->nid)));
 
