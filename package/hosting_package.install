@@ -73,6 +73,12 @@ function hosting_package_schema() {
         'not null' => TRUE,
         'default' => '',
       ),
+      'version_code' => array(
+        'type' => 'int',
+        'size' => 'big',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
       'status' => array(
         'type' => 'int',
         'not null' => TRUE,
@@ -230,11 +236,29 @@ function hosting_package_update_6() {
 function hosting_package_update_7() {
   $ret = array();
 
+
   db_drop_primary_key($ret, 'hosting_package_instance');
   db_field_set_no_default($ret, 'hosting_package_instance', 'iid');
   db_change_field($ret, 'hosting_package_instance', 'iid', 'iid',
     array('type' => 'serial', 'not null' => TRUE),
     array('primary key' => array('iid')));
 
+  return $ret;
+}
+
+function hosting_package_update_8() {
+  include_once(drupal_get_path('module', 'hosting_package') . '/hosting_package.instance.inc');
+  $ret = array();
+  db_add_field($ret, 'hosting_package_instance', 'version_code', array(
+      'type' => 'int',
+      'size' => 'big',
+      'not null' => TRUE,
+      'default' => 0,
+    ));
+  $result = db_query("SELECT iid, version FROM {hosting_package_instance}");
+  while ($obj = db_fetch_object($result)) {
+    $code = hosting_package_instance_version_code($obj->version);
+    db_query("UPDATE {hosting_package_instance} SET version_code = %f WHERE iid = %d", $code, $obj->iid);
+  }
   return $ret;
 }

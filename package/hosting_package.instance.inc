@@ -42,6 +42,7 @@ function hosting_package_instance_sync($rid) {
       $instance->languages = $package['info']['languages'];
       $instance->filename = $package['filename'];
       $instance->version = ($package['version']) ? $package['version'] : 'Unknown';
+      $instance->version_code = hosting_package_instance_version_code($package['version']);
       $instance->schema_version = $package['schema_version'];
       if (array_key_exists('status', $package)) {
         $instance->status = $package['status'];
@@ -67,10 +68,10 @@ function _hosting_package_instance_languages($instance) {
 function hosting_package_instance_update(&$instance) {
   db_query("UPDATE {hosting_package_instance} SET
     rid = %d, package_id = %d, filename = '%s',
-    schema_version = %d, version = '%s', status = %d
+    schema_version = %d, version = '%s', version_code = %f, status = %d
     WHERE iid = %d", 
     $instance->rid, $instance->package_id, $instance->filename, 
-    $instance->schema_version, $instance->version, $instance->status,
+    $instance->schema_version, $instance->version, $instance->version_code, $instance->status,
     $instance->iid);
 
   _hosting_package_instance_languages($instance);
@@ -79,10 +80,10 @@ function hosting_package_instance_update(&$instance) {
 function hosting_package_instance_create(&$instance) {
    db_query("INSERT INTO {hosting_package_instance} (
       rid, package_id, filename,
-      schema_version, version, status)
-      VALUES (%d, %d, '%s', %d, '%s', %d)", 
+      schema_version, version, version_code, status)
+      VALUES (%d, %d, '%s', %d, %f, '%s', %d)", 
       $instance->rid, $instance->package_id, $instance->filename, 
-      $instance->schema_version, $instance->version, $instance->status);
+      $instance->schema_version, $instance->version, $instance->version_code, $instance->status);
    $instance->iid = db_last_insert_id('hosting_package_instance', 'iid');
    _hosting_package_instance_languages($instance);
 }
@@ -115,7 +116,7 @@ function _hosting_package_instances_load($param, $multiple = FALSE) {
   $instances = array();
   $result = db_query("SELECT 
       n.title, r.type, p.package_type, p.nid,
-      i.iid, i.version, i.schema_version,
+      i.iid, i.version, i.version_code, i.schema_version,
       i.status, p.description, p.short_name, i.rid,
       i.package_id
       FROM {hosting_package_instance} i 
@@ -156,44 +157,86 @@ function hosting_package_instance_delete($instance) {
   db_query("DELETE FROM {hosting_package_instance} WHERE iid = %d", $instance->iid);
 }
 
-function hosting_package_instance_version_compare($from, $to) {
-  if ($from->version == $to->version) {
+
+/**
+ * Turn package version string into a number
+ *
+ * This function returns a float value for the number that represents the
+ * version string.
+ */
+function hosting_package_instance_version_code($version) {
+
+  $defaults = array(
+    'platform_major' => 0,
+    'platform_minor' => 0,
+    'package_major' => 0,
+    'package_minor' => 0,
+    'package_version_type' => 'release',
+    'package_patch_level' => 0,
+  );
+
+  $release_types = array(
+    '' => 0,
+    'dev' => 0,
+    'unstable' => 1,
+    'alpha' => 2,
+    'beta' => 3,
+    'rc' => 4,
+    'release' => 5
+  );
+
+  $regex = array(
+    'core' => '/^(?<platform_major>\d?)\.(?<platform_minor>[x\d]*)?(-(?<package_version_type>dev|unstable|alpha|beta|rc)?(?<package_patch_level>\d)*)?$/',
+    'contrib' => "/(?<platform_major>\d?)\.(?<platform_minor>[x\d]*)?(-(?<package_major>\d*)?\.(?<package_minor>[x\d]*)?(-(?<package_version_type>alpha|unstable|beta|rc|dev)?(?<package_patch_level>\d)*)?)?/");
+
+  $matches = array();
+  if (preg_match($regex['core'], $version, $matches)) {
+    $matches = array_merge($defaults, $matches);
+  }
+  elseif (preg_match($regex['contrib'], $version, $matches)) {
+    $matches = array_merge($defaults, $matches);
+  }
+  else {
     return 0;
   }
+  // we use the float type because php generally has a maximum integer value to small to handle this value
+  $result =  (float) sprintf("%d%02d%02d%02d%02d%02d", 
+    $matches['platform_major'], $matches['platform_minor'], $matches['package_major'], 
+    $matches['package_minor'], $release_types[$matches['package_version_type']], 
+    $matches['package_patch_level']);
 
-#  if (isset($from->schema_version)) {
-#    if ($to->schema_version > $from->schema_version) {
-#      return 1;
-#    }
-#  }
-
-  if (in_array($from->version, array('Unknown', 'HEAD'))) {
-    if (!in_array($to->version, array('Unknown', 'HEAD'))) {
-      return 1;
-    }
-  }
-  _hosting_version_info_extract($from);
-  _hosting_version_info_extract($to);
-  $compare = version_compare($to->drupal_version, $from->drupal_version);
-  if ($compare == 0) {
-    $compare = version_compare($to->project_version, $from->project_version);
-  }
-  return $compare;
+  return $result;
 }
 
-function _hosting_version_info_extract(&$instance) {
-  $parts = explode('-', $instance->version);
-  switch (sizeof($parts)) {
-    case '3' :
-      $instance->project_version = str_replace(".x", ".0", $parts[1]) . "." . $parts[2];
-      $instance->drupal_version = str_replace(".x", ".0", $parts[0]);
-      break;
-    case '2' :
-      $instance->project_version = str_replace(".x", ".0", $parts[1]);
-      $instance->drupal_version = str_replace(".x", ".0", $parts[0]);
-      break;
-    case '1' :
-      $instance->drupal_version = str_replace(".x", ".0", $parts[0]);
-      break;
+function hosting_package_comparison($current, $target) {
+
+  _hosting_package_temporary_table("current", $current);
+  _hosting_package_temporary_table("target", $target);
+  
+  $missing = 0;
+  $error = 0;
+  $upgrade = 0;
+  $result = db_query("SELECT c.nid, t.version_code FROM current c LEFT JOIN target t ON c.nid=t.nid WHERE c.version_code > t.version_code OR c.schema_version > t.schema_version");
+  while ($obj = db_fetch_object($result)) {
+    if (is_null($obj->version_code)) {
+      $missing = $missing + 1;
+    }
+    else {
+      $error = $error + 1;
+    }
   }
+  $result = db_query("SELECT COUNT(c.nid) as upgrades FROM  current c LEFT JOIN target t ON c.nid=t.nid WHERE c.version_code < t.version_code");
+  while ($obj = db_fetch_object($result)) {
+    $upgrade = $obj->upgrades;
+  }
+  
+  db_query("DROP TEMPORARY TABLE target");
+  db_query("DROP TEMPORARY TABLE current");
+
+  return array("upgrade" => $upgrade, "missing" => $missing, "error" => $error);
+}
+
+
+function _hosting_package_temporary_table($name, $ref) {
+  db_query("CREATE TEMPORARY TABLE %s AS SELECT nid, short_name, version_code, schema_version, version from hosting_package p left join hosting_package_instance i on p.nid = i.package_id where rid= %d", $name, $ref);
 }

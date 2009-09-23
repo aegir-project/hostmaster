@@ -20,6 +20,19 @@ function hosting_migrate_perm() {
   );
 }
 
+function hosting_migrate_menu() {
+  // TODO: add some security here
+  $items['hosting/migrate/compare'] = array(
+    'title' => 'Compare packages',
+    'page callback' => 'hosting_migrate_comparison',
+
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK
+  );
+
+
+  return $items;
+}
 
 
 
@@ -33,30 +46,15 @@ function hosting_task_migrate_form_validate($form, &$form_state) {
 }
 
 function hosting_migrate_theme($existing, $type, $theme, $path) {
-  return array('hosting_task_migrate_form' => array('arguments' => array('form' => NULL)));
+  return array(
+  'hosting_migrate_comparison' => array(
+      'arguments' => array('packages')
+  ));
 }
 
 function hosting_task_migrate_form($node) {
-  $site_instances = hosting_package_instances_load(
-    array('rid' => $node->nid, 'i.status' => 1));
-
-  $site_platform = node_load($node->platform);
-  $cols = array();
 
   $packages = array();
-  $form['radios']['#tree'] = false;
-  $form['radios'][$node->platform]['parameters']['#tree'] = TRUE;
-  $form['radios'][$node->platform]['parameters']['target_platform'] = array(
-    '#type' => 'radio',
-    '#title' => t('Current'),
-    '#default_value' => $node->platform,
-    '#disabled' => TRUE,
-    "#return_value" => $node->platform,
-  );
-  foreach ($site_instances as $instance) {
-    $packages[$node->platform][$instance->package_id] = $instance;
-  }
-
 
   $profile_platform_instances = hosting_package_instances_load(
     array('r.type' => 'platform', 'n.nid' => $node->profile));
@@ -67,29 +65,46 @@ function hosting_task_migrate_form($node) {
       '#type' => 'hidden',
       '#value' => t('no_targets')); 
   }
+  $site_platform = node_load($node->platform);
 
+  $form[$node->platform]['target_platform'] = array(
+    '#type' => 'radio',
+    '#title' => $site_platform->title,
+    "#return_value" => $node->platform,
+    "#default_value" => $node->platform,
+    '#description' => t("Current platform"),
+    '#parents' => array('parameters', 'target_platform'),
+  );
   foreach ($profile_platform_instances as $profile_instance) {
     if ($profile_instance->rid != $node->platform) {
+      $status = hosting_package_comparison($node->nid, $profile_instance->iid);
+
+      $description = t("Upgrades: !upgrades, Warnings: !missing, Errors: !errors | <a href='!url'>Compare platforms</a>",
+        array(
+          '!upgrades' => $status['upgrade'],
+          '!missing' => $status['missing'],
+          '!errors' => $status['error'],
+          '!url' => url('hosting/migrate/compare/' . $node->nid . '/' . $profile_instance->iid))
+        );
       $platform = node_load($profile_instance->rid);
       if ($platform->web_server == $site_platform->web_server) {
-        $form['radios'][$platform->nid]['parameters']['#tree'] = TRUE;
-        $form['radios'][$platform->nid]['parameters']['target_platform'] = array(
+
+        $form[$platform->nid]['target_platform'] = array(
           '#type' => 'radio',
           '#title' => $platform->title,
+          '#parents' => array('parameters', 'target_platform'),
           "#return_value" => $platform->nid,
+          '#description' => $description,
         );
-
-        $platform_instances = hosting_package_instances_load(
-          array('rid' => $profile_instance->iid));
-        foreach ($platform_instances as $instance) {
-          $packages[$platform->nid][$instance->package_id] = $instance;
-        }
       }
+      if ($status['error']) {
+        $form[$platform->nid]['target_platform']['#disabled'] = TRUE;
+      }
+
     }
   }
+
   $form['#node'] = $node;
-  $form['#packages'] = $packages;
-  $form['#theme'] = 'hosting_task_migrate_form';
   return $form;
   $table = array();
 
@@ -109,60 +124,67 @@ function hosting_task_migrate_form($node) {
   return $form;
 }
 
-function theme_hosting_task_migrate_form(&$form) {
-  $node = $form['#node'];
-  $packages = $form['#packages'];
-  $headers = array();
-  $rows = array();
+function hosting_migrate_comparison($current, $target) {
 
-  $headers[] = t("Platform");
-  foreach ($packages[$node->platform] as $package_instance) {
-    $headers[] = array('class' => 'hosting-package-name', 'data' => '<acronym title=' . $package_instance->package_type . '>' . $package_instance->title . '</acronym>');
+  _hosting_package_temporary_table("current", $current);
+  _hosting_package_temporary_table("target", $target);
+
+  $packages = array();
+
+  $result = db_query("SELECT c.nid, c.short_name, 
+    c.version as current_version, t.version as target_version,
+    c.version_code as current_version_code, t.version_code as target_version_code,
+    c.schema_version as current_schema, t.schema_version as target_schema FROM current c LEFT JOIN target t ON c.nid=t.nid ORDER BY short_name"); 
+
+  while ($obj = db_fetch_object($result)) {
+    if (is_null($obj->target_version_code)) {
+      $obj->status = 'missing';
+    }
+    elseif (  ($obj->current_version_code > $obj->target_version_code) 
+      || ($obj->current_schema > $obj->target_schema)) {
+      $obj->status = 'downgrade';
+    }
+    elseif ($obj->current_version_code < $obj->target_version_code) {
+      $obj->status = 'upgrade';
+    }
+    else {  
+      $obj->status = 'same';
+    }
+    $packages[$obj->nid] = $obj;
   }
-  foreach ($packages as $platform => $package_instances) {
-    $row = array();
-    foreach ($packages[$node->platform] as $key => $platform_instance) {
-      if ($instance = $package_instances[$key]) {
-        $comparison = hosting_package_instance_version_compare($platform_instance, $instance);
-        $display = $instance->version;
-        if ($instance->schema_version) {
-          $display .= " (" . $instance->schema_version . ")";
-        }
-        if ($comparison > 0) {
-          $row[] = array('class' => 'hosting-package-upgrade', 'data' => $display);
-        }
-        elseif ($comparison == 0) {
-          $row[] = array('class' => 'hosting-package-same', 'data' => $display);
-        }
-        else {
-          $row[] = array('class' => 'hosting-package-downgrade', 'data' => $display);
-          $error = TRUE;
-        }
-      }
-      else {
-        $row[] = array('class' => 'hosting-package-missing', 'data' => t("Missing"));
-        $warning = TRUE;
-      }
-    }
-    $class = 'hosting-package-upgrade';
-    if ($platform == $node->platform) {
-      $class = 'hosting-package-same';
-    }
-    elseif ($error) {
-      $class = 'hosting-package-downgrade';
-      $form['radios'][$platform]['parameters']['target_platform']['#attributes']['disabled'] = 'disabled';
-    }
-    elseif ($warning) {
-      $class = 'hosting-package-missing';
-    }
-    $platform_col = array('class' => $class, 'data' =>  drupal_render($form['radios'][$platform]['parameters']['target_platform']));
-    array_unshift($row, $platform_col);
-    $rows[] = $row;
-  }
+  
+  db_query("DROP TEMPORARY TABLE target");
+  db_query("DROP TEMPORARY TABLE current");
 
-  $output .= "<div id='hosting-package-comparison'>" . theme('table', $headers, $rows) . "</div>";
-
-  $output .= drupal_render($form);
-  return $output;
+  return theme("hosting_migrate_comparison", $packages);
 }
 
+function _hosting_migrate_version_display($version, $schema = null, $status = null) {
+  
+  $status = (!is_null($status)) ? $status : 'same';
+  $display = $version;
+  if ($schema) {
+    $display .= " (" . $schema . ")";
+  }
+
+
+  if ($status == 'missing') {
+    $display = t('Missing');
+  }
+  return array('class' => 'hosting-package-' . $status, 'data' => $display);
+}
+
+function theme_hosting_migrate_comparison($packages) {
+  $rows = array();
+
+  $headers = array(t("Package"), t("Current"), t("Target"));
+  foreach ($packages as $key => $instance) {
+    $row = array();
+    $row[] = $instance->short_name;
+
+    $row[] = _hosting_migrate_version_display($instance->current_version, $instance->current_schema);
+    $row[] = _hosting_migrate_version_display($instance->target_version, $instance->target_schema, $instance->status);
+    $rows[] = $row;
+  }
+  return "<div id='hosting-package-comparison'>" . theme('table', $headers, $rows) . "</div>";
+}
