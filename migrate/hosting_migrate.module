@@ -37,10 +37,7 @@ function hosting_migrate_menu() {
 
 
 function hosting_task_migrate_form_validate($form, &$form_state) {
-  if (!$form_state['values']['parameters']['target_platform']) {
-    form_set_error('parameters][target_platform', t('You need to select a valid platform to migrate your site to.'));
-  }
-  if ($form_state['values']['parameters']['hidden']) {
+  if (!$form_state['values']['parameters']['target_platform'] || $form_state['values']['parameters']['hidden']) {
     form_set_error('parameters][target_platform', t('You may not select your current platform to migrate your site to.'));
   }
 }
@@ -74,6 +71,7 @@ function hosting_task_migrate_form($node) {
     "#default_value" => $node->platform,
     '#description' => t("Current platform"),
     '#parents' => array('parameters', 'target_platform'),
+    '#disabled' => TRUE,
   );
   foreach ($profile_platform_instances as $profile_instance) {
     if ($profile_instance->rid != $node->platform) {
