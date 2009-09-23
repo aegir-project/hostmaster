@@ -184,5 +184,6 @@ function theme_hosting_migrate_comparison($packages) {
     $row[] = _hosting_migrate_version_display($instance->target_version, $instance->target_schema, $instance->status);
     $rows[] = $row;
   }
-  return "<div id='hosting-package-comparison'>" . theme('table', $headers, $rows) . "</div>";
+  $link = l(t('Back to site'), 'node/' . arg(3));
+  return "<div id='hosting-package-comparison'>" . theme('table', $headers, $rows) . $link . "</div>";
 }
