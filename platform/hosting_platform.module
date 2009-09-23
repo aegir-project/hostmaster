@@ -138,7 +138,9 @@ function hosting_platform_insert($node) {
   if ($node->default_platform == 1) {
     variable_set('hosting_default_platform', $node->nid);
   }
-  hosting_add_task($node->nid, 'verify');
+  if (!isset($node->no_verify)) {
+    hosting_add_task($node->nid, 'verify');
+  }
   db_query("INSERT INTO {hosting_platform} (vid, nid, publish_path, verified, web_server) VALUES (%d, %d, '%s', %d, %d)",
     $node->vid, $node->nid, $node->publish_path, $node->verified, $node->web_server);
 }
