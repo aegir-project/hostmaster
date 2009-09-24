@@ -641,3 +641,22 @@ function hosting_queues_configure_submit($form, &$form_state) {
     }
   }
 }
+
+// Hide the usual node form cruft that doesn't apply in the frontend
+function hosting_form_alter(&$form, $form_state, $form_id) {
+  switch ($form_id) {
+    case 'site_node_form':
+    case 'platform_node_form':
+    case 'task_node_form':
+    case 'package_node_form':
+    case 'client_node_form':
+    case 'db_server_node_form':
+    case 'web_server_node_form':
+    // Remove 'Menu', 'Authoring', 'Publishing' Information text area
+    // Revision info left in per community request
+    $form['menu']['#type'] = 'hidden';
+    $form['author']['#type'] = 'hidden';
+    $form['options']['#type'] = 'hidden';
+    break;
+  }
+}
