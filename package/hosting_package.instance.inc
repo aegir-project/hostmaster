@@ -216,15 +216,16 @@ function hosting_package_comparison($current, $target) {
   $missing = 0;
   $error = 0;
   $upgrade = 0;
-  $result = db_query("SELECT c.nid, t.version_code FROM current c LEFT JOIN target t ON c.nid=t.nid WHERE c.version_code > t.version_code OR c.schema_version > t.schema_version");
+  $result = db_query("SELECT count(c.nid) AS error FROM current c LEFT JOIN target t ON c.nid=t.nid WHERE c.version_code > t.version_code OR c.schema_version > t.schema_version");
   while ($obj = db_fetch_object($result)) {
-    if (is_null($obj->version_code)) {
-      $missing = $missing + 1;
-    }
-    else {
-      $error = $error + 1;
-    }
+    $error = $obj->error;
   }
+
+  $result = db_query("SELECT COUNT(c.nid) as missing FROM current c LEFT JOIN target t ON c.nid=t.nid WHERE t.nid IS null");
+  while ($obj = db_fetch_object($result)) {
+    $missing = $obj->missing;
+  }
+
   $result = db_query("SELECT COUNT(c.nid) as upgrades FROM  current c LEFT JOIN target t ON c.nid=t.nid WHERE c.version_code < t.version_code");
   while ($obj = db_fetch_object($result)) {
     $upgrade = $obj->upgrades;
