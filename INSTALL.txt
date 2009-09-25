@@ -112,7 +112,8 @@ Shell commands::
  adduser aegir www-data    #make aegir a user of group www-data
  mkdir -p /var/aegir/config/vhost.d
  mkdir -p /var/aegir/backups
- chmod -R 0700 /var/aegir/{config,backups}
+ chmod 0711 /var/aegir/config
+ chmod 0700 /var/aegir/backups
  chown -R aegir /var/aegir/*
 
 
