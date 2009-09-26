@@ -220,3 +220,16 @@ function hosting_site_update_6002() {
   db_add_field($ret, 'hosting_site', 'ssl_redirect', array('type' => 'int', 'not null' => TRUE, 'default' => 0));
   return $ret;
 }
+
+// Update imported sites that have port 0 in the db. See #588072
+function hosting_site_update_6003() {
+  $ret = array();
+  $sites = db_query("SELECT nid, platform FROM {hosting_site} WHERE port = 0");
+  while ($obj = db_fetch_object($sites)) {
+    $showports = _hosting_site_allowed_ports($obj->platform);
+    $defport = reset($showports);
+    $result = db_query("UPDATE {hosting_site} SET port = '%s' WHERE nid = %d AND port = 0", $defport, $obj->nid);
+  }
+  return $ret;
+}
+

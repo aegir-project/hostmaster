@@ -146,6 +146,11 @@ function hosting_import_site($site_id, $data, $platform = HOSTING_DEFAULT_PLATFO
   $db_server = hosting_get_db_server($data['db_id']);
   $site->db_server = ($db_server) ? $db_server->nid : HOSTING_DEFAULT_DB_SERVER;
   $site->site_language = $data['language'] ? $data['language'] : 'en';
+  // Try and find a default port from the web server and use that for the imported site.
+  // Needs to be improved (one vhost > many ports, and a proper 'default port' feature
+  $showports = _hosting_site_allowed_ports($platform);
+  $defport = reset($showports);
+  $site->port = $defport;
 
   // Drupal 6 introduced a language field on nodes
   unset($data['language']);
