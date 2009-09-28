@@ -893,7 +893,7 @@ function _hosting_site_form_populate($element, $value, $value2 = null) {
   $GLOBALS['devel_shutdown'] = FALSE;
   $form_state = array();
   $built = form_builder('hosting_site_form', $form, $form_state);
-  print drupal_to_js(
+  drupal_json(
     array(
       'status' => 'TRUE',
       'type' => $form[$element]['#type'],

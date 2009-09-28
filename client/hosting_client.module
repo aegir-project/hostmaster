@@ -589,6 +589,6 @@ function hosting_client_autocomplete($type, $keyword) {
     }
   }
  
-  print drupal_to_js($matches);
+  drupal_json($matches);
   exit();
 }
