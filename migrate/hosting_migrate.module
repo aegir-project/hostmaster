@@ -175,7 +175,7 @@ function _hosting_migrate_version_display($version, $schema = null, $status = nu
   $status = (!is_null($status)) ? $status : 'same';
   $display = ($version == 0) ? t('Unknown') : $version;
 
-  if ($schema > 1) {
+  if ($schema) {
     $display .= " (" . $schema . ")";
   }
 

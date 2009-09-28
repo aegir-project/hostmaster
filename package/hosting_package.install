@@ -280,3 +280,19 @@ function hosting_package_update_9() {
 
   return $ret;
 }
+
+// Re-verify all platforms and sites
+function hosting_package_update_10() {
+  $ret = array();
+  $result = db_query("SELECT nid FROM {node} WHERE type='platform'");
+  while ($platform = db_fetch_object($result)) {
+    hosting_add_task($platform->nid, 'verify');
+  }
+
+  $result = db_query("SELECT nid FROM {hosting_site} WHERE status = %d", HOSTING_SITE_ENABLED);
+  while ($site = db_fetch_object($result)) {
+    hosting_add_task($site->nid, 'verify');
+  }
+
+  return $ret;
+}
