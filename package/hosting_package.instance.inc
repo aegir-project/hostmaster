@@ -187,7 +187,7 @@ function hosting_package_instance_version_code($version) {
 
   $regex = array(
     'core' => '/^(?<platform_major>\d?)\.(?<platform_minor>[x\d]*)?(-(?<package_version_type>dev|unstable|alpha|beta|rc)?(?<package_patch_level>\d)*)?$/',
-    'contrib' => "/(?<platform_major>\d?)\.(?<platform_minor>[x\d]*)?(-(?<package_major>\d*)?\.(?<package_minor>[x\d]*)?(-(?<package_version_type>alpha|unstable|beta|rc|dev)?(?<package_patch_level>\d)*)?)?/");
+    'contrib' => "/(?<platform_major>\d?)\.(?<platform_minor>[x\d]*)?(-(?<package_major>\d*)?\.(?<package_minor>[x\d]*)?(-(?<package_version_type>alpha|unstable|beta|rc|dev)?(?<package_patch_level>[\d]*)?)?)?/");
 
   $matches = array();
   if (preg_match($regex['core'], $version, $matches)) {
@@ -216,17 +216,17 @@ function hosting_package_comparison($current, $target) {
   $missing = 0;
   $error = 0;
   $upgrade = 0;
-  $result = db_query("SELECT count(c.nid) AS error FROM current c LEFT JOIN target t ON c.nid=t.nid WHERE c.version_code > t.version_code OR c.schema_version > t.schema_version");
+  $result = db_query("SELECT count(c.nid) AS error FROM current c LEFT JOIN target t ON c.nid=t.nid WHERE (c.version_code > t.version_code) OR (c.schema_version > t.schema_version) AND c.status=1");
   while ($obj = db_fetch_object($result)) {
     $error = $obj->error;
   }
 
-  $result = db_query("SELECT COUNT(c.nid) as missing FROM current c LEFT JOIN target t ON c.nid=t.nid WHERE t.nid IS null");
+  $result = db_query("SELECT COUNT(c.nid) as missing FROM current c LEFT JOIN target t ON c.nid=t.nid WHERE t.nid IS null AND c.status=1");
   while ($obj = db_fetch_object($result)) {
     $missing = $obj->missing;
   }
 
-  $result = db_query("SELECT COUNT(c.nid) as upgrades FROM  current c LEFT JOIN target t ON c.nid=t.nid WHERE c.version_code < t.version_code");
+  $result = db_query("SELECT COUNT(c.nid) as upgrades FROM  current c LEFT JOIN target t ON c.nid=t.nid WHERE (c.version_code < t.version_code) OR (c.schema_version < t.schema_version) AND c.status=1");
   while ($obj = db_fetch_object($result)) {
     $upgrade = $obj->upgrades;
   }
@@ -239,5 +239,5 @@ function hosting_package_comparison($current, $target) {
 
 
 function _hosting_package_temporary_table($name, $ref) {
-  db_query("CREATE TEMPORARY TABLE %s AS SELECT nid, short_name, version_code, schema_version, version from hosting_package p left join hosting_package_instance i on p.nid = i.package_id where rid= %d", $name, $ref);
+  db_query("CREATE TEMPORARY TABLE %s AS SELECT nid, short_name, version_code, schema_version, version, status from hosting_package p left join hosting_package_instance i on p.nid = i.package_id where rid= %d", $name, $ref);
 }

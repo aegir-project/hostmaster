@@ -1,17 +1,10 @@
 <?php
+// $Id$
 
-function hosting_migrate_hosting_tasks($type, $task = null) {
-  $options = array();
-
-  if ($type == 'site') {
-    $options['migrate'] = array(
-      'title' => t('Migrate'),
-      'description' => t('Move the site to a new platform.'),
-      'weight' => 7
-    );
-  }
-  return $options;
-}
+/**
+ * @file Migration forms for Aegir
+ */
+include_once('hosting_migrate.batch.inc');
 
 
 function hosting_migrate_perm() {
@@ -26,29 +19,62 @@ function hosting_migrate_menu() {
     'title' => 'Compare packages',
     'page callback' => 'hosting_migrate_comparison',
 
-    'access arguments' => array('access content'),
+    'access arguments' => array('create migrate task'),
     'type' => MENU_CALLBACK
   );
 
+  $items['node/%hosting_task_platform/task_migrate'] = array(
+    'title' => t('Migrate'),
+    'description' => t('Migrate sites to a new platform'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('hosting_migrate_platform', 1),
+    'access arguments' => array('create migrate task'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => ($info['weight']) ? $info['weight'] : 0, 
+  );
 
-  return $items;
+ return $items;
 }
 
+/**
+ * Implementation of hook_hosting_tasks()
+ */
+function hosting_migrate_hosting_tasks($type, $task = null) {
+  $options = array();
 
+  if ($type == 'site') {
+    $options['migrate'] = array(
+      'title' => t('Migrate'),
+      'description' => t('Move the site to a new platform.'),
+      'weight' => 7
+    );
+  }
+  return $options;
+}
 
+/**
+ * Implementation of hook_validate()
+ */
 function hosting_task_migrate_form_validate($form, &$form_state) {
   if (!$form_state['values']['parameters']['target_platform'] || $form_state['values']['parameters']['hidden']) {
     form_set_error('parameters][target_platform', t('You may not select your current platform to migrate your site to.'));
   }
 }
 
+/**
+ * Implementation of hook_theme()
+ */
 function hosting_migrate_theme($existing, $type, $theme, $path) {
   return array(
   'hosting_migrate_comparison' => array(
-      'arguments' => array('packages')
-  ));
+      'arguments' => array('packages' => NULL)
+    ),
+  );
 }
 
+/**
+ * Implementation of hook_form()
+ */
 function hosting_task_migrate_form($node) {
 
   $packages = array();
@@ -104,24 +130,11 @@ function hosting_task_migrate_form($node) {
 
   $form['#node'] = $node;
   return $form;
-  $table = array();
-
-  if (sizeof($options)) {
-    $form['target_platform'] = array(
-      '#type' => 'radios',
-      '#title' => t('Migrate to'),
-      '#options' => $options,
-      '#required' => TRUE
-    );
-  }
-  else {
-    $form['target_text'] = array('#type' => 'item',
-      '#value' => t('<strong>No valid platforms to migrate to.</strong>')
-    );
-  }
-  return $form;
 }
 
+/**
+ * Compare package schema versions between the current and target platform in temp tables
+ */
 function hosting_migrate_comparison($current, $target) {
 
   _hosting_package_temporary_table("current", $current);
@@ -142,7 +155,7 @@ function hosting_migrate_comparison($current, $target) {
       || ($obj->current_schema > $obj->target_schema)) {
       $obj->status = 'downgrade';
     }
-    elseif ($obj->current_version_code < $obj->target_version_code) {
+    elseif (($obj->current_version_code < $obj->target_version_code) || ($obj->current_schema < $obj->target_schema)) {
       $obj->status = 'upgrade';
     }
     else {  
@@ -160,8 +173,9 @@ function hosting_migrate_comparison($current, $target) {
 function _hosting_migrate_version_display($version, $schema = null, $status = null) {
   
   $status = (!is_null($status)) ? $status : 'same';
-  $display = $version;
-  if ($schema) {
+  $display = ($version == 0) ? t('Unknown') : $version;
+
+  if ($schema > 1) {
     $display .= " (" . $schema . ")";
   }
 

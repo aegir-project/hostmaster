@@ -255,10 +255,28 @@ function hosting_package_update_8() {
       'not null' => TRUE,
       'default' => 0,
     ));
+
+  // The contents of update 9 was originally inside this function, 
+  // but due to an error in the regular expression the code needs to be
+  // executed again, as such it has been moved.
+
+  return $ret;
+}
+
+
+/**
+ * Regenerate the package version codes to fix a error related to the regular expression
+ */
+function hosting_package_update_9() {
+  $ret = array();
+
+  // This code was originally in update 8, but was moved here to avoid people executing the same functionality
+  // twice.
   $result = db_query("SELECT iid, version FROM {hosting_package_instance}");
   while ($obj = db_fetch_object($result)) {
     $code = hosting_package_instance_version_code($obj->version);
     db_query("UPDATE {hosting_package_instance} SET version_code = %f WHERE iid = %d", $code, $obj->iid);
   }
+
   return $ret;
 }
