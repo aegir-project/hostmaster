@@ -309,7 +309,7 @@ aegir_vhost () {
   chmod 777 $DRUPAL_DIR/sites/$DOMAIN/settings.php
   mkdir $DRUPAL_DIR/sites/$DOMAIN/files
   chmod 777 $DRUPAL_DIR/sites/$DOMAIN/files
-  chown -R $AEGIR_USER:$AEGIR_USER $AEGIR_HOME/{.,*}[!.]*
+  chown -R $AEGIR_USER:$AEGIR_USER $AEGIR_HOME
   
   find_apachectl
   find_httpdconf

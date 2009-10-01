@@ -398,7 +398,7 @@ Simply add all domains you want to this line. Ej:
 ``127.0.0.1  localhost your-machine-name $AEGIR_DOMAIN other1 other2``
 
 
-Install the Drupal
+Install Drupal
 ------------------
 
 We are almost ready to install the first Drupal using this installation
@@ -419,7 +419,8 @@ Shell commands::
  chmod g+w sites/$AEGIR_DOMAIN/settings.php
  mkdir sites/$AEGIR_DOMAIN/files
  chmod 2770 sites/$AEGIR_DOMAIN/files
- chgrp www-data sites/$AEGIR_DOMAIN/{settings.php,files}
+ chgrp www-data sites/$AEGIR_DOMAIN/settings.php
+ chgrp www-data sites/$AEGIR_DOMAIN/files
  
 Now point your browser to ``http://$AEGIR_DOMAIN/``, select the
 hostmaster install profile, enter the database credentials you setup 
