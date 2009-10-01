@@ -2,38 +2,11 @@
 // $Id$
 
 /**
- * Implementation of hook_theme().
- */
-function hosting_theme() {
-  return array(
-    'hosting_summary_block' => array(
-      'file' => 'hosting.module',
-      'arguments' => array(
-        'components' => NULL,
-      ),
-    ),
-    'hosting_queues_configure' => array(
-      'file' => 'hosting.module',
-      'arguments' => array(
-        'form' => NULL,
-      ),
-    ),
-    'requirement_help' => array(
-      'file' => 'hosting_help.inc',
-      'arguments' => array(
-        'form' => NULL,
-      ),
-    ),
-  );
-}
-
-/**
  * @file Hosting module
  *
  * Contains just about all the interface magic of hostmaster.
  */
  
-
 /**
  * Not split for performance reasons. Just to keep code together.
  */
@@ -232,6 +205,32 @@ function _hosting_default_restart_cmd() {
   }
 
   return "sudo $command graceful";
+}
+
+/**
+ * Implementation of hook_theme().
+ */
+function hosting_theme() {
+  return array(
+    'hosting_summary_block' => array(
+      'file' => 'hosting.module',
+      'arguments' => array(
+        'components' => NULL,
+      ),
+    ),
+    'hosting_queues_configure' => array(
+      'file' => 'hosting.module',
+      'arguments' => array(
+        'form' => NULL,
+      ),
+    ),
+    'requirement_help' => array(
+      'file' => 'hosting_help.inc',
+      'arguments' => array(
+        'form' => NULL,
+      ),
+    ),
+  );
 }
 
 function _hosting_node_link($nid, $title = null) {
