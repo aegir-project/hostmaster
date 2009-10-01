@@ -26,6 +26,13 @@ function hosting_drush_command() {
     'description' => 'execute a specific queue item',
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL
   );
+
+  $items['hosting migrate'] = array('description' => 'migrate the frontend site', 'arguments' => array('example.com' => dt('The name of the site to migrate'), '/path/to/platform' => dt('The platform to migrate the site to.')));
+
+  $items['hosting park'] = array('description' => 'disable the frontend site prior to migration', 'arguments' => array('example.com' => dt('The name of the site to park')));
+
+  $items['hosting unpark'] = array('description' => 'enable the frontend site after a migration', 'arguments' => array('example.com' => dt('The name of the site to unpark')));
+
   return $items;
 }
 
