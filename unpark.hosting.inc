@@ -4,11 +4,13 @@
  * @file Implementation of the hosting unpark command
  */
 
+include_once('hosting.inc');
+
 function drush_hosting_hosting_unpark($url, $platform) {
   drush_log('bootstrapping drupal');
   drush_bootstrap(DRUSH_BOOTSTRAP_DRUPAL_FULL);
   drush_log('fixing platform');
-  if ($platform_id = db_result(db_query('SELECT nid FROM {hosting_platform} WHERE publish_path = "%s"', $platform))) {
+  if ($platform_id = db_result(db_query('SELECT nid FROM {hosting_platform} WHERE publish_path = "%s"', hosting_path_normalize($platform)))) {
     $nid = db_result(db_query('SELECT nid FROM {node} WHERE type = "site" AND status = 1 AND title = "%s"', $url));
     $node = node_load($nid);
     $node->verified = 0;

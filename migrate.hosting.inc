@@ -20,18 +20,21 @@ function drush_hosting_hosting_migrate_validate($site, $platform) {
 }
 
 function drush_hosting_pre_hosting_migrate($site, $platform) {
-  drush_backend_invoke('hosting park', array($site, $platform));
+  return drush_backend_invoke('hosting park', array($site, $platform));
 }
 
 function drush_hosting_hosting_migrate($site, $platform) { 
-  drush_backend_invoke('provision clone', array($site, $site, $platform));
+  return drush_backend_invoke('provision clone', array($site, $site, $platform));
 }
 
 function drush_hosting_hosting_migrate_rollback($site, $platform) {
-  drush_backend_invoke('provision delete ', array($site, 'root' => $platform));
+  return drush_backend_invoke('provision delete', array($site, 'root' => $platform));
 }
 
 function drush_hosting_post_hosting_migrate($site, $platform) {
   drush_backend_invoke('hosting unpark', array($site, $platform));
-  drush_backend_invoke('provision delete', array($site));
+  if (!drush_get_error()) {
+    drush_backend_invoke('provision delete', array($site));
+    drush_backend_invoke('provision verify', array($site, 'root' => $platform, 'publish_path' => $platform));
+  }
 }
