@@ -10,7 +10,7 @@ function drush_hosting_hosting_park_validate($url, $platform) {
     drush_log(dt('Platform found for path %path: #%id', array('%path' => $platform, '%id' => $platform_id)));
   }
   else {
-    return drush_set_error('PROVISION_FRAMEWORK_ERROR', dt("Cannot find target platform before parking site. Make sure the platform exists in the frontend first."));
+    return drush_set_error('PROVISION_FRAMEWORK_ERROR', dt("Cannot find target platform at @path before parking site. Make sure the platform exists in the frontend first.", array('@path' => $platform)));
   }
 }
 
