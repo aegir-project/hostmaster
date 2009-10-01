@@ -46,3 +46,12 @@ function hosting_format_interval($ts) {
   return t("@interval ago", array("@interval" => format_interval(mktime() - $ts, 1)));
 }
 
+/**
+ * Make a path canonical
+ *
+ * This removes duplicate slashes, trailing slashes and /./ occurences. It does
+ * not (yet?) resolve .. instances.
+ */
+function hosting_path_normalize($path) {
+  return rtrim(preg_replace('/(\/\/*\.)?\/\/*/', '/', $path), '/');
+}

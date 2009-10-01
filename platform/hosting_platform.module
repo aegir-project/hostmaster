@@ -129,8 +129,6 @@ function hosting_platform_form(&$node) {
   return $form;
 }
 
-
-
 /**
  * Implementation of hook_insert().
  */
@@ -142,7 +140,7 @@ function hosting_platform_insert($node) {
     hosting_add_task($node->nid, 'verify');
   }
   db_query("INSERT INTO {hosting_platform} (vid, nid, publish_path, verified, web_server) VALUES (%d, %d, '%s', %d, %d)",
-    $node->vid, $node->nid, $node->publish_path, $node->verified, $node->web_server);
+    $node->vid, $node->nid, hosting_path_normalize($node->publish_path), $node->verified, $node->web_server);
 }
 
 /**
@@ -161,7 +159,7 @@ function hosting_platform_update($node) {
       variable_set('hosting_default_platform', $node->nid);
     }
     db_query("UPDATE {hosting_platform} SET publish_path = '%s', web_server = %d, verified = %d WHERE nid=%d",
-              $node->publish_path, $node->web_server, $node->verified, $node->nid);
+              hosting_path_normalize($node->publish_path), $node->web_server, $node->verified, $node->nid);
   }
 }
 
@@ -189,7 +187,7 @@ function hosting_platform_delete($node) {
  * Implementation of hook_validate()
  */
 function hosting_platform_validate($node, &$form) {
-  if ($node->op != t('Delete') && $result = db_fetch_object(db_query("SELECT n.title AS name FROM {hosting_platform} AS h INNER JOIN {node} AS n ON n.nid = h.nid WHERE publish_path = '%s' AND web_server = %d AND n.nid <> %d", $node->publish_path, $node->web_server, $node->nid))) {
+  if ($node->op != t('Delete') && $result = db_fetch_object(db_query("SELECT n.title AS name FROM {hosting_platform} AS h INNER JOIN {node} AS n ON n.nid = h.nid WHERE publish_path = '%s' AND web_server = %d AND n.nid <> %d", hosting_path_normalize($node->publish_path), $node->web_server, $node->nid))) {
     form_set_error('publish_path', t('Path already defined in platform %name', array('%name' => $result->name)));
   }
 }
