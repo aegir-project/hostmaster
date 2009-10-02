@@ -56,8 +56,15 @@ function hosting_migrate_hosting_tasks($type, $task = null) {
  * Implementation of hook_validate()
  */
 function hosting_task_migrate_form_validate($form, &$form_state) {
-  if (!$form_state['values']['parameters']['target_platform'] || $form_state['values']['parameters']['hidden']) {
-    form_set_error('parameters][target_platform', t('You may not select your current platform to migrate your site to.'));
+  // If no target platform has been set, or there are no valid platforms to migrate to
+  if (!$form_state['values']['parameters']['target_platform'] || $form_state['values']['parameters']['hidden']) {  
+    form_set_error('parameters][target_platform', t('Please select a valid platform to migrate to.'));
+  }
+  // If the target platform is the current platform and this is a migrate task, we won't allow it
+  // (Alternatively this is a valid action when Cloning a site to the same platform)
+  $site = node_load($form_state['values']['nid']);
+  if ($form_state['values']['parameters']['target_platform'] == $site->platform && $form_state['values']['task'] == 'migrate') {
+    form_set_error('parameters][target_platform', t('You may not migrate a site to its current platform.'));
   }
 }
 
@@ -89,7 +96,6 @@ function hosting_task_migrate_form($node) {
       '#value' => t('no_targets')); 
   }
   $site_platform = node_load($node->platform);
-
   $form[$node->platform]['target_platform'] = array(
     '#type' => 'radio',
     '#title' => $site_platform->title,
@@ -97,7 +103,6 @@ function hosting_task_migrate_form($node) {
     "#default_value" => $node->platform,
     '#description' => t("Current platform"),
     '#parents' => array('parameters', 'target_platform'),
-    '#disabled' => TRUE,
   );
   foreach ($profile_platform_instances as $profile_instance) {
     if ($profile_instance->rid != $node->platform) {
