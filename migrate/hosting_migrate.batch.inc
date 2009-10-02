@@ -37,6 +37,7 @@ function hosting_migrate_platform($form_state, $node) {
         '#type' => 'submit',
         '#value' => t('Submit'),
       );
+    }
     else {
       $form['no_platforms'] = array(
         '#type' => 'item',
