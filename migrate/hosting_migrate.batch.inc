@@ -23,20 +23,26 @@ function hosting_migrate_platform($form_state, $node) {
     }
 
     $platforms = _hosting_get_platforms();
-    unset($platforms[$node->nid]);
-    $form['#current_platform'] = $node;
-    $form['target_platform'] = array(
-      '#type' => 'radios',
-      '#required' => TRUE,
-      '#title' => t('Platform'),
-      '#description' => t('Choose where you want to migrate the sites on this platform to'),
-      '#options' => $platforms,
-    );
-    $form['submit'] = array(
-      '#type' => 'submit',
-      '#value' => t('Submit'),
-    );
-
+    if (sizeof($platforms) > 1) {
+      unset($platforms[$node->nid]);
+      $form['#current_platform'] = $node;
+      $form['target_platform'] = array(
+        '#type' => 'radios',
+        '#required' => TRUE,
+        '#title' => t('Platform'),
+        '#description' => t('Choose where you want to migrate the sites on this platform to'),
+        '#options' => $platforms,
+      );
+      $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => t('Submit'),
+      );
+    else {
+      $form['no_platforms'] = array(
+        '#type' => 'item',
+        '#description' => t('There are no alternate platforms to migrate to.'),
+      );
+    }
   }
 
   // Step 2 - review sites that pass or fail the requirements to be migrated
