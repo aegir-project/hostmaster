@@ -296,3 +296,36 @@ function hosting_package_update_10() {
 
   return $ret;
 }
+
+// Remove duplicate packages introduced by a double validation of the main platform in 0.4 alpha 1. See #584188
+function hosting_package_update_6001() {
+  $ret = array();
+  
+  // There appear to be two types of duplication that can be encountered. So we try and find traces of either here
+  $duplicate = array();
+  $result = db_query("SELECT DISTINCT(package_id) FROM {hosting_package_instance} GROUP BY rid, filename HAVING count(*) > 1 ORDER BY package_id;");
+  while ($instance = db_fetch_array($result)) {
+    $duplicate[$instance['package_id']] = $instance['package_id'];
+  }
+  $result = db_query("SELECT nid FROM {hosting_package} WHERE nid NOT IN (SELECT package_id FROM {hosting_package_instance});");
+  while ($package = db_fetch_array($result)) {
+    $duplicate[$package['nid']] = $package['nid'];
+  }
+
+  // We'll only actually execute this fix if duplicates were found (i.e users upgrading from 0.3 should never encounter this)
+  if (count($duplicate)) {
+    foreach ($duplicate as $nid) {
+      $ret[] = array('success' => TRUE, 'query' => "Delete package ". $nid);
+      node_delete($nid);
+    }
+    // Schedule re-verify of all existing platforms
+    $result = db_query("SELECT nid FROM {node} WHERE type='platform' AND status=1");
+    while ($platform = db_fetch_object($result)) {
+      $ret[] = array('success' => TRUE, 'query' => "Re-verify scheduled for platform ". $platform->nid);
+      hosting_add_task($platform->nid, 'verify');
+    }
+  }
+
+  return $ret;
+}
+
