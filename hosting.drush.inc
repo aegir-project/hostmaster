@@ -12,18 +12,6 @@ function hosting_drush_command() {
     'description' => dt('Set up initial configuration settings such as the cron entry for the queue dispatcher and more.'),
   );
 
-  $items['hostmaster park'] = array(
-    'description' => dt('Prepare the site to be migrated to a new platform.'),
-    'arguments' => array(
-      'example.com' => dt('The url of the site being migrated.')),
-  );
-
-  $items['hostmaster unpark'] = array(
-    'description' => dt('Complete the migration of the site to a new platform.'),
-    'arguments' => array(
-      'example.com' => dt('The url of the site being migrated.')),
-  );
-
 
 
   $queues = hosting_get_queues();
