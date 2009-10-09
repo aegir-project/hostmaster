@@ -678,12 +678,12 @@ function hosting_task_table($node, $skip = array()) {
 
     $task = hosting_get_most_recent_task($node->nid, $task);
 
-    if (!in_array('created', $skip)) {
-      $headers[t('Created')] = '';
-      if ($task->created) {
-        $row['created'] = t("@interval ago", array('@interval' => format_interval(mktime() - $task->created, 1)));
+    if (!in_array('executed', $skip)) {
+      $headers[t('Executed')] = '';
+      if ($task->executed) {
+        $row['executed'] = t("@interval ago", array('@interval' => format_interval(mktime() - $task->executed, 1)));
       } else {
-        $row['created'] = t("Never ran");
+        $row['executed'] = t("Never");
       }
     }
 
