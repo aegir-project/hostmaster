@@ -681,9 +681,18 @@ function hosting_task_table($node, $skip = array()) {
     if (!in_array('executed', $skip)) {
       $headers[t('Executed')] = '';
       if ($task->executed) {
-        $row['executed'] = l(t("@interval ago", array('@interval' => format_interval(mktime() - $task->executed, 1))), "node/" . $task->nid, array('attributes' => array('title' => t('More information about this task'))));
+        $row['executed'] = t("@interval ago", array('@interval' => format_interval(mktime() - $task->executed, 1)));
       } else {
-        $row['executed'] = t("Never");
+        if ($task->nid && $task->task_status == HOSTING_TASK_QUEUED) {
+          $row['executed'] = t("Queued");
+        }
+        else {
+          $row['executed'] = t("Never");
+        }
+      }
+      // link to the task if it actually exists
+      if ($task->nid) {
+        $row['executed'] = l($row['executed'], "node/" . $task->nid, array('attributes' => array('title' => t('More information about this task'))));
       }
     }
 
