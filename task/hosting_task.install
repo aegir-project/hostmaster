@@ -164,9 +164,8 @@ function hosting_task_update_6000() {
 /**
  * remove the redundant hosting_queue table
  */
-function hosting_task_update_6000() {
+function hosting_task_update_6001() {
   $ret = array();
-  db_drop_table('hosting_task_queue');
+  db_drop_table($ret, 'hosting_task_queue');
   return $ret;
 }
-
