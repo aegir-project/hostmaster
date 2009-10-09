@@ -38,6 +38,7 @@ function hosting_task_schema() {
         'type' => 'int',
         'not null' => FALSE,
       ),
+      'delta' => array('type' => 'int', 'not null' => FALSE),
     ),
     'primary key' => array('vid'),
   );
@@ -173,3 +174,13 @@ function hosting_task_update_2() {
   variable_set('hosting_dispatch_enabled', TRUE);
   return $ret;
 }
+
+function hosting_task_update_6000() {
+  $ret = array();
+  db_add_field($ret, 'hosting_task', 'delta', array('type' => 'int', 'not null' => TRUE, 'default' => 0));
+  return $ret;
+}
+
+
+
+

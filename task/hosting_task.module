@@ -182,7 +182,6 @@ function hosting_add_task($nid, $type, $args = null) {
  }
  node_save($task);
 }
-
 /**
  * Implementation of hook_form().
  */
@@ -316,8 +315,8 @@ function hosting_automatic_tasks($type) {
  * Implementation of hook_insert().
  */
 function hosting_task_insert($node) {
-  db_query("INSERT INTO {hosting_task} (vid, nid, task_type, rid, executed, task_status) VALUES (%d, %d, '%s', %d, %d, %d)",
-    $node->vid, $node->nid, $node->task_type, $node->rid, $node->executed, $node->task_status);
+  db_query("INSERT INTO {hosting_task} (vid, nid, task_type, rid, executed, delta, task_status) VALUES (%d, %d, '%s', %d, %d, %d, %d)",
+   $node->vid, $node->nid, $node->task_type, $node->rid, $node->executed, $node->delta, $node->task_status);
 
   if (is_array($node->task_args)) {
     foreach ($node->task_args as $key => $value) {
@@ -347,8 +346,8 @@ function hosting_task_update($node) {
   }
   else {
     hosting_task_set_title($node);
-    db_query("UPDATE {hosting_task} SET nid=%d, task_type = '%s', rid = %d, executed=%d, task_status=%d WHERE vid=%d",
-      $node->nid, $node->task_type, $node->rid, $node->executed, $node->task_status, $node->vid);
+    db_query("UPDATE {hosting_task} SET nid=%d, task_type = '%s', rid = %d, executed=%d, delta=%d, task_status=%d WHERE vid=%d",
+      $node->nid, $node->task_type, $node->rid, $node->executed, $node->delta, $node->task_status, $node->vid);
     db_query("UPDATE {hosting_task_queue} SET status=%d WHERE nid=%d", $node->queued, $node->nid);
     if (is_array($node->task_args)) {
       # Wipe out old arguments first, since arguments could theoretically be removed.
@@ -380,7 +379,7 @@ function hosting_task_delete($node) {
  * Implementation of hook_load().
  */
 function hosting_task_load($node) {
-  $additions = db_fetch_object(db_query('SELECT task_type, executed, task_status, rid, q.status as queued FROM {hosting_task} t LEFT JOIN {hosting_task_queue} q ON t.nid=q.nid WHERE vid = %d', $node->vid));
+  $additions = db_fetch_object(db_query('SELECT task_type, executed, delta, task_status, rid, q.status as queued FROM {hosting_task} t LEFT JOIN {hosting_task_queue} q ON t.nid=q.nid WHERE vid = %d', $node->vid));
   $result = db_query("SELECT name, value FROM {hosting_task_arguments} WHERE vid=%d", $node->vid);
   if ($result) {
     while ($arg = db_fetch_object($result)) {
@@ -430,6 +429,13 @@ function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
       '#type' => 'item',
       '#title' => t('Executed'),
       '#value' => format_date($node->executed),
+      '#weight' => 1,
+    );
+    $node->content['info']['delta'] = array(
+      '#type' => 'item',
+      '#title' => t('Execution time'),
+      '#value' => format_interval($node->delta),
+      '#weight' => 2,
     );
   } else {
     $queues = hosting_get_queues();

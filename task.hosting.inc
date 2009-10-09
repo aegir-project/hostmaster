@@ -70,6 +70,7 @@ function drush_hosting_hosting_task() {
 
   // New revision is created at the beginning of function.
   $task->revision = FALSE;
+  $task->delta = mktime() - $task->executed;
   node_save($task);
 }
 
