@@ -339,7 +339,7 @@ function hosting_site_form($node) {
       '#title' => t('Port'),
       '#value' => $node->port,
      );
-    $form['port'] = array('#type' => 'hidden', '#value' => $node->port);
+    $form['port'] = _hosting_site_form_port();
     $form['info']['profile'] = array(
        '#type' => 'item',
        '#title' => t('Install Profile'),
