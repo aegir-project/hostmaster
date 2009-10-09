@@ -28,13 +28,11 @@ function drush_hosting_hosting_task_validate($task) {
     // We remove this from the queue at the start of execution,
     // otherwise, if it takes too long to run it might have a
     // second thread spawned to process it.
-    drush_log(dt("Removing task from hosting queue"), 'queue');
-    $task->queued = 0;
+    $task->task_status = HOSTING_TASK_PROCESSING;
     node_save($task);
 
     $task->options = array();
     $task->args = array();
-    // create a new revision
     drush_set_context('HOSTING_TASK', $task);
     drush_set_context('DRUSH_LOG_CALLBACK', '_hosting_task_log');
     drush_log(dt("Task starts processing"), 'queue');

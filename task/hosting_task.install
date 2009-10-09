@@ -110,29 +110,6 @@ function hosting_task_schema() {
     'primary key' => array('lid'),
   );
 
-  $schema['hosting_task_queue'] = array(
-    'fields' => array(
-      'nid' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => 0,
-      ),
-      'timestamp' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => 0,
-      ),
-      'status' => array(
-        'type' => 'int',
-        'size' => 'tiny',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
-      ),
-    ),
-    'primary key' => array('nid'),
-  );
-
   return $schema;
 }
 
@@ -175,12 +152,21 @@ function hosting_task_update_2() {
   return $ret;
 }
 
+/**
+ * Add a delta column to tasks so that we have a measure of duration of tasks
+ */
 function hosting_task_update_6000() {
   $ret = array();
   db_add_field($ret, 'hosting_task', 'delta', array('type' => 'int', 'not null' => TRUE, 'default' => 0));
   return $ret;
 }
 
-
-
+/**
+ * remove the redundant hosting_queue table
+ */
+function hosting_task_update_6000() {
+  $ret = array();
+  db_drop_table('hosting_task_queue');
+  return $ret;
+}
 
