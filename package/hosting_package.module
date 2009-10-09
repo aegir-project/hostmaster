@@ -343,7 +343,7 @@ function hosting_package_list($ref, $type = null) {
     LEFT JOIN {hosting_package_instance} i ON i.package_id=h.nid WHERE i.rid=%d" . $cond;
   $sql .= tablesort_sql($header);
   // @TODO hide deleted sites
-  $result = pager_query(db_rewrite_sql($sql), 25, 2, null, $args);
+  $result = pager_query(db_rewrite_sql($sql, 'h'), 25, 2, null, $args);
   $view_package_perm = user_access('view package');
 
   if (!$result) {
