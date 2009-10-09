@@ -27,6 +27,14 @@ function hosting_task_menu() {
   return $items;
 }
 
+/**
+ * Task access controls
+ *
+ * This function defines which tasks should be showed to the user but
+ * especially which will be accessible to him, in the permissions system.
+ *
+ * @see hosting_task_menu()
+ */
 function hosting_task_menu_access($node, $task) {
   if (user_access("create " . $task . " task")) {
     if ($node->type == 'site') {
