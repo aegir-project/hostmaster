@@ -83,6 +83,9 @@ function hosting_task_platform_load($arg) {
   return FALSE;
 }
 
+/**
+ * Implementation of hook_node_info()
+ */
 function hosting_task_node_info() {
   #management
   $types["task"] =  array(
@@ -95,12 +98,18 @@ function hosting_task_node_info() {
   return $types;
 }
 
+/**
+ * Implementation of hook_access()
+ */
 function hosting_task_access($op, $node, $account) {
   if(user_access('administer tasks', $account)) {
     return TRUE;
   }
 }
 
+/**
+ * Implementation of hook_perm()
+ */
 function hosting_task_perm() {
   return array(
     'administer tasks',
@@ -136,11 +145,17 @@ function hosting_task_hosting_queues() {
   return $queue;
 }
 
+/**
+ * Insert an entry in the task log
+ */
 function hosting_task_log($vid, $type, $message, $error = '', $timestamp = null ) {
  $timestamp = ($timestamp) ? $timestamp : mktime();
  db_query("INSERT INTO {hosting_task_log} (vid, type, message, error, timestamp) VALUES (%d, '%s', '%s', '%s', %d)", $vid, $type, $message, $error, $timestamp);
 }
 
+/**
+ * Retry the given task
+ */
 function hosting_task_retry($task_id) {
   $node = node_load($task_id);
   if ($node->task_status != HOSTING_TASK_QUEUED) {
@@ -354,6 +369,9 @@ function hosting_task_update($node) {
   }
 }
 
+/**
+ * Implementation of hook_delete_revision()
+ */
 function hosting_nodeapi_task_delete_revision(&$node) {
   db_query('DELETE FROM {hosting_task} WHERE vid = %d', $node->vid);
   db_query('DELETE FROM {hosting_task_arguments} WHERE vid = %d', $node->vid);
@@ -574,18 +592,27 @@ function hosting_get_tasks($filter_by = null, $filter_value = null, $count = 5, 
 
 
 /**
-* @name Error status definitions
-* @{
-* Bitmask values used to generate the error code to return.
-* @see drush_set_error(), drush_get_error(), drush_cmp_error()
-*/
+ * @name Error status definitions
+ * @{
+ * Bitmask values used to generate the error code to return.
+ * @see drush_set_error(), drush_get_error(), drush_cmp_error()
+ */
 
 
-/** The task is queued **/
+/**
+ * The task is queued
+ */
 define('HOSTING_TASK_QUEUED', 0);
-/** The command completed successfully. */
+
+/**
+ * The command completed succesfully.
+ */
 define('HOSTING_TASK_SUCCESS', 1);
-/** The command was not successfully completed. This is the default error status. */
+
+/**
+ * The command was not successfully completed. This is the default error
+ * status.
+ */
 define('HOSTING_TASK_ERROR', 2);
 
 /**
@@ -610,6 +637,9 @@ function _hosting_parse_error_code($code) {
   return $messages[$code];
 }
 
+/**
+ * Return the status of the task matching the specification
+ */
 function hosting_task_status($filter_by, $filter_value, $type = 'install') {
   $args[] = 'task';
   $args[] = $type;
@@ -622,6 +652,11 @@ function hosting_task_status($filter_by, $filter_value, $type = 'install') {
   return $result['status'];
 }
 
+/**
+ * Return the status of a task in human-readable form
+ *
+ * @see hosting_task_status()
+ */
 function hosting_task_status_output($filter_by, $filter_value, $type = 'install') {
   $status = hosting_task_status($filter_by, $filter_value, $type);
   if (is_int($status)) {
@@ -634,7 +669,6 @@ function hosting_task_status_output($filter_by, $filter_value, $type = 'install'
 /**
  * Display list of tasks
  */
- 
 function hosting_task_list($filter_by = null, $filter_value = null) {
   return _hosting_task_list($filter_by, $filter_value, 25, 12, 'title');
 }
@@ -760,9 +794,8 @@ function hosting_task_list_embedded($filter_by = null, $filter_value = null) {
 } 
 
 /**
- * Theme functions
+ * Theme a task list
  */
- 
 function _hosting_task_list($filter_by, $filter_value, $count = 5, $element = 0, $field = 'title', $skip = array(), $pager = TRUE) {
   $nodes = hosting_get_tasks($filter_by, $filter_value, $count, $element);
 

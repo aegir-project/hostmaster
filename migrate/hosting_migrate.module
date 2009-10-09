@@ -6,7 +6,6 @@
  */
 include_once('hosting_migrate.batch.inc');
 
-
 function hosting_migrate_perm() {
   return array(
     'create migrate task',
