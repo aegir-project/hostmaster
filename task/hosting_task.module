@@ -681,7 +681,7 @@ function hosting_task_table($node, $skip = array()) {
     if (!in_array('executed', $skip)) {
       $headers[t('Executed')] = '';
       if ($task->executed) {
-        $row['executed'] = t("@interval ago", array('@interval' => format_interval(mktime() - $task->executed, 1)));
+        $row['executed'] = l(t("@interval ago", array('@interval' => format_interval(mktime() - $task->executed, 1))), "node/" . $task->nid, array('attributes' => array('title' => t('More information about this task'))));
       } else {
         $row['executed'] = t("Never");
       }
