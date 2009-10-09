@@ -201,6 +201,11 @@ function hosting_task_confirm_form($form_state, &$node, $task) {
   return confirm_form($form, $question, 'node/' . $node->nid, '', $tasks[$task]['title']);
 }
 
+/**
+ * Customize the task confirmation form for restore.
+ *
+ * This adds the backup listing to the confirmation dialog.
+ */
 function hosting_task_restore_form($node) {
   $list = hosting_site_backup_list($node->nid);
   if (sizeof($list)) {
@@ -221,13 +226,26 @@ function hosting_task_restore_form($node) {
   return $form;
 }
 
-
+/**
+ * Generic form submit handler for tasks confirmation
+ *
+ * This handler gets called after any task has been confirmed by the user. It
+ * will inject a new task in the queue and redirect the user to the
+ * originating node.
+ *
+ * @see hosting_add_task()
+ */
 function hosting_task_confirm_form_submit($form, &$form_state) {
   $values = $form_state['values'];
   hosting_add_task($values['nid'], $values['task'], $values['parameters']);
   $form_state['redirect'] = 'node/' . $values['nid'];
 }
 
+/**
+ * Set the title of tasks automatically and in a consistent way
+ *
+ * Tasks should always be named 'task_type node_title'.
+ */
 function hosting_task_set_title(&$node) {
   $ref = node_load($node->rid);
   $node->title = drupal_ucfirst($node->task_type) . ' ' . $ref->title;
