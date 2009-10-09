@@ -28,32 +28,32 @@ function hosting_site_hosting_tasks($type, $task = null) {
     $options['backup'] = array(
       'title' => t('Backup'),
       'description' => t('Generate a backup of this site that can be restored to at any time'),
-      'weight' => 7
+      'weight' => 3
      );
 
     $options['restore'] = array(
       'title' => t('Restore'),
       'description' => t('Restore this site to a previous backup. A new backup will be created before this is attempted.'),
-      'weight' => 7,
+      'weight' => 4,
     );
 
     $options['verify'] = array(
       'title' => t('Verify'),
       'description' => t('Confirm that the site has been correctly installed and regenerate all configuration files to match the hosting front end.'),
-      'weight' =>  9,
+      'weight' =>  7,
     );
 
     $options['disable'] = array(
       'title' =>  t('Disable'),
       'description' =>  t('Disabling this site will stop it from being accessible.
            It can be enabled again later.'),     
-      'weight' =>  4,
+      'weight' =>  8,
     );     
     $options['enable'] = array(
       'title' => t('Enable'),
       'description' => t('Enabling this site will allow it to be accesible again.
            It may be disabled again if needed.'),
-      'weight' =>  4,     
+      'weight' =>  9,     
     );
     $options['delete'] = array(
       'title' => t('Delete'),
@@ -77,8 +77,8 @@ function hosting_site_hosting_tasks($type, $task = null) {
 function hosting_site_hosting_auto_tasks($type, $task = null) {
   $options = array();
   if ($type == 'site') {
-    $options['install'] = array('title' => t('Install'), 'description' => t('Install a site'), 'weight' => 1);
-    $options['import'] = array('title' => t('Import'), 'description' => t('Import and existing site into Aegir'), 'weight' => 1);
+    $options['install'] = array('title' => t('Install'), 'description' => t('Install a site'), 'weight' => 0);
+    $options['import'] = array('title' => t('Import'), 'description' => t('Import and existing site into Aegir'), 'weight' => 0);
   }
   return $options;
 }

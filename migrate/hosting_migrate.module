@@ -46,7 +46,7 @@ function hosting_migrate_hosting_tasks($type, $task = null) {
     $options['migrate'] = array(
       'title' => t('Migrate'),
       'description' => t('Move the site to a new platform.'),
-      'weight' => 7
+      'weight' => 5
     );
   }
   return $options;

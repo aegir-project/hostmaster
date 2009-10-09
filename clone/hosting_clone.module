@@ -7,7 +7,7 @@ function hosting_clone_hosting_tasks($type, $task = null) {
     $options['clone'] = array(
       'title' => t('Clone'),
       'description' => t('Copy the site to a new platform.'),
-      'weight' => 7
+      'weight' => 5
     );
   }
   return $options;
