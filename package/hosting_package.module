@@ -335,12 +335,12 @@ function hosting_package_list($ref, $type = null) {
   $args[] = $ref->nid;
 
   if (!is_null($type)) {
-    $cond = " AND n.package_type = '%s'";
+    $cond = " AND h.package_type = '%s'";
     $args[] = $type;
   }
 
-  $sql = "SELECT n.nid as 'package', i.status, n.short_name, i.version, n.package_type, i.status FROM {hosting_package} n
-    LEFT JOIN {hosting_package_instance} i ON i.package_id=n.nid WHERE i.rid=%d" . $cond;
+  $sql = "SELECT h.nid as 'package', i.status, h.short_name, i.version, h.package_type, i.status FROM {hosting_package} h
+    LEFT JOIN {hosting_package_instance} i ON i.package_id=h.nid WHERE i.rid=%d" . $cond;
   $sql .= tablesort_sql($header);
   // @TODO hide deleted sites
   $result = pager_query(db_rewrite_sql($sql), 25, 2, null, $args);
