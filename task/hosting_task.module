@@ -146,7 +146,7 @@ function hosting_task_retry($task_id) {
   if (!$node->queued) {
     drupal_set_message(t("The task is being retried and has been added to the hosting queue again"));
     hosting_task_log($node->vid, 'queue', t("The task is being retried and has been added to the hosting queue again"));
-    $node->revision = FALSE;
+    $node->revision = TRUE;
     $node->queued = 1;
     node_save($node);
   }
@@ -159,16 +159,21 @@ function hosting_task_retry($task_id) {
 function hosting_add_task($nid, $type, $args = null) {
  global $user;
 
- $node = node_load($nid);
- $task = new stdClass();
- $task->type = 'task';
+ $task = hosting_get_most_recent_task($nid, $type);
+
+ if (!$task) {
+    $node = node_load($nid);
+    $task = new stdClass();
+    $task->type = 'task';
+    # TODO: make this pretty
+    $task->title = t("!type !title", array('!type' => $type, '!title' => $node->title) );
+    $task->task_type = $type;
+    $task->rid = $node->nid;
+ }
  $task->uid = $user->uid;
  $task->status = 1;
- #todo: make this pretty
- $task->title = t("!type !title", array('!type' => $type, '!title' => $node->title) );
- $task->task_type = $type;
  $task->task_status = HOSTING_TASK_QUEUED;
- $task->rid = $node->nid;
+ $task->revision = TRUE;
  $task->queued = 1;
 
  #arguments, such as which backup to restore.
