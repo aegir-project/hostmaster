@@ -714,11 +714,25 @@ function hosting_task_table($node, $skip = array()) {
       $class = 'hosting-queue';
     }
 
-    $rows[] = array('data' => $row, 'class' => $class, 'weigth' => $info->weigth);
+    $rows[] = array('data' => $row, 'class' => $class, 'weight' => $info['weight']);
   }
-  // @todo sort table based on weigth of rows
+  uasort($rows, "_hosting_task_info_cmp");
   $output .= theme('table', array_keys($headers), $rows, array('class' => 'hosting-table'));
   return $output;
+}
+
+/**
+ * Helper function for hosting_task_table() to be sorted properly
+ *
+ * @see hosting_task_table()
+ */
+function _hosting_task_info_cmp($a, $b) {
+  if ($a['weight'] == $b['weight']) {
+    return 0;
+  }
+  else {
+    return ($a['weight'] < $b['weight'] ) ? -1 : 1;
+  }
 }
 
 /**
