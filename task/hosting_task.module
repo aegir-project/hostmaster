@@ -161,15 +161,15 @@ function hosting_add_task($nid, $type, $args = null) {
 
  $task = hosting_get_most_recent_task($nid, $type);
 
+ $node = node_load($nid);
  if (!$task) {
-    $node = node_load($nid);
     $task = new stdClass();
-    $task->type = 'task';
-    # TODO: make this pretty
-    $task->title = t("!type !title", array('!type' => $type, '!title' => $node->title) );
-    $task->task_type = $type;
-    $task->rid = $node->nid;
  }
+ $task->type = 'task';
+# TODO: make this pretty
+ $task->title = t("!type !title", array('!type' => $type, '!title' => $node->title));
+ $task->task_type = $type;
+ $task->rid = $node->nid;
  $task->uid = $user->uid;
  $task->status = 1;
  $task->task_status = HOSTING_TASK_QUEUED;
