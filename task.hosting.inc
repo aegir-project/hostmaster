@@ -23,11 +23,12 @@ function drush_hosting_hosting_task_validate($task) {
     $task->ref = node_load($task->rid);
     $task->changed = mktime();
     $task->executed = mktime();
-    $task->revision = true;
+    $task->revision = FALSE;
 
     // We remove this from the queue at the start of execution,
     // otherwise, if it takes too long to run it might have a
     // second thread spawned to process it.
+    drush_log(dt("Removing task from hosting queue"), 'queue');
     $task->queued = 0;
     node_save($task);
 
@@ -67,11 +68,9 @@ function drush_hosting_hosting_task() {
   // We return 0 on success, so anything else is an error.
   $task->task_status = ($code) ? HOSTING_TASK_ERROR : HOSTING_TASK_SUCCESS;
 
-  $task->queued = 0;
-    // New revision is created at the beginning of function.
-  $task->revision = false;
+  // New revision is created at the beginning of function.
+  $task->revision = FALSE;
   node_save($task);
-  drush_log(dt("Removing task from hosting queue"), 'queue');
 }
 
 function drush_hosting_hosting_task_rollback() {
