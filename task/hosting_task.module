@@ -19,7 +19,7 @@ function hosting_task_menu() {
          'page arguments' => array('hosting_task_confirm_form', 1, $task),
          'access callback' => 'hosting_task_menu_access',
          'access arguments' => array(1, $task),
-         'type' => MENU_LOCAL_TASK,
+         'type' => MENU_CALLBACK,
          'weight' => ($info['weight']) ? $info['weight'] : 0, 
        );
      }
@@ -251,10 +251,35 @@ function hosting_task_count() {
   return db_result(db_query("SELECT COUNT(nid) FROM {hosting_task_queue} q WHERE q.status = 1"));
 }
 
+/**
+ * User-driven task descriptions
+ *
+ * This is the list of tasks that can be invoked by the user. This doesn't
+ * check permissions or relevance of the tasks.
+ *
+ * Modules can extend this list using hook_hosting_tasks()
+ *
+ * @see hook_hosting_tasks()
+ * @see hosting_task_menu_access()
+ */
 function hosting_available_tasks($type) {
   return module_invoke_all('hosting_tasks', $type);
 }
 
+/**
+ * Automatic tasks descriptions
+ *
+ * This is the list of tasks that are considered "automatic" by
+ * Aegir. Automatic tasks are never called directly by the user and are only
+ * used in certain circumstances. For example, the install or import tasks are
+ * automatically generated when creating a site node or verifying a platform
+ * with existing sites.
+ *
+ * @see hook_hosting_auto_tasks()
+ */
+function hosting_automatic_tasks($type) {
+  return module_invoke_all('hosting_auto_tasks', $type);
+}
 
 /**
  * Implementation of hook_insert().
@@ -495,8 +520,12 @@ function hosting_get_most_recent_task($rid, $type) {
 
 /**
  * Retrieve tasks with specified criterias
+ *
+ * @arg $filter_by string a field to filter the list with, unchecked
+ * @arg $filter_value string what to restrict the field to, checked
+ * @arg $count integer the number of tasks to return
+ * @arg $element integer which element to start from
  */
-
 function hosting_get_tasks($filter_by = null, $filter_value = null, $count = 5, $element = 0) {
   $node = array();
   $args[] = 'task';
@@ -577,10 +606,97 @@ function hosting_task_list($filter_by = null, $filter_value = null) {
   return _hosting_task_list($filter_by, $filter_value, 25, 12, 'title');
 }
 
+/**
+ * Implementation of hosting_hook_summary()
+ */
 function hosting_task_summary($filter_by = null, $filter_value = null) {
   return _hosting_task_list($filter_by, $filter_value, 5, 11, 'title', array('created', 'actions'), l(t('More tasks'), 'hosting/queues/tasks'));
 }
 
+/**
+ * A concise table listing of the tasks affecting this node
+ *
+ * This shows a table view of the tasks relevant to this node. It will show
+ * tasks that can be executed as well as tasks that have been in a single
+ * simple interface.
+ */
+function hosting_task_table($node, $skip = array()) {
+  $output = '';
+
+  $headers[t('Task')] = '';
+
+  $tasklist = hosting_available_tasks($node->type);
+
+  // try to fetch automatic tasks from the queue if present
+  $auto = hosting_automatic_tasks($node->type);
+  foreach ($auto as $task => $info) {
+    $task_node = hosting_get_most_recent_task($node->nid, $task);
+    if ($task_node) {
+      $tasklist[$task] = $info;
+    }
+  }
+
+  foreach ($tasklist as $task => $info) {
+    $row = array();
+    if (array_key_exists($task, $auto) || !hosting_task_menu_access($node, $task)) {
+      $link = $info['title'];
+    } else {
+      $link = l($info['title'], sprintf("node/%d/%s_%s", $node->nid, $node->type, $task), array('attributes' => array('title' => $info['description'])));
+    }
+    $row['type'] = array('data' => $link, 'class' => 'hosting-status');
+
+    $task = hosting_get_most_recent_task($node->nid, $task);
+
+    if (!in_array('created', $skip)) {
+      $headers[t('Created')] = '';
+      if ($task->created) {
+        $row['created'] = t("@interval ago", array('@interval' => format_interval(mktime() - $task->created, 1)));
+      } else {
+        $row['created'] = t("Never ran");
+      }
+    }
+
+    if (!in_array('actions', $skip) && user_access('retry failed tasks')) {
+      $headers[t('Actions')] = '';
+
+      if (($task->task_status == HOSTING_TASK_ERROR) && !$task->queued) {
+        $row['actions'] = array(
+                                'data' => drupal_get_form('hosting_task_retry_form', $task->nid),
+                                'class' => 'hosting-task-retry'
+        );
+      }
+      else {
+        $row['actions'] = '';
+      }
+    }
+
+    if ($task->task_status == HOSTING_TASK_SUCCESS) {
+      $class = 'hosting-success';
+    }
+    elseif ($task->task_status == HOSTING_TASK_ERROR) {
+      $class = 'hosting-error';
+    }
+    elseif (!$task->created) {
+      $class = 'hosting-available';
+    }
+    else {
+      $class = 'hosting-queue';
+    }
+
+    $rows[] = array('data' => $row, 'class' => $class, 'weigth' => $info->weigth);
+  }
+  // @todo sort table based on weigth of rows
+  $output .= theme('table', array_keys($headers), $rows, array('class' => 'hosting-table'));
+  return $output;
+}
+
+/**
+ * A list of recent tasks, used to be embeded in site and platform nodes
+ *
+ * @deprecated
+ * @see hosting_task_list_table()
+ * @see hosting_task_list()
+ */
 function hosting_task_list_embedded($filter_by = null, $filter_value = null) {
   return _hosting_task_list($filter_by, $filter_value, 5, 10, 'task_type', array('created'));
 } 

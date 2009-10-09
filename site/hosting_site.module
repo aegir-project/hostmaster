@@ -67,6 +67,23 @@ function hosting_site_hosting_tasks($type, $task = null) {
 }
 
 /**
+ * Implementation of hook_hosting_auto_tasks()
+ *
+ * The site module defines two tasks that are automatically created. The first
+ * one is "install", which takes care of installing a site when a site node is
+ * created and the second one is "import" which makes sure the site is
+ * properly imported in the frontend when detected in platform verification.
+ */
+function hosting_site_hosting_auto_tasks($type, $task = null) {
+  $options = array();
+  if ($type == 'site') {
+    $options['install'] = array('title' => t('Install'), 'description' => t('Install a site'), 'weight' => 1);
+    $options['import'] = array('title' => t('Import'), 'description' => t('Import and existing site into Aegir'), 'weight' => 1);
+  }
+  return $options;
+}
+
+/**
  * Implementation of hook_perm
  */
 function hosting_site_perm() {
@@ -568,7 +585,7 @@ function hosting_site_view(&$node, $teaser = false) {
   if ($node->nid) { 
     $node->content['tasks_view'] = array(
       '#type' => 'item',
-      '#value' => hosting_task_list_embedded('rid', $node->nid),
+      '#value' => hosting_task_table($node),
       '#prefix' => '<div id="hosting-task-list">',
       '#suffix' => '</div>', 
       '#weight' => 10
