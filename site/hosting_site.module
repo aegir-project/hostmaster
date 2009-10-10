@@ -20,7 +20,7 @@ function hosting_site_node_info() {
 
 
 /**
- * implementation of hook_hosting_tasks
+ * Implementation of hook_hosting_tasks
  */
 function hosting_site_hosting_tasks($type, $task = null) {
   $options = array();
@@ -386,6 +386,9 @@ function hosting_site_form($node) {
   return $form;
 }
 
+/**
+ * Implementation of hook_validate().
+ */
 function hosting_site_validate($node, &$form) {
   global $user;
   $url = strtolower(trim($node->title)); // domain names are case-insensitive
@@ -435,6 +438,9 @@ function hosting_site_nodeapi(&$node, $op, $teaser, $page) {
   }
 }
 
+/**
+ * Implementation of hook_insert().
+ */
 function hosting_site_insert(&$node) {
   $client = hosting_get_client($node->client);
   $node->client = $client->nid;
@@ -451,7 +457,10 @@ function hosting_site_insert(&$node) {
     }
   }
 }
- 
+
+/**
+ * Helper function to retrieve an array of allowed ports
+ */
 function _hosting_site_allowed_ports($platform) {
   $ports = db_result(db_query("SELECT ports FROM {hosting_platform} p JOIN {hosting_web_server} w ON p.web_server = w.nid WHERE p.nid = %d", $platform));
   $ports = explode(",", $ports);
@@ -465,6 +474,9 @@ function _hosting_site_allowed_ports($platform) {
   return $ret;
 }
 
+/**
+ * Implementation of hook_update().
+ */
 function hosting_site_update(&$node) {
   // if this is a new node or we're adding a new revision,
   if ($node->revision) {
@@ -481,11 +493,17 @@ function hosting_site_update(&$node) {
   }
 }
 
+/**
+ * Implementation of hook_load().
+ */
 function hosting_site_load($node) {
   $additions = db_fetch_object(db_query('SELECT  client, db_server, platform, profile, language as site_language, last_cron, status AS site_status, verified, port, `ssl`, ssl_redirect FROM {hosting_site} WHERE vid = %d', $node->vid));
   return $additions;
 }
 
+/**
+ * Implementation of hook_nodeapi_delete_revision().
+ */
 function hosting_nodeapi_site_delete_revision(&$node) {
   db_query('DELETE FROM {hosting_site} WHERE vid = %d', $node->vid);
 }
@@ -502,6 +520,9 @@ function hosting_site_delete($node) {
   }
 }
 
+/**
+ * Implementation of hook_view().
+ */
 function hosting_site_view(&$node, $teaser = false) {
   hosting_set_breadcrumb($node);
   $node->content['info']['#prefix'] = '<div id="hosting-site-info">';
@@ -594,6 +615,9 @@ function hosting_site_view(&$node, $teaser = false) {
   return $node;
 }
 
+/**
+ * Define the status types of a site
+ */
 function _hosting_site_status($node) {
   static $labels = array(
     HOSTING_SITE_QUEUED => "Queued",
@@ -649,6 +673,7 @@ function hosting_site_backup_list($site) {
 
 
 /**
+ * Implementation of hook_form_alter().
  * Hide the delete button on site nodes
  */
 function hosting_site_form_alter(&$form, &$form_state, $form_id) {
@@ -791,6 +816,10 @@ function hosting_site_list($filter_by = null, $filter_value = null) {
   return theme('table',  $header, $rows, array('class' => 'hosting-table')) . theme('pager', null, 25, 1);
 }
 
+/**
+ * Define the classes that correspond to the site status.
+ * @see _hosting_site_status()
+ */
 function _hosting_site_list_class($node) {
   static $classes = array(
     HOSTING_SITE_QUEUED => "hosting-queue",
@@ -817,6 +846,9 @@ function hosting_sites() {
     '!link' => $create_site_link));
 }
 
+/**
+ * Implementation of hook_menu()
+ */
 function hosting_site_menu() {
   $items = array();
 
@@ -838,7 +870,7 @@ function hosting_site_menu() {
 }
 
 /**
- * generate hosting site node form element 'profile'
+ * Generate hosting site node form element 'profile'
  */
 function _hosting_site_form_profile($platform = NULL) {
   $profiles = hosting_get_profiles($platform);
@@ -859,6 +891,9 @@ function _hosting_site_form_profile($platform = NULL) {
   return $form['profile'];
 }
 
+/**
+ * Generate hosting site node form element 'port'
+ */
 function _hosting_site_form_port($platform = HOSTING_DEFAULT_PLATFORM) {
   $showports = _hosting_site_allowed_ports($platform);
   $defport = reset($showports);
@@ -879,7 +914,7 @@ function _hosting_site_form_port($platform = HOSTING_DEFAULT_PLATFORM) {
 }
 
 /**
- * generate hosting site node form element 'language'
+ * Generate hosting site node form element 'language'
  */
 function _hosting_site_form_site_language($profile = NULL, $platform = null) {
   $languages = hosting_get_profile_languages($profile, $platform);
@@ -901,7 +936,7 @@ function _hosting_site_form_site_language($profile = NULL, $platform = null) {
 }
 
 /**
- * populate hosting site node form element with specified arguments
+ * Populate hosting site node form element with specified arguments
  */
 function _hosting_site_form_populate($element, $value, $value2 = null) {
   $element = str_replace('-', '_', $element);
