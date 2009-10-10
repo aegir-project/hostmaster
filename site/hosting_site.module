@@ -78,7 +78,7 @@ function hosting_site_hosting_auto_tasks($type, $task = null) {
   $options = array();
   if ($type == 'site') {
     $options['install'] = array('title' => t('Install'), 'description' => t('Install a site'), 'weight' => 0);
-    $options['import'] = array('title' => t('Import'), 'description' => t('Import and existing site into Aegir'), 'weight' => 0);
+    $options['import'] = array('title' => t('Import'), 'description' => t('Import an existing site into Aegir'), 'weight' => 0);
   }
   return $options;
 }
