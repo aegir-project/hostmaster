@@ -5,18 +5,21 @@ function hosting_db_server_hosting_service() {
 }
 
 /**
-  * Implementation of hook_help().
-  */
- function hosting_db_server_help($section) {
-   switch ($section) {
-     case 'admin/help/provision#requirements':
+ * Implementation of hook_help().
+ */
+function hosting_db_server_help($section) {
+  switch ($section) {
+    case 'admin/help/provision#requirements':
+      $output .= _hosting_requirements('mysql_user');
+      return $output;
+      break;
+  }
+}
 
-       $output .= _hosting_requirements('mysql_user');
-       return $output;
-       break;
-   }
- }
-
+/**
+ * Display helpful information regarding the creation
+ * of a MySQL superuser
+ */
 function _hosting_mysql_user_requirements() {
    $username = HOSTING_DEFAULT_SCRIPT_USER;
    $command = <<<EOF
@@ -45,6 +48,9 @@ EOF;
   return $help;
 }
 
+/**
+ * Find the database server()
+ */
 function hosting_get_db_server($hostname, $web_server = null) {
   if (_hosting_valid_ip($hostname)) {
     $ip = $hostname;
@@ -61,11 +67,17 @@ function hosting_get_db_server($hostname, $web_server = null) {
   return false;
 }
 
+/**
+ * Populate a database URL string
+ */
 function hosting_db_server_as_url($nid) {
   $node = node_load($nid);
   return sprintf("%s://%s:%s@%s", $node->db_type, $node->db_user, $node->db_passwd, $node->title);
 }
 
+/**
+ * Implementation of hook_info()
+ */
 function hosting_db_server_node_info() {
   $types["db_server"] =  array(
     "type" => 'db_server', "name" => 'Database server',
@@ -76,6 +88,9 @@ function hosting_db_server_node_info() {
   return $types;
 }
 
+/**
+ * Implementation of hook_hosting_feature()
+ */
 function hosting_db_server_hosting_feature() {
   $features['db_server'] = array(
     'title' => t('Database servers'),
@@ -87,13 +102,17 @@ function hosting_db_server_hosting_feature() {
 
 }
 
+/**
+ * Implementation of hook_perm()
+ */
 function hosting_db_server_perm() {
   return array('create database server','view database server', 'edit database server', 'delete database server');
 }
 
+/**
+ * Implementation of hook_access()
+ */
 function hosting_db_server_access($op, $node, $account) {
-
-
   switch($op) {
     case 'create':
       return user_access('create database server', $account);
@@ -107,8 +126,7 @@ function hosting_db_server_access($op, $node, $account) {
     default:
       break;
   }
-
-//  return hosting_access($op, $node, $account);
+  //return hosting_access($op, $node, $account);
 }
 
 /**
@@ -128,7 +146,6 @@ function _hosting_get_db_servers() {
  * Implementation of hook_form().
  */
 function hosting_db_server_form(&$node) {
-  
   $form['title'] = array(
     '#type' => 'textfield',
     '#title' => t('Hostname'),
@@ -138,12 +155,10 @@ function hosting_db_server_form(&$node) {
     '#maxlength' => 64,
     '#weight' => 0,
   );
-
   $form['db_type'] = array(
     '#type' => 'value',
     '#value' => ($node->db_type) ? $node->db_type : 'mysqli'
   );
-
   $form['db_user'] = array(
     '#type' => 'textfield',
     '#required' => TRUE,
@@ -164,12 +179,11 @@ function hosting_db_server_form(&$node) {
     '#size' => 30,
     '#weight' => 10
   );
-
   return $form;
 }
 
 /**
- * Implementation hook_nodeapi().
+ * Implementation of hook_nodeapi().
  */
 function hosting_db_server_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
   switch ($op) {
@@ -178,7 +192,7 @@ function hosting_db_server_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
         $old = node_load($node->nid);
         $node->db_passwd = $old->db_passwd;
       }
-      break;
+    break;
   }
 }
 
@@ -211,6 +225,9 @@ function hosting_db_server_update($node) {
   }
 }
 
+/**
+ * Implementation of hook_nodeapi_delete_revision()
+ */
 function hosting_nodeapi_db_server_delete_revision(&$node) {
   db_query('DELETE FROM {hosting_db_server} WHERE vid = %d', $node->vid);
 }
@@ -244,13 +261,11 @@ function hosting_db_server_view($node, $teaser = FALSE, $page = FALSE) {
     '#title' => t('Database type'),
     '#value' => $node->db_type,
   );
-  
   $node->content['info']['db_user'] = array(
     '#type' => 'item',
     '#title' => t('Database user'),
     '#value' => filter_xss($node->db_user),
   );
-
   $node->content['sites_view'] = array(
     '#type' => 'item',
     '#value' => hosting_site_list("db_server", $node->nid), 
@@ -258,12 +273,12 @@ function hosting_db_server_view($node, $teaser = FALSE, $page = FALSE) {
     '#suffix' => '</div>',
     '#weight' => 10
   );
-  
   return $node;
 }
 
-
-
+/**
+ * Implementation of hook_hosting_summary()
+ */
 function hosting_db_server_hosting_summary() {
   $summary = array();
   $db_servers = _hosting_get_db_servers();

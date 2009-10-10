@@ -16,7 +16,7 @@ function hosting_platform_node_info() {
 }
 
 /**
- * Implementation of hook_hosting_tasks
+ * Implementation of hook_hosting_tasks()
  */
 function hosting_platform_hosting_tasks($type) {
   $options = array();
@@ -30,7 +30,9 @@ function hosting_platform_hosting_tasks($type) {
   return $options;
 }
 
-
+/**
+ * Implementation of hook_hosting_feature()
+ */
 function hosting_platform_hosting_feature() {
   $features['platform'] = array(
       'title' => t('Platforms'), 
@@ -40,11 +42,16 @@ function hosting_platform_hosting_feature() {
   return $features;
 }
 
-
+/**
+ * Implementation of hook_perm()
+ */
 function hosting_platform_perm() {
   return array('create platform', 'view platform', 'edit platform', 'delete platform');
 }
 
+/**
+ * Implementation of hook_access()
+ */
 function hosting_platform_access($op, $node, $account) {
   if (!hosting_feature('platform')) {
     return FALSE;
@@ -163,6 +170,9 @@ function hosting_platform_update($node) {
   }
 }
 
+/**
+ * Implementation of hook_nodeapi_delete_revision()
+ */
 function hosting_nodeapi_platform_delete_revision(&$node) {
   db_query('DELETE FROM {hosting_platform} WHERE vid = %d', $node->vid);
 }
@@ -271,6 +281,9 @@ function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
   return $node;
 }
 
+/**
+ * Implementation of hook_hosting_summary()
+ */
 function hosting_platform_hosting_summary() {
   $summary = array();
   $platforms = _hosting_get_platforms();
