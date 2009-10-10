@@ -26,6 +26,10 @@ function hosting_migrate_platform($form_state, $node) {
     if (sizeof($platforms) > 1) {
       unset($platforms[$node->nid]);
       $form['#current_platform'] = $node;
+      $form['description'] = array(
+        '#type' => 'item',
+        '#description' => 'Perform a batch migration of sites from this platform to a target platform.',
+      );
       $form['target_platform'] = array(
         '#type' => 'radios',
         '#required' => TRUE,
