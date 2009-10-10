@@ -16,7 +16,7 @@ function hosting_web_server_hosting_service() {
  * Implementation of hook_help().
  *
  * @see _hosting_requirements()
- * @se hosting_help_requirements()
+ * @see hosting_help_requirements()
  */
 function hosting_web_server_help($path, $arg) {
   switch ($path) {
@@ -254,7 +254,7 @@ function hosting_web_server_form(&$node) {
       '#type' => 'textfield',
       '#title' => t('Restart command'),
       '#required' => TRUE,
-      '#description' => t('The command to run to restart the for new changes to take effect. This is required for the new site to become live'),
+      '#description' => t('The command to run to restart the web server for new changes to take effect. This is required for the new site to become live'),
       '#default_value' => ($node->restart_cmd) ? $node->restart_cmd : HOSTING_DEFAULT_RESTART_CMD,
       '#size' => 40,
       '#maxlength' => 255,
