@@ -343,19 +343,19 @@ aegir_database () {
   done;
   
   echo "Creating mysql database for hostmaster site :"
-  aegir_prompt "Database [hostmaster]:"
+  aegir_prompt "Database [aegir]:"
   read HMDB
   if [ -z $HMDB ]; then
-    HMDB="hostmaster";
+    HMDB="aegir";
   fi;
   
   mysqladmin -u$MYSQLUSER -p$DBPASS create $HMDB
 
   echo "Creating $HMDB user account :"
-  aegir_prompt "Username [hostmaster]:"
+  aegir_prompt "Username [aegir]:"
   read HMUSER
   if [ -z $HMUSER ]; then
-    HMUSER="hostmaster";
+    HMUSER="aegir";
   fi;
 
   aegir_prompt "Password:"
@@ -367,10 +367,10 @@ aegir_database () {
   mysql -u$MYSQLUSER  -p$DBPASS $HMDB
   
   echo "Creating aegir mysql superuser account :"
-  aegir_prompt "Username [aegir]:"
+  aegir_prompt "Username [aegir_root]:"
   read AEUSER
   if [ -z $AEUSER ]; then
-    AEUSER="aegir";
+    AEUSER="aegir_root";
   fi;
 
   aegir_prompt "Password:"
