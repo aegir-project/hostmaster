@@ -283,7 +283,10 @@ function hosting_package_update_9() {
 
 // Re-verify all platforms and sites
 function hosting_package_update_10() {
-  $ret = array();
+  // the task database schema needs to be changed before hosting_add_task will work.
+  $ret = hosting_task_update_6000();
+
+
   $result = db_query("SELECT nid FROM {node} WHERE type='platform'");
   while ($platform = db_fetch_object($result)) {
     hosting_add_task($platform->nid, 'verify');
@@ -299,8 +302,10 @@ function hosting_package_update_10() {
 
 // Remove duplicate packages introduced by a double validation of the main platform in 0.4 alpha 1. See #584188
 function hosting_package_update_6001() {
-  $ret = array();
-  
+  // the task database schema needs to be changed before hosting_add_task will work.
+
+  $ret = hosting_task_update_6000();
+
   // There appear to be two types of duplication that can be encountered. So we try and find traces of either here
   $duplicate = array();
   $result = db_query("SELECT DISTINCT(package_id) FROM {hosting_package_instance} GROUP BY rid, filename HAVING count(*) > 1 ORDER BY package_id;");

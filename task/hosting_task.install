@@ -156,8 +156,14 @@ function hosting_task_update_2() {
  * Add a delta column to tasks so that we have a measure of duration of tasks
  */
 function hosting_task_update_6000() {
+
   $ret = array();
-  db_add_field($ret, 'hosting_task', 'delta', array('type' => 'int', 'not null' => TRUE, 'default' => 0));
+
+  // this update needs to be run before tasks can be added, in other update functions. 
+  if (!variable_get('hosting_task_update_6000_run', FALSE)) {
+    db_add_field($ret, 'hosting_task', 'delta', array('type' => 'int', 'not null' => TRUE, 'default' => 0));
+    variable_set('hosting_task_update_6000_run', TRUE);
+  }
   return $ret;
 }
 
