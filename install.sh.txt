@@ -369,7 +369,7 @@ aegir_database () {
   read HMPASS; echo
   stty echo
 
-  if [ -z $DBUSER ]; then
+  if [ -z $DBPASS ]; then
     echo "GRANT ALL ON $HMDB.* TO '$HMUSER'@'localhost' IDENTIFIED BY '$HMPASS'" | 
     mysql -u$MYSQLUSER  $HMDB
   else
@@ -389,7 +389,7 @@ aegir_database () {
   read AEPASS; echo
   stty echo
 
-  if [ -z $DBUSER ]; then
+  if [ -z $DBPASS ]; then
     echo "GRANT ALL PRIVILEGES ON *.* TO '$AEUSER'@'localhost' IDENTIFIED BY '$AEPASS' WITH GRANT OPTION" | 
     mysql -u$MYSQLUSER $HMDB
   else
