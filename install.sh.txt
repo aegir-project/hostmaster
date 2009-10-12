@@ -28,9 +28,9 @@ aegir_environment () {
 
     # Specific to this environment
     apt-get -y install openssh-server;
-    # Install exim4 if no sendmail is present.
+    # Install postfix if no sendmail is present.
     if [ -z `which sendmail` ]; then
-      apt-get -y install exim4;
+      apt-get -y install postfix;
     fi
     # Required components
     apt-get -y install wget cvs;
@@ -97,10 +97,8 @@ find_web_group () {
 }
 
 create_user () {
-  aegir_prompt "Enter the $AEGIR_USER user data and type \"exit\" once you see a blank command prompt to return to the script. Press enter to continue."
-  read whatever
-  adduser $AEGIR_USER --home /var/$AEGIR_USER;
-  su - $AEGIR_USER;
+  aegir_prompt "Creating the $AEGIR_USER user.."
+  adduser --system --group --home /var/$AEGIR_USER $AEGIR_USER
 
   find_httpd
   find_web_group
@@ -339,7 +337,11 @@ aegir_database () {
     stty -echo
     read DBPASS; echo
     stty echo
-    found=`mysqladmin -u$MYSQLUSER -p$DBPASS ping`
+    if [ -z $DBPASS ]; then
+      found=`mysqladmin -u$MYSQLUSER ping`
+    else
+      found=`mysqladmin -u$MYSQLUSER -p$DBPASS ping`
+    fi;
   done;
   
   echo "Creating mysql database for hostmaster site :"
@@ -348,8 +350,12 @@ aegir_database () {
   if [ -z $HMDB ]; then
     HMDB="aegir";
   fi;
-  
-  mysqladmin -u$MYSQLUSER -p$DBPASS create $HMDB
+
+  if [ -z $DBPASS ]; then
+    mysqladmin -u$MYSQLUSER create $HMDB
+  else
+    mysqladmin -u$MYSQLUSER -p$DBPASS create $HMDB
+  fi;
 
   echo "Creating $HMDB user account :"
   aegir_prompt "Username [aegir]:"
@@ -358,14 +364,19 @@ aegir_database () {
     HMUSER="aegir";
   fi;
 
-  aegir_prompt "Password:"
+  aegir_prompt "Enter a password for the $HMDB user:"
   stty -echo
   read HMPASS; echo
   stty echo
 
-  echo "GRANT ALL ON $HMDB.* TO '$HMUSER'@'localhost' IDENTIFIED BY '$HMPASS'" | 
-  mysql -u$MYSQLUSER  -p$DBPASS $HMDB
-  
+  if [ -z $DBUSER ]; then
+    echo "GRANT ALL ON $HMDB.* TO '$HMUSER'@'localhost' IDENTIFIED BY '$HMPASS'" | 
+    mysql -u$MYSQLUSER  $HMDB
+  else
+    echo "GRANT ALL ON $HMDB.* TO '$HMUSER'@'localhost' IDENTIFIED BY '$HMPASS'" |
+    mysql -u$MYSQLUSER  -p$DBPASS $HMDB
+  fi;
+ 
   echo "Creating aegir mysql superuser account :"
   aegir_prompt "Username [aegir_root]:"
   read AEUSER
@@ -373,17 +384,22 @@ aegir_database () {
     AEUSER="aegir_root";
   fi;
 
-  aegir_prompt "Password:"
+  aegir_prompt "Enter a password for the $AEUSER user:"
   stty -echo
   read AEPASS; echo
   stty echo
 
-  echo "GRANT ALL PRIVILEGES ON *.* TO '$AEUSER'@'localhost' IDENTIFIED BY '$AEPASS' WITH GRANT OPTION" | 
-  mysql -u$MYSQLUSER  -p$DBPASS $HMDB
+  if [ -z $DBUSER ]; then
+    echo "GRANT ALL PRIVILEGES ON *.* TO '$AEUSER'@'localhost' IDENTIFIED BY '$AEPASS' WITH GRANT OPTION" | 
+    mysql -u$MYSQLUSER $HMDB
+  else
+    echo "GRANT ALL PRIVILEGES ON *.* TO '$AEUSER'@'localhost' IDENTIFIED BY '$AEPASS' WITH GRANT OPTION" |
+    mysql -u$MYSQLUSER -p$DBPASS $HMDB
+  fi;    
 }
 
 aegir_install () {
-  echo "Please access $DOMAIN and run the hostmaster install profile there. Use $HMUSER as the site mysql user, $AEUSER as the aegir super mysql user, and $AEGIR_USER as the site unix user. Also, run the drush command as instructed at the end of Aegir's install profile that initializes the hostmaster--all other suggested commands have already been run and can be ignored."
+  echo -e "Please visit $DOMAIN in a browser and run the hostmaster install profile there. You will be prompted for some information during the install. Where required, use $HMUSER as the site mysql user, $AEUSER as the aegir 'super' mysql user, and $AEGIR_USER as the system's Unix user. You will be prompted for the full path to the drush executable, which is $AEGIR_HOME/drush/drush.php .\nAlso, ensure you run the drush command as instructed at the end of Aegir's install profile that initializes the hostmaster system - all other suggested commands have already been run by this script and can be ignored."
 }
 clear
 aegir_title "Installing Aegir $AEGIR_VERSION"
@@ -399,3 +415,4 @@ aegir_download
 aegir_vhost
 aegir_database
 aegir_install
+
