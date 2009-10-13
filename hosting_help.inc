@@ -455,9 +455,9 @@ EOF;
                           Then add the username to the end of the line, so that it looks like : <pre>@vigr2</pre>
                           If there were already users in the group, add your user to the group using a comma as separator :
                           <pre>@vigr3</pre>
-                          Once you have changed this, you will need to log out and log bag into your terminal session for this
+                          Once you have changed this, you will need to log out and log back into your terminal session for this
                           setting to take effect. Alternatively you
-                          can get a new login shell by typing :<pre>@su</pre>', 
+                          can get a new login shell by typing : <pre>@su</pre>', 
                           array('@vigr_cmd' => $vigr_cmd, '@vigr1' => $vigr1, '@vigr2' => $vigr2, '@vigr3' => $vigr3, '@su' => $su));
   return $help;
 
@@ -499,19 +499,24 @@ function _hosting_hosting_setup_requirements() {
   $docroot = HOSTING_DEFAULT_DOCROOT_PATH;
   $uri = HOSTING_DEFAULT_BASE_URL;
   $username = HOSTING_DEFAULT_SCRIPT_USER;
+  $login_cmd = <<<EOF
+    su -s /bin/sh $username
+EOF;
   $setup_cmd = <<<EOF
     cd $docroot
     $drush_path --uri=$uri hosting setup
 EOF;
   $help['title'] = t('Perform initial configuration by running the <code>Hosting Setup</code> command');
 
-  $help['summary'][] = t('The hosting setup command performs several useful installation functions, but it\'s primary responsibility
+  $help['summary'][] = t('The hosting setup command performs several useful installation functions, but its primary responsibility
         is adding the crontab entry for the queue dispatcher and ensuring that has been correctly installed.');
 
   $help['summary'][] = t('The queue dispatcher runs every minute. It keeps track of what work needs to be done on the system 
     and instructs the provisioning framework to perform the needed tasks in the task queue.');
   $help['summary'][] = t('Otherwise said, without the dispatcher, changes on the front end will not translate in the required backend configuration preventing actual sites management.');
-  $help['configuration'] = t('Ensure that you are logged into the shell as %script_user, and then execute the following commands :<pre>@setup_cmd</pre>', 
+  $help['configuration'][] = t('If you are not logged in as %script_user user, log in with command : <pre>@login_cmd</pre>', 
+     array('%script_user' => $username, '@login_cmd' => $login_cmd));
+  $help['configuration'][] = t('Now execute the following commands : <pre>@setup_cmd</pre>', 
      array('%script_user' => $username, '@setup_cmd' => $setup_cmd));
 
   return $help;

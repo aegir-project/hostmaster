@@ -346,7 +346,7 @@ function hosting_setup() {
     ## attempting to run the dispatch command, to make sure it runs without the queue being
   ## enabled.
   variable_set('hosting_dispatch_enabled', TRUE);
-  print (_hosting_dispatch_cmd());
+  drush_print(_hosting_dispatch_cmd());
   exec(_hosting_dispatch_cmd(), $return, $code);
   variable_set('hosting_dispatch_enabled', FALSE);
   $return = join("\n", $return);
@@ -362,7 +362,7 @@ function hosting_setup() {
   
 
   if (drush_get_error()) {
-    print "\nThe command did not complete successfully, please fix the issues and re-run this script.";
+    drush_log(t("The command did not complete successfully, please fix the issues and re-run this script"), 'error');
   }
 }
 

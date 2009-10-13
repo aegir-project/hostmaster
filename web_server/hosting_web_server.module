@@ -59,12 +59,11 @@ function _hosting_drush_path_requirements() {
   $help['summary'] = t('<a href="http://drupal.org/project/drush">Drush</a> is a command line script that is used to
                        interact with Drupal sites through the unix shell.<br />
                        To be able to use Aegir, you need to download Drush, and place it somewhere on your server
-                       that is accessible by the script user (eg: <code>/home/!script_user/drush/drush.php</code>).<br />
+                       that is accessible by the script user (eg: <code>!parent_path/drush/drush.php</code>).<br />
                        Once Drush is installed, you are required to download <a href="http://drupal.org/project/provision">Provision</a>
                        and place it in the .drush folder of the script user\'s home directory.
-                       (eg: <code>/home/!script_user/.drush/provision</code>).<br />', 
-                       array('!script_user' => HOSTING_DEFAULT_SCRIPT_USER));
-
+                       (eg: <code>!parent_path/.drush/provision</code>).<br />', 
+                       array('!parent_path' => HOSTING_DEFAULT_PARENT_PATH));
 
   return $help;
 }
@@ -226,7 +225,7 @@ function hosting_web_server_form(&$node) {
     '#title' => t('Drush path'),
     '#required' => TRUE,
     '#size' => 40,
-    '#default_value' => ($node->drush_path) ? $node->drush_path : '',
+    '#default_value' => ($node->drush_path) ? $node->drush_path : HOSTING_DEFAULT_PARENT_PATH.'/drush/drush.php',
     '#description' => t("The full path to the drush.php script on this server."),
     '#maxlength' => 255,
     '#weight' => -8,
@@ -265,7 +264,7 @@ function hosting_web_server_form(&$node) {
     '#type' => 'textfield',
     '#title' => t('System account'),
     '#required' => TRUE,
-    '#description' => t('The system account that the hosted files will belong to, for security reasons.<br />This should be a different to the account the web server is running as.'),
+    '#description' => t('The system account that the hosted files will belong to, for security reasons.<br />This should be a different account to the account the web server is running as.'),
     '#default_value' => ($node->script_user) ? $node->script_user : HOSTING_DEFAULT_SCRIPT_USER,
     '#size' => 20,
     '#maxlength' => 255,
