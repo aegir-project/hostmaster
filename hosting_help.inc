@@ -504,7 +504,7 @@ function _hosting_hosting_setup_requirements() {
 EOF;
   $setup_cmd = <<<EOF
     cd $docroot
-    $drush_path --uri=$uri hosting setup
+    php $drush_path --uri=$uri hosting setup
 EOF;
   $help['title'] = t('Perform initial configuration by running the <code>Hosting Setup</code> command');
 
