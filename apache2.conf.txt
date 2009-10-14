@@ -12,7 +12,7 @@ NameVirtualHost *:80
 # their own configuration
 #
 # This will be replaced by aegir when the base platform will be verified
-<Directory /var/aegir/drupal-6.x>
+<Directory /var/aegir/hostmaster-0.x>
     Options Indexes FollowSymLinks MultiViews
     AllowOverride All
     Order allow,deny
@@ -24,5 +24,5 @@ NameVirtualHost *:80
     ServerAdmin webmaster@localhost
     ServerName aegir.example.com
 
-    DocumentRoot /var/aegir/drupal-6.x
+    DocumentRoot /var/aegir/hostmaster-0.x
 </VirtualHost>
