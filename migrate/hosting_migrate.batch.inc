@@ -154,33 +154,27 @@ function hosting_migrate_platform_batch($site_id, $target_platform, &$context) {
   if (!isset($context['sandbox']['progress'])) {
     $context['sandbox']['progress'] = 0;
   }
-
   $site = node_load($site_id);
   $profile = node_load($site->profile);
-
-  // The hostmaster site can not be upgraded via the interface.
-  if ($profile->title != 'hostmaster') {
-    $batch =& batch_get();
-    // Determine whether the install profile is available on the target platform
-    $profile_instance = hosting_package_instance_load(
-      array('i.rid' => $target_platform, 
-            'r.type' => 'platform',
-            'n.nid' => $site->profile));
-
-    if ($profile_instance) {
-      $status = hosting_package_comparison($site->nid, $profile_instance->iid);
-      $batch['form_state']['storage']['status'][$site->nid] = $status;
-      // If there were no errors, this site passes and can be migrated
-      if (!$status['error']) {
-        $batch['form_state']['storage']['passed'][$site->nid] = $site->title;
-        return true;
-      }
+  $batch =& batch_get();
+  // Determine whether the install profile is available on the target platform
+  $profile_instance = hosting_package_instance_load(
+    array('i.rid' => $target_platform, 
+          'r.type' => 'platform',
+          'n.nid' => $site->profile));
+  if ($profile_instance) {
+    $status = hosting_package_comparison($site->nid, $profile_instance->iid);
+    $batch['form_state']['storage']['status'][$site->nid] = $status;
+    // If there were no errors, this site passes and can be migrated
+    if (!$status['error'] && $profile->title != 'hostmaster') {   // The hostmaster site can not be upgraded via the interface.
+      $batch['form_state']['storage']['passed'][$site->nid] = $site->title;
+      return true;
     }
-    else {
-      $batch['form_state']['storage']['status'][$site->nid] = array('error' => 1, 'missing' => 0, 'upgrade' => 0);
-    }
-    $batch['form_state']['storage']['failed'][$site->nid] = $site->title;
-  } 
+  }
+  else {
+    $batch['form_state']['storage']['status'][$site->nid] = array('error' => 1, 'missing' => 0, 'upgrade' => 0);
+  }
+  $batch['form_state']['storage']['failed'][$site->nid] = $site->title;
 }
 
 
