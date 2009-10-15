@@ -825,7 +825,7 @@ function _hosting_site_list_class($node) {
     HOSTING_SITE_QUEUED => "hosting-queue",
     HOSTING_SITE_ENABLED => "hosting-success",
     HOSTING_SITE_DELETED => "hosting-error",
-    HOSTING_SITE_DISABLED => "hosting-error",
+    HOSTING_SITE_DISABLED => "hosting-warning",
   );
   if (($node->site_status == HOSTING_SITE_ENABLED) && (!$node->verified)) {
     return 'hosting-warning';
