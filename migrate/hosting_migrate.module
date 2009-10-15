@@ -38,17 +38,14 @@ function hosting_migrate_menu() {
 /**
  * Implementation of hook_hosting_tasks()
  */
-function hosting_migrate_hosting_tasks($type, $task = null) {
-  $options = array();
+function hosting_migrate_hosting_tasks() {
+  $tasks = array();
 
-  if ($type == 'site') {
-    $options['migrate'] = array(
-      'title' => t('Migrate'),
-      'description' => t('Move the site to a new platform.'),
-      'weight' => 5
-    );
-  }
-  return $options;
+  $tasks['site']['migrate'] = array(
+    'title' => t('Migrate'),
+    'description' => t('Move the site to a new platform.'),
+  );
+  return $tasks;
 }
 
 /**

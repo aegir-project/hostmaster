@@ -31,6 +31,14 @@ function hosting_menu() {
     'type' => MENU_CALLBACK
   );
 
+  /*
+  $items['hosting/js'] = array(
+    'title' => t('ahah callback'),
+    'page callback' => 'hosting_js_page',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK
+  );
+  */
 
   $items['hosting/maintenance'] = array(
     'title' => 'Site maintenance',
@@ -85,6 +93,29 @@ function hosting_menu() {
 
   return $items;
 }
+
+/*
+function hosting_js_page() {
+  modalframe_child_js();
+
+  $args = func_get_args();
+  $path = implode('/', $args);
+
+  menu_set_active_item($path);
+#  $_SERVER['REQUEST_URI'] = str_replace('/hosting/js', '', $_SERVER['REQUEST_URI']);
+
+  if ($router_item = menu_get_item($path)) {
+    if ($router_item['access']) {
+      if ($router_item['file']) {
+        require_once($router_item['file']);
+      }
+      $return = call_user_func_array($router_item['page_callback'], $router_item['page_arguments']);
+    }
+  }
+
+ return $return; 
+}
+ */
 
 function hosting_menu_alter(&$items) {
   $items['node/add']['page callback'] = '_hosting_node_add';

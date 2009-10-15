@@ -186,3 +186,41 @@ margin-right: auto;
 #hosting-wizard-account-passwd { width : 45%; float: right; padding: 0 10px; }
 
 div.hosting-wizard-glossary { padding: 0 2em; display: none; }
+
+
+
+/**
+ * Task button links
+ */
+a.hosting-button-enabled,
+.hosting-button-disabled {
+  padding: 4px 10px;
+  margin: 0 4px;
+   text-align: center;
+   height: 20px;
+    -moz-border-radius:3px;
+    -webkit-border-radius: 3px;
+}
+
+a.hosting-button-enabled:hover {
+  background: #49a
+}
+
+a.hosting-button-enabled {
+  color:#fff;
+  background:#6ac;
+}
+
+.hosting-button-disabled {
+  color:#eee;
+  background:#aaa;
+}
+
+td.hosting-actions {
+  text-align: right;
+}
+th.hosting-actions {
+  text-align: center;
+}
+
+

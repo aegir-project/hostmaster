@@ -8,21 +8,21 @@
  */
 function hosting_task_menu() {
   $items = array();
-  foreach (node_get_types() as $node_type) {
-    $type = $node_type->type;
+  foreach (array('site', 'platform') as $type) {
     foreach (hosting_available_tasks($type) as $task => $info) {
-      $path = sprintf("node/%%hosting_task_%s/%s_%s", $type, $type, $task);
-      $items[$path] = array(
-         'title' => $info['title'],
-         'description' => $info['description'],
-         'page callback' => 'drupal_get_form',
-         'page arguments' => array('hosting_task_confirm_form', 1, $task),
-         'access callback' => 'hosting_task_menu_access',
-         'access arguments' => array(1, $task),
-         'type' => MENU_CALLBACK,
-         'weight' => ($info['weight']) ? $info['weight'] : 0, 
-       );
-     }
+      if (!$info['hidden']) {
+        $path = sprintf("node/%%hosting_task_%s/%s_%s", $type, $type, $task);
+        $items[$path] = array(
+           'title' => $info['title'],
+           'description' => $info['description'],
+           'page callback' => 'drupal_get_form',
+           'page arguments' => array('hosting_task_confirm_form', 1, $task),
+           'access callback' => 'hosting_task_menu_access',
+           'access arguments' => array(1, $task),
+           'type' => MENU_CALLBACK,
+         );
+      }
+    }
   }
   return $items;
 }
@@ -257,6 +257,7 @@ function hosting_task_confirm_form_submit($form, &$form_state) {
   $values = $form_state['values'];
   hosting_add_task($values['nid'], $values['task'], $values['parameters']);
   $form_state['redirect'] = 'node/' . $values['nid'];
+#  modalframe_close_dialog(array('message' => '123'));
 }
 
 /**
@@ -307,23 +308,14 @@ function hosting_task_count() {
  * @see hook_hosting_tasks()
  * @see hosting_task_menu_access()
  */
-function hosting_available_tasks($type) {
-  return module_invoke_all('hosting_tasks', $type);
-}
+function hosting_available_tasks($type, $reset = FALSE) {
+  static $cache = array();
 
-/**
- * Automatic tasks descriptions
- *
- * This is the list of tasks that are considered "automatic" by
- * Aegir. Automatic tasks are never called directly by the user and are only
- * used in certain circumstances. For example, the install or import tasks are
- * automatically generated when creating a site node or verifying a platform
- * with existing sites.
- *
- * @see hook_hosting_auto_tasks()
- */
-function hosting_automatic_tasks($type) {
-  return module_invoke_all('hosting_auto_tasks', $type);
+  if (!sizeof($cache) || $reset) {
+    $cache = module_invoke_all('hosting_tasks');
+  }
+  return $cache[$type];
+
 }
 
 /**
@@ -690,82 +682,61 @@ function hosting_task_summary($filter_by = null, $filter_value = null) {
 function hosting_task_table($node, $skip = array()) {
   $output = '';
 
-  $headers[t('Task')] = '';
+  $headers[] = t('Task');
+  $headers[] = array('data' => t('Actions'), 'class' => 'hosting-actions');
 
   $tasklist = hosting_available_tasks($node->type);
 
-  // try to fetch automatic tasks from the queue if present
-  $auto = hosting_automatic_tasks($node->type);
-  foreach ($auto as $task => $info) {
-    $task_node = hosting_get_most_recent_task($node->nid, $task);
-    if ($task_node) {
-      $tasklist[$task] = $info;
-    }
-  }
-
   foreach ($tasklist as $task => $info) {
     $row = array();
-    if (array_key_exists($task, $auto) || !hosting_task_menu_access($node, $task)) {
-      $link = $info['title'];
-    } else {
-      $link = l($info['title'], sprintf("node/%d/%s_%s", $node->nid, $node->type, $task), array('attributes' => array('title' => $info['description'])));
-    }
-    $row['type'] = array('data' => $link, 'class' => 'hosting-status');
 
-    $task = hosting_get_most_recent_task($node->nid, $task);
-
-    if (!in_array('executed', $skip)) {
-      $headers[t('Executed')] = '';
-      if ($task->nid) {
-        switch ($task->task_status) {
-        case HOSTING_TASK_SUCCESS:
-        case HOSTING_TASK_ERROR:
-          $row['executed'] = t("@interval ago", array('@interval' => format_interval(mktime() - $task->executed, 1)));
-          break;
-        default:
-          $row['executed'] = _hosting_parse_error_code($task->task_status);
-          break;
-        }
-        // link to the task if it actually exists
-        $row['executed'] = l($row['executed'], "node/" . $task->nid, array('attributes' => array('title' => t('More information about this task'))));
-      }
-      else {
-        $row['executed'] = t("Never");
-      }
-    }
-
-    if (!in_array('actions', $skip)) {
-      $headers[t('Actions')] = '';
-
-      if (($task->task_status == HOSTING_TASK_ERROR) && user_access('retry failed tasks')) {
-        $row['actions'] = array(
-                                'data' => drupal_get_form('hosting_task_retry_form', $task->nid),
-                                'class' => 'hosting-task-retry'
-        );
-      }
-      else {
-        $row['actions'] = '';
-      }
-    }
-
-    if ($task->task_status == HOSTING_TASK_SUCCESS) {
+    $row['type'] = array('data' => $info['title'], 'class' => 'hosting-status');
+    $recent_task = null;
+    $recent_task = hosting_get_most_recent_task($node->nid, $task);
+    if ($recent_task->task_status == HOSTING_TASK_SUCCESS) {
       $class = 'hosting-success';
     }
-    elseif ($task->task_status == HOSTING_TASK_ERROR) {
+    elseif ($recent_task->task_status == HOSTING_TASK_ERROR) {
       $class = 'hosting-error';
     }
-    elseif (!$task->created) {
+    elseif (!$recent_task->created) {
       $class = 'hosting-available';
     }
     else {
       $class = 'hosting-queue';
     }
 
+    $actions = array();
+
+    $actions['log'] = _hosting_task_button(t('Log'), 'node/' . $recent_task->nid, t("Display the task log"), isset($recent_task->nid));
+    $actions['run'] = _hosting_task_button(t('Run'), sprintf("node/%d/%s_%s", $node->nid, $node->type, $task), 
+                      $info['description'], (!$info['hidden'] && hosting_task_menu_access($node, $task) && $class != 'hosting-queue'));
+     
+
+
+     $row['actions'] = array(
+        'data' => implode('', $actions),
+       'class' => 'hosting-actions'
+     );
+
     $rows[] = array('data' => $row, 'class' => $class, 'weight' => $info['weight']);
   }
   uasort($rows, "_hosting_task_info_cmp");
-  $output .= theme('table', array_keys($headers), $rows, array('class' => 'hosting-table'));
+  $output .= theme('table', $headers, $rows, array('class' => 'hosting-table'));
   return $output;
+}
+
+function _hosting_task_button($title, $link, $description, $status = TRUE) {
+  if ($status) {
+    return l($title, $link, array(
+          'attributes' => array(
+            'title' => $description,
+            'class' => 'hosting-button-enabled', 
+          )));
+  }
+  else {
+    return "<span class='hosting-button-disabled'>" . $title . "</span>";
+  }
 }
 
 /**
@@ -798,6 +769,10 @@ function hosting_task_list_embedded($filter_by = null, $filter_value = null) {
  */
 function _hosting_task_list($filter_by, $filter_value, $count = 5, $element = 0, $field = 'title', $skip = array(), $pager = TRUE) {
   $nodes = hosting_get_tasks($filter_by, $filter_value, $count, $element);
+  /*
+  modalframe_parent_js();
+  drupal_add_js(drupal_get_path('module','hosting_task') . '/hosting_task.js');
+   */
 
   if (!$nodes) {
    return t('No tasks available');
@@ -807,7 +782,7 @@ function _hosting_task_list($filter_by, $filter_value, $count = 5, $element = 0,
    foreach ($nodes as $node) {
      $row = array();
      $row['type'] = array(
-       'data' => l(drupal_ucfirst($node->{$field}), 'node/' . $node->nid),
+       'data' => $node->{$field},
        'class' => 'hosting-status'
      );
 
@@ -816,19 +791,14 @@ function _hosting_task_list($filter_by, $filter_value, $count = 5, $element = 0,
        $headers[t('Created')] = '';
      }
 
-     if (!in_array('actions', $skip) && user_access('retry failed tasks')) {
-       $headers[t('Actions')] = '';
+     $headers[t('Actions')] = '';
 
-      if ($node->task_status == HOSTING_TASK_ERROR) {
-        $row['actions'] = array(
-          'data' => drupal_get_form('hosting_task_retry_form', $node->nid),
-          'class' => 'hosting-task-retry'
-        );
-       }
-       else {
-         $row['actions'] = '';
-       }
-     }
+     $actions['log'] = l(t('Log'), 'node/' . $node->nid, array('attributes' => array('class' => 'hosting-button-enabled')));
+
+     $row['actions'] = array(
+       'data' => $actions['log'],
+       'class' => 'hosting-actions'
+     );
 
      if ($node->task_status == HOSTING_TASK_SUCCESS) {
        $class = 'hosting-success';
@@ -853,3 +823,4 @@ function _hosting_task_list($filter_by, $filter_value, $count = 5, $element = 0,
    return $output;
   }
 }
+

@@ -1,15 +1,13 @@
 <?php
 
-function hosting_clone_hosting_tasks($type, $task = null) {
+function hosting_clone_hosting_tasks() {
   $options = array();
 
-  if ($type == 'site') {
-    $options['clone'] = array(
-      'title' => t('Clone'),
-      'description' => t('Copy the site to a new platform.'),
-      'weight' => 5
-    );
-  }
+  $options['site']['clone'] = array(
+    'title' => t('Clone'),
+    'description' => t('Copy the site to a new platform.'),
+    'weight' => 5
+  );
   return $options;
 }
 
