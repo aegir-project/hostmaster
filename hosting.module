@@ -635,3 +635,20 @@ function hosting_queues_configure_submit($form, &$form_state) {
     }
   }
 }
+
+/**
+ * Implementation of hook_form_alter() 
+ */
+function hosting_form_alter(&$form, &$form_state, $form_id) {
+  // Alter the 'Add User' form to remind users that this is not the New Client form
+  if ($form_id == 'user_register') {
+    $form[user_registration_help] = array(
+      '#type' => 'item',
+      '#description' => t('<strong>Adding a system user account does not make the user a Client that can add sites.</strong><br />
+                     To add a Client, enable the Client feature and then add a new Client node.<br />
+                     If you wish, you may then assign this system user to the Client as an \'Allowed user\' to inherit the permissions to add sites.'),
+      '#weight' => '-10'
+    );
+  }
+}
+
