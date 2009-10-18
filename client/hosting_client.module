@@ -133,7 +133,7 @@ function hosting_client_form(&$node) {
 
   $form['client_name'] = array(
     '#type' => 'textfield',
-    '#title' => t('Contact name'),
+    '#title' => t('Client name'),
     '#size' => 40,
     '#default_value' => $node->client_name,
     '#maxlength' => 50,
@@ -359,7 +359,7 @@ function hosting_client_view($node, $teaser = FALSE, $page = FALSE) {
   if ( $node->client_name ) {
     $node->content['info']['name'] = array(
       '#type' => 'item',
-      '#title' => t('Contact name'),
+      '#title' => t('Client name'),
       '#value' => filter_xss($node->client_name),
     );
   }
@@ -411,7 +411,7 @@ function hosting_client_view($node, $teaser = FALSE, $page = FALSE) {
  * @param email
  *   Client email address - Required
  * @param contact_name
- *   Client contact name - Optional
+ *   Client name - Optional
  * @param existing
  *   Return an existing client registered for this email address, defaults to FALSE
  * @return
