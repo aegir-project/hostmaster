@@ -127,7 +127,7 @@ function hosting_get_sites_by_status($platform, $status) {
  * Retrieve a node based on the url
  */
 function hosting_get_site_by_url($url) {
-  $nid = db_result(db_query("SELECT nid FROM {node} WHERE title='%s' AND type = 'site' AND NOT (status=%d)", $url, HOSTING_SITE_DELETED));
+  $nid = db_result(db_query("SELECT n.nid FROM {node} n JOIN {hosting_site} h ON n.nid = h.nid WHERE n.title='%s' AND n.type = 'site' AND NOT (h.status=%d)", $url, HOSTING_SITE_DELETED));
   if ($nid) {
     return node_load($nid);
   }
