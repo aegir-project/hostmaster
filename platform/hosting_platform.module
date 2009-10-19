@@ -275,6 +275,12 @@ function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
         '#suffix' => '</div>',
         '#weight' => -6
       );
+      $settings['hostingTaskRefresh'] = array(
+        'nid' => $node->nid,
+      );
+      drupal_add_js($settings, 'setting');
+
+      drupal_add_js(drupal_get_path('module','hosting_task') . '/hosting_task.js');
     }
   }
   return $node;

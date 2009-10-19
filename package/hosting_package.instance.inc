@@ -212,29 +212,32 @@ function hosting_package_comparison($current, $target) {
 
   _hosting_package_temporary_table("current", $current);
   _hosting_package_temporary_table("target", $target);
-  
-  $missing = 0;
-  $error = 0;
-  $upgrade = 0;
-  $result = db_query("SELECT count(c.nid) AS error FROM current c LEFT JOIN target t ON c.nid=t.nid WHERE (c.version_code > t.version_code) OR (c.schema_version > t.schema_version) AND c.status=1");
+
+  $status = array();
+  $result = db_query("SELECT count(c.nid) AS error FROM current c LEFT JOIN target t ON c.nid=t.nid WHERE (c.schema_version > t.schema_version) AND c.status=1");
   while ($obj = db_fetch_object($result)) {
-    $error = $obj->error;
+    $status['error'] = $obj->error;
   }
 
   $result = db_query("SELECT COUNT(c.nid) as missing FROM current c LEFT JOIN target t ON c.nid=t.nid WHERE t.nid IS null AND c.status=1");
   while ($obj = db_fetch_object($result)) {
-    $missing = $obj->missing;
+    $status['missing'] = $obj->missing;
   }
 
-  $result = db_query("SELECT COUNT(c.nid) as upgrades FROM  current c LEFT JOIN target t ON c.nid=t.nid WHERE (c.version_code < t.version_code) OR (c.schema_version < t.schema_version) AND c.status=1");
+  $result = db_query("SELECT COUNT(c.nid) as upgrade FROM  current c LEFT JOIN target t ON c.nid=t.nid WHERE (c.version_code < t.version_code) OR (c.schema_version < t.schema_version) AND c.status=1");
   while ($obj = db_fetch_object($result)) {
-    $upgrade = $obj->upgrades;
+    $status['upgrade'] = $obj->upgrade;
   }
   
+  $result = db_query("SELECT count(c.nid) AS downgrade FROM current c LEFT JOIN target t ON c.nid=t.nid WHERE (c.version_code > t.version_code)");
+  while ($obj = db_fetch_object($result)) {
+    $status['downgrade'] = $obj->downgrade;
+  }
+
   db_query("DROP TEMPORARY TABLE target");
   db_query("DROP TEMPORARY TABLE current");
 
-  return array("upgrade" => $upgrade, "missing" => $missing, "error" => $error);
+  return $status;
 }
 
 

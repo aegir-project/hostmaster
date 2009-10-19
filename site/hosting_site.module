@@ -603,6 +603,12 @@ function hosting_site_view(&$node, $teaser = false) {
       '#suffix' => '</div>', 
       '#weight' => 10
     );
+    $settings['hostingTaskRefresh'] = array(
+      'nid' => $node->nid,
+    );
+    drupal_add_js($settings, 'setting');
+
+    drupal_add_js(drupal_get_path('module','hosting_task') . '/hosting_task.js');
   }
   return $node;
 }

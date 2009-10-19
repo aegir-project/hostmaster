@@ -175,3 +175,30 @@ function hosting_task_update_6001() {
   db_drop_table($ret, 'hosting_task_queue');
   return $ret;
 }
+
+/**
+ * Remove all the duplicate task nodes for previous task type / rid combinations
+ *
+ * This makes it more efficient to query and generate the data, and makes sure we don't
+ * lose any history.
+ */
+
+function hosting_task_update_6002() {
+  $ret = array();
+
+  $result = db_query("select t.task_type, t.rid, max(t.nid) as max_nid from {hosting_task} t group by t.task_type, t.rid");
+
+  while ($obj = db_fetch_object($result)) {
+    db_query("UPDATE {hosting_task} SET nid = %d WHERE task_type='%s' AND rid=%d", $obj->max_nid, $obj->task_type, $obj->rid);
+  }
+
+  db_query("update {hosting_task_arguments} a, {hosting_task} t set a.nid=t.nid where a.vid=t.vid");
+  db_query("update {node_revisions} r, {hosting_task} t set r.nid=t.nid where r.vid=t.vid");
+
+  $result = db_query("select n.nid, count(t.vid) as vid_count from {node} n left join {hosting_task} t on n.nid = t.nid where n.type = 'task' group by n.nid having vid_count = 0");
+
+  while ($obj = db_fetch_object($result)) {
+    db_query("DELETE FROM {node} WHERE nid=%d", $obj->nid);
+  }
+  return $ret;
+}

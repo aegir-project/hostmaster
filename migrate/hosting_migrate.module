@@ -107,7 +107,7 @@ function hosting_task_migrate_form($node) {
       $description = t("Upgrades: !upgrades, Warnings: !missing, Errors: !errors | <a href='!url'>Compare platforms</a>",
         array(
           '!upgrades' => $status['upgrade'],
-          '!missing' => $status['missing'],
+          '!missing' => $status['missing'] + $status['downgrade'],
           '!errors' => $status['error'],
           '!url' => url('hosting/migrate/compare/' . $node->nid . '/' . $profile_instance->iid))
         );
@@ -146,7 +146,7 @@ function hosting_migrate_comparison($current, $target) {
   $result = db_query("SELECT c.nid, c.short_name, 
     c.version as current_version, t.version as target_version,
     c.version_code as current_version_code, t.version_code as target_version_code,
-    c.schema_version as current_schema, t.schema_version as target_schema FROM current c LEFT JOIN target t ON c.nid=t.nid ORDER BY short_name"); 
+    c.schema_version as current_schema, t.schema_version as target_schema FROM current c LEFT JOIN target t ON c.nid=t.nid ORDER BY c.status, short_name"); 
 
   while ($obj = db_fetch_object($result)) {
     if (is_null($obj->target_version_code)) {

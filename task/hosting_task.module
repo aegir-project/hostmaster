@@ -24,7 +24,23 @@ function hosting_task_menu() {
       }
     }
   }
+
+  $items['hosting/tasks/%node/list'] = array(
+    'title' => t('Task list'),
+    'description' => t('AJAX callback for refreshing task list'),
+    'page callback' => 'hosting_task_ajax_list',
+    'page arguments' => array(2),
+    'access callback' => 'node_access',
+    'access arguments' => array('view', 2),
+    'type' => MENU_CALLBACK
+  );
   return $items;
+}
+
+function hosting_task_ajax_list($node) {
+  $return['markup'] = hosting_task_table($node);
+  drupal_json($return);
+  exit();
 }
 
 /**
@@ -679,49 +695,32 @@ function hosting_task_summary($filter_by = null, $filter_value = null) {
  * tasks that can be executed as well as tasks that have been in a single
  * simple interface.
  */
-function hosting_task_table($node, $skip = array()) {
+function hosting_task_table($node) {
   $output = '';
+
 
   $headers[] = t('Task');
   $headers[] = array('data' => t('Actions'), 'class' => 'hosting-actions');
 
-  $tasklist = hosting_available_tasks($node->type);
+  $tasklist = hosting_task_fetch_tasks($node->nid);
 
   foreach ($tasklist as $task => $info) {
     $row = array();
 
     $row['type'] = array('data' => $info['title'], 'class' => 'hosting-status');
-    $recent_task = null;
-    $recent_task = hosting_get_most_recent_task($node->nid, $task);
-    if ($recent_task->task_status == HOSTING_TASK_SUCCESS) {
-      $class = 'hosting-success';
-    }
-    elseif ($recent_task->task_status == HOSTING_TASK_ERROR) {
-      $class = 'hosting-error';
-    }
-    elseif (!$recent_task->created) {
-      $class = 'hosting-available';
-    }
-    else {
-      $class = 'hosting-queue';
-    }
 
     $actions = array();
 
-    $actions['log'] = _hosting_task_button(t('Log'), 'node/' . $recent_task->nid, t("Display the task log"), isset($recent_task->nid));
-    $actions['run'] = _hosting_task_button(t('Run'), sprintf("node/%d/%s_%s", $node->nid, $node->type, $task), 
-                      $info['description'], (!$info['hidden'] && hosting_task_menu_access($node, $task) && $class != 'hosting-queue'));
+    $actions['log'] = _hosting_task_button(t('Log'), 'node/' . $info['nid'], t("Display the task log"), isset($info['nid']));
+    $actions['run'] = _hosting_task_button(t('Run'), sprintf("node/%d/%s_%s", $node->nid, $node->type, $task), $info['description'], $info['task_permitted']);
      
-
-
      $row['actions'] = array(
         'data' => implode('', $actions),
        'class' => 'hosting-actions'
      );
 
-    $rows[] = array('data' => $row, 'class' => $class, 'weight' => $info['weight']);
+    $rows[] = array('data' => $row, 'class' => $info['class']);
   }
-  uasort($rows, "_hosting_task_info_cmp");
   $output .= theme('table', $headers, $rows, array('class' => 'hosting-table'));
   return $output;
 }
@@ -771,7 +770,6 @@ function _hosting_task_list($filter_by, $filter_value, $count = 5, $element = 0,
   $nodes = hosting_get_tasks($filter_by, $filter_value, $count, $element);
   /*
   modalframe_parent_js();
-  drupal_add_js(drupal_get_path('module','hosting_task') . '/hosting_task.js');
    */
 
   if (!$nodes) {
@@ -824,3 +822,53 @@ function _hosting_task_list($filter_by, $filter_value, $count = 5, $element = 0,
   }
 }
 
+function hosting_task_fetch_tasks($rid) {
+  $node = node_load($rid);
+
+  $tasks = hosting_available_tasks($node->type);
+  $result = db_query("SELECT n.nid, t.task_type, t.task_status FROM {node} n LEFT JOIN {hosting_task} t ON n.vid=t.vid 
+    WHERE n.type = 'task' AND t.rid = %d
+    ORDER BY t.task_status ASC, n.changed DESC", $rid);
+
+  while ($obj = db_fetch_object($result)) {
+    $return[$obj->task_type] = array('nid' => $obj->nid, 'task_status' => $obj->task_status);
+  }
+
+  $tasks = hosting_available_tasks($node->type);
+  ksort($tasks);
+
+  foreach ($tasks as $type => $hook_task) {
+
+    if (!isset($return[$type])) {
+      $return[$type] = array();
+    }
+
+    $task = array();
+    $task = array_merge($return[$type], $hook_task);
+
+    if (($task['task_status'] != HOSTING_TASK_QUEUED) && !$task['hidden'] && hosting_task_menu_access($node, $type)) {
+      $task['task_permitted'] = TRUE;
+    }
+
+    $task['class'] = null;
+    if (isset($task['task_status'])) {
+      switch($task['task_status']) {
+        case HOSTING_TASK_SUCCESS : 
+          $task['class'] = 'hosting-success';
+          break;
+        case HOSTING_TASK_ERROR :
+          $task['class'] = 'hosting-error';
+          break;
+        case HOSTING_TASK_QUEUED :
+          $task['class'] = 'hosting-queue';
+          break;
+        case HOSTING_TASK_PROCESSING :
+          $task['class'] = 'hosting-processing';
+          break;
+      }
+    }
+    $return[$type] = $task;
+  }
+
+  return $return;
+}
