@@ -33,7 +33,7 @@ aegir_environment () {
       apt-get -y install postfix;
     fi
     # Required components
-    apt-get -y install wget cvs;
+    apt-get -y install sudo wget cvs;
     apt-get -y install mysql-server-5.0;
     apt-get -y install apache2;
     apt-get -y install php5 php5-cli php5-mysql;
