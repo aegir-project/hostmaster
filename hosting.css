@@ -249,5 +249,5 @@ th.hosting-actions {
   -webkit-border-radius: 3px;
 }
 
-div#hosting-task-list { position: relative }
+div#hosting-task-list, div#hosting-task-queue-block { position: relative }
 div.modalframe-page-wrapper { background: white }

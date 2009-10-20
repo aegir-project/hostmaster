@@ -34,12 +34,27 @@ function hosting_task_menu() {
     'access arguments' => array('view', 2),
     'type' => MENU_CALLBACK
   );
+  
+  $items['hosting/tasks/queue'] = array(
+    'title' => t('Task list'),
+    'description' => t('AJAX callback for refreshing task queue'),
+    'page callback' => 'hosting_task_ajax_queue',
+    'access arguments' => array('access task logs'),
+    'type' => MENU_CALLBACK
+  );
+
   return $items;
 }
 
 function hosting_task_ajax_list($node) {
   $return['markup'] = hosting_task_table($node);
   $return['changed'] = $node->changed;
+  drupal_json($return);
+  exit();
+}
+
+function hosting_task_ajax_queue() {
+  $return['markup'] = hosting_task_queue_block();
   drupal_json($return);
   exit();
 }
@@ -686,7 +701,47 @@ function hosting_task_list($filter_by = null, $filter_value = null) {
  * Implementation of hosting_hook_summary()
  */
 function hosting_task_summary($filter_by = null, $filter_value = null) {
-  return _hosting_task_list($filter_by, $filter_value, 5, 11, 'title', array('created', 'actions'), l(t('More tasks'), 'hosting/queues/tasks'));
+  return hosting_task_queue_block();
+}
+
+/**
+ * Hosting task list queue block
+ */
+function hosting_task_queue_block() {
+  drupal_add_js(drupal_get_path('module','hosting_task') . '/hosting_task.js');
+
+  $settings['hostingTaskRefresh'] = array(
+    'queueBlock' => 1
+  );
+  drupal_add_js($settings, 'setting');
+
+  $offset = db_result(db_query("SELECT count(n.nid) FROM {node} n LEFT JOIN {hosting_task} t ON n.vid=t.vid WHERE n.type = 'task' AND t.task_status = %d", HOSTING_TASK_QUEUED));
+
+  $offset = ($offset < 3) ? 0 : $offset - 3;
+
+  $result = db_query_range("SELECT n.nid, n.title, t.task_type, t.task_status FROM {node} n LEFT JOIN {hosting_task} t ON n.vid=t.vid WHERE n.type = 'task' ORDER BY t.task_status ASC, n.changed DESC", $offset, 5);
+
+  $headers = array( t('Task'), t('Actions') );
+  $rows[] = array();
+  while ($node = db_fetch_object($result)) {
+    $row = array();
+    $row['type'] = array(
+      'data' => $node->title,
+      'class' => 'hosting-status'
+    );
+
+
+    $log_button = _hosting_task_button(t('View'), 'node/' . $node->nid, t("Display the task log"), 'hosting-button-log', isset($node->nid));
+
+    $row['actions'] = array(
+      'data' => $log_button,
+      'class' => 'hosting-actions',
+    );
+    $class = hosting_task_status_class($node->task_status);
+    $rows[] = array('data' => $row, 'class' => $class);
+  }
+  $more_link = l(t('More tasks'), 'hosting/queues/tasks');
+  return "<div id='hosting-task-queue-block'>" . theme('table', $headers, $rows, array('class' => 'hosting-table')) . $more_link . "</div>";
 }
 
 /**
@@ -783,15 +838,7 @@ function _hosting_task_list($filter_by, $filter_value, $count = 5, $element = 0,
        'class' => 'hosting-actions'
      );
 
-     if ($node->task_status == HOSTING_TASK_SUCCESS) {
-       $class = 'hosting-success';
-     }
-     elseif ($node->task_status == HOSTING_TASK_ERROR) {
-       $class = 'hosting-error';
-     }
-     else {
-       $class = 'hosting-queue';
-     }
+     $class = hosting_task_status_class($node->task_status);
 
      $rows[] = array('data' => $row, 'class' => $class);
    }
@@ -834,26 +881,32 @@ function hosting_task_fetch_tasks($rid) {
     if (($task['task_status'] !== HOSTING_TASK_QUEUED) && !$task['hidden'] && hosting_task_menu_access($node, $type)) {
       $task['task_permitted'] = TRUE;
     }
+    $task['class'] = hosting_task_status_class($task['task_status']);
 
-    $task['class'] = null;
-    if (isset($task['task_status'])) {
-      switch($task['task_status']) {
-        case HOSTING_TASK_SUCCESS : 
-          $task['class'] = 'hosting-success';
-          break;
-        case HOSTING_TASK_ERROR :
-          $task['class'] = 'hosting-error';
-          break;
-        case HOSTING_TASK_QUEUED :
-          $task['class'] = 'hosting-queue';
-          break;
-        case HOSTING_TASK_PROCESSING :
-          $task['class'] = 'hosting-processing';
-          break;
-      }
-    }
     $return[$type] = $task;
   }
 
   return $return;
+}
+
+function hosting_task_status_class($status = null) {
+  $class = null;
+  if (!is_null($status)) {
+    switch($status) {
+      case HOSTING_TASK_SUCCESS : 
+        $class = 'hosting-success';
+        break;
+      case HOSTING_TASK_ERROR :
+        $class = 'hosting-error';
+        break;
+      case HOSTING_TASK_QUEUED :
+        $class = 'hosting-queue';
+        break;
+      case HOSTING_TASK_PROCESSING :
+        $class = 'hosting-processing';
+        break;
+    }
+  }
+
+  return $class;
 }
