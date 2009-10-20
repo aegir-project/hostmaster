@@ -301,7 +301,7 @@ div#main {
   body.wide div#main {
     background:#fff;
     float:none;
-    width:730px;
+    width:950px;
     }
 
 div.sidebar {
@@ -684,44 +684,45 @@ table.hosting-table {
   width:100%;
   }
 
-#page table,
-#page table tr,
-#page table td,
-#page table th,
-#page table thead,
-#page table body,
-#page table.hosting-table,
-#page table.hosting-table tr,
-#page table.hosting-table td,
-#page table.hosting-table th,
-#page table.hosting-table thead,
-#page table.hosting-table tbody {
+table,
+table tr,
+table td,
+table th,
+table thead,
+table body,
+table.hosting-table,
+table.hosting-table tr,
+table.hosting-table td,
+table.hosting-table th,
+table.hosting-table thead,
+table.hosting-table tbody {
   border:0px;
   padding:0px;
   }
 
-#page table th,
-#page table td,
-#page table.hosting-table th,
-#page table.hosting-table td {
+table th,
+table td,
+table.hosting-table th,
+table.hosting-table td {
   padding:4px 5px 5px;
   border-top:1px solid #fff;
   }
 
-#page table th,
-#page table.hosting-table th {
+.modalframe .ui-dialog-titlebar,
+table th,
+table.hosting-table th {
   font-size:11px;
   background:#666 !important;
   }
 
-  #page table th.active,
-  #page table.hosting-table th.active { background:#555 !important; }
+ table th.active,
+ table.hosting-table th.active { background:#555 !important; }
 
-  #page table th,
-  #page table th a { color:#fff; }
+ table th,
+ table th a { color:#fff; }
 
-#page table tr.even td { background-color:#fcfcfc; }
-#page table tr.odd td { background-color:#f8f8f8; }
+ table tr.even td { background-color:#fcfcfc; }
+ table tr.odd td { background-color:#f8f8f8; }
 
 #hosting-wizard-account-details,
 #hosting-wizard-account-passwd {
@@ -853,3 +854,16 @@ body.error-page div.page-content {
   font-size:18px;
   text-align:center;
   }
+
+/* Modal frame */
+
+.modalframe {
+  color: #000000;
+  background-color: #ffffff;
+  border: 2px solid black;
+}
+
+.modalframe .ui-dialog-titlebar {
+  border : 1px solid black;
+
+}
