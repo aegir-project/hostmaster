@@ -439,6 +439,7 @@ function hosting_task_retry_form($form_state, $nid) {
 
 function hosting_task_retry_form_submit($form, &$form_state) {
   hosting_task_retry($form_state['values']['task']);
+  modalframe_close_dialog();
 }
 
 /**

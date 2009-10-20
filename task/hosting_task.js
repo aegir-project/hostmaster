@@ -15,7 +15,7 @@ hostingTaskRefreshList = function() {
       $("#hosting-task-list").html(data.markup);
 
       hostingTaskBindButtons('#hosting-task-list');
-      setTimeout("hostingTaskRefreshList()", 15000);
+      setTimeout("hostingTaskRefreshList()", 30000);
     }
   }
  
@@ -38,7 +38,7 @@ function hostingTaskRefreshQueueBlock() {
     $("#hosting-task-queue-block").html(data.markup);
 
     hostingTaskBindButtons('#hosting-task-queue-block');
-    setTimeout("hostingTaskRefreshQueueBlock()", 15000);
+    setTimeout("hostingTaskRefreshQueueBlock()", 30000);
   }
  
   hostingTaskAddOverlay('#hosting-task-queue-block');
@@ -47,8 +47,8 @@ function hostingTaskRefreshQueueBlock() {
 
 $(document).ready(function() {
   $(document).data('hostingOpenModalFrame', false);
-  setTimeout("hostingTaskRefreshList()", 15000);
-  setTimeout("hostingTaskRefreshQueueBlock()", 15000);
+  setTimeout("hostingTaskRefreshList()", 30000);
+  setTimeout("hostingTaskRefreshQueueBlock()", 30000);
   hostingTaskBindButtons($(this));
 });
 
