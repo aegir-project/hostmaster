@@ -1,4 +1,6 @@
 hostingTaskRefreshList = function() {
+
+  $('#hosting-task-list').prepend('<div class="hosting-overlay"><div class="hosting-throbber">Refreshing task list</div></div>');
   $.get('/hosting/tasks/' + Drupal.settings.hostingTaskRefresh.nid + '/list', null,  function(data, responseText) {
     $("#hosting-task-list").html(data.markup);
     setTimeout("hostingTaskRefreshList()", 30000);

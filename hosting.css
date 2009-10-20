@@ -223,4 +223,30 @@ th.hosting-actions {
   text-align: center;
 }
 
+.hosting-overlay { 
+  background: #6e6e6e url(images/overlay.png) 50% 50% repeat;
+  opacity: .30;
+  filter:Alpha(Opacity=30);
+  position: absolute;
+
+  height: 100%;
+  width: 100%;
+}
+
+
+.hosting-throbber { 
+  background-image: url('images/load-bar.gif');
+  background-repeat : no-repeat;
+  text-align: center;
+  opacity: 1;
+  filter:Alpha(Opacity=100);
+
+  color: #000;
+  padding-top: 20px;
+  width: 100%;
+  height: 32px;
+  margin: 50% auto;
+}
+
+div#hosting-task-list { position: relative }
 

@@ -33,3 +33,12 @@ function hosting_update_3() {
   $ret[] = update_sql("UPDATE {node} SET status = 0 WHERE nid IN (" .$in. ")", $values);
   return $ret;
 }
+
+/**
+ * Enable the modalframe and jquery_ui modules
+ */
+function hosting_update_6000() {
+  $ret = array();
+  module_enable(array('modalframe', 'jquery_ui'));
+  return $ret;
+}
