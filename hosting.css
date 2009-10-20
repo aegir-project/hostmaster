@@ -224,28 +224,25 @@ th.hosting-actions {
 }
 
 .hosting-overlay { 
-  background: #6e6e6e url(images/overlay.png) 50% 50% repeat;
-  opacity: .30;
-  filter:Alpha(Opacity=30);
+  background:transparent url(images/overlay.png) repeat 0 0;
   position: absolute;
-
-  height: 100%;
+  display:block;
   width: 100%;
+  height: 100%;
 }
 
-
 .hosting-throbber { 
-  background-image: url('images/load-bar.gif');
-  background-repeat : no-repeat;
-  text-align: center;
-  opacity: 1;
-  filter:Alpha(Opacity=100);
-
-  color: #000;
-  padding-top: 20px;
-  width: 100%;
-  height: 32px;
-  margin: 50% auto;
+  background:#FFF url(images/loader.gif) no-repeat center center;
+  width: 30px;
+  height:30px;
+  vertical-align:middle;
+  display:block;
+  position:absolute;
+  top:50%;
+  left:50%;
+  margin:-15px 0 0 -15px;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
 }
 
 div#hosting-task-list { position: relative }
