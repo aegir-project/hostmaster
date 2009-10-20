@@ -144,6 +144,9 @@ To become aegir user you can issue this command::
 
 (Note you must run this as root or prefix with sudo).
 
+Note /bin/sh is an example. You may wish to instead use the shell of
+your choice, i.e /bin/bash
+
 Additionally to make following instructions generic and not dependant on
 a concrete Drupal or Aegir version, we will use bash environment
 variables. The current Aegir release is 0.4-alpha2.
