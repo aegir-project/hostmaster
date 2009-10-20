@@ -226,7 +226,7 @@ td.hosting-actions {
 th.hosting-actions {
   text-align: center;
 }
-
+.ui-dialog-overlay, 
 .hosting-overlay { 
   background:transparent url(images/overlay.png) repeat 0 0;
   position: absolute;

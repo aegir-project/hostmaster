@@ -289,7 +289,7 @@ function hosting_task_confirm_form_submit($form, &$form_state) {
   $values = $form_state['values'];
   hosting_add_task($values['nid'], $values['task'], $values['parameters']);
   $form_state['redirect'] = 'node/' . $values['nid'];
-  #modalframe_close_dialog();
+  modalframe_close_dialog();
 }
 
 /**
@@ -701,7 +701,10 @@ function hosting_task_list($filter_by = null, $filter_value = null) {
  * Implementation of hosting_hook_summary()
  */
 function hosting_task_summary($filter_by = null, $filter_value = null) {
-  return hosting_task_queue_block();
+
+  modalframe_parent_js();
+  $more_link = l(t('More tasks'), 'hosting/queues/tasks');
+  return hosting_task_queue_block() . $more_link;
 }
 
 /**
@@ -740,8 +743,7 @@ function hosting_task_queue_block() {
     $class = hosting_task_status_class($node->task_status);
     $rows[] = array('data' => $row, 'class' => $class);
   }
-  $more_link = l(t('More tasks'), 'hosting/queues/tasks');
-  return "<div id='hosting-task-queue-block'>" . theme('table', $headers, $rows, array('class' => 'hosting-table')) . "</div>" . $more_link;
+  return "<div id='hosting-task-queue-block'>" . theme('table', $headers, $rows, array('class' => 'hosting-table')) . "</div>" ;
 
 }
 
@@ -811,7 +813,6 @@ function hosting_task_list_embedded($filter_by = null, $filter_value = null) {
  */
 function _hosting_task_list($filter_by, $filter_value, $count = 5, $element = 0, $field = 'title', $skip = array(), $pager = TRUE) {
   $nodes = hosting_get_tasks($filter_by, $filter_value, $count, $element);
-  #modalframe_parent_js();
 
   if (!$nodes) {
    return t('No tasks available');
@@ -864,7 +865,7 @@ function hosting_task_fetch_tasks($rid) {
     ORDER BY t.task_status ASC, n.changed DESC", $rid);
 
   while ($obj = db_fetch_object($result)) {
-    $return[$obj->task_type] = array('nid' => $obj->nid, 'task_status' => $obj->task_status);
+    $return[$obj->task_type] = array('nid' => $obj->nid, 'task_status' => $obj->task_status, 'exists' => TRUE);
   }
 
   $tasks = hosting_available_tasks($node->type);
@@ -879,7 +880,8 @@ function hosting_task_fetch_tasks($rid) {
     $task = array();
     $task = array_merge($return[$type], $hook_task);
 
-    if (($task['task_status'] !== HOSTING_TASK_QUEUED) && !$task['hidden'] && hosting_task_menu_access($node, $type)) {
+    $allowed = (isset($task['exists']) && !in_array($task['task_status'], array(HOSTING_TASK_QUEUED, HOSTING_TASK_PROCESSING))) || !isset($task['exists']);
+    if ($allowed && !$task['hidden'] && hosting_task_menu_access($node, $type)) {
       $task['task_permitted'] = TRUE;
     }
     $task['class'] = hosting_task_status_class($task['task_status']);

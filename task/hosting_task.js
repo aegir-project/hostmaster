@@ -1,16 +1,23 @@
 hostingTaskRefreshList = function() {
+  if (!Drupal.settings.hostingTaskRefresh.nid) { 
+    return null;
+  }
 
   var hostingTaskListRefreshCallback = function(data, responseText) {
     // If the node has been modified, reload the whole page.
     if (Drupal.settings.hostingTaskRefresh.changed < data.changed) {
-      document.location.reload();
+      // only reload if there is no modal frame currently open
+      if ($(document).data('hostingOpenModalFrame') != true) {
+        document.location.reload();
+      }
     }
     else {
       $("#hosting-task-list").html(data.markup);
-      setTimeout("hostingTaskRefreshList()", 30000);
+
+      hostingTaskBindButtons('#hosting-task-list');
+      setTimeout("hostingTaskRefreshList()", 15000);
     }
   }
-  
  
   hostingTaskAddOverlay('#hosting-task-list');
   $.get('/hosting/tasks/' + Drupal.settings.hostingTaskRefresh.nid + '/list', null, hostingTaskListRefreshCallback , 'json' );
@@ -23,9 +30,15 @@ function hostingTaskAddOverlay(elem) {
 
 
 function hostingTaskRefreshQueueBlock() {
+  if (Drupal.settings.hostingTaskRefresh.queueBlock != 1) {
+    return null;
+  }
+
   var hostingTaskQueueRefreshCallback = function(data, responseText) {
     $("#hosting-task-queue-block").html(data.markup);
-    setTimeout("hostingTaskRefreshQueueBlock()", 30000);
+
+    hostingTaskBindButtons('#hosting-task-queue-block');
+    setTimeout("hostingTaskRefreshQueueBlock()", 15000);
   }
  
   hostingTaskAddOverlay('#hosting-task-queue-block');
@@ -33,27 +46,26 @@ function hostingTaskRefreshQueueBlock() {
 }
 
 $(document).ready(function() {
-
-  //hostingTaskAddOverlay('#hosting-task-queue-block');
-  if (Drupal.settings.hostingTaskRefresh.nid) { 
-    setTimeout("hostingTaskRefreshList()", 30000);
-  }
-
-  if (Drupal.settings.hostingTaskRefresh.queueBlock == 1) {
-    setTimeout("hostingTaskRefreshQueueBlock()", 30000);
-  }
-  // hostingTaskBindButtons($(this));
-/* */
+  $(document).data('hostingOpenModalFrame', false);
+  setTimeout("hostingTaskRefreshList()", 15000);
+  setTimeout("hostingTaskRefreshQueueBlock()", 15000);
+  hostingTaskBindButtons($(this));
 });
 
 
 hostingTaskBindButtons = function(elem) {
   $('.hosting-button-enabled', elem).filter('[href^="/node"]').click(function() {
+      $(document).data('hostingOpenModalFrame', true)
      var options = {
         url : '/hosting/js' + $(this).attr('href'),
         draggable : false,
-        width : 800,
-        height : 450
+        width : 600,
+        height : 150,
+        onSubmit : function() {
+          $(document).data('hostingOpenModalFrame', false)
+          hostingTaskRefreshQueueBlock();
+          hostingTaskRefreshList();
+        }
       }
       Drupal.modalFrame.open(options);
       return false;
