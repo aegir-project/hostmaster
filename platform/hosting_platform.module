@@ -277,6 +277,7 @@ function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
       );
       $settings['hostingTaskRefresh'] = array(
         'nid' => $node->nid,
+        'changed' => $node->changed,
       );
       drupal_add_js($settings, 'setting');
 

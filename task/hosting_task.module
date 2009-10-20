@@ -39,6 +39,7 @@ function hosting_task_menu() {
 
 function hosting_task_ajax_list($node) {
   $return['markup'] = hosting_task_table($node);
+  $return['changed'] = $node->changed;
   drupal_json($return);
   exit();
 }

@@ -605,6 +605,7 @@ function hosting_site_view(&$node, $teaser = false) {
     );
     $settings['hostingTaskRefresh'] = array(
       'nid' => $node->nid,
+      'changed' => $node->changed,
     );
     drupal_add_js($settings, 'setting');
 

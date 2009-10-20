@@ -83,6 +83,7 @@ td.hosting-package-downgrade {
 }
 
 tr.hosting-queue,
+tr.hosting-processing,
 th.hosting-package-same,
 td.hosting-package-same {
   background-color: #e0e8f0 !important;
@@ -110,6 +111,9 @@ td.hosting-package-same {
   background-image: url(images/icon-queue.png);
 }
 
+tr.hosting-processing td.hosting-status {
+  background-image: url(images/loader.gif);
+}
 tr.hosting-error td.hosting-status,
 th.hosting-package-downgrade,
 td.hosting-package-downgrade {
