@@ -24,7 +24,6 @@ function hostingTaskAddOverlay(elem) {
 
 function hostingTaskRefreshQueueBlock() {
   var hostingTaskQueueRefreshCallback = function(data, responseText) {
-    // If the node has been modified, reload the whole page.
     $("#hosting-task-queue-block").html(data.markup);
     setTimeout("hostingTaskRefreshQueueBlock()", 30000);
   }
@@ -35,7 +34,7 @@ function hostingTaskRefreshQueueBlock() {
 
 $(document).ready(function() {
 
-//  hostingTaskAddOverlay('#hosting-task-queue-block');
+  //hostingTaskAddOverlay('#hosting-task-queue-block');
   if (Drupal.settings.hostingTaskRefresh.nid) { 
     setTimeout("hostingTaskRefreshList()", 30000);
   }

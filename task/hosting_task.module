@@ -741,7 +741,8 @@ function hosting_task_queue_block() {
     $rows[] = array('data' => $row, 'class' => $class);
   }
   $more_link = l(t('More tasks'), 'hosting/queues/tasks');
-  return "<div id='hosting-task-queue-block'>" . theme('table', $headers, $rows, array('class' => 'hosting-table')) . $more_link . "</div>";
+  return "<div id='hosting-task-queue-block'>" . theme('table', $headers, $rows, array('class' => 'hosting-table')) . "</div>" . $more_link;
+
 }
 
 /**
