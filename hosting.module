@@ -31,14 +31,12 @@ function hosting_menu() {
     'type' => MENU_CALLBACK
   );
 
-  /*
   $items['hosting/js'] = array(
     'title' => t('ahah callback'),
     'page callback' => 'hosting_js_page',
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK
   );
-  */
 
   $items['hosting/maintenance'] = array(
     'title' => 'Site maintenance',
@@ -94,7 +92,6 @@ function hosting_menu() {
   return $items;
 }
 
-/*
 function hosting_js_page() {
   modalframe_child_js();
 
@@ -115,7 +112,6 @@ function hosting_js_page() {
 
  return $return; 
 }
- */
 
 function hosting_menu_alter(&$items) {
   $items['node/add']['page callback'] = '_hosting_node_add';

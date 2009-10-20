@@ -273,7 +273,7 @@ function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
         '#value' => hosting_task_table($node),
         '#prefix' => '<div id="hosting-task-list">',
         '#suffix' => '</div>',
-        '#weight' => -6
+        '#weight' => 10 
       );
       $settings['hostingTaskRefresh'] = array(
         'nid' => $node->nid,

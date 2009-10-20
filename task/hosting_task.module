@@ -273,7 +273,7 @@ function hosting_task_confirm_form_submit($form, &$form_state) {
   $values = $form_state['values'];
   hosting_add_task($values['nid'], $values['task'], $values['parameters']);
   $form_state['redirect'] = 'node/' . $values['nid'];
-#  modalframe_close_dialog(array('message' => '123'));
+  #modalframe_close_dialog();
 }
 
 /**
@@ -606,6 +606,11 @@ function hosting_get_tasks($filter_by = null, $filter_value = null, $count = 5, 
  * @see drush_set_error(), drush_get_error(), drush_cmp_error()
  */
 
+/**
+ * The task is being processed
+ */
+define('HOSTING_TASK_PROCESSING', -1);
+
 
 /**
  * The task is queued
@@ -622,11 +627,6 @@ define('HOSTING_TASK_SUCCESS', 1);
  * status.
  */
 define('HOSTING_TASK_ERROR', 2);
-
-/**
- * The task is being processed
- */
-define('HOSTING_TASK_PROCESSING', 4);
 
 /**
  * @} End of "name Error status defintions".
@@ -711,8 +711,8 @@ function hosting_task_table($node) {
 
     $actions = array();
 
-    $actions['log'] = _hosting_task_button(t('Log'), 'node/' . $info['nid'], t("Display the task log"), isset($info['nid']));
-    $actions['run'] = _hosting_task_button(t('Run'), sprintf("node/%d/%s_%s", $node->nid, $node->type, $task), $info['description'], $info['task_permitted']);
+    $actions['log'] = _hosting_task_button(t('View'), 'node/' . $info['nid'], t("Display the task log"), 'hosting-button-log', isset($info['nid']));
+    $actions['run'] = _hosting_task_button(t('Queue'), sprintf("node/%d/%s_%s", $node->nid, $node->type, $task), $info['description'], 'hosting-button-run', $info['task_permitted']);
      
      $row['actions'] = array(
         'data' => implode('', $actions),
@@ -725,30 +725,16 @@ function hosting_task_table($node) {
   return $output;
 }
 
-function _hosting_task_button($title, $link, $description, $status = TRUE) {
+function _hosting_task_button($title, $link, $description, $class = '', $status = TRUE) {
   if ($status) {
     return l($title, $link, array(
-          'attributes' => array(
-            'title' => $description,
-            'class' => 'hosting-button-enabled', 
-          )));
+        'attributes' => array(
+          'title' => $description,
+          'class' => 'hosting-button-enabled' . (!empty($class) ? ' ' . $class : ''), 
+        )));
   }
   else {
     return "<span class='hosting-button-disabled'>" . $title . "</span>";
-  }
-}
-
-/**
- * Helper function for hosting_task_table() to be sorted properly
- *
- * @see hosting_task_table()
- */
-function _hosting_task_info_cmp($a, $b) {
-  if ($a['weight'] == $b['weight']) {
-    return 0;
-  }
-  else {
-    return ($a['weight'] < $b['weight'] ) ? -1 : 1;
   }
 }
 
@@ -768,9 +754,7 @@ function hosting_task_list_embedded($filter_by = null, $filter_value = null) {
  */
 function _hosting_task_list($filter_by, $filter_value, $count = 5, $element = 0, $field = 'title', $skip = array(), $pager = TRUE) {
   $nodes = hosting_get_tasks($filter_by, $filter_value, $count, $element);
-  /*
-  modalframe_parent_js();
-   */
+  #modalframe_parent_js();
 
   if (!$nodes) {
    return t('No tasks available');
@@ -791,7 +775,7 @@ function _hosting_task_list($filter_by, $filter_value, $count = 5, $element = 0,
 
      $headers[t('Actions')] = '';
 
-     $actions['log'] = l(t('Log'), 'node/' . $node->nid, array('attributes' => array('class' => 'hosting-button-enabled')));
+     $actions['log'] = l(t('View'), 'node/' . $node->nid, array('attributes' => array('class' => 'hosting-button-enabled hosting-button-log')));
 
      $row['actions'] = array(
        'data' => $actions['log'],
@@ -846,7 +830,7 @@ function hosting_task_fetch_tasks($rid) {
     $task = array();
     $task = array_merge($return[$type], $hook_task);
 
-    if (($task['task_status'] != HOSTING_TASK_QUEUED) && !$task['hidden'] && hosting_task_menu_access($node, $type)) {
+    if (($task['task_status'] !== HOSTING_TASK_QUEUED) && !$task['hidden'] && hosting_task_menu_access($node, $type)) {
       $task['task_permitted'] = TRUE;
     }
 

@@ -202,3 +202,12 @@ function hosting_task_update_6002() {
   }
   return $ret;
 }
+
+/**
+ * Processing state constant changed to ensure proper sorting
+ */
+function hosting_task_update_6003() {
+  $ret = array();
+  db_query("UPDATE {hosting_task} SET task_status = -1 WHERE task_status = 4");
+  return $ret;
+}
