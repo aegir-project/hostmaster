@@ -20,10 +20,10 @@ To become aegir user you can issue this command::
 
 (Note you must run this as root or prefix with sudo).
 
-Additionally, to make following instructions generic and not dependant on
-a concrete Drupal or Aegir version, we will make use of bash environment
-variables. So current Drupal is 6.14 and Aegir release is 0.4. We assume 
-we are upgrading from a Drupal 6.13.
+Additionally to make following instructions generic and not dependant on
+a concrete Drupal or Aegir version. We will use bash environment
+variables for this. So current Drupal is 6.14 and Aegir release is
+0.4-ALPHA2. We assume we are upgrading from a Drupal 6.13.
 
 You should replace following command for current versions at the time
 you are reading this document.
@@ -32,7 +32,7 @@ Shell commands::
 
   export DRUPAL_DIR=/var/aegir/drupal-6.14
   export OLD_DRUPAL_DIR=/var/aegir/drupal-6.13
-  export AEGIR_TAG=DRUPAL-6--0-4-ALPHA1
+  export AEGIR_TAG=DRUPAL-6--0-4-ALPHA2
 
 This document also assumes drush is installed properly and we use a
 environment variable to simplify the documentation again.
@@ -124,7 +124,7 @@ Shell commands::
  # review changes, see if it works to your liking, when you're done
  $DRUSH -r $DRUPAL_DIR provision delete d6.aegir.example.com
  crontab -e # disable the cronjob to avoid warnings
- $DRUSH -r $OLD_DRUPAL_DIR delete aegir.example.com
+ $DRUSH -r $OLD_DRUPAL_DIR provision delete aegir.example.com
  # here you should really use the backup generated in the above step,
  # but the old backups also works, it's just not up to date
  $DRUSH -r $DRUPAL_DIR provision deploy aegir.example.com ~/aegir.tar.gz
