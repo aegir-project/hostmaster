@@ -125,7 +125,7 @@ Shell commands::
  mkdir -p /var/aegir/backups
  chmod 0711 /var/aegir/config
  chmod 0700 /var/aegir/backups
- chown -R aegir /var/aegir/*
+ chown -R aegir /var/aegir
 
 
 Aegir installation instructions
