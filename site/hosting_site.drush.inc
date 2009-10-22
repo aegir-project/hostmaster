@@ -35,6 +35,17 @@ function hosting_site_post_hosting_install_task($task, $data) {
     $task->ref->no_verify = TRUE;
     $task->ref->verified = mktime();
     node_save($task->ref);
+
+    if ($context['login_link']) {
+      drush_log($context['login_link']);
+      // we need to store the timestamp too because expire only means it can be deleted
+      // after an amount of time, not will be deleted.
+      $cache = array(
+        'expire' => strtotime("+24 hours"),
+        'link' => $context['login_link'],
+      );
+      cache_set('hosting:site:' . $task->ref->nid . ':login_link', $cache, 'cache', $cache['expire'] );
+    }
   }
 }
 

@@ -251,3 +251,5 @@ th.hosting-actions {
 
 div#hosting-task-list, div#hosting-task-queue-block { position: relative }
 div.modalframe-page-wrapper { background: white }
+
+.hosting-goto-site-link { font-weight: bold } 
