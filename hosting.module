@@ -630,7 +630,7 @@ function hosting_queues_configure_submit($form, &$form_state) {
       if ($info['type'] == 'serial') {
         variable_set("hosting_queue_" . $queue . "_items", $form_state['values'][$queue]['frequency']['items']);
       }
-
+      drupal_set_message(t('The queue settings have been updated.'));
     }
   }
 }
