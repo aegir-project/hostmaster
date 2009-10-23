@@ -320,9 +320,8 @@ function hostmaster_task_finalize() {
   db_query("DELETE FROM {cache}");
 
   drupal_set_message(st('Adding default blocks'));
-  install_add_block('hosting', 'hosting_summary', $theme, 1, 10, 'left', 1);
-  install_add_block('hosting', 'hosting_queues', $theme, 1, 0, 'right', 1);
-  install_add_block('hosting', 'hosting_queues_summary', $theme, 1, 2, 'right', 1);
+  install_add_block('hosting', 'hosting_queues', $theme, 1, 5, 'right', 1);
+  install_add_block('hosting', 'hosting_summary', $theme, 1, 10, 'right', 1);
 
   drupal_set_message(st('Setting up roles'));
   install_add_permissions(install_get_rid('anonymous user'), array('access content', 'access all views'));
