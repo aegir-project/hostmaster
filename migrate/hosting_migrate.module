@@ -153,15 +153,16 @@ function hosting_migrate_comparison($current, $target) {
   $result = db_query("SELECT c.nid, c.short_name, 
     c.version as current_version, t.version as target_version,
     c.version_code as current_version_code, t.version_code as target_version_code,
-    c.schema_version as current_schema, t.schema_version as target_schema FROM current c LEFT JOIN target t ON c.nid=t.nid ORDER BY c.status, short_name"); 
+    c.schema_version as current_schema, t.schema_version as target_schema, c.status AS enabled 
+    FROM current c LEFT JOIN target t ON c.nid=t.nid ORDER BY c.status DESC, short_name"); 
 
   while ($obj = db_fetch_object($result)) {
-    if (is_null($obj->target_version_code)) {
-      $obj->status = 'missing';
-    }
-    elseif (  ($obj->current_version_code > $obj->target_version_code) 
-      || ($obj->current_schema > $obj->target_schema)) {
+    if (isset($obj->current_schema) && ((int) $obj->current_schema > (int) $obj->target_schema)) {
       $obj->status = 'downgrade';
+    }
+    elseif ( ($obj->current_version_code > $obj->target_version_code) 
+      || is_null($obj->target_version_code)) {
+      $obj->status = 'missing';
     }
     elseif (($obj->current_version_code < $obj->target_version_code) || ($obj->current_schema < $obj->target_schema)) {
       $obj->status = 'upgrade';
@@ -180,15 +181,16 @@ function hosting_migrate_comparison($current, $target) {
 
 function _hosting_migrate_version_display($version, $schema = null, $status = null) {
   $status = (!is_null($status)) ? $status : 'same';
-  $display = ($version == 0) ? t('Unknown') : $version;
-
+  if (is_null($version)) {
+    $display = 'missing';
+  }
+  else {
+    $display = ($version == 0) ? t('Unknown') : $version;
+  }
   if ($schema) {
     $display .= " (" . $schema . ")";
   }
-
-  if ($status == 'missing') {
-    $display = t('Missing');
-  }
+  
   return array('class' => 'hosting-package-' . $status, 'data' => $display);
 }
 
@@ -198,11 +200,10 @@ function theme_hosting_migrate_comparison($packages) {
   $headers = array(t("Package"), t("Current"), t("Target"));
   foreach ($packages as $key => $instance) {
     $row = array();
-    $row[] = $instance->short_name;
-
+    $row[] = array('data' => $instance->short_name, 'class' => 'hosting-status');
     $row[] = _hosting_migrate_version_display($instance->current_version, $instance->current_schema);
     $row[] = _hosting_migrate_version_display($instance->target_version, $instance->target_schema, $instance->status);
-    $rows[] = $row;
+    $rows[] = array('data' => $row, 'class' => ($instance->enabled) ? 'hosting-success' : 'hosting-info');
   }
   $options['attributes']['class'] = 'hosting-migrate-comparison-return';
   $link = l(t('Back to Migrate'), 'node/' . arg(3) . '/site_migrate', $options);

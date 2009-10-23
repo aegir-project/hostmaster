@@ -71,35 +71,30 @@ th.hosting-package-missing {
 }
 
 tr.hosting-warning,
-th.hosting-package-missing,
-td.hosting-package-missing {
+#hosting-package-comparison td.hosting-package-missing {
   background-color: #fe8 !important;
 }
 
 tr.hosting-error,
-th.hosting-package-downgrade,
-td.hosting-package-downgrade {
+#hosting-package-comparison td.hosting-package-downgrade {
   background-color: #fa8 !important;
 }
 
 tr.hosting-queue,
 tr.hosting-processing,
-th.hosting-package-same,
-td.hosting-package-same {
+#hosting-package-comparison td.hosting-package-same {
   background-color: #e0e8f0 !important;
 }
 
 tr.hosting-info { background-color: #f8f8f8 !important; }
 
 tr.hosting-success,
-th.hosting-package-upgrade,
-td.hosting-package-upgrade {
+#hosting-package-comparison td.hosting-package-upgrade {
   background-color: #dfc !important;
 }
 
 tr.hosting-warning td.hosting-status,
-th.hosting-package-missing,
-td.hosting-package-missing {  
+#hosting-package-comparison td.hosting-package-missing {  
   background-image: url(images/icon-warning.png);
 }
 
