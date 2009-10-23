@@ -73,6 +73,9 @@ function hosting_task_menu_access($node, $task) {
       if (hosting_task_outstanding($node->nid, 'delete') || ($node->site_status ==  HOSTING_SITE_DELETED)) {
         return FALSE;
       }
+      if (($task == 'login_reset') && ($node->site_status != HOSTING_SITE_ENABLED)) {
+        return FALSE;
+      }
       $safe_tasks = array('backup', 'verify', 'enable');
       if (!in_array($task, $safe_tasks)) {
         // Don't show certain tasks if the site is the 'special' main aegir site
@@ -299,7 +302,9 @@ function hosting_task_confirm_form_submit($form, &$form_state) {
  */
 function hosting_task_set_title(&$node) {
   $ref = node_load($node->rid);
-  $node->title = drupal_ucfirst($node->task_type) . ' ' . $ref->title;
+  $tasks = hosting_available_tasks($ref->type);
+
+  $node->title = drupal_ucfirst($tasks[$node->task_type]['title']) . ': ' . $ref->title;
   db_query("UPDATE {node} SET title='%s' WHERE nid=%d", $node->title, $node->nid);
   db_query("UPDATE {node_revisions} SET title='%s' WHERE vid=%d", $node->title, $node->vid);
 }

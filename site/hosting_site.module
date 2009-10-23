@@ -57,6 +57,11 @@ function hosting_site_hosting_tasks() {
         Are you really sure you want to delete this site?'),
   );
 
+  $tasks['site']['login_reset'] = array(
+     'title' => t('Reset password'),
+     'description' => t('Generate a one-time login reset url for this site.'),
+  );
+
 
   $tasks['site']['install'] = array(
     'title' => t('Install'), 
