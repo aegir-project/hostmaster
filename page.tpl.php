@@ -46,12 +46,8 @@
       </div>
     </div><!-- /main -->
 
-    <?php if (!empty($right)): ?>
-      <div id="right" class="sidebar"><?php print $right ?></div>
-    <?php endif; ?>
-
-    <?php if (!empty($left)): ?>
-      <div id="left" class="sidebar"><?php print $left ?></div>
+    <?php if (!empty($right) or !empty($left)): ?>
+      <div id="right" class="sidebar"><?php print $right ?><?php print $left ?></div>
     <?php endif; ?>
 
   </div></div>

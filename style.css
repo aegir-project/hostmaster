@@ -1,7 +1,7 @@
 /* $Id$ */
 
 /**
- * Eldir for Drupal 5
+ * Eldir for Drupal 6
  * Designed for the Aegir hosting system.
  *
  * By Young Hahn (young@developmentseed.org)
@@ -294,7 +294,7 @@ div#page div.limiter { background:url(images/page.png) repeat-y; }
 
 div#main {
   float:left;
-  width:540px;
+  width:600px;
   padding:10px;
   }
 
@@ -306,7 +306,7 @@ div#main {
 
 div.sidebar {
   float:right;
-  width:170px;
+  width:300px;
   padding:10px;
   }
 
@@ -732,7 +732,10 @@ table.hosting-table th {
   }
 
 /* Node info */
-#hosting-task-list { width:230px; }
+#hosting-task-list { 
+  width:290px;
+  float:right;
+}
 
 #hosting-platform-info,
 #hosting-site-info,
@@ -740,14 +743,23 @@ table.hosting-table th {
 #hosting-site-edit-info {
   font-size:11px;
   background:#f8f8f8;
-
   float:left;
-
   padding:9px;
   border:1px solid #e8e8e8;
   margin:0px 0px 10px;
   width:280px;
   }
+
+#hosting-site-list { clear: both }
+
+#hosting-dbserver-info, 
+#hosting-webserver-info {
+  font-size:11px;
+  background:#f8f8f8;
+  padding:9px;
+  border:1px solid #e8e8e8;
+  margin:0px 0px 10px;
+}
 
   #hosting-site-edit-info,
   #hosting-site-edit-info div.form-item {
@@ -811,6 +823,32 @@ div.hosting-queue-frequency select {
   padding:2px;
   font-size:10px;
   }
+
+
+/* Task buttons */
+a.hosting-button-enabled,
+.hosting-button-disabled {
+  padding: 4px 10px;
+  margin: 0 4px;
+  text-align: center;
+  height: 20px;
+  -moz-border-radius:3px;
+  -webkit-border-radius: 3px;
+}
+
+a.hosting-button-enabled:hover {
+  background: #49a
+}
+
+a.hosting-button-enabled {
+  color:#fff;
+  background:#6ac;
+}
+
+.hosting-button-disabled {
+  color:#eee;
+  background:#aaa;
+}
 
 /**
  * CORE ADMIN =========================================================
