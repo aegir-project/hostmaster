@@ -21,7 +21,7 @@ function hosting_migrate_menu() {
     'access arguments' => array('create migrate task'),
     'type' => MENU_CALLBACK
   );
-
+/*
   $items['node/%hosting_task_platform/task_migrate'] = array(
     'title' => t('Migrate'),
     'description' => t('Migrate sites to a new platform'),
@@ -31,7 +31,7 @@ function hosting_migrate_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => ($info['weight']) ? $info['weight'] : 0, 
   );
-
+ */
  return $items;
 }
 
@@ -44,6 +44,12 @@ function hosting_migrate_hosting_tasks() {
   $tasks['site']['migrate'] = array(
     'title' => t('Migrate'),
     'description' => t('Move the site to a new platform.'),
+  );
+
+  $tasks['platform']['migrate'] = array(
+    'title' => t('Migrate'),
+    'description' => t('Migrate sites to a new platform.'),
+    'page arguments' => array('hosting_migrate_platform', 1),
   );
   return $tasks;
 }

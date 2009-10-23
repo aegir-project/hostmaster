@@ -6,6 +6,8 @@
  * Batch migration of sites between platforms
  */
 function hosting_migrate_platform($form_state, $node) {
+  drupal_add_js(drupal_get_path('module','hosting_migrate') . '/hosting_migrate.js');
+
   $step = isset($form_state['storage']['step']) ? $form_state['storage']['step'] : 1;
 
   // Step 1 - choose target platform
@@ -56,8 +58,8 @@ function hosting_migrate_platform($form_state, $node) {
       'passed' => t("The following sites will be migrated"),
       'failed' => t("The following sites will not be migrated")
     );
-    $header = array(t('Site'), t('Upgrades'), t('Warnings'), t('Errors'));
-
+    $header = array(t('Site'), t('Upgrades'), t('Warnings'), t('Errors'), t('Actions'));
+    $options['attributes']['class'] = 'hosting-package-comparison-link';
     foreach (array('passed', 'failed') as $type) {
       if (sizeof($form_state['storage'][$type])) {
 
@@ -70,7 +72,13 @@ function hosting_migrate_platform($form_state, $node) {
           );
           $status = $form_state['storage']['status'][$site_id];
           $row = array( array('data' => $url, 'class' => 'hosting-status'), $status['upgrade'], $status['missing'], $status['error']);
-
+          if (isset($form_state['storage']['instance'][$site_id])) {
+            $link = l(t('Compare'), 'hosting/migrate/compare/' . $node->nid . '/' . $form_state['storage']['instance'][$site_id], $options);
+          }
+          else  {
+            $link = t('Profile not found');
+          }
+          $row[] = $link;
           $rows[] = array('data' => $row, 'class' => 'hosting-' . _hosting_migrate_site_list_class($status));
         }
         $form['output'][$type]['table'] = array(
@@ -111,6 +119,7 @@ function hosting_migrate_platform_submit($form, &$form_state) {
   $step = isset($form_state['storage']['step']) ? $form_state['storage']['step'] : 1;
   switch ($step) {
     case 1:
+      $form_state['storage']['current_platform'] = $form['#current_platform']->nid; 
       $form_state['storage']['target_platform'] = $form_state['values']['target_platform']; 
       $max_per_batch = 5;
       $result = db_query("SELECT n.nid, n.title FROM  {hosting_site} s LEFT JOIN {node} n ON n.nid=s.nid WHERE platform = %d AND s.status = %d and s.verified > 0 ORDER BY n.title", $form['#current_platform']->nid, HOSTING_SITE_ENABLED);
@@ -129,16 +138,30 @@ function hosting_migrate_platform_submit($form, &$form_state) {
           'error_message' => t('Bulk migration has encountered an error.'),
         );
         batch_set($batch);
+
+        if (!empty($GLOBALS['modalframe_page_template'])) {
+          $batch =& batch_get();
+          $batch['url'] = 'hosting/js/batch';
+          $batch['source_page'] = 'hosting/js/' . $_GET['q'];
+        }
       } 
       break;
     case 2:
+      // Create a task node for logging purposes.
+      $current = $form_state['storage']['current_platform'];
+      $target = $form_state['storage']['target_platform'];
+
+      $task = hosting_add_task($current, 'migrate', array('target_platform' => $target), HOSTING_TASK_SUCCESS);
+
       foreach ($form_state['storage']['passed'] as $nid => $url) {
         hosting_add_task($nid, 'migrate', array('target_platform' => $form_state['storage']['target_platform']));
+        hosting_task_log($task->vid, 'success', t("Migrate task for !url created", array('!url' => $url)));
       }
       $form_state['redirect'] = 'node/' . $form_state['storage']['target_platform'];
       unset($form_state['rebuild']);
       unset($form_state['storage']);
       drupal_set_message(t('The sites have been added to the task queue to be migrated'));
+      modalframe_close_dialog();
       return false; 
       // this does not seem to work ?
       break;
@@ -165,6 +188,7 @@ function hosting_migrate_platform_batch($site_id, $target_platform, &$context) {
   if ($profile_instance) {
     $status = hosting_package_comparison($site->nid, $profile_instance->iid);
     $batch['form_state']['storage']['status'][$site->nid] = $status;
+    $batch['form_state']['storage']['instance'][$site->nid] = $profile_instance->iid;
     // If there were no errors, this site passes and can be migrated
     if (!$status['error'] && $profile->title != 'hostmaster') {   // The hostmaster site can not be upgraded via the interface.
       $batch['form_state']['storage']['passed'][$site->nid] = $site->title;

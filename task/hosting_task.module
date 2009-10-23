@@ -21,6 +21,7 @@ function hosting_task_menu() {
            'access arguments' => array(1, $task),
            'type' => MENU_CALLBACK,
          );
+        $items[$path] = array_merge($items[$path], $info);
       }
     }
   }
@@ -206,7 +207,7 @@ function hosting_task_retry($task_id) {
 /**
  * Helper function to generate new task node
  */
-function hosting_add_task($nid, $type, $args = null) {
+function hosting_add_task($nid, $type, $args = null, $status = HOSTING_TASK_QUEUED) {
  global $user;
 
  $task = hosting_get_most_recent_task($nid, $type);
@@ -222,7 +223,7 @@ function hosting_add_task($nid, $type, $args = null) {
  $task->rid = $node->nid;
  $task->uid = $user->uid;
  $task->status = 1;
- $task->task_status = HOSTING_TASK_QUEUED;
+ $task->task_status = $status;
  $task->revision = TRUE;
 
  #arguments, such as which backup to restore.
@@ -230,6 +231,8 @@ function hosting_add_task($nid, $type, $args = null) {
    $task->task_args = $args;
  }
  node_save($task);
+
+ return $task;
 }
 /**
  * Implementation of hook_form().

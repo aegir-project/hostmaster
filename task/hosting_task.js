@@ -51,8 +51,10 @@ $(document).ready(function() {
   setTimeout("hostingTaskRefreshQueueBlock()", 30000);
   hostingTaskBindButtons($(this));
   $('#hosting-task-confirm-form-actions a').click(function() {
-    setTimeout(function() { parent.Drupal.modalFrame.close({}, {}); }, 1);
-    return false;
+    if (parent.Drupal.modalFrame.isOpen) {
+      setTimeout(function() { parent.Drupal.modalFrame.close({}, {}); }, 1);
+      return false;
+    }
   });
 
 });
