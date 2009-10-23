@@ -235,6 +235,7 @@ function hosting_add_task($nid, $type, $args = null) {
  * Implementation of hook_form().
  */
 function hosting_task_confirm_form($form_state, &$node, $task) {
+  drupal_add_js(drupal_get_path('module','hosting_task') . '/hosting_task.js');
   $tasks = hosting_available_tasks($node->type);
   $form['help'] = array('#value' => $tasks[$task]['description']); 
   $form['nid'] = array('#type' => 'value', '#value' => $node->nid);
@@ -251,7 +252,12 @@ function hosting_task_confirm_form($form_state, &$node, $task) {
     $form['#func_param_2'] = $task;
   }
   $question = t("Are you sure you want to @task @object?", array('@task' => $task, '@object' => $node->title));
-  return confirm_form($form, $question, 'node/' . $node->nid, '', $tasks[$task]['title']);
+  $form = confirm_form($form, $question, 'node/' . $node->nid, '', $tasks[$task]['title']);
+
+  // add an extra class to the actions to allow us to disable the cancel link via javascript for the modal dialog
+  
+  $form['actions']['#prefix'] = '<div id="hosting-task-confirm-form-actions" class="container-inline">';
+  return $form;
 }
 
 /**
