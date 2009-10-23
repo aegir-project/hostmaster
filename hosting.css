@@ -1,61 +1,61 @@
-/*
- *  Overview 
+/**
+ * Overview 
  */
 
-#hosting-webserver-info, #hosting-dbserver-info, #hosting-client-info, #hosting-platform-info, #hosting-site-info, #hosting-task-info, #hosting-site-edit-info {
-  float:left;
-  width:35%;
-  padding: 2% 5%;
-  margin:25px 0;
-  background:#F1F1F1;
-}
+.hosting-site-list {clear:both;}
 
-#hosting-webserver-info, #hosting-dbserver-info, #hosting-client-info {
-  width: auto;
-}
-
-#hosting-task-info, #hosting-site-edit-info {
-  float:none;
-  width:auto;
-}
-
-#hosting-site-edit-info .form-item, #hosting-task-info .form-item {
-  float:left;
-  margin:0 3em  0 0;
-}
-
-#hosting-site-edit-info {
-  margin: 10px 0;
-  padding: 2% ;
-}
-
-#hosting-site-edit-info .form-item {
-  width: 200px;
-}
-
-#hosting-webserver-info label, #hosting-dbserver-info label, #hosting-client-info label, #hosting-site-edit-info label, #hosting-platform-info label, #hosting-site-info label, #hosting-task-info label {
-  float:left;
-  margin:0 5px 0 0;
-}
-
+#hosting-webserver-info, 
+#hosting-dbserver-info, 
+#hosting-client-info, 
+#hosting-platform-info, 
+#hosting-site-info, 
+#hosting-task-info, 
+#hosting-site-edit-info, 
 #hosting-task-list {
-  width:49%;
-  float:right;
+  margin:0 0 1em;
 }
 
-#hosting-site-list label {
-  font-size:1.4em;
-  margin:0.5em 0 0;
-  font-weight:normal;
+#hosting-webserver-info .form-item, 
+#hosting-dbserver-info .form-item, 
+#hosting-client-info .form-item, 
+#hosting-platform-info .form-item, 
+#hosting-site-info .form-item, 
+#hosting-task-info .form-item, 
+#hosting-site-edit-info .form-item {
+  margin:0 0 0.5em;
 }
 
-#hosting-site-list {
-  clear:both;
+#hosting-task-list .form-item {
+  margin:0;
+}
+
+#hosting-webserver-info label, 
+#hosting-dbserver-info label, 
+#hosting-client-info label, 
+#hosting-site-edit-info label, 
+#hosting-platform-info label, 
+#hosting-site-info label, 
+#hosting-task-info label {
+  display:inline;
+}
+
+/**
+ * Tables
+ */
+
+table code {
+  font-size:1em;
+}
+
+th.hosting-actions,
+td.hosting-actions {
+  text-align: right;
 }
 
 /**
  * Status icons, colors.
  */
+
 td.hosting-status,
 td.hosting-package-upgrade,
 td.hosting-package-downgrade,
@@ -129,46 +129,19 @@ tr.hosting-success td {
   background-color:transparent !important;
 }
 
-#hosting-package-comparison {overflow-x:auto;}
-
-div#hosting-package-comparison div.form-item label {
-  font-weight : bold;
-}
-
-/*
- *  Retry button
+/**
+ *  Buttons
  */
+
+a.hosting-button-enabled,
+.hosting-button-disabled {
+  margin: 0 0.5em 0 0;
+}
 
 div.hosting-task-retry form, div.hosting-task-retry form input {
   margin:0 !important;
   padding:0 !important;
 }
-
-/*
- *  Unknown
- */
-
-.hosting-queue-frequency div ,.hosting-queue-frequency label{
-  display: inline;
-}
-
-.hosting-queue-frequency, .hosting-queue-frequency-head {
-  text-align: right;
-  padding-right: 2em;
-}
-
-.hosting-task-full { display: none }
-
-/*
-html.js input.form-autocomplete {
-  background-image: url(../../misc/throbber.gif);
-  background-repeat: no-repeat;
-  background-position: 100% 2px;
-}
-html.js input.throbbing {
-  background-position: 100% -18px;
-}
-*/
 
 #hosting-wizard-form-buttons { 
   text-align: right;
@@ -176,9 +149,13 @@ html.js input.throbbing {
   clear: both;
 }
 
-#hosting-wizard-form, div.error, div.messages {
-margin-left: auto;
-margin-right: auto;
+/**
+ *  Forms
+ */
+
+#hosting-wizard-form {
+  margin-left: auto;
+  margin-right: auto;
 }
 
 #hosting-wizard-account-details { width : 45%; float: left; padding: 0 10px; }
@@ -187,40 +164,10 @@ margin-right: auto;
 div.hosting-wizard-glossary { padding: 0 2em; display: none; }
 
 
-
 /**
- * Task button links
+ * Overlay
  */
-a.hosting-button-enabled,
-.hosting-button-disabled {
-  padding: 4px 10px;
-  margin: 0 4px;
-   text-align: center;
-   height: 20px;
-    -moz-border-radius:3px;
-    -webkit-border-radius: 3px;
-}
 
-a.hosting-button-enabled:hover {
-  background: #49a
-}
-
-a.hosting-button-enabled {
-  color:#fff;
-  background:#6ac;
-}
-
-.hosting-button-disabled {
-  color:#eee;
-  background:#aaa;
-}
-
-td.hosting-actions {
-  text-align: right;
-}
-th.hosting-actions {
-  text-align: center;
-}
 .ui-dialog-overlay, 
 .hosting-overlay { 
   background:transparent url(images/overlay.png) repeat 0 0;
@@ -246,5 +193,3 @@ th.hosting-actions {
 
 div#hosting-task-list, div#hosting-task-queue-block { position: relative }
 div.modalframe-page-wrapper { background: white }
-
-.hosting-goto-site-link { font-weight: bold } 
