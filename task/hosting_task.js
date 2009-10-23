@@ -57,7 +57,6 @@ $(document).ready(function() {
 
 });
 
-
 hostingTaskBindButtons = function(elem) {
   $('.hosting-button-enabled', elem).filter('[href^="/node"]').click(function() {
       $(document).data('hostingOpenModalFrame', true)

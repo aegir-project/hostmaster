@@ -80,6 +80,7 @@ function hosting_migrate_theme($existing, $type, $theme, $path) {
  */
 function hosting_task_migrate_form($node) {
 
+  drupal_add_js(drupal_get_path('module','hosting_migrate') . '/hosting_migrate.js');
   $packages = array();
 
   $profile_platform_instances = hosting_package_instances_load(
@@ -104,7 +105,7 @@ function hosting_task_migrate_form($node) {
     if ($profile_instance->rid != $node->platform) {
       $status = hosting_package_comparison($node->nid, $profile_instance->iid);
 
-      $description = t("Upgrades: !upgrades, Warnings: !missing, Errors: !errors | <a href='!url'>Compare platforms</a>",
+      $description = t("Upgrades: !upgrades, Warnings: !missing, Errors: !errors | <a href='!url' class='hosting-package-comparison-link'>Compare platforms</a>",
         array(
           '!upgrades' => $status['upgrade'],
           '!missing' => $status['missing'] + $status['downgrade'],
@@ -172,14 +173,12 @@ function hosting_migrate_comparison($current, $target) {
 }
 
 function _hosting_migrate_version_display($version, $schema = null, $status = null) {
-  
   $status = (!is_null($status)) ? $status : 'same';
   $display = ($version == 0) ? t('Unknown') : $version;
 
   if ($schema) {
     $display .= " (" . $schema . ")";
   }
-
 
   if ($status == 'missing') {
     $display = t('Missing');
@@ -199,6 +198,7 @@ function theme_hosting_migrate_comparison($packages) {
     $row[] = _hosting_migrate_version_display($instance->target_version, $instance->target_schema, $instance->status);
     $rows[] = $row;
   }
-  $link = l(t('Back to Migrate'), 'node/' . arg(3) . '/site_migrate');
-  return "<div id='hosting-package-comparison'>" . theme('table', $headers, $rows) . $link . "</div>";
+  $options['attributes']['class'] = 'hosting-migrate-comparison-return';
+  $link = l(t('Back to Migrate'), 'node/' . arg(3) . '/site_migrate', $options);
+  return "<div id='hosting-package-comparison'>" . $link . theme('table', $headers, $rows) . $link . "</div>";
 }
