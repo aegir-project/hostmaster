@@ -38,7 +38,7 @@ function _hosting_config_path_requirements() {
   $mkdir_cmd['@mkdir_cmd'] = <<<EOF
     mkdir -p $vhost_path
     chown $username:$username $vhost_path
-    chmod 0700 $vhost_path
+    chmod 0711 $vhost_path
 EOF;
 
   $help['title'] = t('Write access to a directory to store configuration information');
