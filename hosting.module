@@ -622,6 +622,24 @@ function theme_hosting_queues_configure($form) {
   return $output;
 }
 
+/**
+ * Implementation of hook_validate()
+ */
+function hosting_queues_configure_validate($form, &$form_state) {
+  foreach (hosting_get_queues() as $queue => $info) {
+    if ($form_state['values'][$queue]) {
+      if ($form_state['values'][$queue]) {
+        if (!is_numeric($form_state['values'][$queue]['frequency']['ticks']) || !is_numeric($form_state['values'][$queue]['frequency']['items'])) {
+          form_set_error($queue, t('Please enter a valid frequency.'));
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Implementation of hook_submit()
+ */
 function hosting_queues_configure_submit($form, &$form_state) {
   foreach (hosting_get_queues() as $queue => $info) {
     if ($form_state['values'][$queue]) {
