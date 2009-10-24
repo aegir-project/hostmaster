@@ -233,7 +233,7 @@ Shell commands::
  rm -r drupal-5.x/profiles/hostmaster/modules/drush
  cvs up -A drupal-5.x/profiles/hostmaster/modules/hosting
  # here run update.php on the site and setup your drush path
- cd drupal-5.x && ../drush/drush.php hosting setup
+ cd drupal-5.x && php ../drush/drush.php hosting setup
 
 Upgrading Hostslave platforms from 0.1
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
