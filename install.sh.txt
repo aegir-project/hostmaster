@@ -273,7 +273,7 @@ aegir_download () {
 
   echo "Downloading Drupal"
   cd $AEGIR_HOME
-  $AEGIR_HOME/drush/drush.php dl drupal-$DRUPAL_VERSION
+  php $AEGIR_HOME/drush/drush.php dl drupal-$DRUPAL_VERSION
   mv $AEGIR_HOME/hostmaster $DRUPAL_DIR/profiles/
 
 }

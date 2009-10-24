@@ -193,7 +193,7 @@ compatible versions of other components.
 
 Shell commands::
 
- drush/drush dl drush_make --destination=.drush
+ php drush/drush.php dl drush_make --destination=.drush
 
 
 Downloading provision framework
@@ -222,7 +222,7 @@ which will download required and optional components for Aegir.
 
 Shell commands::
 
- drush/drush hostmaster make $HOSTMASTER_DIR
+ php drush/drush.php hostmaster make $HOSTMASTER_DIR
 
 
 Prepare the Hostmaster drupal site
