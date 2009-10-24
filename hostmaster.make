@@ -23,7 +23,7 @@ projects[modalframe][version] = "1.4"
 
 ; Libraries
 libraries[jquery_ui][download][type] = "get"
-libraries[jquery_ui][subdir] = "modules/jquery_ui"
+libraries[jquery_ui][download][destination] = "modules/jquery_ui"
 libraries[jquery_ui][download][url] = "http://jquery-ui.googlecode.com/files/jquery.ui-1.6.zip"
 libraries[jquery_ui][directory_name] = "jquery.ui"
 
