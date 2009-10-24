@@ -474,18 +474,34 @@ function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
   );
 
   if ($node->task_status != HOSTING_TASK_QUEUED) {
-    $node->content['info']['executed'] = array(
-      '#type' => 'item',
-      '#title' => t('Executed'),
-      '#value' => format_date($node->executed),
-      '#weight' => 1,
-    );
-    $node->content['info']['delta'] = array(
-      '#type' => 'item',
-      '#title' => t('Execution time'),
-      '#value' => format_interval($node->delta),
-      '#weight' => 2,
-    );
+    if ($node->task_status == HOSTING_TASK_PROCESSING) {
+      $node->content['info']['started'] = array(
+        '#type' => 'item',
+        '#title' => t('Started'),
+        '#value' => format_date($node->executed),
+        '#weight' => 1,
+      );
+      $node->content['info']['delta'] = array(
+        '#type' => 'item',
+        '#title' => t('Processing time'),
+        '#value' => format_interval(time() - $node->executed),
+        '#weight' => 2,
+      );
+    }
+    else {
+      $node->content['info']['executed'] = array(
+        '#type' => 'item',
+        '#title' => t('Executed'),
+        '#value' => format_date($node->executed),
+        '#weight' => 1,
+      );
+      $node->content['info']['delta'] = array(
+        '#type' => 'item',
+        '#title' => t('Execution time'),
+        '#value' => format_interval($node->delta),
+        '#weight' => 2,
+      );
+    }
   } else {
     $queues = hosting_get_queues();
     $queue = $queues['tasks'];
