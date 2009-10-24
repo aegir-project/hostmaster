@@ -21,16 +21,6 @@ function drush_hosting_hosting_task_validate($task) {
   }
   if ($task->type == 'task') {
     $task->ref = node_load($task->rid);
-    $task->changed = mktime();
-    $task->executed = mktime();
-    $task->revision = FALSE;
-
-    // We remove this from the queue at the start of execution,
-    // otherwise, if it takes too long to run it might have a
-    // second thread spawned to process it.
-    $task->task_status = HOSTING_TASK_PROCESSING;
-    node_save($task);
-
     $task->options = array();
     $task->args = array();
     drush_set_context('HOSTING_TASK', $task);

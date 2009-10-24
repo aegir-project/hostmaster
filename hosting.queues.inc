@@ -153,7 +153,14 @@ function hosting_tasks_queue($count = 20) {
   drush_log(dt("Running tasks queue"));
   $tasks = _hosting_get_new_tasks($count);
   foreach ($tasks as $task) {
-     drush_backend_fork("hosting task", array($task->nid));
+    $task->revision = FALSE;
+    $task->changed = mktime();
+    $task->executed = mktime();
+    // remove the task from the queue at the start of execution
+    // this is to avoid concurrent task runs
+    $task->task_status = HOSTING_TASK_PROCESSING;
+    node_save($task);
+    drush_backend_fork("hosting task", array($task->nid));
   }
 }
 
