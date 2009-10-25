@@ -371,10 +371,14 @@ function hosting_domain_allowed($url, $params = array()) {
   return $return;
 }
 
+/**
+ * Initial hosting setup
+ * Runs the 'hosting dispatch' command, and 
+ * move on to setting up the crontab
+ */ 
 function hosting_setup() {
   variable_set('hosting_dispatch_enabled', FALSE);
-    ## attempting to run the dispatch command, to make sure it runs without the queue being
-  ## enabled.
+  // attempt to run the dispatch command, to make sure it runs without the queue being enabled.
   variable_set('hosting_dispatch_enabled', TRUE);
   drush_print(_hosting_dispatch_cmd());
   exec(_hosting_dispatch_cmd(), $return, $code);
@@ -389,24 +393,28 @@ function hosting_setup() {
   else {
     drush_set_error('DRUSH_FRAMEWORK_ERROR', dt("Dispatch command could not be run. Returned: \n@return", array('@return' => $return))); 
   }
-  
-
   if (drush_get_error()) {
     drush_log(t("The command did not complete successfully, please fix the issues and re-run this script"), 'error');
   }
 }
 
-
+/**
+ * Set up the hosting dispatch command in the aegir user's crontab
+ * Replace the crontab entry if it exists, else create it from scratch
+ */
 function _hosting_setup_cron() {
   $existing = FALSE;
   exec('crontab -l 2> /dev/null', $cron);
-
   variable_set('hosting_cron_backup', $cron);
   if (sizeof($cron)) {
     foreach ($cron as $line => $entry) {
       if (preg_match('/hosting dispatch/', $entry)) {
         $pattern = "+(.*)'(.*)/drush.php'(.*)--root='(.*)'.*+";
-        $replace = sprintf("$1 '%s' --root='$4' $3 > /dev/null)", DRUSH_COMMAND);
+        $replace = sprintf("$1 '%s' hosting dispatch --root=%s --uri=%s)", 
+           DRUSH_COMMAND, 
+           escapeshellarg(HOSTING_DEFAULT_DOCROOT_PATH), 
+           drush_get_option('uri')
+        );
         $cron[$line] = preg_replace($pattern, $replace, $entry);
         drush_log(dt("Existing hosting dispatch cron entry was found. Replacing"));
         $existing = TRUE;
@@ -417,8 +425,6 @@ function _hosting_setup_cron() {
   else {
     drush_log("message", t("No existing crontab was found"));
   }
-
-  
   if (!$existing) {
     $cron[] = hosting_queues_cron_cmd();
   }
