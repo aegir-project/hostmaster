@@ -42,7 +42,7 @@ environment variable to simplify the documentation again.
 
 Shell commands::
 
-  export DRUSH=/var/aegir/drush/drush.php
+  export DRUSH='php /var/aegir/drush/drush.php'
 
 Finally, we use CVS to install some packages, so this needs to be
 installed for upgrades. On Debian, this means:
