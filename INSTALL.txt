@@ -324,14 +324,17 @@ filesystem layout should look something like this::
 
  /var/aegir/hostmaster-0.x/
  /var/aegir/hostmaster-0.x/profiles/hostmaster/
+ /var/aegir/hostmaster-0.x/profiles/hostmaster/modules/admin_menu/
  /var/aegir/hostmaster-0.x/profiles/hostmaster/modules/hosting/
  /var/aegir/hostmaster-0.x/profiles/hostmaster/modules/install_profile_api/
- /var/aegir/hostmaster-0.x/profiles/hostmaster/modules/admin_menu/
+ /var/aegir/hostmaster-0.x/profiles/hostmaster/modules/jquery_ui/
+ /var/aegir/hostmaster-0.x/profiles/hostmaster/modules/modalframe/
  /var/aegir/hostmaster-0.x/profiles/hostmaster/themes/eldir/
  /var/aegir/hostmaster-0.x/sites/aegir.example.com/
  /var/aegir/config/vhost.d/
  /var/aegir/backups/
  /var/aegir/drush/drush.php
+ /var/aegir/.drush/drush_make/
  /var/aegir/.drush/provision/
 
 Variations on this are acceptable (for example, the Drush Debian
