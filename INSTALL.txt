@@ -160,19 +160,19 @@ Shell commands::
   export HOSTMASTER_DIR=hostmaster-0.4-alpha2
 
 
-Installing drush 2.0
+Installing drush 2.1
 --------------------
 
-At the time of writing, the current drush stable version is 2.0.
+At the time of writing, the current drush stable version is 2.1.
 In the event a newer version exists and this document has not been
 updated, you should use the latest stable version of the 2.x branch.
 
 Shell commands::
 
  cd /var/aegir
- wget http://ftp.drupal.org/files/projects/drush-All-Versions-2.0.tar.gz
- tar -xvzf drush-All-Versions-2.0.tar.gz
- rm drush-All-Versions-2.0.tar.gz
+ wget http://ftp.drupal.org/files/projects/drush-All-Versions-2.1.tar.gz
+ tar -xvzf drush-All-Versions-2.1.tar.gz
+ rm drush-All-Versions-2.1.tar.gz
  mkdir .drush
 
 Drush is now downloaded to /var/aegir/drush. It is not in the system

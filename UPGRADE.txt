@@ -225,7 +225,7 @@ Shell commands::
 
  export CVSROOT=:pserver:anonymous:anonymous@cvs.drupal.org:/cvs/drupal
  cd /var/aegir
- cvs co -d drush -rDRUPAL-6--2-0 contributions/modules/drush
+ cvs co -d drush -rDRUPAL-6--2-1 contributions/modules/drush
  mkdir .drush
  cvs co -d .drush/provision -rDRUPAL-6--0-2 contributions/modules/provision
  rm drupal-5.x/drush.php
