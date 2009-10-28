@@ -94,6 +94,16 @@ Shell commands::
  apt-get install cvs
 
 
+Unzip
+-----
+
+The jQueryUI library is used in the Aegir UI, unzip is required to extract it.
+
+Shell commands::
+
+ apt-get install unzip
+
+
 Aegir user
 ----------
 
