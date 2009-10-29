@@ -98,3 +98,54 @@ function hosting_update_6001() {
 
   return $ret;
 }
+
+/**
+ * Change the default configured blocks to match eldir
+ */
+function hosting_update_6001() {
+  $ret = array();
+  install_include(array('block'));
+
+  $theme = 'eldir';
+  install_disable_block('hosting', 'hosting_queues_summary', $theme);
+  install_set_block('user', 0 , $theme, 'right', 0);
+  install_set_block('user', 1 , $theme, 'right', 0);
+  install_set_block('hosting', 'hosting_queues', $theme, 'right', 5);
+  install_set_block('hosting', 'hosting_summary', $theme, 'right', 10);
+
+  return $ret;
+}
+
+/**
+ * Change the default configured blocks to match eldir
+ */
+function hosting_update_6001() {
+  $ret = array();
+  install_include(array('block'));
+
+  $theme = 'eldir';
+  install_disable_block('hosting', 'hosting_queues_summary', $theme);
+  install_set_block('user', 0 , $theme, 'right', 0);
+  install_set_block('user', 1 , $theme, 'right', 0);
+  install_set_block('hosting', 'hosting_queues', $theme, 'right', 5);
+  install_set_block('hosting', 'hosting_summary', $theme, 'right', 10);
+
+  return $ret;
+}
+
+/**
+ * Change the default configured blocks to match eldir
+ */
+function hosting_update_6001() {
+  $ret = array();
+  install_include(array('block'));
+
+  $theme = 'eldir';
+  install_disable_block('hosting', 'hosting_queues_summary', $theme);
+  install_set_block('user', 0 , $theme, 'right', 0);
+  install_set_block('user', 1 , $theme, 'right', 0);
+  install_set_block('hosting', 'hosting_queues', $theme, 'right', 5);
+  install_set_block('hosting', 'hosting_summary', $theme, 'right', 10);
+
+  return $ret;
+}

@@ -157,7 +157,7 @@ function hosting_migrate_comparison($current, $target) {
     FROM current c LEFT JOIN target t ON c.nid=t.nid ORDER BY c.status DESC, short_name"); 
 
   while ($obj = db_fetch_object($result)) {
-    if (isset($obj->current_schema) && ((int) $obj->current_schema > (int) $obj->target_schema)) {
+    if (isset($obj->current_schema) && ((int) $obj->target_schema > 0) && ((int) $obj->current_schema > (int) $obj->target_schema)) {
       $obj->status = 'downgrade';
     }
     elseif ( ($obj->current_version_code > $obj->target_version_code) 
@@ -201,8 +201,9 @@ function theme_hosting_migrate_comparison($packages) {
   foreach ($packages as $key => $instance) {
     $row = array();
     $row[] = array('data' => $instance->short_name, 'class' => 'hosting-status');
+    $target_schema = ((int) $instance->target_schema == 0) ? $instance->current_schema : $instance->target_schema;
     $row[] = _hosting_migrate_version_display($instance->current_version, $instance->current_schema);
-    $row[] = _hosting_migrate_version_display($instance->target_version, $instance->target_schema, $instance->status);
+    $row[] = _hosting_migrate_version_display($instance->target_version, $target_schema, $instance->status);
     $rows[] = array('data' => $row, 'class' => ($instance->enabled) ? 'hosting-success' : 'hosting-info');
   }
   $options['attributes']['class'] = 'hosting-migrate-comparison-return';

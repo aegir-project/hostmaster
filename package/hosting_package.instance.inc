@@ -214,7 +214,7 @@ function hosting_package_comparison($current, $target) {
   _hosting_package_temporary_table("target", $target);
 
   $status = array();
-  $result = db_query("SELECT count(c.nid) AS error FROM current c LEFT JOIN target t ON c.nid=t.nid WHERE (c.schema_version > t.schema_version) AND c.status=1");
+  $result = db_query("SELECT count(c.nid) AS error FROM current c LEFT JOIN target t ON c.nid=t.nid WHERE (t.schema_version > 0) && (c.schema_version > t.schema_version) AND c.status=1");
   while ($obj = db_fetch_object($result)) {
     $status['error'] = $obj->error;
   }
