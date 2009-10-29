@@ -212,9 +212,12 @@ function hosting_client_node_access_records($node) {
     if ($base_grant['gid'] != HOSTING_DEFAULT_CLIENT) {
       $grants[] = $base_grant;
     }
+
+    if ($base_grant['gid'] != 1) {
       // Also give full access to the administrator user.
       $base_grant['gid'] = 1;
       $grants[] = $base_grant;
+    }
 
     return $grants;
   }

@@ -239,12 +239,7 @@ function hosting_site_update_6003() {
  * This is to make sure the open_basedir protection is in place
  */
 function hosting_site_update_6004() {
-  include_once(drupal_get_path('module', 'hosting_task') .  '/hosting_task.module');
-  $ret = array();
-  $result = db_query("SELECT n.nid FROM {node} n INNER JOIN hosting_site s on s.nid = n.nid WHERE n.type='site' AND s.status=1");
-  while ($site = db_fetch_object($result)) {
-    hosting_add_task($site->nid, 'verify');
-  }
-  return $ret;
+  // this update was moved to hosting_update_6002()
+  return array();
 }
 

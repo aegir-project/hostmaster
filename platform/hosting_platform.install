@@ -73,13 +73,6 @@ function hosting_platform_update_1() {
  * This is to make sure ~/config/includes/global.inc is properly setup
  */
 function hosting_platform_update_6000() {
-  include_once(drupal_get_path('module', 'hosting_task') . '/hosting_task.module');
-  $ret = array();
-  $result = db_query("SELECT nid FROM {node} WHERE type='platform' AND status=1");
-  if ($platform = db_fetch_object($result)) {
-    hosting_add_task($platform->nid, 'synch');
-  } else {
-    drupal_set_message(t("No platform found"));
-  }
-  return $ret;
+  // this update was moved to hosting_update_6002()
+  return array();
 }

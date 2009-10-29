@@ -42,3 +42,59 @@ function hosting_update_6000() {
   module_enable(array('modalframe', 'jquery_ui'));
   return $ret;
 }
+
+/**
+ * Change the default configured blocks to match eldir
+ */
+function hosting_update_6001() {
+  $ret = array();
+  install_include(array('block'));
+
+  $theme = 'eldir';
+  install_disable_block('hosting', 'hosting_queues_summary', $theme);
+  install_set_block('user', 0 , $theme, 'right', 0);
+  install_set_block('user', 1 , $theme, 'right', 0);
+  install_set_block('hosting', 'hosting_queues', $theme, 'right', 5);
+  install_set_block('hosting', 'hosting_summary', $theme, 'right', 10);
+
+  return $ret;
+}
+
+/**
+ * re-verify at least one platform and all sites
+ */
+
+function hosting_update_6002() {
+  include_once(drupal_get_path('module', 'hosting_task') .  '/hosting_task.module');
+
+  $ret = array();
+   $result = db_query("SELECT nid FROM {node} WHERE type='platform' AND status=1");
+  if ($platform = db_fetch_object($result)) {
+    hosting_add_task($platform->nid, 'verify');
+  } else {
+    drupal_set_message(t("No platform found"));
+  }
+
+  $result = db_query("SELECT n.nid FROM {node} n INNER JOIN hosting_site s on s.nid = n.nid WHERE n.type='site' AND s.status=1");
+  while ($site = db_fetch_object($result)) {
+    hosting_add_task($site->nid, 'verify');
+  }
+  return $ret;
+}
+
+/**
+ * Change the default configured blocks to match eldir
+ */
+function hosting_update_6001() {
+  $ret = array();
+  install_include(array('block'));
+
+  $theme = 'eldir';
+  install_disable_block('hosting', 'hosting_queues_summary', $theme);
+  install_set_block('user', 0 , $theme, 'right', 0);
+  install_set_block('user', 1 , $theme, 'right', 0);
+  install_set_block('hosting', 'hosting_queues', $theme, 'right', 5);
+  install_set_block('hosting', 'hosting_summary', $theme, 'right', 10);
+
+  return $ret;
+}
