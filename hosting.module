@@ -377,24 +377,26 @@ function hosting_domain_allowed($url, $params = array()) {
  * move on to setting up the crontab
  */ 
 function hosting_setup() {
-  variable_set('hosting_dispatch_enabled', FALSE);
-  // attempt to run the dispatch command, to make sure it runs without the queue being enabled.
-  variable_set('hosting_dispatch_enabled', TRUE);
-  drush_print(_hosting_dispatch_cmd());
-  exec(_hosting_dispatch_cmd(), $return, $code);
-  variable_set('hosting_dispatch_enabled', FALSE);
-  $return = join("\n", $return);
-  $data = unserialize($return);
-  if ($code == DRUSH_SUCCESS) {
+  if (drush_confirm("This command will replace your crontab for this user. continue?")) {
+    variable_set('hosting_dispatch_enabled', FALSE);
+    // attempt to run the dispatch command, to make sure it runs without the queue being enabled.
     variable_set('hosting_dispatch_enabled', TRUE);
-    drush_log(t("Dispatch command was run successfully"), 'success');
-    _hosting_setup_cron();
-  }
-  else {
-    drush_set_error('DRUSH_FRAMEWORK_ERROR', dt("Dispatch command could not be run. Returned: \n@return", array('@return' => $return))); 
-  }
-  if (drush_get_error()) {
-    drush_log(t("The command did not complete successfully, please fix the issues and re-run this script"), 'error');
+    drush_print(_hosting_dispatch_cmd());
+    exec(_hosting_dispatch_cmd(), $return, $code);
+    variable_set('hosting_dispatch_enabled', FALSE);
+    $return = join("\n", $return);
+    $data = unserialize($return);
+    if ($code == DRUSH_SUCCESS) {
+      variable_set('hosting_dispatch_enabled', TRUE);
+      drush_log(t("Dispatch command was run successfully"), 'success');
+      _hosting_setup_cron();
+    }
+    else {
+      drush_set_error('DRUSH_FRAMEWORK_ERROR', dt("Dispatch command could not be run. Returned: \n@return", array('@return' => $return))); 
+    }
+    if (drush_get_error()) {
+      drush_log(t("The command did not complete successfully, please fix the issues and re-run this script"), 'error');
+    }
   }
 }
 
@@ -407,27 +409,16 @@ function _hosting_setup_cron() {
   exec('crontab -l 2> /dev/null', $cron);
   variable_set('hosting_cron_backup', $cron);
   if (sizeof($cron)) {
-    foreach ($cron as $line => $entry) {
-      if (preg_match('/hosting dispatch/', $entry)) {
-        $pattern = "+(.*)'(.*)/drush.php'(.*)--root='(.*)'.*+";
-        $replace = sprintf("$1 '%s' hosting dispatch --root=%s --uri=%s)", 
-           DRUSH_COMMAND, 
-           escapeshellarg(HOSTING_DEFAULT_DOCROOT_PATH), 
-           drush_get_option('uri')
-        );
-        $cron[$line] = preg_replace($pattern, $replace, $entry);
-        drush_log(dt("Existing hosting dispatch cron entry was found. Replacing"));
-        $existing = TRUE;
-        break;
-      }
-    }
+    drush_log("Your existing cron entry will be replaced.", 'warning');
+    exec('crontab -r 2> /dev/null');
+    $cron = array();
   }
   else {
     drush_log("message", t("No existing crontab was found"));
   }
-  if (!$existing) {
-    $cron[] = hosting_queues_cron_cmd();
-  }
+
+  $cron[] = hosting_queues_cron_cmd();
+
   $tmpnam = tempnam('hostmaster', 'hm.cron');
   $fp = fopen($tmpnam, "w");
   foreach ($cron as $line) {
@@ -437,6 +428,7 @@ function _hosting_setup_cron() {
   system(sprintf('crontab %s', escapeshellarg($tmpnam)));
   unlink($tmpnam);
   drush_log("Notice", t("Installed hosting dispatch cron entry to run every minute"));
+  return null;
 }
 
 

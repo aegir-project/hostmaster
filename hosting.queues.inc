@@ -195,13 +195,19 @@ function _hosting_dispatch_cmd() {
   escapeshellarg(HOSTING_DEFAULT_DOCROOT_PATH));
   if (function_exists('drush_get_option')) {
     if ($uri = drush_get_option('uri')) {
-      $cmd .= ' --uri=' . $uri;
+      $cmd .= ' --uri=' . escapeshellarg($uri);
     }
   }
   return $cmd;
 }
 
 function hosting_queues_cron_cmd() {
-  return sprintf("*/1 * * * * (%s)", _hosting_dispatch_cmd());
+  $command = _hosting_dispatch_cmd();
+  $return = <<<END
+SHELL=/bin/bash
+PATH=$_SERVER[PATH]
+*/1 * * * * $command
+END;
+  return $return;
 }
 
