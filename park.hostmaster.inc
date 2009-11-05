@@ -19,7 +19,6 @@ function drush_hosting_hostmaster_park_validate($url) {
 /**
  * TODO: prepare the site for migration
  * - disable the queue (variable_set...)
- * - disable the cronjob
  * - create a failed migrate task for logging
  * - disable the site
  */

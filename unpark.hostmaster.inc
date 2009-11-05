@@ -17,10 +17,10 @@ function drush_hosting_hostmaster_unpark($url) {
     $node->verified = 0;
     $node->platform = $platform_id;
     node_save($node);
+    drush_backend_invoke('hosting setup', array('uri' => $url));
   } else {
     return drush_set_error('PROVISION_FRAMEWORK_ERROR', dt("Could not find the node for platform path %platform", array('%platform' => $platform)));
   }
   // TODO: post migration tasks
-  // - turn on new cron job
   // - save the drush log to the migrate task and set proper status
 }
