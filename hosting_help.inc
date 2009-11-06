@@ -179,13 +179,12 @@ function hosting_node_help($type) {
     case 'platform' :
       return t("<strong>The file system location on a specific web server on which to publish sites.</strong>
                 Multiple platforms can co-exist on the same web server, and need to do so for
-                upgrades to be managed, as this is accomplished by moving the site a platform
-                hosting an updated release.
+                upgrades to be managed, as this is accomplished by migrating the site between platforms.
                 Platforms are most commonly built for specific releases of Drupal.");
       break;
     case 'client' :
       return t("<strong>The person or group that runs the site.</strong> 
-                This information is usually required for billing and access purposes, to assure
+                This information is usually required for billing and access purposes, to ensure
                 that only certain people are able to view the information for sites they run. 
                 If you do not intend on having more than one client access the system, 
                 you will not need to create any additional clients for your purposes.");
@@ -194,10 +193,10 @@ function hosting_node_help($type) {
       return t("<strong>The physical machine where files will be stored for publication.</strong>
                 Each web server hosts one or more platforms, which act as publishing points for the hosted sites.
                 If you are not intending to use Hostmaster in a distributed fashion, you will not need to create
-                additional web servers for your purposes..");
+                additional web servers for your purposes.");
       break;
     case 'db_server' :
-      return t("<strong>The database server on which sites will host their date.</strong>
+      return t("<strong>The database server on which sites will host their data.</strong>
                 Most web servers and database servers are on the same machine, but for performance reasons 
                 external database servers might be required. It is not uncommon for one database server
                 to be shared amongst all site instances.
@@ -205,9 +204,9 @@ function hosting_node_help($type) {
                 will not need to create any additional database servers for your purposes.");
       break;
     case 'task' :
-      return t("<strong>The mechanism whereby Hostmaster keeps track of all changes that occurr to the system.</strong>
-                Each task acts as a command for the back end, and contains a full log of all changes that have occurred.
-                If an task should fail, the administrator will be notified with an explanation of exactly what went wrong,
+      return t("<strong>The mechanism whereby Hostmaster keeps track of all changes that occur to the system.</strong>
+                Each task acts as a command for the back-end, and contains a full log of all changes that have occurred.
+                If a task should fail, the administrator will be notified with an explanation of exactly what went wrong,
                 and how to fix it.");
       break;      
   }
@@ -486,7 +485,7 @@ function _hosting_basic_server_requirements() {
  */
 function _hosting_basic_unix_requirements() {
   $help['title'] = t('A unix based operating system');
-  $help['summary'] = t('The majority of functionality in this system occurs in the back-end, through command line scripting. There are several features (such as symlinks), that are not available to users on Windows. There are no plans currently to add windows support.</p>');
+  $help['summary'] = t('The majority of functionality in this system occurs in the back-end, through command line scripting. There are several features (such as symlinks), that are not available to users on Windows. There are no plans currently to add Windows support.</p>');
   return $help;
 }
 
@@ -513,7 +512,7 @@ EOF;
 
   $help['summary'][] = t('The queue dispatcher runs every minute. It keeps track of what work needs to be done on the system 
     and instructs the provisioning framework to perform the needed tasks in the task queue.');
-  $help['summary'][] = t('Otherwise said, without the dispatcher, changes on the front end will not translate in the required backend configuration preventing actual sites management.');
+  $help['summary'][] = t('Otherwise said, without the dispatcher, changes on the front-end will not translate in the required back-end configuration preventing actual sites management.');
   $help['configuration'][] = t('If you are not logged in as %script_user user, log in with command : <pre>@login_cmd</pre>', 
      array('%script_user' => $username, '@login_cmd' => $login_cmd));
   $help['configuration'][] = t('Now execute the following commands : <pre>@setup_cmd</pre>', 
@@ -548,7 +547,7 @@ function _hosting_platform_requirements() {
   $task = hosting_get_most_recent_task($platform->nid, 'verify');
   
   $help['title'] = t('Provisioning framework status');
-  $help['summary'][] = t('In order for the hosting system to be able to create sites, it needs a platform to publish these sites on. A platform is a Drupal site that has the provision backend installed. Each platform also requires one correctly configured web server and one correctly configured database server. Once a new platform has been created, Hosting will automatically schedule a task that will verify the new platform is working properly.');
+  $help['summary'][] = t('In order for the hosting system to be able to create sites, it needs a platform to publish these sites on. A platform is a Drupal site that has the provision back-end installed. Each platform also requires one correctly configured web server and one correctly configured database server. Once a new platform has been created, Hosting will automatically schedule a task that will verify the new platform is working properly.');
   $help['summary'][] = t('As hosting is also running on a platform, it is suggested that you successfully configure your <a href="@platform">primary platform</a>
     before creating additional platforms and servers.', array('@platform' => url('node/' . HOSTING_OWN_PLATFORM)));
   $help['summary'][] = t('Each platform must be verified at least once, but if you find your platform is not being verified, look at the error log on the <a href="@verify_link">Verify platform task of this platform</a>', array("@verify_link" => url("node/" . $task->nid)));
