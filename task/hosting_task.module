@@ -311,7 +311,7 @@ function hosting_task_confirm_form_submit($form, &$form_state) {
  * Tasks should always be named 'task_type node_title'.
  */
 function hosting_task_set_title(&$node) {
-  $ref = node_load($node->rid);
+  $ref = db_fetch_object(db_query("SELECT vid, nid, title FROM {node} WHERE nid=%d", $node->ref));
   $tasks = hosting_available_tasks($ref->type);
 
   $node->title = drupal_ucfirst($tasks[$node->task_type]['title']) . ': ' . $ref->title;
