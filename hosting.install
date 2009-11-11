@@ -70,6 +70,7 @@ function hosting_update_6002() {
   $ret = array();
    $result = db_query("SELECT nid FROM {node} WHERE type='platform' AND status=1");
   if ($platform = db_fetch_object($result)) {
+    $ret[] = array('success' => TRUE, 'query' => "Re-verify scheduled for platform ". $platform->nid);
     hosting_add_task($platform->nid, 'verify');
   } else {
     drupal_set_message(t("No platform found"));
@@ -77,6 +78,7 @@ function hosting_update_6002() {
 
   $result = db_query("SELECT n.nid FROM {node} n INNER JOIN hosting_site s on s.nid = n.nid WHERE n.type='site' AND s.status=1");
   while ($site = db_fetch_object($result)) {
+    $ret[] = array('success' => TRUE, 'query' => "Re-verify scheduled for site ". $site->nid);
     hosting_add_task($site->nid, 'verify');
   }
   return $ret;
