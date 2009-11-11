@@ -283,19 +283,16 @@ function hosting_package_update_9() {
 
 // Re-verify all platforms and sites
 function hosting_package_update_10() {
+  /**
+   * This update is no longer necessary as all platforms and sites are re-verified in later updates.
+   * because the module weight of hosting_package is lower than hosting_site, creating verify tasks
+   * at this point would break the upgrade process because it would attempt to re-create the node access
+   * rules, which would in turn try to load the node with it's schema not yet updated.
+   *
+   * we can safely remove this because we re-verify everything in hosting_update_6000()
+   */
   // the task database schema needs to be changed before hosting_add_task will work.
   $ret = hosting_task_update_6000();
-
-
-  $result = db_query("SELECT nid FROM {node} WHERE type='platform'");
-  while ($platform = db_fetch_object($result)) {
-    hosting_add_task($platform->nid, 'verify');
-  }
-
-  $result = db_query("SELECT nid FROM {hosting_site} WHERE status = %d", HOSTING_SITE_ENABLED);
-  while ($site = db_fetch_object($result)) {
-    hosting_add_task($site->nid, 'verify');
-  }
 
   return $ret;
 }
