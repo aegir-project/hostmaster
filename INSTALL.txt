@@ -197,7 +197,7 @@ for you. That script needs to be ran as the aegir user created above.
 
 Shell commands::
 
- su aegir -c sh install.sh.txt
+ su aegir -c "sh install.sh.txt"
  /etc/init.d/apache2 restart
 
 (Note you must run this as root or prefix with sudo).
