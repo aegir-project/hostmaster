@@ -79,59 +79,42 @@ Drush and Provision over the old ones. Follow the instructions in
 INSTALL.txt for that. Keep a copy of the old provision and drush in
 case something goes wrong in the frontend.
 
-Upgrading the frontend
-----------------------
-
-Those are generic instructions to upgrade your hosting, hostmaster,
-eldir or Drupal core installation to new versions. This is still a
-delicate operation but has been known to work between 0.2 and 0.3 (see
-below for 0.2-specific instructions) and upgrades between 0.3
-development milestones.
-
-This document suggests using provision to upgrade the frontend, so
-it's a bit more tricky than with a usual site because you cannot (yet)
-use the regular frontend to drive the backend. So you need to go
-through some extra steps and the commandline to upgrade Aegir.
-
-The generic upgrade mechanism is to this:
-
- * backup the site
- * deploy to a test site
- * verify if it works
- * delete the old site
- * delpoy to new site
-
-We use backup and deploy because a "migrate" is likely to fail and
-want to test the new site first.
-
-Note that this assumes you have already updated provision to a proper
-version, see above.
+Provision 0.4 has added a new dependency on drush_make, which will also
+need to be installed to upgrade the front end.
 
 Shell commands::
 
- cd /var/aegir
- $DRUSH dl drupal
- cd $DRUPAL_DIR
- export CVSROOT=:pserver:anonymous:anonymous@cvs.drupal.org:/cvs/drupal
- cvs co -d profiles/hostmaster -r$AEGIR_TAG contributions/profiles/hostmaster
- mkdir profiles/hostmaster/modules profiles/modules/themes
- $DRUSH dl --destination=./profiles/hostmaster/modules hosting install_profile_api
- $DRUSH dl --destination=./profiles/hostmaster/themes eldir 
- # also checkout any modules you may have enabled in the old platform
- #
- # now you want to add the new platform in the frontend (Create
- # content -> platform) and wait for the task to be processed
- $DRUSH -r $OLD_DRUPAL_DIR provision backup aegir.example.com ~/aegir.tar.gz
- $DRUSH -r $DRUPAL_DIR provision verify
- $DRUSH -r $DRUPAL_DIR provision deploy d6.aegir.example.com ~/aegir.tar.gz
- # review changes, see if it works to your liking, when you're done
- $DRUSH -r $DRUPAL_DIR provision delete d6.aegir.example.com
- crontab -e # disable the cronjob to avoid warnings
- $DRUSH -r $OLD_DRUPAL_DIR provision delete aegir.example.com
- # here you should really use the backup generated in the above step,
- # but the old backups also works, it's just not up to date
- $DRUSH -r $DRUPAL_DIR provision deploy aegir.example.com ~/aegir.tar.gz
- crontab -e # change platform path to $DRUPAL_DIR
+  $DRUSH dl drush_make --destination='/var/aegir/.drush'
+
+Upgrading the frontend
+----------------------
+
+These are generic instructions to upgrade your hosting, hostmaster,
+eldir or Drupal core installation to new versions. As of 0.4 this process
+has largely been automated, and will be able to upgrade 0.3 and any of
+the 0.4 development releases to the latest applicable versions.
+
+Once you have upgraded the backend, and you have installed drush_make
+you will need to run the hostmaster migrate command.
+
+
+Shell commands::
+
+  cd $OLD_DRUPAL_DIR
+  $DRUSH hostmaster migrate aegir.example.com $DRUPAL_DIR
+
+The directory specified must be an absolute path to where you want
+the new release to be stored. If the directory does not exist, provision
+will use drush_make to fetch and assemble the correct version of the front
+end for the specific release of the backend you are running.
+
+This command will completely replace the crontab entry for the aegir user,
+and asks for confirmation before it does so. If you do not confirm the process
+will be halted as it is necessary for the task queue to be processed.
+
+This command will fetch the latest stable Drupal release, so it can simply
+be run again when a new security release of Drupal is made available.
+
 
 Specific upgrade procedures
 ===========================
