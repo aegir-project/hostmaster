@@ -113,6 +113,12 @@ WEB_GROUP=$WEB_GROUP
 HOSTMASTER_DIR=$HOSTMASTER_DIR
 DRUSH=$DRUSH
 DRUSH_VERSION=$DRUSH_VERSION
+
+Some of those settings can be changed on the commandline, see:
+
+ $0 -h
+
+for more information.
 EOF
 
 prompt_yes_no "Do you want to proceed with the install?"
