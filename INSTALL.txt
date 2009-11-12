@@ -195,14 +195,25 @@ which will then give you further configuration instructions.
 
 There is an install script part of the hostmaster profile that takes care
 of installing the right packages and preparing the Drupal frontend install
-for you. That script needs to be ran as the aegir user created above.
+for you. That script needs to be ran as the aegir user created
+above. This file is available alongside this one or through the web
+at:
+
+http://drupalcode.org/viewvc/drupal/contributions/profiles/hostmaster/install.sh.txt?revision=HEAD&view=co
+
+By default, the install script will install the "right" version of
+Aegir (ie. if it was downloaded through CVS, it will install the CVS
+version, if you downloaded an official release, it should install the
+right release). You can change which release to install or other
+parameters through options passed to the script. Run "sh
+install.sh.txt -h" for more information on the available options.
 
 Shell commands::
 
  su -s /bin/sh aegir -c "sh install.sh.txt"
  /etc/init.d/apache2 restart
 
-(Note you must run this as root or prefix with sudo).
+Note you must run this as root or prefix with sudo.
 
 Checkpoint!
 -----------
