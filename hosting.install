@@ -83,3 +83,12 @@ function hosting_update_6002() {
   }
   return $ret;
 }
+
+/**
+ * Lower the default amount of concurrent tasks
+ */
+function hosting_update_6003() {
+  $ret = array();
+  variable_set('hosting_queue_tasks_items', 5);
+  return $ret;
+}

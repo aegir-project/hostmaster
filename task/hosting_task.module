@@ -173,7 +173,7 @@ function hosting_task_hosting_queues() {
     'description' => t('Process the queue of outstanding hosting tasks.'),
     'type' => 'serial',  # run queue sequentially. always with the same parameters.
     'frequency' => strtotime("1 minute", 0),  # run queue every minute.
-    'items' => 20, # process 20 queue items per execution.
+    'items' => 5, # process 20 queue items per execution.
     'total_items' => hosting_task_count(),
     'singular' => t('task'),
     'plural' => t('tasks'),
