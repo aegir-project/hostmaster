@@ -8,12 +8,10 @@ include_once('hosting.inc');
  * @todo make sure no task is running
  */
 function drush_hosting_hostmaster_park_validate($url) {
-  if ($platform_id = db_result(db_query('SELECT nid FROM {hosting_platform} WHERE publish_path = "%s"', $platform))) {
-    drush_log(dt('Platform found for path %path: #%id', array('%path' => $platform, '%id' => $platform_id)));
-  }
-  else {
-    return drush_set_error('PROVISION_FRAMEWORK_ERROR', dt("Cannot find target platform before parking site. Make sure the platform exists in the frontend first."));
-  }
+  /**
+   * In aegir 0.4 alpha 2 we were verifying that the platform already exists before adding it, but this caused errors during the upgrade process.
+   * if you are using this you will need to add the platform manually, but it will automatically be added for you in alpha3 and onwards.
+   */
 }
 
 /**
