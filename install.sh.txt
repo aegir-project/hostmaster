@@ -26,7 +26,7 @@ AEGIR_VERSION=HEAD
 #AEGIR_VERSION=6.x-0.4-alpha2
 AEGIR_HOME=$HOME
 WEB_GROUP=www-data
-DRUSH=$AEGIR_HOME/drush/drush
+DRUSH="$AEGIR_HOME/drush/drush.php"
 DRUSH_VERSION=All-Versions-2.1
 # when adding a variable here, add it to the display below
 
@@ -134,13 +134,14 @@ if which drush 2> /dev/null ; then
 	DRUSH=drush
 elif [ -x $DRUSH ] ; then
 	msg "Drush found in $DRUSH, good"
+	DRUSH="php $AEGIR_HOME/drush/drush.php"
 else
 	msg "Installing drush in $AEGIR_HOME"
 	cd $AEGIR_HOME
 	wget http://ftp.drupal.org/files/projects/drush-$DRUSH_VERSION.tar.gz
 	tar -xzf drush-$DRUSH_VERSION.tar.gz
 	rm drush-$DRUSH_VERSION.tar.gz
-	DRUSH=$AEGIR_HOME/drush/drush
+	DRUSH="php $AEGIR_HOME/drush/drush.php"
 fi
 
 if $DRUSH help > /dev/null ; then
