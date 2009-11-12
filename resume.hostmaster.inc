@@ -1,12 +1,12 @@
 <?php
 
 /**
- * @file Implementation of the hostmaster unpark command
+ * @file Implementation of the hostmaster resume command
  */
 
 include_once('hosting.inc');
 
-function drush_hosting_hostmaster_unpark($url) {
+function drush_hosting_hostmaster_resume($url) {
   drush_log('bootstrapping drupal');
   drush_bootstrap(DRUSH_BOOTSTRAP_DRUPAL_FULL);
   $platform_root = drush_get_context('DRUSH_DRUPAL_ROOT');
