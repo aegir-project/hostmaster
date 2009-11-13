@@ -91,6 +91,11 @@ self-documenting so you should just be able to follow the instructions
 in the wizard to configure Aegir to properly use the webserver and
 database server.
 
+5. Common issues
+================
+
+There are various caveats on running Aegir on CentOS.
+
 You may need to adjust CentOS's firewall settings to allow HTTP
 traffic on port 80.  If you installed CentOS with a UI, enable
 "Firewall settings -- WWW (HTTP)".
@@ -103,3 +108,14 @@ Shell commands::
 
 See http://drupal.org/node/632308 if you have more information about
 this issue.
+
+The default sudo configuration in CentOS requires sudo to run in a real
+TTY which will make verify and install tasks failed with the message:
+
+ "Web server could not be restarted. Changes might not be available
+ until this has been done"
+
+For sudo to behave properly, you should comment out the following line
+in your /etc/sudoers file:
+
+Defaults    requiretty
