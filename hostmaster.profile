@@ -243,9 +243,7 @@ function hostmaster_bootstrap() {
   $node = new stdClass();
   $node->uid = 1;
   $node->type = 'web_server';
-  $hostname = explode(':', $_SERVER['HTTP_HOST'], 2);
-  $node->title = $hostname[0];
-  $node->ports = !empty($hostname[1]) ? $hostname[1] : '80';
+  $node->title = $_SERVER['HTTP_HOST'];
   $node->script_user = HOSTING_DEFAULT_SCRIPT_USER;
   $node->web_group = HOSTING_DEFAULT_WEB_GROUP;
   $node->status = 1;
