@@ -94,3 +94,12 @@ database server.
 You may need to adjust CentOS's firewall settings to allow HTTP
 traffic on port 80.  If you installed CentOS with a UI, enable
 "Firewall settings -- WWW (HTTP)".
+
+Also, in some configurations, it seems necessary to restart crond for
+the user crontab changes to take effect (very bizarre). For that, use:
+
+Shell commands::
+ service crond restart
+
+See http://drupal.org/node/632308 if you have more information about
+this issue.
