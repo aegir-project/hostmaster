@@ -414,7 +414,7 @@ function _hosting_setup_cron() {
     $cron = array();
   }
   else {
-    drush_log("message", t("No existing crontab was found"));
+    drush_log(dt("No existing crontab was found"), 'message');
   }
 
   $cron[] = hosting_queues_cron_cmd();
@@ -427,7 +427,7 @@ function _hosting_setup_cron() {
   fclose($fp);
   system(sprintf('crontab %s', escapeshellarg($tmpnam)));
   unlink($tmpnam);
-  drush_log("Notice", t("Installed hosting dispatch cron entry to run every minute"));
+  drush_log(dt("Installed hosting dispatch cron entry to run every minute"), 'message');
   return null;
 }
 
