@@ -204,8 +204,14 @@ http://drupalcode.org/viewvc/drupal/contributions/profiles/hostmaster/install.sh
 By default, the install script will install the "right" version of
 Aegir (ie. if it was downloaded through CVS, it will install the CVS
 version, if you downloaded an official release, it should install the
-right release). You can change which release to install or other
-parameters through options passed to the script. Run "sh
+right release).
+
+The install script is shipped with other default settings that you 
+will likely need to change (such as the URL of the Aegir site) prior 
+to running it.
+
+You can change which release to install or other parameters such as these
+through options passed to the script. Run "sh
 install.sh.txt -h" for more information on the available options.
 
 Shell commands::
