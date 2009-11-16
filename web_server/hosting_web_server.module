@@ -25,6 +25,7 @@ function hosting_web_server_help($path, $arg) {
       $output .= _hosting_requirements('config_path');
       $output .= _hosting_requirements('httpd_conf');
       $output .= _hosting_requirements('visudo');
+      $output .= _hosting_requirements('ports');
       return $output;
       break;
   }
@@ -117,6 +118,14 @@ EOF;
 
 }
 
+function _hosting_ports_requirements() {
+   $help['title'] = t('Web server ports');
+   $help['summary'] = t('If the web server is to serve sites on ports other than just 80,
+                         you may add those other ports here, separated by a comma. Later,
+                         during the provisioning of sites, you may choose which port to
+                         serve the site on.');
+   return $help;
+}
 
 function hosting_web_server_node_info() {
   $types["web_server"] =  array(
