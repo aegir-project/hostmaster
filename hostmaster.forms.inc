@@ -60,6 +60,13 @@ function hostmaster_task_webserver() {
     '#configuration' => HOSTING_HELP_COLLAPSED
   ));
   $form['restart_cmd']['#weight'] = 20;
+
+  $form['ports_help'] = hostmaster_requirement_help('ports', array(
+    '#weight' => 21,
+    '#summary' => HOSTING_HELP_ENABLED,
+  ));
+  $form['ports']['#weight'] = 22;
+
   // remove all the things i don't want from the node form.
   return hostmaster_form($form);
 }
