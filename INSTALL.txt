@@ -254,10 +254,11 @@ remaining of the documentation here will assume that layout.
 ============================
 
 Now point your browser to http://$AEGIR_DOMAIN/install.php and proceed
-with the remainder of the installation using the Hostmaster Install profile.
-Some of the instructions given, you will already have completed, but carefully
-read each step in turn to ensure you don't miss anything.
-Specifically you must still provide the database credentials, add the Aegir user
-to /etc/sudoers with the relevant command to restart Apache, create a MySQL
-superuser capable of creating more databases, and initialise the hosting system.
-These instructions are provided to you by the Hostmaster install profile.
+with the remainder of the installation using the Hostmaster Install
+profile.  Some of the instructions given, you will already have
+completed, but carefully read each step in turn to ensure you don't miss
+anything.  Specifically you must still provide the database credentials,
+add the Aegir user to /etc/sudoers with the relevant command to restart
+Apache, create a MySQL superuser capable of creating more databases, and
+initialise the hosting system.  These instructions are provided to you
+by the Hostmaster install profile.
