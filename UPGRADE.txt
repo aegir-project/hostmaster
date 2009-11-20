@@ -44,12 +44,20 @@ Shell commands::
 
   export DRUSH='php /var/aegir/drush/drush.php'
 
-Finally, we use CVS to install some packages, so this needs to be
+As of the 0.4-alpha3 release, 'unzip' is a required dependency on your 
+server in order to successfully extract the jquery.ui library that is
+part of some UI improvements. On Debian, this means:
+
+Shell commands::
+
+ apt-get install unzip
+
+Finally, we use git to install some packages, so this needs to be
 installed for upgrades. On Debian, this means:
 
 Shell commands::
 
- apt-get install cvs
+ apt-get install git-core
 
 Generic upgrade instructions
 ============================
