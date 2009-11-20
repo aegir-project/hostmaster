@@ -261,4 +261,3 @@ Specifically you must still provide the database credentials, add the Aegir user
 to /etc/sudoers with the relevant command to restart Apache, create a MySQL
 superuser capable of creating more databases, and initialise the hosting system.
 These instructions are provided to you by the Hostmaster install profile.
-
