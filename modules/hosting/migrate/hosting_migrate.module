@@ -1,0 +1,212 @@
+<?php
+// $Id$
+
+/**
+ * @file Migration forms for Aegir
+ */
+include_once('hosting_migrate.batch.inc');
+
+function hosting_migrate_perm() {
+  return array(
+    'create migrate task',
+  );
+}
+
+function hosting_migrate_menu() {
+  // TODO: add some security here
+  $items['hosting/migrate/compare'] = array(
+    'title' => 'Compare packages',
+    'page callback' => 'hosting_migrate_comparison',
+
+    'access arguments' => array('create migrate task'),
+    'type' => MENU_CALLBACK
+  );
+/*
+  $items['node/%hosting_task_platform/task_migrate'] = array(
+    'title' => t('Migrate'),
+    'description' => t('Migrate sites to a new platform'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('hosting_migrate_platform', 1),
+    'access arguments' => array('create migrate task'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => ($info['weight']) ? $info['weight'] : 0, 
+  );
+ */
+ return $items;
+}
+
+/**
+ * Implementation of hook_hosting_tasks()
+ */
+function hosting_migrate_hosting_tasks() {
+  $tasks = array();
+
+  $tasks['site']['migrate'] = array(
+    'title' => t('Migrate'),
+    'description' => t('Move the site to a new platform.'),
+  );
+
+  $tasks['platform']['migrate'] = array(
+    'title' => t('Migrate'),
+    'description' => t('Migrate sites to a new platform.'),
+    'page arguments' => array('hosting_migrate_platform', 1),
+  );
+  return $tasks;
+}
+
+/**
+ * Implementation of hook_validate()
+ */
+function hosting_task_migrate_form_validate($form, &$form_state) {
+  // If no target platform has been set, or there are no valid platforms to migrate to
+  if (!$form_state['values']['parameters']['target_platform'] || $form_state['values']['parameters']['hidden']) {  
+    form_set_error('parameters][target_platform', t('Please select a valid platform to migrate to.'));
+  }
+  // If the target platform is the current platform and this is a migrate task, we won't allow it
+  // (Alternatively this is a valid action when Cloning a site to the same platform)
+  $site = node_load($form_state['values']['nid']);
+  if ($form_state['values']['parameters']['target_platform'] == $site->platform && $form_state['values']['task'] == 'migrate') {
+    form_set_error('parameters][target_platform', t('You may not migrate a site to its current platform.'));
+  }
+}
+
+/**
+ * Implementation of hook_theme()
+ */
+function hosting_migrate_theme($existing, $type, $theme, $path) {
+  return array(
+  'hosting_migrate_comparison' => array(
+      'arguments' => array('packages' => NULL)
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_form()
+ */
+function hosting_task_migrate_form($node) {
+
+  drupal_add_js(drupal_get_path('module','hosting_migrate') . '/hosting_migrate.js');
+  $packages = array();
+
+  $profile_platform_instances = hosting_package_instances_load(
+    array('r.type' => 'platform', 'n.nid' => $node->profile));
+  if (sizeof($profile_platform_instances) <= 1) {
+    $form['no_targets'] = array(
+      '#value' => t('<br />There are no platforms that can meet the dependencies for this site<br />'));
+    $form['hidden'] = array(
+      '#type' => 'hidden',
+      '#value' => t('no_targets')); 
+  }
+  $site_platform = node_load($node->platform);
+  $form[$node->platform]['target_platform'] = array(
+    '#type' => 'radio',
+    '#title' => $site_platform->title,
+    "#return_value" => $node->platform,
+    "#default_value" => $node->platform,
+    '#description' => t("Current platform"),
+    '#parents' => array('parameters', 'target_platform'),
+  );
+  foreach ($profile_platform_instances as $profile_instance) {
+    if ($profile_instance->rid != $node->platform) {
+      $status = hosting_package_comparison($node->nid, $profile_instance->iid);
+
+      $description = t("Upgrades: !upgrades, Warnings: !missing, Errors: !errors | <a href='!url' class='hosting-package-comparison-link'>Compare platforms</a>",
+        array(
+          '!upgrades' => $status['upgrade'],
+          '!missing' => $status['missing'] + $status['downgrade'],
+          '!errors' => $status['error'],
+          '!url' => url('hosting/migrate/compare/' . $node->nid . '/' . $profile_instance->iid))
+        );
+      $platform = node_load($profile_instance->rid);
+      if ($platform->web_server == $site_platform->web_server) {
+
+        $form[$platform->nid]['target_platform'] = array(
+          '#type' => 'radio',
+          '#title' => $platform->title,
+          '#parents' => array('parameters', 'target_platform'),
+          "#return_value" => $platform->nid,
+          '#description' => $description,
+        );
+      }
+      if ($status['error']) {
+        $form[$platform->nid]['target_platform']['#disabled'] = TRUE;
+      }
+
+    }
+  }
+
+  $form['#node'] = $node;
+  return $form;
+}
+
+/**
+ * Compare package schema versions between the current and target platform in temp tables
+ */
+function hosting_migrate_comparison($current, $target) {
+
+  _hosting_package_temporary_table("current", $current);
+  _hosting_package_temporary_table("target", $target);
+
+  $packages = array();
+
+  $result = db_query("SELECT c.nid, c.short_name, 
+    c.version as current_version, t.version as target_version,
+    c.version_code as current_version_code, t.version_code as target_version_code,
+    c.schema_version as current_schema, t.schema_version as target_schema, c.status AS enabled 
+    FROM current c LEFT JOIN target t ON c.nid=t.nid ORDER BY c.status DESC, short_name"); 
+
+  while ($obj = db_fetch_object($result)) {
+    if (isset($obj->current_schema) && ((int) $obj->target_schema > 0) && ((int) $obj->current_schema > (int) $obj->target_schema)) {
+      $obj->status = 'downgrade';
+    }
+    elseif ( ($obj->current_version_code > $obj->target_version_code) 
+      || is_null($obj->target_version_code)) {
+      $obj->status = 'missing';
+    }
+    elseif (($obj->current_version_code < $obj->target_version_code) || ($obj->current_schema < $obj->target_schema)) {
+      $obj->status = 'upgrade';
+    }
+    else {  
+      $obj->status = 'same';
+    }
+    $packages[$obj->nid] = $obj;
+  }
+  
+  db_query("DROP TEMPORARY TABLE target");
+  db_query("DROP TEMPORARY TABLE current");
+
+  return theme("hosting_migrate_comparison", $packages);
+}
+
+function _hosting_migrate_version_display($version, $schema = null, $status = null) {
+  $status = (!is_null($status)) ? $status : 'same';
+  if (is_null($version)) {
+    $display = 'missing';
+  }
+  else {
+    $display = ($version == 0) ? t('Unknown') : $version;
+  }
+  if ($schema) {
+    $display .= " (" . $schema . ")";
+  }
+  
+  return array('class' => 'hosting-package-' . $status, 'data' => $display);
+}
+
+function theme_hosting_migrate_comparison($packages) {
+  $rows = array();
+
+  $headers = array(t("Package"), t("Current"), t("Target"));
+  foreach ($packages as $key => $instance) {
+    $row = array();
+    $row[] = array('data' => $instance->short_name, 'class' => 'hosting-status');
+    $target_schema = ((int) $instance->target_schema == 0) ? $instance->current_schema : $instance->target_schema;
+    $row[] = _hosting_migrate_version_display($instance->current_version, $instance->current_schema);
+    $row[] = _hosting_migrate_version_display($instance->target_version, $target_schema, $instance->status);
+    $rows[] = array('data' => $row, 'class' => ($instance->enabled) ? 'hosting-success' : 'hosting-info');
+  }
+  $options['attributes']['class'] = 'hosting-migrate-comparison-return';
+  $link = l(t('Back to Migrate'), 'node/' . arg(3) . '/site_migrate', $options);
+  return "<div id='hosting-package-comparison'>" . $link . theme('table', $headers, $rows) . $link . "</div>";
+}

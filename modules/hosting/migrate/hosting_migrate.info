@@ -1,0 +1,7 @@
+name = Site migration
+description = Migrate sites between platforms, performing upgrades when necessary.
+package = Hosting
+dependencies[] = hosting
+dependencies[] = hosting_site
+
+core = 6.x

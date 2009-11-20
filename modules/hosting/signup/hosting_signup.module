@@ -1,0 +1,93 @@
+<?php
+/**
+ * @file Provides a signup form that can be run on remote sites
+ */
+
+require_once('hosting_signup.frontend.inc');
+require_once('hosting_signup.backend.inc');
+
+/**
+ * Implementation of hook_menu
+ */
+function hosting_signup_menu() {
+  $items['hosting/signup'] = array(
+    'title' => 'Sign up for a site',
+    'description' => 'Create your own hosted site',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('hosting_signup_form'),
+    'access arguments' => array('access hosting signup form'),
+  );
+  $items['admin/hosting/signup'] = array(
+    'title' => 'Signup form',
+    'description' => 'Configure the behaviour of the simplified hosting signup form',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('hosting_signup_settings'),
+    'access arguments' => array('administer hosting signup form'),
+    'type' => MENU_LOCAL_TASK,
+  );
+  $items['hosting/signup/get_form'] = array(
+    'title' => 'Sign up for a site',
+    'description' => 'Create your own hosted site',
+    'page callback' => 'hosting_signup_get_form',
+    'type' => MENU_CALLBACK,
+    'access arguments' => array('access content')
+  );
+
+  $items['hosting/signup/form_populate'] = array(
+    'page callback' =>'_hosting_signup_form_populate',
+    'type' => MENU_CALLBACK,
+    'access arguments' => array('access content'),
+  );
+
+  $items['hosting/signup/thanks'] = array(
+    'page callback' =>'hosting_signup_thanks',
+    'type' => MENU_CALLBACK,
+    'access arguments' => array('access content'),
+  );
+
+  return $items; 
+}
+
+/**
+ * Implementation of hook_perm
+ */
+function hosting_signup_perm() {
+  return array('administer hosting signup form', 'access hosting signup form');
+}
+
+/**
+ * Menu callback for settings page
+ */
+function hosting_signup_settings() {
+  $form['hosting_signup_uri'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Server URI'),
+    '#description' => t('The address of the hostmaster system, in the format http://masterdomain.com'),
+    '#default_value' => variable_get('hosting_signup_uri', 'http://' . $_SERVER['HTTP_HOST']),
+  );
+  $form['hosting_signup_server_key'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Server key'),
+    '#description' => t('A unique identifier used when communicating with the server'),
+    '#default_value' => variable_get('hosting_signup_server_key', ''),
+  );
+  return system_settings_form($form);
+}
+
+
+/**
+ * Small helper function to provide a clean default URL
+ */
+function _hosting_signup_get_url($path = '/xmlrpc.php') {
+  $url = variable_get('hosting_signup_uri', 'http://' . $_SERVER['HTTP_HOST']);
+  $url .= $path;
+  return $url;
+}
+
+/**
+ * Small helper function to get the key
+ */
+function _hosting_signup_get_key() {
+  return variable_get('hosting_signup_server_key', '');
+}
+

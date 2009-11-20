@@ -1,0 +1,6 @@
+name = Database Server 
+description = Allow Hostmaster to configure database servers.
+package = Hosting
+dependencies[] = hosting
+
+core = 6.x

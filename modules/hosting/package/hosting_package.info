@@ -1,0 +1,6 @@
+name = Package management
+description = Allow Hostmaster to keep track which packages have been installed.
+package = Hosting
+dependencies[] = hosting
+
+core = 6.x

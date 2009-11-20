@@ -1,0 +1,94 @@
+<?php
+// $Id$ 
+
+function hosting_install() {
+  db_query("UPDATE {system} SET weight = 10 WHERE type='module' and name='hosting'");
+}
+
+function hosting_update_1() {
+  $ret = array();
+  $ret[] = update_sql("UPDATE {system} SET weight = 10 WHERE type='module' and name='hosting'");
+  return $ret;
+}
+
+/**
+ * Update function to remove unused table
+ */
+function hosting_update_2() {
+  $ret = array();
+  $ret[] = update_sql("DROP TABLE {hosting_config_template}");
+  return $ret;
+}
+
+/**
+ * Hide hostmaster and hostslave profiles
+ */
+function hosting_update_3() {
+  $ret = array();
+  $result = db_query("select n.nid from {node} n left join hosting_package p on n.nid = p.nid where short_name in ('hostslave', 'hostmaster')");
+  while ($obj = db_fetch_object($result)) {
+    $in[] = (int) $obj->nid;
+  }
+  $in = implode(", ", $in);
+  $ret[] = update_sql("UPDATE {node} SET status = 0 WHERE nid IN (" .$in. ")", $values);
+  return $ret;
+}
+
+/**
+ * Enable the modalframe and jquery_ui modules
+ */
+function hosting_update_6000() {
+  $ret = array();
+  module_enable(array('modalframe', 'jquery_ui'));
+  return $ret;
+}
+
+/**
+ * Change the default configured blocks to match eldir
+ */
+function hosting_update_6001() {
+  $ret = array();
+  install_include(array('block'));
+
+  $theme = 'eldir';
+  install_disable_block('hosting', 'hosting_queues_summary', $theme);
+  install_set_block('user', 0 , $theme, 'right', 0);
+  install_set_block('user', 1 , $theme, 'right', 0);
+  install_set_block('hosting', 'hosting_queues', $theme, 'right', 5);
+  install_set_block('hosting', 'hosting_summary', $theme, 'right', 10);
+
+  return $ret;
+}
+
+/**
+ * re-verify at least one platform and all sites
+ */
+
+function hosting_update_6002() {
+  include_once(drupal_get_path('module', 'hosting_task') .  '/hosting_task.module');
+
+  $ret = array();
+   $result = db_query("SELECT nid FROM {node} WHERE type='platform' AND status=1");
+  if ($platform = db_fetch_object($result)) {
+    $ret[] = array('success' => TRUE, 'query' => "Re-verify scheduled for platform ". $platform->nid);
+    hosting_add_task($platform->nid, 'verify');
+  } else {
+    drupal_set_message(t("No platform found"));
+  }
+
+  $result = db_query("SELECT n.nid FROM {node} n INNER JOIN hosting_site s on s.nid = n.nid WHERE n.type='site' AND s.status=1");
+  while ($site = db_fetch_object($result)) {
+    $ret[] = array('success' => TRUE, 'query' => "Re-verify scheduled for site ". $site->nid);
+    hosting_add_task($site->nid, 'verify');
+  }
+  return $ret;
+}
+
+/**
+ * Lower the default amount of concurrent tasks
+ */
+function hosting_update_6003() {
+  $ret = array();
+  variable_set('hosting_queue_tasks_items', 5);
+  return $ret;
+}

@@ -1,0 +1,70 @@
+<?php
+
+function hosting_cron_hosting_queues() {
+  $items['cron'] = array(
+    'type' => 'batch',
+    'name' => t('Cron queue'),
+    'description' => t('Run cron on hosted sites.'),
+    'total_items' => hosting_site_count(),
+    'frequency' => strtotime("1 hour", 0),
+    'min_threads' => 6,
+    'max_threads' => 12,
+    'threshold' => 100,
+    'singular' => t('site'),
+    'plural' => t('sites'),
+  );
+  return $items;
+}
+
+function hosting_cron_queue($count) {
+  $sites = hosting_cron_get_sites($count);
+
+  drush_set_context('DRUSH_LOG_CALLBACK', '_hosting_watchdog');
+  foreach ($sites as $site) {
+    $platform = node_load($site->platform);
+    $web_server = node_load($platform->web_server);
+    $data['uri'] = 'http://' . $site->title;
+    $data['root'] = $platform->publish_path;
+    $drush_path = $web_server->drush_path;
+
+    $hostname = null;
+    $username = null;
+    if ($platform->web_server != HOSTING_OWN_WEB_SERVER) {
+      $hostname = $web_server->title;
+      $username = $web_server->script_user;
+    }
+
+    drush_backend_fork("cron", $data, $drush_path, $hostname, $username);
+
+    $site->revision = false;
+    $site->no_verify = true; // do not generate verify task
+    $site->last_cron = mktime();
+    node_save($site);
+  }
+}
+
+function hosting_cron_nodeapi(&$node, $op, $a3 = null) {
+  if ($node->type == 'site') {
+    switch ($op) {
+      case 'view':
+        if (!$a3) {
+          // @todo : turn it into x minutes ago
+          $node->content['info']['last_cron'] = array(
+            '#type' => 'item',
+            '#title' => t('Cron run'),
+            '#weight' => 20,
+            '#value' => hosting_format_interval($node->last_cron)
+          );
+        }
+        break;
+    }
+  }
+}
+
+function hosting_cron_get_sites($limit = 5) {
+  $result = db_query("SELECT n.nid FROM {node} n LEFT JOIN {hosting_site} s ON n.nid=s.nid WHERE n.type='site' and s.status = %d ORDER BY s.last_cron ASC, n.nid ASC limit %d", HOSTING_SITE_ENABLED, $limit);
+  while ($nid = db_fetch_object($result)) {
+    $sites[$nid->nid] = node_load($nid->nid);
+  }
+  return $sites;
+}

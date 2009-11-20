@@ -1,0 +1,13 @@
+name = Hosting
+description = Allow this Drupal site to deploy hosted sites.
+package = Hosting
+dependencies[] = modalframe
+#dependencies[] = hosting_task
+#dependencies[] = hosting_client
+#dependencies[] = hosting_db_server
+#dependencies[] = hosting_package
+#dependencies[] = hosting_platform
+#dependencies[] = hosting_site
+#dependencies[] = hosting_web_server
+
+core = 6.x

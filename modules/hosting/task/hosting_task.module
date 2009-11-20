@@ -1,0 +1,947 @@
+<?php
+/**
+ * @file Web server node type is defined here.
+ */
+
+/**
+ * Implementation of hook_menu().
+ */
+function hosting_task_menu() {
+  $items = array();
+  foreach (array('site', 'platform') as $type) {
+    foreach (hosting_available_tasks($type) as $task => $info) {
+      if (!$info['hidden']) {
+        $path = sprintf("node/%%hosting_task_%s/%s_%s", $type, $type, $task);
+        $items[$path] = array(
+           'title' => $info['title'],
+           'description' => $info['description'],
+           'page callback' => 'drupal_get_form',
+           'page arguments' => array('hosting_task_confirm_form', 1, $task),
+           'access callback' => 'hosting_task_menu_access',
+           'access arguments' => array(1, $task),
+           'type' => MENU_CALLBACK,
+         );
+        $items[$path] = array_merge($items[$path], $info);
+      }
+    }
+  }
+
+  $items['hosting/tasks/%node/list'] = array(
+    'title' => t('Task list'),
+    'description' => t('AJAX callback for refreshing task list'),
+    'page callback' => 'hosting_task_ajax_list',
+    'page arguments' => array(2),
+    'access callback' => 'node_access',
+    'access arguments' => array('view', 2),
+    'type' => MENU_CALLBACK
+  );
+  
+  $items['hosting/tasks/queue'] = array(
+    'title' => t('Task list'),
+    'description' => t('AJAX callback for refreshing task queue'),
+    'page callback' => 'hosting_task_ajax_queue',
+    'access arguments' => array('access task logs'),
+    'type' => MENU_CALLBACK
+  );
+
+  return $items;
+}
+
+function hosting_task_ajax_list($node) {
+  $return['markup'] = hosting_task_table($node);
+  $return['changed'] = $node->changed;
+  drupal_json($return);
+  exit();
+}
+
+function hosting_task_ajax_queue() {
+  $return['markup'] = hosting_task_queue_block();
+  drupal_json($return);
+  exit();
+}
+
+/**
+ * Task access controls
+ *
+ * This function defines which tasks should be showed to the user but
+ * especially which will be accessible to him, in the permissions system.
+ *
+ * @see hosting_task_menu()
+ */
+function hosting_task_menu_access($node, $task) {
+  if (user_access("create " . $task . " task")) {
+    if ($node->type == 'site') {
+      if (hosting_task_outstanding($node->nid, 'delete') || ($node->site_status ==  HOSTING_SITE_DELETED)) {
+        return FALSE;
+      }
+      if (($task == 'login_reset') && ($node->site_status != HOSTING_SITE_ENABLED)) {
+        return FALSE;
+      }
+      $safe_tasks = array('backup', 'verify', 'enable');
+      if (!in_array($task, $safe_tasks)) {
+        // Don't show certain tasks if the site is the 'special' main aegir site
+        $profile = node_load($node->profile);
+        if ($profile->title == 'hostmaster') {
+          return FALSE;
+        }
+      }
+      $on_delete_task = ($task == 'enable' || $task == 'delete');
+      $site_enabled = (hosting_task_outstanding($node->nid, 'enable') || ($node->site_status == HOSTING_SITE_ENABLED));
+      return (!$site_enabled && $on_delete_task) || ($site_enabled && !$on_delete_task);
+    } else {
+      return true;
+    }
+  }
+  return FALSE;
+}
+
+function hosting_task_site_load($arg) {
+ if (!is_numeric($arg)) {
+    return FALSE;
+  }
+  if ($node = node_load($arg)) {
+    if ($node->type == 'site') {
+      return $node;
+    }
+  }
+  return FALSE;
+}
+
+function hosting_task_platform_load($arg) {
+ if (!is_numeric($arg)) {
+    return FALSE;
+  }
+  if ($node = node_load($arg)) {
+    if ($node->type == 'platform') {
+      return $node;
+    }
+  }
+  return FALSE;
+}
+
+/**
+ * Implementation of hook_node_info()
+ */
+function hosting_task_node_info() {
+  #management
+  $types["task"] =  array(
+    "type" => 'task', "name" => 'Task',
+    "module" => 'hosting_task',
+    "has_title" => FALSE, "title_label" => '', 
+ #   "description" => hosting_node_help("task"),
+    "has_body" => 0, "body_label" => '', "min_word_count" => 0);
+
+  return $types;
+}
+
+/**
+ * Implementation of hook_access()
+ */
+function hosting_task_access($op, $node, $account) {
+  if(user_access('administer tasks', $account)) {
+    return TRUE;
+  }
+}
+
+/**
+ * Implementation of hook_perm()
+ */
+function hosting_task_perm() {
+  return array(
+    'administer tasks',
+    'create backup task',
+    'create restore task',
+    'create disable task',
+    'create enable task',
+    'create delete task',
+    'create verify task',
+    'view own tasks',
+    'view task',
+    'access task logs',
+    'retry failed tasks',
+  );
+}
+
+/**
+ * Implementation of hook_hosting_queues
+ *
+ * Return a list of queues that this module needs to manage.
+ */
+function hosting_task_hosting_queues() {
+  $queue['tasks'] = array(
+    'name' => t('Task queue'),
+    'description' => t('Process the queue of outstanding hosting tasks.'),
+    'type' => 'serial',  # run queue sequentially. always with the same parameters.
+    'frequency' => strtotime("1 minute", 0),  # run queue every minute.
+    'items' => 5, # process 20 queue items per execution.
+    'total_items' => hosting_task_count(),
+    'singular' => t('task'),
+    'plural' => t('tasks'),
+  );
+  return $queue;
+}
+
+/**
+ * Insert an entry in the task log
+ */
+function hosting_task_log($vid, $type, $message, $error = '', $timestamp = null ) {
+ $timestamp = ($timestamp) ? $timestamp : mktime();
+ db_query("INSERT INTO {hosting_task_log} (vid, type, message, error, timestamp) VALUES (%d, '%s', '%s', '%s', %d)", $vid, $type, $message, $error, $timestamp);
+}
+
+/**
+ * Retry the given task
+ */
+function hosting_task_retry($task_id) {
+  $node = node_load($task_id);
+  if ($node->task_status != HOSTING_TASK_QUEUED) {
+    drupal_set_message(t("The task is being retried and has been added to the hosting queue again"));
+    hosting_task_log($node->vid, 'queue', t("The task is being retried and has been added to the hosting queue again"));
+    $node->revision = TRUE;
+    $node->changed = mktime();
+    $node->task_status = HOSTING_TASK_QUEUED;
+    node_save($node);
+  }
+}
+
+/**
+ * Helper function to generate new task node
+ */
+function hosting_add_task($nid, $type, $args = null, $status = HOSTING_TASK_QUEUED) {
+ global $user;
+
+ $task = hosting_get_most_recent_task($nid, $type);
+
+ 
+ $node = db_fetch_object(db_query("SELECT nid, title FROM {node} WHERE nid=%d", $nid));
+ if (!$task) {
+    $task = new stdClass();
+ }
+ $task->type = 'task';
+# TODO: make this pretty
+ $task->title = t("!type !title", array('!type' => $type, '!title' => $node->title));
+ $task->task_type = $type;
+ $task->rid = $node->nid;
+ $task->uid = $user->uid;
+ $task->status = 1;
+ $task->task_status = $status;
+ $task->revision = TRUE;
+
+ #arguments, such as which backup to restore.
+ if (is_array($args)) {
+   $task->task_args = $args;
+ }
+ node_save($task);
+
+ return $task;
+}
+/**
+ * Implementation of hook_form().
+ */
+function hosting_task_confirm_form($form_state, &$node, $task) {
+  drupal_add_js(drupal_get_path('module','hosting_task') . '/hosting_task.js');
+  $tasks = hosting_available_tasks($node->type);
+  $form['help'] = array('#value' => $tasks[$task]['description']); 
+  $form['nid'] = array('#type' => 'value', '#value' => $node->nid);
+  $form['task'] = array('#type' => 'value', '#value' => $task); 
+  $form['parameters'] = array('#tree' => TRUE);
+  $func = 'hosting_task_' . $task . '_form';
+  if (function_exists($func)) {
+    $form['parameters'] += $func($node);
+  }
+  $func = $func . '_validate';
+  if (function_exists($func)) {
+    $form['#validate'][] = $func;
+    $form['#func_param_1'] = $node;
+    $form['#func_param_2'] = $task;
+  }
+  $question = t("Are you sure you want to @task @object?", array('@task' => $task, '@object' => $node->title));
+  $form = confirm_form($form, $question, 'node/' . $node->nid, '', $tasks[$task]['title']);
+
+  // add an extra class to the actions to allow us to disable the cancel link via javascript for the modal dialog
+  
+  $form['actions']['#prefix'] = '<div id="hosting-task-confirm-form-actions" class="container-inline">';
+  return $form;
+}
+
+/**
+ * Customize the task confirmation form for restore.
+ *
+ * This adds the backup listing to the confirmation dialog.
+ */
+function hosting_task_restore_form($node) {
+  $list = hosting_site_backup_list($node->nid);
+  if (sizeof($list)) {
+    $form['bid'] = array(
+      '#type' => 'radios',
+      '#title' => t('Backups'),
+      '#options' => $list,
+      '#required' => TRUE
+    );
+  }
+  else {
+    $form['no_backups'] = array(
+      '#type' => 'item', 
+      '#title' => t('Backups'), 
+      '#value' => t('There are no valid backups available.')
+    );
+  }
+  return $form;
+}
+
+/**
+ * Generic form submit handler for tasks confirmation
+ *
+ * This handler gets called after any task has been confirmed by the user. It
+ * will inject a new task in the queue and redirect the user to the
+ * originating node.
+ *
+ * @see hosting_add_task()
+ */
+function hosting_task_confirm_form_submit($form, &$form_state) {
+  $values = $form_state['values'];
+  hosting_add_task($values['nid'], $values['task'], $values['parameters']);
+  $form_state['redirect'] = 'node/' . $values['nid'];
+  modalframe_close_dialog();
+}
+
+/**
+ * Set the title of tasks automatically and in a consistent way
+ *
+ * Tasks should always be named 'task_type node_title'.
+ */
+function hosting_task_set_title(&$node) {
+  $ref = db_fetch_object(db_query("SELECT vid, nid, title, type FROM {node} WHERE nid=%d", $node->rid));
+  $tasks = hosting_available_tasks($ref->type);
+
+  $node->title = drupal_ucfirst($tasks[$node->task_type]['title']) . ': ' . $ref->title;
+  db_query("UPDATE {node} SET title='%s' WHERE nid=%d", $node->title, $node->nid);
+  db_query("UPDATE {node_revisions} SET title='%s' WHERE vid=%d", $node->title, $node->vid);
+}
+
+/**
+ * Determine whether there is an outstanding task of a specific type.
+ *
+ * This is used to ensure that there are not multiple tasks of the same type queued.
+ */
+function hosting_task_outstanding($nid, $type) {
+  $return = db_result(db_query("
+      SELECT t.nid FROM {hosting_task} t
+        INNER JOIN node n ON t.vid = n.vid 
+      WHERE 
+        t.rid = %d 
+        AND t.task_status = %d 
+        AND t.task_type = '%s' 
+        ORDER BY t.vid DESC
+        LIMIT 1", $nid, HOSTING_TASK_QUEUED, $type));
+  return $return;
+}
+
+/**
+ * Return the amount of items still in the queue
+ */
+function hosting_task_count() {
+  return db_result(db_query("SELECT COUNT(t.vid) FROM {hosting_task} t INNER JOIN node n ON t.vid = n.vid WHERE t.task_status = %d", HOSTING_TASK_QUEUED));
+}
+
+/**
+ * User-driven task descriptions
+ *
+ * This is the list of tasks that can be invoked by the user. This doesn't
+ * check permissions or relevance of the tasks.
+ *
+ * Modules can extend this list using hook_hosting_tasks()
+ *
+ * @see hook_hosting_tasks()
+ * @see hosting_task_menu_access()
+ */
+function hosting_available_tasks($type, $reset = FALSE) {
+  static $cache = array();
+
+  if (!sizeof($cache) || $reset) {
+    $cache = module_invoke_all('hosting_tasks');
+  }
+  return $cache[$type];
+
+}
+
+/**
+ * Implementation of hook_insert().
+ */
+function hosting_task_insert($node) {
+  db_query("INSERT INTO {hosting_task} (vid, nid, task_type, task_status, rid, executed, delta) VALUES (%d, %d, '%s', %d, %d, %d, %d)",
+    $node->vid, $node->nid, $node->task_type, $node->task_status, $node->rid, $node->executed, $node->delta);
+
+  if (is_array($node->task_args)) {
+    foreach ($node->task_args as $key => $value) {
+      db_query("INSERT INTO {hosting_task_arguments} (vid, nid, name, value) VALUES (%d, %d, '%s', '%s')",
+           $node->vid, $node->nid, $key, $value);
+    }
+  }
+  hosting_task_set_title($node); 
+}
+
+/**
+ * Implementation of hook_update().
+ *
+ * As an existing node is being updated in the database, we need to do our own
+ * database updates.
+ */
+function hosting_task_update($node) {
+  // if this is a new node or we're adding a new revision,
+  if ($node->revision) {
+    hosting_task_insert($node);
+  }
+  else {
+    hosting_task_set_title($node);
+    db_query("UPDATE {hosting_task} SET nid=%d, task_type = '%s', task_status = %d, rid = %d, executed=%d, delta=%d WHERE vid=%d",
+      $node->nid, $node->task_type, $node->task_status, $node->rid, $node->executed, $node->delta, $node->vid);
+    if (is_array($node->task_args)) {
+      # Wipe out old arguments first, since arguments could theoretically be removed.
+      db_query("DELETE FROM {hosting_task_arguments} WHERE vid=%d", $node->vid);
+      foreach ($node->task_args as $key => $value) {
+        db_query("INSERT INTO {hosting_task_arguments} (vid, nid, name, value) VALUES (%d, %d, '%s', '%s')",
+             $node->vid, $node->nid, $key, $value);
+      }
+    }
+      
+  }
+}
+
+/**
+ * Implementation of hook_delete_revision()
+ */
+function hosting_nodeapi_task_delete_revision(&$node) {
+  db_query('DELETE FROM {hosting_task} WHERE vid = %d', $node->vid);
+  db_query('DELETE FROM {hosting_task_arguments} WHERE vid = %d', $node->vid);
+}
+
+/**
+ * Implementation of hook_delete().
+ */
+function hosting_task_delete($node) {
+  db_query('DELETE FROM {hosting_task} WHERE nid = %d', $node->nid);
+  db_query('DELETE FROM {hosting_task_arguments} WHERE nid = %d', $node->nid);
+}
+
+/**
+ * Implementation of hook_load().
+ */
+function hosting_task_load($node) {
+  $additions = db_fetch_object(db_query('SELECT task_type, executed, delta, rid, task_status FROM {hosting_task} WHERE vid = %d', $node->vid));
+  $result = db_query("SELECT name, value FROM {hosting_task_arguments} WHERE vid=%d", $node->vid);
+  if ($result) {
+    while ($arg = db_fetch_object($result)) {
+      $additions->task_args[$arg->name] = $arg->value;
+    }
+  }
+  return $additions;
+}
+
+function hosting_task_retry_form($form_state, $nid) {
+  $form['#prefix'] = '<div class="hosting-task-retry">';
+  $form['task'] = array(
+    '#type' => 'hidden',
+    '#default_value' => $nid
+  );
+  $form['retry'] = array(
+    '#type' => 'submit',
+    '#value' => t('Retry')
+  );
+  $form['#suffix'] = '</div>';
+  return $form;
+}
+
+function hosting_task_retry_form_submit($form, &$form_state) {
+  hosting_task_retry($form_state['values']['task']);
+  modalframe_close_dialog();
+}
+
+/**
+ * Implementation of hook_view().
+ */
+function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
+  drupal_add_js(drupal_get_path('module', 'hosting') . '/hosting.js');
+  $node = node_prepare($node, $teaser);
+  
+  $ref = node_load($node->rid);
+
+  hosting_set_breadcrumb($node);
+  $node->content['info']['#prefix'] = '<div id="hosting-task-info" class="clear-block">';
+  $node->content['info']['reference'] = array(
+    '#type' => 'item',
+    '#title' => drupal_ucfirst($ref->type),
+    '#value' => _hosting_node_link($node->rid),
+  );
+
+  if ($node->task_status != HOSTING_TASK_QUEUED) {
+    if ($node->task_status == HOSTING_TASK_PROCESSING) {
+      $node->content['info']['started'] = array(
+        '#type' => 'item',
+        '#title' => t('Started'),
+        '#value' => format_date($node->executed),
+        '#weight' => 1,
+      );
+      $node->content['info']['delta'] = array(
+        '#type' => 'item',
+        '#title' => t('Processing time'),
+        '#value' => format_interval(time() - $node->executed),
+        '#weight' => 2,
+      );
+    }
+    else {
+      $node->content['info']['executed'] = array(
+        '#type' => 'item',
+        '#title' => t('Executed'),
+        '#value' => format_date($node->executed),
+        '#weight' => 1,
+      );
+      $node->content['info']['delta'] = array(
+        '#type' => 'item',
+        '#title' => t('Execution time'),
+        '#value' => format_interval($node->delta),
+        '#weight' => 2,
+      );
+    }
+  } else {
+    $queues = hosting_get_queues();
+    $queue = $queues['tasks'];
+    $freq = $queue['frequency'];
+    $last = $queue['last_run'];
+    $now = time();
+    # the first part is the regular case: the task was never run, compute the next time
+    # the second part is the case where the task wasn't run in the last queue run even though it was scheduled, so we compute the next iteration
+    $next = max($last + $freq, ( $now - ( ($now - $last) % $freq ) ) + $freq );
+    if ($freq < 60*60*12) { # 12h
+      # display only the time if we have short iterations
+      $date = format_date($next, 'custom', 'H:i:sO');
+    } else {
+      $date = format_date($next, 'medium');
+    }
+    $items = $queue['items'];
+    $node->content['info']['notexecuted'] = array(
+      '#type' => 'item',
+      '#title' => t('This task has not been processed yet'),
+      '#value' => t('It will be processed around %date, if the queue is not too crowded. The queue is currently run every %freq, was last run %last and processes %items items at a time. Server time is %time.', array('%freq' => format_interval($freq), '%date' => $date, '%last' => hosting_format_interval($last), '%items' => $items, '%time' => format_date($now, 'custom', 'H:i:sO'))),
+    );
+  }
+  if ($node->task_status) {
+    $node->content['info']['status'] = array(
+      '#type' => 'item',
+      '#title' => t('Status'),
+      '#value' => _hosting_parse_error_code($node->task_status),
+    );
+  }
+  $node->content['info']['#suffix'] = '</div>';
+
+  if (user_access('retry failed tasks') && ($node->task_status == HOSTING_TASK_ERROR)) {
+    $node->content['retry'] = array(
+      '#type' => 'markup',
+      '#value' => drupal_get_form('hosting_task_retry_form', $node->nid),
+      '#weight' => 5,
+    );
+  }
+
+  if (user_access('access task logs')) {
+    if ($table = _hosting_task_log_table($node->vid)) { 
+      $node->content['hosting_log'] = array(
+        '#weight' => 10,
+        '#type' => 'item',
+        '#value' => $table
+      );
+    }
+  }    
+  return $node;
+}
+
+/**
+ * Display table containing the logged information for this task
+ */ 
+function _hosting_task_log_table($vid) {
+  $result = db_query("SELECT * FROM {hosting_task_log} WHERE vid=%d", $vid);
+  if ($result) {
+    $header = array('data' => 'Log message');
+    while ($entry = db_fetch_object($result)) {
+      if (strlen($entry->message) > 300) {
+        $summary = "<span class='hosting-task-summary'>" . filter_xss(substr($entry->message, 0, 75), array()) . "... <a href='javascript:void(0)' class='hosting-summary-expand'>(" . t('Expand') . ')</a></span>';
+        $message = $summary . "<span class='hosting-task-full'>" . filter_xss($entry->message) . '</span>';
+      }
+      else {
+        $message = $entry->message;
+      } 
+      $row =  array(array('data' => $message, 'class' => 'hosting-status'));
+      $rows[] = array('data' => $row, 'class' => _hosting_task_log_class($entry->type));
+    }
+
+    return theme("table", $header, (array) $rows, array('id' => 'hosting-task-log', 'class' => 'hosting-table'));
+  }
+
+  return false; 
+}
+
+/**
+ * Map entry statuses to coincide.
+ *
+ * @todo make this irrelevant.
+ */
+function _hosting_task_log_class($type) {
+  switch (strtolower($type)) {
+    case "warning" :
+      $type = "warning";
+      break;
+    case "error" : 
+      $type = "error";
+      break;
+    case "queue" :
+      $type = "queue";
+      break;
+    case "command" : 
+    case "notice" : 
+      $type = "info";
+      break;
+    default: 
+      $type = 'success';
+      break;
+  }
+
+  return 'hosting-' . $type;
+}
+
+/**
+ * Retrieve the latest task related to the specified platform, of a specific type
+ *
+ * This is used for documenting issues with verification.
+ */
+function hosting_get_most_recent_task($rid, $type) {
+  $nid = db_result(db_query("SELECT t.nid FROM {hosting_task} t INNER JOIN {node} n ON n.vid = t.vid WHERE task_type='%s' and t.rid=%d ORDER BY t.vid DESC limit 1", $type, $rid));
+  if ($nid) {
+    return node_load($nid);
+  }
+  return false;
+}
+
+/**
+ * Retrieve tasks with specified criterias
+ *
+ * @arg $filter_by string a field to filter the list with, unchecked
+ * @arg $filter_value string what to restrict the field to, checked
+ * @arg $count integer the number of tasks to return
+ * @arg $element integer which element to start from
+ */
+function hosting_get_tasks($filter_by = null, $filter_value = null, $count = 5, $element = 0) {
+  $node = array();
+  $args[] = 'task';
+  $cond = '';
+
+  if ($filter_by && $filter_value) {
+    $cond = ' AND t.' . $filter_by . ' = %d';
+    $args[] = $filter_value;
+  }
+  $result = pager_query(db_rewrite_sql("SELECT n.*, t.task_status FROM {node} n INNER JOIN {hosting_task} t on n.vid=t.vid WHERE type='%s'" . $cond . " ORDER BY n.vid DESC"), $count, $element, NULL, $args);
+  
+  while ($row = db_fetch_object($result)) {
+    $nodes[] = $row;
+  }
+  
+  return $nodes;
+}
+
+
+/**
+ * @name Error status definitions
+ * @{
+ * Bitmask values used to generate the error code to return.
+ * @see drush_set_error(), drush_get_error(), drush_cmp_error()
+ */
+
+/**
+ * The task is being processed
+ */
+define('HOSTING_TASK_PROCESSING', -1);
+
+
+/**
+ * The task is queued
+ */
+define('HOSTING_TASK_QUEUED', 0);
+
+/**
+ * The command completed succesfully.
+ */
+define('HOSTING_TASK_SUCCESS', 1);
+
+/**
+ * The command was not successfully completed. This is the default error
+ * status.
+ */
+define('HOSTING_TASK_ERROR', 2);
+
+/**
+ * @} End of "name Error status defintions".
+ */
+
+/**
+ * Turn bitmask integer error code into associative array
+ */
+function _hosting_parse_error_code($code) {
+  $messages = array(
+    HOSTING_TASK_SUCCESS => t('Successful'),
+    HOSTING_TASK_QUEUED => t('Queued'),
+    HOSTING_TASK_ERROR => t('Failed'),
+    HOSTING_TASK_PROCESSING => t('Processing'),
+  );
+  return $messages[$code];
+}
+
+/**
+ * Return the status of the task matching the specification
+ */
+function hosting_task_status($filter_by, $filter_value, $type = 'install') {
+  $args[] = 'task';
+  $args[] = $type;
+  $cond = '';
+  if ($filter_by && $filter_value) {
+    $cond = ' AND t.' . $filter_by . ' = %d';
+    $args[] = $filter_value;
+  }
+  $result = db_fetch_array(db_query("SELECT t.task_status AS status FROM {node} n INNER JOIN {hosting_task} t on n.vid=t.vid WHERE n.type='%s' AND t.task_type='%s' " . $cond . " ORDER BY t.vid DESC", $args));
+  return $result['status'];
+}
+
+/**
+ * Return the status of a task in human-readable form
+ *
+ * @see hosting_task_status()
+ */
+function hosting_task_status_output($filter_by, $filter_value, $type = 'install') {
+  $status = hosting_task_status($filter_by, $filter_value, $type);
+  if (is_int($status)) {
+    return _hosting_parse_error_code($status);
+  } else {
+    return $status; # should be NULL
+  }
+}
+
+/**
+ * Display list of tasks
+ */
+function hosting_task_list($filter_by = null, $filter_value = null) {
+  return _hosting_task_list($filter_by, $filter_value, 25, 12, 'title');
+}
+
+/**
+ * Implementation of hosting_hook_summary()
+ */
+function hosting_task_summary($filter_by = null, $filter_value = null) {
+
+  modalframe_parent_js();
+  $more_link = l(t('More tasks'), 'hosting/queues/tasks');
+  return hosting_task_queue_block() . $more_link;
+}
+
+/**
+ * Hosting task list queue block
+ */
+function hosting_task_queue_block() {
+  drupal_add_js(drupal_get_path('module','hosting_task') . '/hosting_task.js');
+
+  $settings['hostingTaskRefresh'] = array(
+    'queueBlock' => 1
+  );
+  drupal_add_js($settings, 'setting');
+
+  $offset = db_result(db_query("SELECT count(n.nid) FROM {node} n LEFT JOIN {hosting_task} t ON n.vid=t.vid WHERE n.type = 'task' AND t.task_status = %d", HOSTING_TASK_QUEUED));
+
+  $offset = ($offset < 3) ? 0 : $offset - 3;
+
+  $result = db_query_range("SELECT n.nid, n.title, t.task_type, t.task_status FROM {node} n LEFT JOIN {hosting_task} t ON n.vid=t.vid WHERE n.type = 'task' ORDER BY t.task_status ASC, n.changed DESC", $offset, 5);
+
+  $headers = array( t('Task'), t('Actions') );
+  $rows[] = array();
+  while ($node = db_fetch_object($result)) {
+    $row = array();
+    $row['type'] = array(
+      'data' => $node->title,
+      'class' => 'hosting-status'
+    );
+
+
+    $log_button = _hosting_task_button(t('View'), 'node/' . $node->nid, t("Display the task log"), 'hosting-button-log', isset($node->nid));
+
+    $row['actions'] = array(
+      'data' => $log_button,
+      'class' => 'hosting-actions',
+    );
+    $class = hosting_task_status_class($node->task_status);
+    $rows[] = array('data' => $row, 'class' => $class);
+  }
+  return "<div id='hosting-task-queue-block'>" . theme('table', $headers, $rows, array('class' => 'hosting-table')) . "</div>" ;
+
+}
+
+/**
+ * A concise table listing of the tasks affecting this node
+ *
+ * This shows a table view of the tasks relevant to this node. It will show
+ * tasks that can be executed as well as tasks that have been in a single
+ * simple interface.
+ */
+function hosting_task_table($node) {
+  $output = '';
+
+
+  $headers[] = t('Task');
+  $headers[] = array('data' => t('Actions'), 'class' => 'hosting-actions');
+
+  $tasklist = hosting_task_fetch_tasks($node->nid);
+
+  foreach ($tasklist as $task => $info) {
+    $row = array();
+
+    $row['type'] = array('data' => $info['title'], 'class' => 'hosting-status');
+
+    $actions = array();
+
+    $actions['log'] = _hosting_task_button(t('View'), 'node/' . $info['nid'], t("Display the task log"), 'hosting-button-log', isset($info['nid']));
+    $actions['run'] = _hosting_task_button(t('Run'), sprintf("node/%d/%s_%s", $node->nid, $node->type, $task), $info['description'], 'hosting-button-run', $info['task_permitted']);
+     
+     $row['actions'] = array(
+        'data' => implode('', $actions),
+       'class' => 'hosting-actions'
+     );
+
+    $rows[] = array('data' => $row, 'class' => $info['class']);
+  }
+  $output .= theme('table', $headers, $rows, array('class' => 'hosting-table'));
+  return $output;
+}
+
+function _hosting_task_button($title, $link, $description, $class = '', $status = TRUE) {
+  if ($status) {
+    return l($title, $link, array(
+        'attributes' => array(
+          'title' => $description,
+          'class' => 'hosting-button-enabled' . (!empty($class) ? ' ' . $class : ''), 
+        )));
+  }
+  else {
+    return "<span class='hosting-button-disabled'>" . $title . "</span>";
+  }
+}
+
+/**
+ * A list of recent tasks, used to be embeded in site and platform nodes
+ *
+ * @deprecated
+ * @see hosting_task_list_table()
+ * @see hosting_task_list()
+ */
+function hosting_task_list_embedded($filter_by = null, $filter_value = null) {
+  return _hosting_task_list($filter_by, $filter_value, 5, 10, 'task_type', array('created'));
+} 
+
+/**
+ * Theme a task list
+ */
+function _hosting_task_list($filter_by, $filter_value, $count = 5, $element = 0, $field = 'title', $skip = array(), $pager = TRUE) {
+  $nodes = hosting_get_tasks($filter_by, $filter_value, $count, $element);
+
+  if (!$nodes) {
+   return t('No tasks available');
+  }
+  else {
+   $headers[t('Task')] = '';
+   foreach ($nodes as $node) {
+     $row = array();
+     $row['type'] = array(
+       'data' => $node->{$field},
+       'class' => 'hosting-status'
+     );
+
+     if (!in_array('created', $skip)) {
+       $row['created'] = t("@interval ago", array('@interval' => format_interval(mktime() - $node->created, 1)));
+       $headers[t('Created')] = '';
+     }
+
+     $headers[t('Actions')] = '';
+
+     $actions['log'] = l(t('View'), 'node/' . $node->nid, array('attributes' => array('class' => 'hosting-button-enabled hosting-button-log')));
+
+     $row['actions'] = array(
+       'data' => $actions['log'],
+       'class' => 'hosting-actions'
+     );
+
+     $class = hosting_task_status_class($node->task_status);
+
+     $rows[] = array('data' => $row, 'class' => $class);
+   }
+
+   $output = theme('table', array_keys($headers), $rows, array('class' => 'hosting-table'));
+   if ($pager === TRUE) {
+     $output .= theme('pager', NULL, $count, $element);
+   }
+   elseif (is_string($pager)) {
+     $output .= $pager;
+   }
+   return $output;
+  }
+}
+
+function hosting_task_fetch_tasks($rid) {
+  $node = node_load($rid);
+
+  $tasks = hosting_available_tasks($node->type);
+  $result = db_query("SELECT n.nid, t.task_type, t.task_status FROM {node} n LEFT JOIN {hosting_task} t ON n.vid=t.vid 
+    WHERE n.type = 'task' AND t.rid = %d
+    ORDER BY t.task_status ASC, n.changed DESC", $rid);
+
+  while ($obj = db_fetch_object($result)) {
+    $return[$obj->task_type] = array('nid' => $obj->nid, 'task_status' => $obj->task_status, 'exists' => TRUE);
+  }
+
+  $tasks = hosting_available_tasks($node->type);
+  ksort($tasks);
+
+  foreach ($tasks as $type => $hook_task) {
+
+    if (!isset($return[$type])) {
+      $return[$type] = array();
+    }
+
+    $task = array();
+    $task = array_merge($return[$type], $hook_task);
+
+    $allowed = (isset($task['exists']) && !in_array($task['task_status'], array(HOSTING_TASK_QUEUED, HOSTING_TASK_PROCESSING))) || !isset($task['exists']);
+    if ($allowed && !$task['hidden'] && hosting_task_menu_access($node, $type)) {
+      $task['task_permitted'] = TRUE;
+    }
+    $task['class'] = hosting_task_status_class($task['task_status']);
+
+    $return[$type] = $task;
+  }
+
+  return $return;
+}
+
+function hosting_task_status_class($status = null) {
+  $class = null;
+  if (!is_null($status)) {
+    switch($status) {
+      case HOSTING_TASK_SUCCESS : 
+        $class = 'hosting-success';
+        break;
+      case HOSTING_TASK_ERROR :
+        $class = 'hosting-error';
+        break;
+      case HOSTING_TASK_QUEUED :
+        $class = 'hosting-queue';
+        break;
+      case HOSTING_TASK_PROCESSING :
+        $class = 'hosting-processing';
+        break;
+    }
+  }
+
+  return $class;
+}

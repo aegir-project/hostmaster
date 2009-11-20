@@ -1,0 +1,38 @@
+<?php
+
+/**
+ * @file
+ * SSL certificate management frontend
+ */
+
+function hosting_ssl_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'site_node_form') {
+    if (isset($form['#node']->ssl)) {
+      $default = array($form['#node']->ssl);
+    }
+    else {
+      $default = array();
+    }
+    if (isset($form['#node']->ssl_redirect)) {
+      $redirect = array($form['#node']->ssl_redirect);
+    }
+    else {
+      $redirect = array();
+    }
+    // small chunk of code to toggle the ports when SSL is chosen
+    $javascript = '$("#edit-port-80").attr("checked", !this.checked);$("#edit-port-443").attr("checked", this.checked);';
+    $form['port']['ssl'] = array('#type' => 'checkbox', '#title' => 'Enable SSL encryption', '#default_value' => $default, '#weight' => 4, '#attributes' => array('onClick' => $javascript . ';if (!this.checked) { $("#edit-ssl-redirect").attr("checked", this.checked) };'),);
+    $form['port']['ssl_redirect'] = array('#type' => 'checkbox', '#title' => 'Redirect HTTP to HTTPS', '#default_value' => $redirect, '#weight' => 5, '#attributes' => array('onClick' => 'if (this.checked) { ' . $javascript . ';$("#edit-ssl").attr("checked", this.checked);}'),);
+    $form['port']['#title'] = t("Port and encryption");
+  }
+}
+
+function hosting_ssl_nodeapi(&$node, $op, $teaser, $page) {
+  switch($op) {
+    case 'view':
+      if ($node->type == 'site') {
+        $node->content['info']['ssl'] = array('#type' => 'item', '#title' => 'SSL encryption', '#value' => ( $node->ssl ? t('Enabled') : t('Disabled') ));
+      }
+      break;
+  }
+}

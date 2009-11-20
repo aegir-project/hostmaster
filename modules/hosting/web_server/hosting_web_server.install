@@ -1,0 +1,89 @@
+<?php
+// $Id$
+
+
+/**
+ * Implementation of hook_schema().
+ */
+function hosting_web_server_schema() {
+  $schema['hosting_web_server'] = array(
+    'fields' => array(
+      'vid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'ip_address' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+      ),
+      'script_user' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+      ),
+      'web_group' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+      ),
+      'config_path' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+      ),
+      'backup_path' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+      ),
+      'restart_cmd' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+      ),
+      'drush_path' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+      ),
+      'ports' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+      ),
+    ),
+    'primary key' => array('vid'),
+  );
+
+  return $schema;
+}
+
+function hosting_web_server_install() {
+  // Create tables.
+  drupal_install_schema('hosting_web_server');
+}
+
+/**
+ * Add package description to hosting_package table
+ */
+function hosting_web_server_update_1() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE {hosting_web_server} ADD COLUMN drush_path longtext NOT NULL default ''");
+  return $ret;
+}
+
+function hosting_web_server_update_2() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE {hosting_web_server} ADD COLUMN ports longtext NOT NULL default ''");
+  db_query("UPDATE {hosting_web_server} SET ports = '80'");
+  return $ret;
+}

@@ -1,0 +1,5 @@
+name = Signup form
+description = A simple signup form that allows users to sign up for a new site.
+package = Hosting
+
+core = 6.x

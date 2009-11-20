@@ -1,0 +1,78 @@
+<?php
+// $Id$
+
+
+/**
+ * Implementation of hook_schema().
+ */
+function hosting_platform_schema() {
+  $schema['hosting_platform'] = array(
+    'fields' => array(
+      'vid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'publish_path' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+      ),
+      'web_server' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'release_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'verified' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('vid'),
+  );
+
+  return $schema;
+}
+
+function hosting_platform_install() {  
+  // Create tables.
+  drupal_install_schema('hosting_platform');
+}
+
+/**
+ * Re-synch all platform to correctly set up the
+ * master url, so redirects on disabled sites will
+ * work correctly.
+ */
+function hosting_platform_update_1() {
+  include_once(drupal_get_path('module', 'hosting_task') . '/hosting_task.module');
+  $ret = array();
+  $result = db_query("SELECT nid FROM {node} WHERE type='platform' AND status=1");
+  while ($platform = db_fetch_object($result)) {
+    hosting_add_task($platform->nid, 'synch');
+  }
+  return $ret;
+}
+
+/**
+ * Verify at least one platform
+ *
+ * This is to make sure ~/config/includes/global.inc is properly setup
+ */
+function hosting_platform_update_6000() {
+  // this update was moved to hosting_update_6002()
+  return array();
+}

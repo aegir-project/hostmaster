@@ -1,0 +1,75 @@
+<?php
+// $Id$
+
+/**
+ * Implementation of hook_schema().
+ */
+function hosting_alias_schema() {
+  $schema['hosting_site_alias'] = array(
+    'fields' => array(
+      'vid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'alias' => array(
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+      ),
+      'automatic' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'redirection' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'indexes' => array(
+      'vid' => array('vid'),
+      'alias' => array('alias'),
+    ),
+  );
+
+  return $schema;
+}
+
+function hosting_alias_install() {
+  // Create tables.
+  drupal_install_schema('hosting_alias');
+}
+
+function hosting_alias_uninstall() {
+  // Remove tables.
+  drupal_uninstall_schema('hosting_alias');
+
+}
+
+/**
+ * This removes dodgy data created by an import bug
+ */
+function hosting_alias_update_1() {
+  $ret = array();
+  $ret[] = update_sql("DELETE FROM {hosting_site_alias} WHERE alias='Array'");
+  return $ret;
+}
+
+/**
+ * Add the redirection field
+ */
+function hosting_alias_update_2() {
+  $ret = array();
+  db_add_field($ret, 'hosting_site_alias', 'redirection', array('type' => 'int', 'not null' => TRUE, 'default' => 0, 'size' => 'tiny'));
+  return $ret;
+}
+

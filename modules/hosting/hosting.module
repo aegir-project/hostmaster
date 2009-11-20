@@ -1,0 +1,670 @@
+<?php
+// $Id$
+
+/**
+ * @file Hosting module
+ *
+ * Contains just about all the interface magic of hostmaster.
+ */
+ 
+/**
+ * Not split for performance reasons. Just to keep code together.
+ */
+
+include_once('hosting.inc');
+include_once('hosting_help.inc');
+include_once('hosting.queues.inc');
+include_once('hosting.features.inc');
+
+/**
+ * Implementation of hook_menu()
+ */
+function hosting_menu() {
+  global $user;
+  $items = array();
+
+
+  $items['hosting/disabled'] = array(
+    'title' => 'Site disabled',
+    'page callback' => 'hosting_disabled_site',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK
+  );
+
+  $items['hosting/js'] = array(
+    'title' => t('ahah callback'),
+    'page callback' => 'hosting_js_page',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK
+  );
+
+  $items['hosting/maintenance'] = array(
+    'title' => 'Site maintenance',
+    'page callback' => 'hosting_site_maintenance',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK
+  );
+
+  
+  $items['admin/help/provision/requirements'] = array(
+    'title' => 'Provisioning requirements',
+    'description' => "Information of how to configure the provisioning system.",
+    'page callback' => 'hosting_help_requirements',
+    'type' => MENU_CALLBACK
+  );
+
+
+  $items['admin/hosting'] = array(
+    'title' => 'Hosting',
+    'description' => 'Configure and manage the hosting system',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('hosting_features_form'),
+    'access arguments' => array('administer hosting'),
+    'type' => MENU_NORMAL_ITEM
+  );
+
+  $items['admin/hosting/features'] = array(
+    'title' => 'Features',
+    'description' => 'Configure the exposed functionality of the Hosting system',
+    'weight' => -100,
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('hosting_features_form'),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'access arguments' => array('administer hosting features'),
+  );
+
+  $items['admin/hosting/queues'] = array(
+    'title' => 'Queues',
+    'description' => 'Configure the frequency that cron, backup and task events are process',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('hosting_queues_configure'),
+    'type' => MENU_LOCAL_TASK,
+    'access arguments' => array('administer hosting queues'),
+  );
+
+  
+  $items['hosting/queues'] = array(
+     'page callback' => 'hosting_queues',
+     'type' => MENU_CALLBACK,
+     'access arguments' => array('access task logs')
+   );
+
+  return $items;
+}
+
+function hosting_js_page() {
+  modalframe_child_js();
+
+  $args = func_get_args();
+  $path = implode('/', $args);
+
+  menu_set_active_item($path);
+#  $_SERVER['REQUEST_URI'] = str_replace('/hosting/js', '', $_SERVER['REQUEST_URI']);
+
+  if ($router_item = menu_get_item($path)) {
+    if ($router_item['access']) {
+      if ($router_item['file']) {
+        require_once($router_item['file']);
+      }
+      $return = call_user_func_array($router_item['page_callback'], $router_item['page_arguments']);
+    }
+  }
+  // Menu status constants are integers; page content is a string.
+  if (is_int($return)) {
+    modalframe_close_dialog();
+  }
+ return $return; 
+}
+
+function hosting_menu_alter(&$items) {
+  $items['node/add']['page callback'] = '_hosting_node_add';
+
+  $types = hosting_feature_node_types(TRUE);
+  foreach ($types as $feature => $type) {
+    $path = sprintf('node/add/%s', str_replace('_', '-', $type));
+    $items[$path]['access callback'] = 'hosting_menu_access';
+    $items[$path]['access arguments'] = array($type, $feature);
+  }
+  
+  // These node types should remain hidden, and provide no user interface.
+  unset($items['node/add/package']);
+  unset($items['node/add/task']);
+}
+
+function hosting_menu_access($type, $feature) {
+  global $user;
+  return  (($user->uid == 1) || user_access('create ' . $type)) && (hosting_feature($feature) != HOSTING_FEATURE_DISABLED);
+}
+
+function hosting_disabled_site() {
+  drupal_set_breadcrumb(array());
+  return t("This site has been disabled by the site administrators");
+}
+
+function hosting_site_maintenance() {
+  drupal_set_breadcrumb(array());
+  return t("This site is currently in maintenance. Check back later.");
+}
+
+/**
+ * Implementation of hook_nodeapi
+ *
+ * This function redirects to hosting_nodeapi_$nodetype_$op calls, to save ourselves
+ * from an incessant amount of intricately nested code, and allow easier extension / maintenance.
+ */
+function hosting_nodeapi(&$node, $op, $teaser) {
+  $func = "hosting_nodeapi_" . $node->type . "_" . str_replace(" ", "_", $op);
+  if (function_exists($func)) {
+    $func($node, $op, $teaser);
+  }
+}
+/**
+ * Implementation of hook_perm
+ */
+function hosting_perm() {
+  return array('access hosting wizard', 'administer hosting queues', 'administer hosting features', 'administer hosting');
+}
+
+/**
+ * Implementation of hook_init
+ */
+function hosting_init() {
+  // Definitions for the default platforms, clients etc.
+  // Done to avoid using 'magic numbers'
+  define('HOSTING_DEFAULT_CLIENT', variable_get('hosting_default_client', 1));
+  define('HOSTING_DEFAULT_DB_SERVER', variable_get('hosting_default_db_server', 2));
+  define('HOSTING_DEFAULT_WEB_SERVER', variable_get('hosting_default_web_server', 3));
+  define('HOSTING_DEFAULT_PLATFORM', variable_get('hosting_default_platform', 6)); 
+
+  define('HOSTING_OWN_DB_SERVER', variable_get('hosting_own_db_server', 2));
+  define('HOSTING_OWN_WEB_SERVER', variable_get('hosting_own_web_server', 3));
+  define('HOSTING_OWN_PLATFORM', variable_get('hosting_own_platform', 6)); 
+
+
+  // These defaults could be temporary.
+  $info = posix_getgrgid(posix_getgid());
+  define('HOSTING_DEFAULT_WEB_GROUP', $info['name']);
+  $user = get_current_user();
+  if ($user == 'root') {
+    $user = 'aegir'; # a better default than root
+  }
+  define('HOSTING_DEFAULT_SCRIPT_USER', $user);
+
+  define('HOSTING_DEFAULT_RESTART_CMD', _hosting_default_restart_cmd());
+
+  $path =  ($_SERVER['PWD']) ? $_SERVER['PWD'] : $_SERVER['DOCUMENT_ROOT'];
+  define('HOSTING_DEFAULT_DOCROOT_PATH',rtrim($path, '/')); 
+
+  $parts = explode("/", rtrim($path, '/'));
+  array_pop($parts);
+  define('HOSTING_DEFAULT_PARENT_PATH', rtrim(implode("/" , $parts), '/'));
+  define('HOSTING_DEFAULT_BACKUP_PATH', HOSTING_DEFAULT_PARENT_PATH . '/backups');
+  define('HOSTING_DEFAULT_CONFIG_PATH', HOSTING_DEFAULT_PARENT_PATH .'/config');
+  define('HOSTING_DEFAULT_VHOST_PATH', HOSTING_DEFAULT_CONFIG_PATH .'/vhost.d');
+
+  /** 
+   * Find the base URL, this is used by the initial 'hosting setup' drush command
+   * This gets defined in the bootstrap, so just using the global definition.
+   */
+  define('HOSTING_DEFAULT_BASE_URL', $GLOBALS['base_url']); 
+
+  // moved from hook_menu()
+  drupal_add_css(drupal_get_path('module', 'hosting') . '/hosting.css');
+}
+
+
+/**
+ * This function should not have to be duplicated between hosting/provision
+ */
+function _hosting_default_restart_cmd() {
+  $command = '/usr/sbin/apachectl'; # a proper default for most of the world
+  foreach (explode(':', $_SERVER['PATH']) as $path) {
+    $options[] = "$path/apache2ctl";
+    $options[] = "$path/apachectl";
+  }
+  # try to detect the apache restart command
+  $options[] = '/usr/local/sbin/apachectl'; # freebsd
+  $options[] = '/usr/sbin/apache2ctl'; # debian + apache2
+  $options[] = $command;
+
+  foreach ($options as $test) {
+    if (is_executable($test)) {
+      $command = $test;
+      break;
+    }
+  }
+
+  return "sudo $command graceful";
+}
+
+/**
+ * Implementation of hook_theme().
+ */
+function hosting_theme() {
+  return array(
+    'hosting_summary_block' => array(
+      'file' => 'hosting.module',
+      'arguments' => array(
+        'components' => NULL,
+      ),
+    ),
+    'hosting_queues_configure' => array(
+      'file' => 'hosting.module',
+      'arguments' => array(
+        'form' => NULL,
+      ),
+    ),
+    'requirement_help' => array(
+      'file' => 'hosting_help.inc',
+      'arguments' => array(
+        'form' => NULL,
+      ),
+    ),
+  );
+}
+
+function _hosting_node_link($nid, $title = null) {
+  if (is_null($nid)) {
+    return t("None");
+  }
+  $node = node_load($nid);
+  $title = (!is_null($title)) ? $title : filter_xss($node->title);
+  if ($node->nid) {
+    return node_access('view', $node) ? l($title, "node/" . $node->nid) : filter_xss($node->title);
+  }
+}
+
+
+function hosting_block($op = 'list', $delta = 0, $edit = array()) {
+  switch ($op) {
+    case 'list' :
+      $blocks['hosting_summary'] = array('info' => t('Hosting summary'), 
+            'enabled' => 1, 'region' => 'left', 'weight' => 10);
+      $blocks['hosting_queues'] = array('info' => t('Hosting queues'),
+            'enabled' => 1, 'region' => 'right', 'weight' => 0);
+      $blocks['hosting_queues_summary'] = array('info' => t('Hosting queues summary'),
+            'enabled' => 1, 'region' => 'right', 'weight' => 1);
+      return $blocks;
+    case 'view' : 
+      switch ($delta) {
+      case 'hosting_summary':
+        return array(
+                     'title' => t('Summary'),
+                     'content' => hosting_summary_block());
+        break;
+      case 'hosting_queues':
+        return array('title' => t('Queues'),
+                     'content' => hosting_queue_block());
+        break;
+      case 'hosting_queues_summary':
+        return array('title' => t('Queues summary'),
+                     'content' => hosting_queue_summary_block());
+        break;
+      }
+  }
+}
+
+function hosting_queue_summary_block() {
+  if (user_access('administer hosting queues')) {
+    $queues = hosting_get_queues();
+    $output = '';
+    foreach ($queues as $queue => $info) {
+      $disp = array();
+      # special case
+      if (!$info['enabled']) {
+        $disp[] = t('Status: disabled');
+        continue;
+      }
+      $disp[] = t('Status: enabled');
+      foreach (array('description' => t('Description'), 'frequency' => t('Frequency'), 'items' => t('Items per run'), 'total_items' => t('Items in queue'), 'last_run' => t('Last run')) as $key => $title) {
+        if ($key == 'last_run') {
+          $info[$key] = hosting_format_interval($info[$key]);
+        } elseif ($key == 'frequency') {
+          $info[$key] = t('every @interval', array('@interval' => format_interval($info[$key])));
+        }
+        $disp[] = $title . ": " . $info[$key]; 
+      }
+      $output .= theme('item_list', $disp, $info['name']);
+    }
+    return $output;
+  }
+}
+
+function hosting_queue_block() {
+  if (user_access('access task logs')) {
+    $queues = hosting_get_queues();
+    $output = '';
+    foreach ($queues as $queue => $info) {
+      $func = 'hosting_'.$info['singular'].'_summary';
+      if (function_exists($func)) {
+        $output .= $func();
+      }
+    }
+    return $output;
+  }
+}
+
+function hosting_summary_block() {
+  if (user_access('administer hosting')) {
+    return theme('hosting_summary_block', module_invoke_all('hosting_summary'));
+  }
+}
+
+function theme_hosting_summary_block($components) {
+  foreach ($components as $component) {
+    $output .= $component;
+  }
+  return $output;
+}
+
+/**
+ * Check site URL is allowed
+ *
+ * This function hooks into hook_allow_domain to let contrib modules
+ * weigh in on whether the site should be created.
+ *
+ * All the hooks must return true for the domain to be allowed.
+ */
+function hosting_domain_allowed($url, $params = array()) {
+  $results = module_invoke_all('allow_domain', $url, $params);
+  $return = !in_array(FALSE, $results);
+  return $return;
+}
+
+/**
+ * Initial hosting setup
+ * Runs the 'hosting dispatch' command, and 
+ * move on to setting up the crontab
+ */ 
+function hosting_setup() {
+  if (drush_confirm("This command will replace your crontab for this user. continue?")) {
+    variable_set('hosting_dispatch_enabled', FALSE);
+    // attempt to run the dispatch command, to make sure it runs without the queue being enabled.
+    variable_set('hosting_dispatch_enabled', TRUE);
+    drush_print(_hosting_dispatch_cmd());
+    exec(_hosting_dispatch_cmd(), $return, $code);
+    variable_set('hosting_dispatch_enabled', FALSE);
+    $return = join("\n", $return);
+    $data = unserialize($return);
+    if ($code == DRUSH_SUCCESS) {
+      variable_set('hosting_dispatch_enabled', TRUE);
+      drush_log(t("Dispatch command was run successfully"), 'success');
+      _hosting_setup_cron();
+    }
+    else {
+      drush_set_error('DRUSH_FRAMEWORK_ERROR', dt("Dispatch command could not be run. Returned: \n@return", array('@return' => $return))); 
+    }
+    if (drush_get_error()) {
+      drush_log(t("The command did not complete successfully, please fix the issues and re-run this script"), 'error');
+    }
+  }
+}
+
+/**
+ * Set up the hosting dispatch command in the aegir user's crontab
+ * Replace the crontab entry if it exists, else create it from scratch
+ */
+function _hosting_setup_cron() {
+  $existing = FALSE;
+  exec('crontab -l 2> /dev/null', $cron);
+  variable_set('hosting_cron_backup', $cron);
+  if (sizeof($cron)) {
+    drush_log("Your existing cron entry will be replaced.", 'warning');
+    exec('crontab -r 2> /dev/null');
+    $cron = array();
+  }
+  else {
+    drush_log(dt("No existing crontab was found"), 'message');
+  }
+
+  $cron[] = hosting_queues_cron_cmd();
+
+  $tmpnam = tempnam('hostmaster', 'hm.cron');
+  $fp = fopen($tmpnam, "w");
+  foreach ($cron as $line) {
+    fwrite($fp, $line . "\n");
+  }
+  fclose($fp);
+  system(sprintf('crontab %s', escapeshellarg($tmpnam)));
+  unlink($tmpnam);
+  drush_log(dt("Installed hosting dispatch cron entry to run every minute"), 'message');
+  return null;
+}
+
+
+/**
+ * Replacement node/add page.
+ *
+ * Major kludge to remove the hidden node types from node/add page
+ *
+ * Copied from node.module
+ */
+function _hosting_node_add($type = '') {
+  global $user;
+
+  $types = node_get_types();
+  $type = ($type) ? str_replace('-', '_', $type) : NULL;
+  // If a node type has been specified, validate its existence.
+  if (isset($types[$type]) && user_access('create ' .  $type) && (hosting_feature($type) !== HOSTING_FEATURE_DISABLED)) {
+    // Initialize settings:
+    $node = array('uid' => $user->uid, 'name' => $user->name, 'type' => $type);
+
+    drupal_set_title(t('Submit @name', array('@name' => $types[$type]->name)));
+    $output = drupal_get_form($type .'_node_form', $node);
+  }
+  else {
+    // If no (valid) node type has been provided, display a node type overview.
+    foreach ($types as $type) {
+      if (function_exists($type->module .'_form') && user_access('create ' . $type->type) && (hosting_feature($type->type) !== HOSTING_FEATURE_DISABLED)) {
+        $type_url_str = str_replace('_', '-', $type->type);
+        $title = t('Add a new @s.', array('@s' => $type->name));
+        $out = '<dt>'. l(drupal_ucfirst($type->name), "node/add/$type_url_str", array('attributes' => array('title' => $title))) .'</dt>';
+        $out .= '<dd>'. filter_xss_admin($type->description) .'</dd>';
+        $item[$type->name] = $out;
+      }
+    }
+
+    if (isset($item)) {
+      uksort($item, 'strnatcasecmp');
+      $output = t('Choose the appropriate item from the list:') .'<dl>'. implode('', $item) .'</dl>';
+    }
+    else {
+      $output = t('No content types available.');
+    }
+  }
+
+  return $output;
+}
+
+/**
+ * List queues or tasks in a queue if a key is provided
+ */
+
+function hosting_queues($key='') {
+  $queues = hosting_get_queues();
+
+  if ($queues[$key]) {
+    if ($queues[$key]['name'])
+    {
+      $output .= "<h1>".$queues[$key]['name']."</h1>";
+    }
+  
+    $func = 'hosting_'.$queues[$key]['singular'].'_list';
+    if (function_exists($func)) {
+      $output .= $func();
+    }
+  }
+  else
+  {
+    foreach($queues as $key => $queue) {
+      $item[] = l($queue['name'], 'hosting/queues/'.$key);
+    }
+    $output .= theme('item_list', $item, t('Queues'));
+  }
+  
+  return $output;
+}
+
+/**
+ * Generate context sensitive breadcrumbs
+ */
+function hosting_set_breadcrumb($node) {
+  $breadcrumbs[] = l(t('Home'), NULL);
+  switch ($node->type) {
+    case 'task':
+      $breadcrumbs[] = _hosting_node_link($node->rid);
+      break;
+    case 'platform' :
+      $breadcrumbs[] = _hosting_node_link($node->web_server);
+      break;
+    case 'site' :
+      $breadcrumbs[] = _hosting_node_link($node->platform);
+      break;
+  }
+  drupal_set_breadcrumb($breadcrumbs);
+}
+
+/**
+ * Page callback
+ *
+ * Configure the frequency of tasks.
+ */
+function hosting_queues_configure() {
+  drupal_add_css(drupal_get_path('module', 'hosting') . '/hosting.css');
+  $units = array(
+    strtotime("1 second", 0) => t("Seconds"),
+    strtotime("1 minute", 0) => t("Minutes"),
+    strtotime("1 hour", 0) => t("Hours"),
+    strtotime("1 day", 0) => t("Days"),
+    strtotime("1 week", 0) => t("Weeks"),
+  );
+  
+  $queues = hosting_get_queues();
+  $form['#tree'] = TRUE;
+
+  foreach ($queues as $queue => $info) {
+    $form[$queue]['description'] = array(
+      '#type' => 'item',
+      '#value' => $info['name'],
+      '#description' => $info['description']
+    );
+
+    $form[$queue]["enabled"] = array(
+      '#type' => 'checkbox',
+      '#default_value' => $info['enabled']
+    );
+
+    $form[$queue]["last_run"] = array(
+      '#value' => hosting_format_interval(variable_get('hosting_queue_' . $queue . '_last_run', false))
+    );
+    $form[$queue]['frequency']['#prefix'] = "<div class='hosting-queue-frequency'>";
+    $form[$queue]['frequency']['#suffix'] = "</div>";
+    
+    if ($info['type'] == 'batch') {
+      $form[$queue]['frequency']['items'] = array(
+        '#value' => t('%count %items every ', array("%count" => $info['total_items'], "%items" => format_plural($info['total_items'], $info['singular'], $info['plural']))),
+      ); 
+    }
+    else {
+      $form[$queue]['frequency']['items'] = array(
+        '#type' => 'textfield',
+        '#size' => 3,
+        '#maxlength' => 3,
+        '#default_value' => $info['items'],
+        '#suffix' => t(' %items every ', array('%items' => $info['plural'])),
+      );
+    }
+    foreach (array_reverse(array_keys($units)) as $length) {
+      $unit = $units[$length];
+      
+      if (!($info['frequency'] % $length)) {
+        $frequency_ticks = $info['frequency'] / $length;
+        $frequency_length = $length;
+        break;
+      }
+    }
+    $form[$queue]['frequency']["ticks"] = array(
+      '#type' => 'textfield',
+      '#default_value' => $frequency_ticks,
+      '#maxlength' => 5,
+      '#size' => 5
+    );
+    $form[$queue]['frequency']["unit"] = array(
+      '#type' => 'select',
+      '#options' => $units,
+      '#default_value' => $frequency_length,
+    );
+  }
+  $form['submit'] = array('#type' => 'submit', '#value' => t('Save changes'));
+  return $form;
+}
+
+function theme_hosting_queues_configure($form) {
+  $queues = hosting_get_queues();
+
+  $rows = array();
+  $header = array('', t('Description'), 
+    array('data' => t('Frequency'), 'class' => 'hosting-queue-frequency-head'),
+    t('Last run'),);
+  foreach ($queues as $key => $info) {
+    $row = array();
+    $row[] = drupal_render($form[$key]['enabled']); 
+    $row[] = drupal_render($form[$key]['description']); 
+    $row[] = drupal_render($form[$key]['frequency']);
+    $row[] = drupal_render($form[$key]['last_run']); 
+    $rows[] = $row;
+  }
+  $output = theme('table', $header, $rows);
+  $output .= drupal_render($form['submit']);
+  $output .= drupal_render($form);
+  return $output;
+}
+
+/**
+ * Implementation of hook_validate()
+ */
+function hosting_queues_configure_validate($form, &$form_state) {
+  foreach (hosting_get_queues() as $queue => $info) {
+    if ($form_state['values'][$queue]) {
+      if ($form_state['values'][$queue]['frequency']['ticks'] && !is_numeric($form_state['values'][$queue]['frequency']['ticks'])) {
+        form_set_error($queue, t('Please enter a valid frequency.'));
+      }
+      if ($form_state['values'][$queue]['frequency']['items'] && !is_numeric($form_state['values'][$queue]['frequency']['items'])) {
+        form_set_error($queue, t('Please enter a valid amount of items.'));
+      }
+    }
+  }
+}
+
+/**
+ * Implementation of hook_submit()
+ */
+function hosting_queues_configure_submit($form, &$form_state) {
+  foreach (hosting_get_queues() as $queue => $info) {
+    if ($form_state['values'][$queue]) {
+      variable_set("hosting_queue_" . $queue . "_enabled", $form_state['values'][$queue]['enabled']);
+      variable_set("hosting_queue_" . $queue . "_frequency", $form_state['values'][$queue]['frequency']['ticks'] * $form_state['values'][$queue]['frequency']['unit']);
+      if ($info['type'] == 'serial') {
+        variable_set("hosting_queue_" . $queue . "_items", $form_state['values'][$queue]['frequency']['items']);
+      }
+    }
+  }
+  drupal_set_message(t('The queue settings have been updated.'));
+}
+
+/**
+ * Implementation of hook_form_alter() 
+ */
+function hosting_form_alter(&$form, &$form_state, $form_id) {
+  // Alter the 'Add User' form to remind users that this is not the New Client form
+  if ($form_id == 'user_register') {
+    $form[user_registration_help] = array(
+      '#type' => 'item',
+      '#description' => t('<strong>Adding a system user account does not make the user a Client that can add sites.</strong><br />
+                     To add a Client, enable the Client feature and then add a new Client node.<br />
+                     If you wish, you may then assign this system user to the Client as an \'Allowed user\' to inherit the permissions to add sites.'),
+      '#weight' => '-10'
+    );
+  }
+}
+

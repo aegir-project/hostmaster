@@ -1,0 +1,34 @@
+.hosting-help-hidden { display: none }
+
+div.hosting-requirement-help .message {
+  background-repeat: no-repeat;
+  background-position: 3px 3px;
+  padding-left: 27px;
+  padding-right: 1em;
+  padding-top:2px;
+  font-weight: bold;
+}
+
+.hosting-status-warning .message {
+  border: 1px solid #ccb;
+  background: #ffd;
+  background-image: url(/misc/watchdog-warning.png);
+}
+
+.hosting-status-error .message {
+  border: 1px solid #d77;
+  background: #fcc;
+  color: #200;
+  background-image: url(/misc/watchdog-error.png);
+}
+
+.hosting-status-success .message {
+  border: 1px solid #bdb;
+  background: #dfd;
+  background-image: url(/misc/watchdog-ok.png);
+}
+
+.hosting-help-collapsed .hosting-help {
+  display: none;
+}
+

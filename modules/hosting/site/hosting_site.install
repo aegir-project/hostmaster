@@ -1,0 +1,245 @@
+<?php
+// $Id$
+
+
+/**
+ * Implementation of hook_schema().
+ */
+function hosting_site_schema() {
+  $schema['hosting_site'] = array(
+    'fields' => array(
+      'vid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'client' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'db_server' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'platform' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'profile' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'language' => array(
+        'type' => 'varchar',
+        'length' => 10,
+        'not null' => TRUE,
+        'default' => 'en',
+      ),
+      'last_cron' => array(
+        'type' => 'int',
+        'not null' => FALSE,
+      ),
+      'verified' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'status' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'port' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'ssl' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'ssl_redirect' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('vid'),
+  );
+
+  $schema['hosting_site_backups'] = array(
+    'fields' => array(
+      'bid' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+      ),
+      'site' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'web_server' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'description' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+      ),
+      'filename' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+      ),
+      'timestamp' => array(
+        'type' => 'int',
+        'not null' => FALSE,
+      ),
+    ),
+    'primary key' => array('bid'),
+  );
+
+  return $schema;
+}
+
+function hosting_site_install() {
+  // Create tables.
+  drupal_install_schema('hosting_site');
+}
+
+/**
+ * Add language field to hosting_sites table
+ */
+function hosting_site_update_1() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE {hosting_site} ADD COLUMN language VARCHAR(10) NOT NULL default 'en'");
+  return $ret;
+}
+
+/**
+ * Retry all failed site installs, to evaluate where they might be successfully imported instead
+ */
+function hosting_site_update_2() {
+  include_once( drupal_get_path('module', 'hosting_task') . '/hosting_task.module');
+  $ret = array();
+  $result = db_query("select n.nid from {node} n left join {hosting_task} t on n.vid = t.vid where t.task_type = 'install' and t.task_status > 1 and n.type='task'");
+  while ($obj = db_fetch_object($result)) {
+    hosting_task_retry($obj->nid);
+  }
+  return $ret;
+}
+
+/**
+ * Move away from bitmasks for the status field.
+ */
+function hosting_site_update_3() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE {hosting_site} CHANGE COLUMN status status int(11) NOT NULL default '0'");
+
+  $ret[] = update_sql("CREATE TEMPORARY TABLE {hosting_site_statuses} SELECT nid, 
+    (status&4) as deleted, NOT (status&2) AS disabled, status&1 AS installed FROM {hosting_site}");
+
+
+  // Reset them all to queued
+  $ret[] = update_sql("UPDATE {hosting_site} SET status = 0");
+
+  // First, we get rid of the deleted sites.
+  $ret[] = update_sql("UPDATE {hosting_site} SET status = -2 WHERE nid in (SELECT nid FROM {hosting_site_statuses} WHERE deleted > 0)");
+  $ret[] = update_sql("DELETE FROM {hosting_site_statuses} WHERE deleted > 0");
+
+  // Then the disabled sites.
+  $ret[] = update_sql("UPDATE {hosting_site} SET status = -1 WHERE nid in (SELECT nid FROM {hosting_site_statuses} WHERE disabled > 0)");
+  $ret[] = update_sql("DELETE FROM {hosting_site_statuses} WHERE disabled > 0");
+
+  // Then the installed sites, which are the same as 'enabled' sites.
+  $ret[] = update_sql("UPDATE {hosting_site} SET status = 1 WHERE nid in (SELECT nid FROM {hosting_site_statuses} WHERE installed > 0)");
+  $ret[] = update_sql("DELETE FROM {hosting_site_statuses} WHERE installed > 0");
+
+  $ret[] = update_sql("DROP TABLE {hosting_site_statuses}");
+
+  // Now we rid ourself of 'enabled', we really care about installed.
+  return $ret;
+}
+
+/**
+ * Add verified timestamp to the site
+ */
+function hosting_site_update_4() {
+  $ret = array();
+  $now = mktime();
+  $ret[] = update_sql("ALTER TABLE {hosting_site} ADD COLUMN verified int(10) NOT NULL default '0'");
+  db_query("UPDATE {hosting_site} SET verified=%d WHERE status=1", $now);
+  return $ret;
+}
+
+/**
+ * Turn the bid column of hosting_site_backups into a serial field
+ *
+ * Required by Drupal 6 update.
+ */
+function hosting_site_update_5() {
+  $ret = array();
+
+  db_drop_primary_key($ret, 'hosting_site_backups');
+  db_field_set_no_default($ret, 'hosting_site_backups', 'bid');
+  db_change_field($ret, 'hosting_site_backups', 'bid', 'bid',
+    array('type' => 'serial', 'not null' => TRUE),
+    array('primary key' => array('bid')));
+
+  return $ret;
+}
+
+function hosting_site_update_6() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE {hosting_site} ADD COLUMN port int(10) NOT NULL default '0'");
+  db_query("UPDATE {hosting_site} SET port=80");
+  return $ret;
+}
+
+function hosting_site_update_6001() {
+  $ret = array();
+  db_add_field($ret, 'hosting_site', 'ssl', array('type' => 'int', 'not null' => TRUE, 'default' => 0));
+  return $ret;
+}
+
+function hosting_site_update_6002() {
+  $ret = array();
+  db_add_field($ret, 'hosting_site', 'ssl_redirect', array('type' => 'int', 'not null' => TRUE, 'default' => 0));
+  return $ret;
+}
+
+// Update imported sites that have port 0 in the db. See #588072
+function hosting_site_update_6003() {
+  $ret = array();
+  $sites = db_query("SELECT nid, platform FROM {hosting_site} WHERE port = 0");
+  while ($obj = db_fetch_object($sites)) {
+    $showports = _hosting_site_allowed_ports($obj->platform);
+    $defport = reset($showports);
+    $result = db_query("UPDATE {hosting_site} SET port = '%s' WHERE nid = %d AND port = 0", $defport, $obj->nid);
+  }
+  return $ret;
+}
+
+/**
+ * Re-verify all sites
+ *
+ * This is to make sure the open_basedir protection is in place
+ */
+function hosting_site_update_6004() {
+  // this update was moved to hosting_update_6002()
+  return array();
+}
+

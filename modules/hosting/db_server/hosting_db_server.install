@@ -1,0 +1,48 @@
+<?php
+// $Id$
+
+
+/**
+ * Implementation of hook_schema().
+ */
+function hosting_db_server_schema() {
+  $schema['hosting_db_server'] = array(
+    'fields' => array(
+      'vid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'db_type' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => TRUE,
+      ),
+      'db_user' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => TRUE,
+      ),
+      'db_passwd' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('vid'),
+  );
+
+  return $schema;
+}
+
+function hosting_db_server_install() {
+  // Create tables.
+  drupal_install_schema('hosting_db_server');
+}

@@ -1,0 +1,6 @@
+name = Site aliases
+description = Maintain domain aliases for sites.
+package = Hosting
+dependencies[] = hosting_site
+
+core = 6.x

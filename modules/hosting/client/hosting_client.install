@@ -1,0 +1,171 @@
+<?php
+// $Id$
+
+/**
+ * Implementation of hook_schema().
+ */
+function hosting_client_schema() {
+  $schema['hosting_client'] = array(
+    'fields' => array(
+      'vid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'name' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+      ),
+      'organization' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+      ),
+      'email' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+    ),
+    'primary key' => array('vid'),
+  );
+
+  $schema['hosting_client_user'] = array(
+    'fields' => array(
+      'user' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'client' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'contact_type' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('user', 'client'),
+  );
+
+  return $schema;
+}
+
+function hosting_client_install() {
+  // Create tables.
+  drupal_install_schema('hosting_client');
+}
+
+/**
+ * Add the unique index to the client table
+ *
+ * This will also run through all existing clients and merge / delete the ones that
+ * don't belong.
+ */
+function hosting_client_update_1() {
+  switch ($GLOBALS['db_type']) {
+    case 'mysql' :
+    case 'mysqli':
+      $ret = array();
+      $result = db_query("SELECT email, count(distinct nid) as count FROM {hosting_client} GROUP BY email");
+      while ($distinct = db_fetch_object($result)) {
+        if ($distinct->count > 1) {
+          # we have found duplicates.
+          $result2 = db_query("SELECT nid FROM {hosting_client} WHERE email = '%s' ORDER BY nid", $distinct->email);
+          $first = false;
+          while ($client = db_fetch_object($result2)) {
+            if (!$first) {
+              // this is the key all the others will be assigned to.
+              $first = $client->nid;
+            }
+            else {
+              // reset nodes to the first occurrence, and delete the duplicate
+              
+              db_query("UPDATE {hosting_site} SET client=%d WHERE client=%d", $first, $client->nid);
+              node_delete($client->nid);
+            }
+          }
+        }
+      }
+      $ret[] = update_sql("CREATE UNIQUE INDEX hosting_client_email_idx ON hosting_client (email)");
+      break;
+  }
+  return $ret;
+}
+
+/**
+ * Create the hosting_client_user relationship table
+ */
+function hosting_client_update_2() {
+  $ret = array();
+  $ret[] = update_sql("CREATE TABLE {hosting_client_user} (
+         user int(10) unsigned NOT NULL default '0',
+         client int(10) unsigned NOT NULL default '0',
+         PRIMARY KEY (user)
+       ) /*!40100 DEFAULT CHARACTER SET UTF8 */ ");
+  // Insert the uid 1 user into the admin client record.
+  $ret[] = update_sql("INSERT INTO {hosting_client_user} VALUES (1, 1)");
+  node_access_rebuild();
+  return $ret;
+}
+
+/**
+ * Rebuild node access table
+ */
+function hosting_client_update_3() {
+  $ret = array();
+  node_access_rebuild();
+  return $ret;
+}
+
+/**
+ * Rebuild node access table
+ */
+function hosting_client_update_4() {
+  $ret = array();
+  node_access_rebuild();
+  return $ret;
+}
+
+/**
+ * Rebuild node access table
+ */
+function hosting_client_update_5() {
+  $ret = array();
+  node_access_rebuild();
+  return $ret;
+}
+
+/**
+ * Make it possible to have many clients per user and keep track of the contact type (admin/tech/billing/etc.) between users and clients
+ */
+function hosting_client_update_6() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE {hosting_client_user} DROP PRIMARY KEY, ADD PRIMARY KEY (user, client)"); 
+  $ret[] = update_sql("ALTER TABLE {hosting_client_user} ADD contact_type LONGTEXT NOT NULL");
+  node_access_rebuild();
+  return $ret;
+}
+
+/**
+ * Rebuild the node access table now that we fixed the hook_access properly
+ */
+function hosting_client_update_7() {
+  node_access_rebuild();
+  return array();
+}
+
