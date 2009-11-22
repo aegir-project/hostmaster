@@ -40,6 +40,12 @@ function hosting_platform_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'status' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
     ),
     'primary key' => array('vid'),
   );
@@ -76,3 +82,18 @@ function hosting_platform_update_6000() {
   // this update was moved to hosting_update_6002()
   return array();
 }
+
+// Add a status field to platforms so we can Delete tasks on them
+function hosting_platform_update_6001() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE {hosting_platform} ADD COLUMN status int(11) NOT NULL default '1'");
+  return $ret;
+}
+
+// Add a status field to platforms so we can Delete tasks on them
+function hosting_platform_update_6002() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE {hosting_platform} ADD COLUMN status int(11) NOT NULL default '1'");
+  return $ret;
+}
+

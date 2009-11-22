@@ -306,23 +306,28 @@ function hosting_site_form($node) {
   }
 
   if (!$node->nid) {
-    $platforms = _hosting_get_platforms();
-    if (sizeof($platforms) > 1) {
-      $form['platform'] = array(
-        '#type' => 'radios',
-        '#title' => t('Platform'),
-        '#required' => TRUE,
-        '#description' => t('The platform you want the site to be hosted on.'),
-        '#options' => $platforms,
-        '#default_value' => HOSTING_DEFAULT_PLATFORM,
-      );
+    $platforms = _hosting_get_enabled_platforms();
+    if (sizeof($platforms)) {
+      if (sizeof($platforms) > 1) {
+        $form['platform'] = array(
+          '#type' => 'radios',
+          '#title' => t('Platform'),
+          '#required' => TRUE,
+          '#description' => t('The platform you want the site to be hosted on.'),
+          '#options' => $platforms,
+          '#default_value' => HOSTING_DEFAULT_PLATFORM,
+        );
+      }
+      else {
+        $form['platform'] = array('#type' => 'hidden', '#value' => key($platforms));
+      }
+      $form['port'] = _hosting_site_form_port();
+      $form['profile'] = _hosting_site_form_profile();
+      $form['site_language'] = _hosting_site_form_site_language();
     }
     else {
-      $form['platform'] = array('#type' => 'hidden', '#value' => key($platforms));
+      drupal_set_message(t('You have no enabled platforms! Please add or unlock a platform before attempting to create a site.'), 'error');
     }
-    $form['port'] = _hosting_site_form_port();
-    $form['profile'] = _hosting_site_form_profile();
-    $form['site_language'] = _hosting_site_form_site_language();
   }
   else {
     $form['info']['platform'] = array(
@@ -379,7 +384,6 @@ function hosting_site_form($node) {
     foreach(array('verified', 'last_cron', 'site_status') as $extra_attribute) {
       $form["$extra_attribute"] = array('#type' => 'value', '#value' => $node->$extra_attribute);
     }
-
   return $form;
 }
 
@@ -780,7 +784,7 @@ function hosting_site_list($filter_by = null, $filter_value = null) {
     array('data' => t('Language'), 'field' => 'site_language'),
     array('data' => t('Created'), 'field' => 'created', 'sort' => 'desc'),
   );
-  $platforms = _hosting_get_platforms();
+  $platforms = _hosting_get_enabled_platforms();
   if (sizeof($platforms) > 1) {
     $header[] = array('data' => t('Platform'), 'field' => 'platform');
   }

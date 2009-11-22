@@ -28,16 +28,7 @@ function hosting_task_clone_form_validate($form, &$form_state) {
   if (hosting_site_exists($url)) {
     form_set_error('title', t("The domain name you have specified is not unique."));
   }
-  if ($form_state['values']['parameters']['aliases']) {
-    $aliases = explode("\n", $form_state['values']['parameters']['aliases']);
-    foreach ($aliases as $alias) {
-      if ($alias = trim($alias)) {
-        if (!hosting_domain_allowed($alias, (array) $node)) {
-          form_set_error('aliases', t('The domain name @alias is already in use', array('@alias' => $alias)));
-        }
-      }
-    }
-  }
+
 }
 
 function hosting_clone_theme($existing, $type, $theme, $path) {
@@ -53,21 +44,6 @@ function hosting_task_clone_form($node) {
     '#required' => TRUE,
     '#default_value' => $node->title
   );
-  if (module_exists('hosting_alias')) {
-    $form['aliases'] = array(
-      '#type' => 'textarea',
-      '#title' => t('Domain aliases'),
-      '#description' => t('Your site can also be accessed through these domain names. This field requires each domain alias to be on its own line'),
-      '#default_value' => implode("\n", (array) $form['#node']->aliases),
-      '#weight' => 10,
-    );
-    $form['redirection'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Redirection'),
-      '#description' => t('Aliases will all be redirected to the main domain if this is checked. Otherwise, all aliases will be accessible transparently.'),
-      '#default_value' => isset($form['#node']->redirection) ? $form['#node']->redirection : variable_get('hosting_alias_redirection', FALSE),
-    );
-  }
   return $form;
 }
 

@@ -31,6 +31,7 @@ function hosting_platform_post_hosting_verify_task($task, $data) {
     $packages = $context['packages'];
 
     $node->verified = mktime(); // set verified flag on platform, to let it know it has been checked.
+    $node->platform_status = HOSTING_PLATFORM_ENABLED;
     // Save the platform being verified
     node_save($node);
 
@@ -63,5 +64,26 @@ function hosting_platform_post_hosting_verify_task($task, $data) {
       hosting_package_instance_sync($site->nid, $packages['base'], $packages['sites'][$url]);
     }
   }
+}
+
+/**
+ * implementation of hook_hosting_post_DELETE
+ */
+function hosting_platform_post_hosting_delete_task($task, $data) {
+  $task->ref->platform_status = HOSTING_PLATFORM_DELETED;
+  $task->ref->no_verify = TRUE;
+  node_save($task->ref);
+}
+
+function hosting_platform_post_hosting_lock_task($task, $data) {
+  $task->ref->platform_status = HOSTING_PLATFORM_LOCKED;
+  $task->ref->no_verify = TRUE;
+  node_save($task->ref);
+}
+
+function hosting_platform_post_hosting_unlock_task($task, $data) {
+  $task->ref->platform_status = HOSTING_PLATFORM_ENABLED;
+  $task->ref->no_verify = TRUE;
+  node_save($task->ref);
 }
 

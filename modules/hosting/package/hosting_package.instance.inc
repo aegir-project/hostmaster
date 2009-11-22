@@ -123,6 +123,7 @@ function _hosting_package_instances_load($param, $multiple = FALSE) {
         LEFT JOIN {hosting_package} p ON p.nid=i.package_id 
         LEFT JOIN {node} n ON p.nid=n.nid
         LEFT JOIN {node} r ON r.nid=i.rid
+        LEFT JOIN {hosting_platform} h ON r.nid=h.nid
       WHERE " . $cond, $arguments);
 
   while ($instance = db_fetch_object($result)) {

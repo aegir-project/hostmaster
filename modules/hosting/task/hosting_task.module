@@ -88,6 +88,21 @@ function hosting_task_menu_access($node, $task) {
       $on_delete_task = ($task == 'enable' || $task == 'delete');
       $site_enabled = (hosting_task_outstanding($node->nid, 'enable') || ($node->site_status == HOSTING_SITE_ENABLED));
       return (!$site_enabled && $on_delete_task) || ($site_enabled && !$on_delete_task);
+    }
+    if ($node->type == 'platform') {
+      // If the platform is in a deleted state, nothing else can be done with it
+      if (hosting_task_outstanding($node->nid, 'delete') || ($node->platform_status ==  HOSTING_PLATFORM_DELETED)) {
+        return FALSE;
+      }
+      // If the platform's been locked, we can unlock it, delete, batch migrate existing sites or verify
+      if ($node->platform_status == HOSTING_PLATFORM_LOCKED) {
+        $platform_tasks = array('verify', 'unlock', 'delete', 'migrate');
+      }
+      else {
+      // If the platform's unlocked, we can lock it, delete it or batch migrate sites
+        $platform_tasks = array('verify', 'lock', 'delete', 'migrate');
+      }
+      return (in_array($task, $platform_tasks)); 
     } else {
       return true;
     }

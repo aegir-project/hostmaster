@@ -90,7 +90,7 @@ function hosting_task_migrate_form($node) {
   $packages = array();
 
   $profile_platform_instances = hosting_package_instances_load(
-    array('r.type' => 'platform', 'n.nid' => $node->profile));
+    array('r.type' => 'platform', 'n.nid' => $node->profile, 'h.status' => '1'));
   if (sizeof($profile_platform_instances) <= 1) {
     $form['no_targets'] = array(
       '#value' => t('<br />There are no platforms that can meet the dependencies for this site<br />'));
