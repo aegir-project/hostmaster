@@ -75,6 +75,13 @@ function hosting_package_node_load($arg) {
   return FALSE;
 }
 
+/**
+ * Implementation of hook_perm().
+ */
+function hosting_package_perm() {
+  return array('create package', 'view package', 'edit package', 'delete package');
+}
+
 function hosting_package_access($op, $node, $account) {
   switch ($op) {
   case 'create':

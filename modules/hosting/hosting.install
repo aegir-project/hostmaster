@@ -48,6 +48,8 @@ function hosting_update_6000() {
  */
 function hosting_update_6001() {
   $ret = array();
+  module_enable(array('install_profile_api'));
+  drupal_load('module', 'install_profile_api');
   install_include(array('block'));
 
   $theme = 'eldir';
