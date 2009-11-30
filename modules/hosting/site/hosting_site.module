@@ -251,7 +251,8 @@ function hosting_site_form($node) {
 
   # find the right client
   global $user;
-  $current_client_id = HOSTING_DEFAULT_CLIENT;
+  $current_client_id = 0;
+
   if ($user->uid) {
     $client_ids = hosting_get_client_from_user($user->uid);
     $clients = array();
@@ -267,7 +268,8 @@ function hosting_site_form($node) {
       form_set_error('client', t('This user is not associated with any clients , and will not be able to create new sites'));
     }
   }
-  else {
+
+  if (!$current_client_id) {
     $current_client_id = HOSTING_DEFAULT_CLIENT;
   }
 
