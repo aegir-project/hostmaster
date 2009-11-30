@@ -83,11 +83,11 @@ don't have an MTA, the site installation will fail with message like
 removed because of this problem. To remedy the situation simply install
 an MTA like sendmail, postfix, or exim and do the minimal configuration.
 
-Other utilities: sudo, CVS and unzip
+Other utilities: sudo, git and unzip
 ------------------------------
 
-Aegir installs itself via a drush_make file that downloads via CVS (by using given tags).
-If you don't have the cvs program you will need to install it on the server.
+Aegir installs itself via a drush_make file that downloads via git.
+If you don't have the git program you will need to install it on the server.
 The jQueryUI library is used in the Aegir UI, unzip is required to extract it.
 Sudo is required to allow the aegir user the limited privileges to restart the webserver
 when required.
@@ -101,7 +101,7 @@ you can install all those packages using the following.
 Shell commands::
 
  apt-get install apache2 php5 php5-cli php5-mysql mysql-server postfix
- apt-get install sudo cvs unzip
+ apt-get install sudo git-core unzip
 
 
 2. Configure system requirements
