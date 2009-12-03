@@ -53,8 +53,6 @@ function _hosting_get_web_servers() {
   return $return;
 }
 
-
-
 /**
  * Implementation of hook_hosting_summary().
  */
