@@ -1,0 +1,6 @@
+name = Server 
+description = Allow hostmaster to configure servers.
+package = Hosting
+dependencies[] = hosting
+
+core = 6.x
