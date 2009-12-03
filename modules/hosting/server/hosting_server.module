@@ -161,9 +161,12 @@ function hosting_server_form(&$node) {
 
     $service->form($form['services'][$name]);
   }
- 
 
   return $form;
+}
+
+function theme_hosting_server_form() {
+  print_r(func_get_args());
 }
 
 function hosting_nodeapi_server_presave(&$node) {
