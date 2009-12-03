@@ -54,6 +54,7 @@ function _hosting_get_web_servers() {
 }
 
 
+
 /**
  * Implementation of hook_hosting_summary().
  */
