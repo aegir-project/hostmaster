@@ -110,10 +110,11 @@ function hosting_web_server_form(&$form) {
   );
 }
 
+
 /**
  * Implementation of hook_validate().
   */
-function hosting_web_server_validate(&$node, &$form) {
+function hosting_web_server_nodeapi_server_validate(&$node, &$form) {
 
   $ports = explode(",", $node->ports);
   if (count($ports) < 1) {
@@ -129,7 +130,7 @@ function hosting_web_server_validate(&$node, &$form) {
 /**
  * Implementation of hook_insert().
  */
-function hosting_web_server_insert($node) {
+function hosting_web_server_nodeapi_server_insert($node) {
   db_query("INSERT INTO {hosting_web_server} (vid, nid, web_group, restart_cmd, ports) 
       VALUES (%d, %d, '%s', '%s', '%s', '%s')", 
         $node->vid, $node->nid, $node->web_group, $node->restart_cmd, $node->ports);
@@ -143,7 +144,7 @@ function hosting_web_server_insert($node) {
  *
  * This will fire up a verify task if the webserver ports have changed.
  */
-function hosting_web_server_update($node) {
+function hosting_web_server_nodeapi_server_update($node) {
   // if this is a new node or we're adding a new revision,
   if ($node->revision) {
     hosting_web_server_insert($node);
@@ -172,21 +173,21 @@ function hosting_web_server_update($node) {
 /**
  * Implementation of hook_delete_revision().
  */
-function hosting_nodeapi_web_server_delete_revision(&$node) {
+function hosting_web_server_nodeapi_server_delete_revision(&$node) {
   db_query('DELETE FROM {hosting_web_server} WHERE vid = %d', $node->vid);
 }
 
 /**
  * Implementation of hook_delete().
  */
-function hosting_web_server_delete($node) {
+function hosting_web_server_nodeapi_server_delete($node) {
   db_query('DELETE FROM {hosting_web_server} WHERE nid = %d', $node->nid);
 }
 
 /**
  * Implementation of hook_load().
  */
-function hosting_web_server_load($node) {
+function hosting_web_server_nodeapi_server_load($node) {
   $additions = db_fetch_object(db_query('SELECT web_group, restart_cmd, ports FROM {hosting_web_server} WHERE vid = %d', $node->vid));
   return $additions;
 }
@@ -194,7 +195,7 @@ function hosting_web_server_load($node) {
 /**
  * Implementation of hook_view().
  */
-function hosting_web_server_view($node, $teaser = FALSE, $page = FALSE) {
+function hosting_web_server_nodeapi_server_view(&$node, $teaser = FALSE, $page = FALSE) {
   $node = node_prepare($node, $teaser);
   if (hosting_feature('ports') == HOSTING_FEATURE_ENABLED) {
     $node->content['info']['ports'] = array(
@@ -214,7 +215,6 @@ function hosting_web_server_view($node, $teaser = FALSE, $page = FALSE) {
     '#value' => filter_xss($node->restart_cmd),
   );
   
-  return $node;
 }
 
 /**
