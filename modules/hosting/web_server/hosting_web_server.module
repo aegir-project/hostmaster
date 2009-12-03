@@ -195,18 +195,18 @@ function hosting_web_server_nodeapi_server_load($node) {
  */
 function hosting_web_server_nodeapi_server_view(&$node, $teaser = FALSE, $page = FALSE) {
   if (hosting_feature('ports') == HOSTING_FEATURE_ENABLED) {
-    $node->content['info']['ports'] = array(
+    $node->content['info']['web_server']['ports'] = array(
       '#type' => 'item',
       '#title' => t('Ports'),
       '#value' => $node->ports,
     );
   }
-  $node->content['info']['web_group'] = array(
+  $node->content['info']['web_server']['web_group'] = array(
     '#type' => 'item',
     '#title' => t('Web server group'),
     '#value' => filter_xss($node->web_group),
   );
-  $node->content['info']['restart_cmd'] = array(
+  $node->content['info']['web_server']['restart_cmd'] = array(
     '#type' => 'item',
     '#title' => t('Restart command'),
     '#value' => filter_xss($node->restart_cmd),

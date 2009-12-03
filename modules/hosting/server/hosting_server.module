@@ -220,40 +220,52 @@ function hosting_server_load($node) {
  */
 function hosting_server_view(&$node, $teaser = FALSE, $page = FALSE) {
   $node = node_prepare($node, $teaser);
+
+  $services = module_invoke_all('hosting_service');
+
   $node->content['info'] = array(
-    '#prefix' => '<div id="hosting-server-info">',
-    '#suffix' => '</div>'
   );
+
+  foreach ($services as $type => $title) {
+    $node->content['info'][$type] = array(
+      '#prefix' => '<div id="hosting-' . str_replace('_', '-', $type) . '-info">',
+      '#suffix' => '</div>'
+    );
+    $node->content['info'][$type]['title'] = array(
+      '#value' => '<h3>' . $title . '</h3>',
+      '#weight' => -20
+    );
+  }
+
   if ($node->ip_address) {
-    $node->content['info']['ip_address'] = array(
+    $node->content['info']['server']['ip_address'] = array(
       '#type' => 'item',
       '#title' => t('IP address'),
       '#value' => filter_xss($node->ip_address),
     );    
   }
-  $node->content['info']['drush_path'] = array(
+  $node->content['info']['server']['drush_path'] = array(
     '#type' => 'item',
     '#title' => t('Drush path'),
     '#value' => filter_xss($node->drush_path),
   );
 
-  $node->content['info']['script_user'] = array(
+  $node->content['info']['server']['script_user'] = array(
     '#type' => 'item',
     '#title' => t('Script user'),
     '#value' => filter_xss($node->script_user),
   );
 
-  $node->content['info']['config_path'] = array(
+  $node->content['info']['server']['config_path'] = array(
     '#type' => 'item',
     '#title' => t('Configuration path'),
     '#value' => filter_xss($node->config_path),
   );
-  $node->content['info']['backup_path'] = array(
+  $node->content['info']['server']['backup_path'] = array(
     '#type' => 'item',
     '#title' => t('Backup path'),
     '#value' => filter_xss($node->backup_path),
   );
-  
   return $node;
 }
 

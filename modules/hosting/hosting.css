@@ -4,8 +4,9 @@
 
 .hosting-site-list {clear:both;}
 
-#hosting-webserver-info, 
-#hosting-dbserver-info, 
+#hosting-server-info, 
+#hosting-web-server-info, 
+#hosting-db-server-info, 
 #hosting-client-info, 
 #hosting-platform-info, 
 #hosting-site-info, 
@@ -15,8 +16,9 @@
   margin:0 0 1em;
 }
 
-#hosting-webserver-info .form-item, 
-#hosting-dbserver-info .form-item, 
+#hosting-server-info .form-item, 
+#hosting-web-server-info .form-item, 
+#hosting-db-server-info .form-item, 
 #hosting-client-info .form-item, 
 #hosting-platform-info .form-item, 
 #hosting-site-info .form-item, 
@@ -29,8 +31,9 @@
   margin:0;
 }
 
-#hosting-webserver-info label, 
-#hosting-dbserver-info label, 
+#hosting-server-info label, 
+#hosting-web-server-info label, 
+#hosting-db-server-info label, 
 #hosting-client-info label, 
 #hosting-site-edit-info label, 
 #hosting-platform-info label, 
