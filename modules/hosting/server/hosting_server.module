@@ -284,3 +284,4 @@ function hosting_server_view(&$node, $teaser = FALSE, $page = FALSE) {
 function hosting_server_nodeapi_server_prepare(&$node) {
 
 }
+
