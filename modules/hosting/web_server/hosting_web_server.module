@@ -48,21 +48,27 @@ function _hosting_get_web_servers() {
 }
 
 
-/**
- * Implementation of hook_nodeapi();
- */
-function hosting_web_server_nodeapi_server_form($node, $op, $teaser) {
 
+/**
+ * Implementation of hook_form_alter()
+ *
+ * This extends the server node type with the web server specific fields.
+ */
+function hosting_web_server_form_alter($form_id, &$form) {
+  switch ($form_id) {
+    case 'server_node_form':
+      hosting_web_server_form($form);
+      break;
+  }
 }
 
 
-
-
-
 /**
- * Implementation of hook_form().
+ * Add in web server specific fields to the server node.
  */
-function hosting_web_server_form(&$node) {
+function hosting_web_server_form(&$form) {
+  $node = $form['#node'];
+
   if (hosting_feature('ports') == HOSTING_FEATURE_ENABLED) {
     $form['ports'] = array(
       '#type' => 'textfield',
@@ -91,7 +97,6 @@ function hosting_web_server_form(&$node) {
       '#maxlength' => 255,
       '#weight' => -7,
   );
-
   
   $form['web_group'] = array(
     '#type' => 'textfield',
@@ -103,25 +108,6 @@ function hosting_web_server_form(&$node) {
     '#maxlength' => 75,
     '#weight' => -5,
   );
-  
-
-  return $form;
-}
-
-function hosting_nodeapi_web_server_presave(&$node) {
-
-  if (!$node->ip_address) {
-    $ip = gethostbyname($node->title);
-
-    // setup IP only if resolution succeeded
-    if ($ip != $node->title) {
-      $node->ip_address = $ip; // required to fool the ip check below
-      drupal_set_message(t('Initialized the webserver IP to %ip based on hostname %name. This will be used to create database grants so make sure it is the right address, as seen from the database server.', array('%ip' => $ip, '%name' => $node->title)), 'message');
-    } else {
-      form_set_error('title', t('Could not resolve IP address of webserver %name. Either set the web server name to a FQDN (Fully Qualified Domain Name) or hardcode the IP here.', array('%name' => $node->title)));
-    }
-  }
-
 }
 
 /**
@@ -144,7 +130,6 @@ function hosting_web_server_validate(&$node, &$form) {
  * Implementation of hook_insert().
  */
 function hosting_web_server_insert($node) {
-  print_r($form);
   db_query("INSERT INTO {hosting_web_server} (vid, nid, web_group, restart_cmd, ports) 
       VALUES (%d, %d, '%s', '%s', '%s', '%s')", 
         $node->vid, $node->nid, $node->web_group, $node->restart_cmd, $node->ports);
@@ -242,26 +227,3 @@ function hosting_web_server_hosting_summary() {
   return $summary;
 }
 
-/**
- * Implementation of hook_form_alter()
- *
- * This makes sure we have a proper IP address defined for the webserver. It
- * will change the IP address field only if:
- *
- * 1. it is not already set, and;
- * 2. if it resolves properly
- */
-function hosting_web_server_form_alter($form_id, &$form) {
-  switch ($form_id) {
-    case 'server_node_form':
-      if ($form['#post']['op'] == 'Preview' && !$form['#post']['ip_address']) {
-        $ip = gethostbyname($form['#post']['title']);
-        // setup IP only if resolution succeeded
-        if ($ip != $node->title) {
-          drupal_set_message(t('Initialized the webserver IP to %ip based on hostname %name', array('%ip' => $ip, '%name' => $form['#post']['title'])), 'message');
-          $form['#post']['ip_address'] = $ip;
-        }
-      }
-      break;
-  }
-}
