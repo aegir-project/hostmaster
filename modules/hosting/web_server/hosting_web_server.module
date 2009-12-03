@@ -40,7 +40,7 @@ function hosting_web_server_hosting_feature() {
  */ 
 function _hosting_get_web_servers() {
   $return = array();
-  $result = db_query("SELECT n.nid, n.title FROM {node} n LEFT JOIN {hosting_web_server} ON n.vid=w.vid WHERE n.type='server' AND n.status=1");
+  $result = db_query("SELECT n.nid, n.title FROM {node} n LEFT JOIN {hosting_web_server} w ON n.vid=w.vid WHERE n.type='server' AND n.status=1");
   while($server = db_fetch_object($result)) {
     $return[$server->nid] = $server->title;
   }
@@ -52,7 +52,7 @@ function _hosting_get_web_servers() {
  *
  * This extends the server node type with the web server specific fields.
  */
-function hosting_web_server_form_alter($form_id, &$form) {
+function hosting_web_server_form_alter(&$form, &$form_state, &$form_id) {
   switch ($form_id) {
     case 'server_node_form':
       hosting_web_server_form($form);
@@ -130,7 +130,7 @@ function hosting_web_server_nodeapi_server_validate(&$node, &$form) {
  */
 function hosting_web_server_nodeapi_server_insert($node) {
   db_query("INSERT INTO {hosting_web_server} (vid, nid, web_group, restart_cmd, ports) 
-      VALUES (%d, %d, '%s', '%s', '%s', '%s')", 
+      VALUES (%d, %d, '%s', '%s', '%s')", 
         $node->vid, $node->nid, $node->web_group, $node->restart_cmd, $node->ports);
 }
 
@@ -186,7 +186,7 @@ function hosting_web_server_nodeapi_server_delete($node) {
  * Implementation of hook_load().
  */
 function hosting_web_server_nodeapi_server_load($node) {
-  $additions = db_fetch_object(db_query('SELECT web_group, restart_cmd, ports FROM {hosting_web_server} WHERE vid = %d', $node->vid));
+  $additions = db_fetch_array(db_query('SELECT web_group, restart_cmd, ports FROM {hosting_web_server} WHERE vid = %d', $node->vid));
   return $additions;
 }
 
@@ -194,7 +194,6 @@ function hosting_web_server_nodeapi_server_load($node) {
  * Implementation of hook_view().
  */
 function hosting_web_server_nodeapi_server_view(&$node, $teaser = FALSE, $page = FALSE) {
-  $node = node_prepare($node, $teaser);
   if (hosting_feature('ports') == HOSTING_FEATURE_ENABLED) {
     $node->content['info']['ports'] = array(
       '#type' => 'item',
