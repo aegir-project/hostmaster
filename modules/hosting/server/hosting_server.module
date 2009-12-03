@@ -171,7 +171,7 @@ function hosting_server_update($node) {
 
     db_query("UPDATE {hosting_server} SET 
       ip_address = '%s', script_user = '%s', config_path = '%s',
-      backup_path = '%s', restart_cmd = '%s', drush_path = '%s'
+      backup_path = '%s', drush_path = '%s'
     WHERE 
       vid = %d", 
         $node->ip_address, $node->script_user, 
@@ -186,7 +186,7 @@ function hosting_server_update($node) {
  */
 function hosting_server_insert($node) {
   db_query("INSERT INTO {hosting_server} (vid, nid, ip_address, script_user, config_path, backup_path, drush_path) 
-      VALUES (%d, %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')", 
+      VALUES (%d, %d, '%s', '%s', '%s', '%s', '%s')", 
         $node->vid, $node->nid, $node->ip_address, $node->script_user, $node->config_path, $node->backup_path, $node->drush_path);
 }
 
