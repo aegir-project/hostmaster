@@ -1,0 +1,259 @@
+<?php
+
+
+function hosting_server_node_info() {
+  $types["server"] =  array(
+    "type" => 'server', "name" => 'Server',
+    "module" => 'hosting_server',
+    "has_title" => true, "title_label" => t('Host name'), 
+    "description" => hosting_node_help("server"),
+    "has_body" => 0, "body_label" => '', "min_word_count" => 0);
+  return $types;
+}
+
+
+/**
+ * Implementation of hook_perm()
+ */
+function hosting_server_perm() {
+  return array('create server', 'view server', 'edit server', 'delete server');
+}
+
+/**
+ * Implementation of hook_access()
+ */
+function hosting_server_access($op, $node, $account) {
+  if (!hosting_feature('server')) {
+    return FALSE;
+  }
+  switch ($op) {
+    case 'create':
+      return user_access('create server', $account);
+      break;
+    case 'view':
+      return user_access('view server', $account);
+      break;
+    case 'update':
+      return user_access('edit server', $account);
+      break;
+    case 'delete':
+      return user_access('delete server', $account);
+      break;
+    default:
+      break;
+  }
+}
+
+
+/**
+ * Implementation of hook_form().
+ */
+function hosting_server_form(&$node) {
+  $type = node_get_types('type', $node);
+
+  $form['title'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Server hostname'),
+    '#required' => TRUE,
+    '#default_value' => $node->title,
+    '#description' => t('The host name of the server. This is the address that will be used by Hostmaster to connect to the server to issue commands.<br /><strong>Be careful when changing the node title, it is used to create the SQL users if the IP address, below, is not set.</strong>'),
+    '#weight' => -10
+  );
+
+  #TODO : rename to db_ip_address, to avoid confusion
+  $form['ip_address'] = array(
+    '#type' => 'textfield',
+    '#title' => t('IP address'),
+    '#default_value' => $node->ip_address,
+    '#size' => 15,
+    '#maxlength' => 15,
+    '#description' => t("The IP address the server can be accessed by. This will be used to create database grants, amongst other things.<br />If this is empty, Hostmaster will attempt to resolve the hostname to get the address.<br />If that fails, the hostname (ie. the node title) will be used instead."),
+    '#weight' => -9
+  );
+
+  $form['drush_path'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Drush path'),
+    '#required' => TRUE,
+    '#size' => 40,
+    '#default_value' => ($node->drush_path) ? $node->drush_path : HOSTING_DEFAULT_PARENT_PATH.'/drush/drush.php',
+    '#description' => t("The full path to the drush.php script on this server."),
+    '#maxlength' => 255,
+    '#weight' => -8,
+  );
+
+  $form['script_user'] = array(
+    '#type' => 'textfield',
+    '#title' => t('System account'),
+    '#required' => TRUE,
+    '#description' => t('The system account that the hosted files will belong to, for security reasons.<br />This should be a different account to the account the server is running as.'),
+    '#default_value' => ($node->script_user) ? $node->script_user : HOSTING_DEFAULT_SCRIPT_USER,
+    '#size' => 20,
+    '#maxlength' => 255,
+    '#weight' => -6,
+  );
+    
+  $form['config_path'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Configuration path'),
+    '#required' => TRUE,
+    '#size' => 40,
+    '#default_value' => ($node->config_path) ? $node->config_path : HOSTING_DEFAULT_CONFIG_PATH,
+    '#description' => t("The path on the server where configuration files will be stored.<br />
+        It is essential that this directory should not be accessible via a web browser."),
+    '#maxlength' => 255,
+    '#weight' => -4,
+  );
+  
+  $form['backup_path'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Backup path'),
+    '#required' => TRUE,
+    '#size' => 40,
+    '#default_value' => ($node->backup_path) ? $node->backup_path : HOSTING_DEFAULT_BACKUP_PATH,
+    '#description' => t("The path on the server where backups will be stored.<br />
+        It is essential that this directory should not be accessible via a web browser."),
+    '#maxlength' => 255,
+    '#weight' => -3,
+  );
+  
+
+  return $form;
+}
+
+function hosting_nodeapi_server_presave(&$node) {
+  if (!$node->ip_address) {
+    $ip = gethostbyname($node->title);
+
+    // setup IP only if resolution succeeded
+    if ($ip != $node->title) {
+      $node->ip_address = $ip; // required to fool the ip check below
+      drupal_set_message(t('Initialized the webserver IP to %ip based on hostname %name. This will be used to create database grants so make sure it is the right address, as seen from the database server.', array('%ip' => $ip, '%name' => $node->title)), 'message');
+    } else {
+      form_set_error('title', t('Could not resolve IP address of webserver %name. Either set the server name to a FQDN (Fully Qualified Domain Name) or hardcode the IP here.', array('%name' => $node->title)));
+    }
+  }
+
+}
+
+/**
+ * Implementation of hook_validate().
+  */
+function hosting_server_validate(&$node, &$form) {
+  if (!_hosting_valid_fqdn($node->title)) {
+    form_set_error('title', t('Invalid valid domain name. Either choose a proper domain name or hardcode the IP address of the webserver.'));
+  }
+  
+  if ($node->script_user == 'root') {
+    form_set_error('script_user', t('For security reasons, you should not run drush commands as the root user. Please choose a different system account name.'));
+  }
+  if ($node->ip_address) {
+    if (!_hosting_valid_ip($node->ip_address)) {
+      form_set_error('ip_address', t('Invalid IP address'));
+    }
+  }
+}
+
+/**
+ * Implementation of hook_update().
+ *
+ * As an existing node is being updated in the database, we need to do our own
+ * database updates.
+ *
+ * This will fire up a verify task if the webserver ports have changed.
+ */
+function hosting_server_update($node) {
+  // if this is a new node or we're adding a new revision,
+  if ($node->revision) {
+    hosting_server_insert($node);
+  }
+  else {
+
+    db_query("UPDATE {hosting_server} SET 
+      ip_address = '%s', script_user = '%s', config_path = '%s',
+      backup_path = '%s', restart_cmd = '%s', drush_path = '%s'
+    WHERE 
+      vid = %d", 
+        $node->ip_address, $node->script_user, 
+        $node->config_path, $node->backup_path,  
+        $node->drush_path,
+        $node->vid);
+  }
+}
+
+/**
+ * Implementation of hook_insert().
+ */
+function hosting_server_insert($node) {
+  db_query("INSERT INTO {hosting_server} (vid, nid, ip_address, script_user, config_path, backup_path, drush_path) 
+      VALUES (%d, %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')", 
+        $node->vid, $node->nid, $node->ip_address, $node->script_user, $node->config_path, $node->backup_path, $node->drush_path);
+}
+
+
+
+
+/**
+ * Implementation of hook_delete_revision().
+ */
+function hosting_nodeapi_server_delete_revision(&$node) {
+  db_query('DELETE FROM {hosting_server} WHERE vid = %d', $node->vid);
+}
+
+/**
+ * Implementation of hook_delete().
+ */
+function hosting_server_delete($node) {
+  db_query('DELETE FROM {hosting_server} WHERE nid = %d', $node->nid);
+}
+
+/**
+ * Implementation of hook_load().
+ */
+function hosting_server_load($node) {
+  $additions = db_fetch_object(db_query('SELECT ip_address, script_user, config_path, backup_path, drush_path FROM {hosting_server} WHERE vid = %d', $node->vid));
+  return $additions;
+}
+
+/**
+ * Implementation of hook_view().
+ */
+function hosting_server_view($node, $teaser = FALSE, $page = FALSE) {
+  $node = node_prepare($node, $teaser);
+  $node->content['info'] = array(
+    '#prefix' => '<div id="hosting-server-info">',
+    '#suffix' => '</div>'
+  );
+  if ($node->ip_address) {
+    $node->content['info']['ip_address'] = array(
+      '#type' => 'item',
+      '#title' => t('IP address'),
+      '#value' => filter_xss($node->ip_address),
+    );    
+  }
+  $node->content['info']['drush_path'] = array(
+    '#type' => 'item',
+    '#title' => t('Drush path'),
+    '#value' => filter_xss($node->drush_path),
+  );
+
+  $node->content['info']['script_user'] = array(
+    '#type' => 'item',
+    '#title' => t('Script user'),
+    '#value' => filter_xss($node->script_user),
+  );
+
+  $node->content['info']['config_path'] = array(
+    '#type' => 'item',
+    '#title' => t('Configuration path'),
+    '#value' => filter_xss($node->config_path),
+  );
+  $node->content['info']['backup_path'] = array(
+    '#type' => 'item',
+    '#title' => t('Backup path'),
+    '#value' => filter_xss($node->backup_path),
+  );
+  
+  return $node;
+}
+
