@@ -46,7 +46,7 @@ function hosting_web_server_hosting_feature() {
  */ 
 function _hosting_get_web_servers() {
   $return = array();
-  $result = db_query("SELECT n.nid, n.title FROM {node} n LEFT JOIN {hosting_service} s ON n.vid=s.vid WHERE s.service='http'");
+  $result = db_query("SELECT n.nid, n.title FROM {node} n LEFT JOIN {hosting_service} s ON n.vid=s.vid WHERE s.service='http' and n.status=1");
   while($server = db_fetch_object($result)) {
     $return[$server->nid] = $server->title;
   }
