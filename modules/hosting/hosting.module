@@ -152,9 +152,9 @@ function hosting_site_maintenance() {
  * This function redirects to hosting_nodeapi_$nodetype_$op calls, to save ourselves
  * from an incessant amount of intricately nested code, and allow easier extension / maintenance.
  */
-function hosting_nodeapi(&$node, $op, $teaser) {
+function hosting_nodeapi(&$node, $op, $arg) {
   $hook = "nodeapi_" . $node->type . "_" . str_replace(" ", "_", $op);
-  module_invoke_all($hook);
+  return module_invoke_all($hook, $node, $op, $arg);
 
   /*if (function_exists($func)) {
     $func($node, $op, $teaser);
