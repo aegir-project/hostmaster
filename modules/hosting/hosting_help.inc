@@ -102,7 +102,7 @@ function _hosting_help_class($state) {
  * Implementation of hook_hosting_service()
  */
 function hosting_hosting_service() {
-  return array('hosting' => t("Basic configuration"));
+  return array('server' => t("Basic configuration"));
 } 
 
 /**

@@ -752,8 +752,9 @@ table.hosting-table th {
 
 #hosting-site-list { clear: both }
 
-#hosting-dbserver-info, 
-#hosting-webserver-info {
+#hosting-server-info, 
+#hosting-db-server-info, 
+#hosting-web-server-info {
   font-size:11px;
   background:#f8f8f8;
   padding:9px;
