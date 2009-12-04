@@ -91,15 +91,6 @@ function hosting_platform_access($op, $node, $account) {
     case 'update':
       return user_access('edit platform', $account);
       break;
-    case 'delete':
-      return user_access('delete platform', $account);
-      break;
-    case 'lock':
-      return user_access('lock platform', $account);
-      break;
-    case 'unlock':
-      return user_access('unlock platform', $account);
-      break;
   } 
 }
 
