@@ -161,7 +161,7 @@ if ! $DRUSH help | grep -q "^ provision install" ; then
 	msg "Installing provision backend in $AEGIR_HOME/.drush"
 	mkdir -p $AEGIR_HOME/.drush
 	if [ "$AEGIR_VERSION" = "HEAD" ]; then
-		( cd $AEGIR_HOME && cvs -d ":pserver:anonymous:anonymous@cvs.drupal.org:/cvs/drupal" co -d .drush/provision contributions/modules/provision )
+		git clone git://git.aegirproject.org/provision $AEGIR_HOME/.drush/provision
 	else
 		$DRUSH dl provision-$AEGIR_VERSION --destination=$AEGIR_HOME/.drush
 	fi
