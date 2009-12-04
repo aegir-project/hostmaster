@@ -73,7 +73,7 @@ function hosting_platform_hosting_feature() {
  * Implementation of hook_perm()
  */
 function hosting_platform_perm() {
-  return array('create platform', 'view platform', 'edit platform', 'delete platform', 'lock platform', 'unlock platform', 'view locked platforms');
+  return array('create platform', 'view platform', 'edit platform', 'delete platform', 'view locked platforms');
 }
 
 /**
