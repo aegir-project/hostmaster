@@ -199,7 +199,7 @@ for you. That script needs to be ran as the aegir user created
 above. This file is available alongside this one or through the web
 at:
 
-http://drupalcode.org/viewvc/drupal/contributions/profiles/hostmaster/install.sh.txt?revision=HEAD&view=co
+http://git.aegirproject.org/?p=hostmaster.git;a=blob_plain;f=install.sh.txt;hb=HEAD
 
 By default, the install script will install the "right" version of
 Aegir (ie. if it was downloaded through CVS, it will install the CVS
