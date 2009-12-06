@@ -200,7 +200,7 @@ function hostmaster_form_next($form, $form_state) {
 }
 
 function hostmaster_form_previous($form, $form_state) {
-  // move forward a page
+  // move backward a page
   variable_set('hostmaster_wizard_offset', -1);
 }
 
