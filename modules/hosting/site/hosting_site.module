@@ -299,34 +299,6 @@ function hosting_site_form($node) {
       '#value' => $client->title,
     );
   }
-  if ((!$node->client || $node->nid) && user_access('administer site')) {
-    $form['client'] = array(
-      '#type' => 'textfield',
-      '#required' => TRUE,
-      '#title' => t('Client'),
-      '#default_value' => $client->title,
-      '#description' => t('The client who this site belongs to.'),
-      '#autocomplete_path' => 'hosting_client/autocomplete/client',
-    );
-  }
-  elseif ($node->client) {
-    $form['client'] = array('#type' => 'hidden', '#value' => $client->title);
-    $form['info']['client'] = array(
-      '#type' => 'item',
-      '#title' => t('Client'),
-      '#value' => $client->title,
-    );
-  }
-  else {
-    $form['client'] = array(
-      '#type' => 'radios',
-      '#title' => t('Client'),
-      '#default_value' => key((array) $clients),
-      '#options' => $clients,
-      '#description' => t('The client who this site belongs to.'),
-    );
-  }
-
   if (!$node->nid) {
     $platforms = _hosting_get_platforms();
     if (sizeof($platforms) > 1) {
