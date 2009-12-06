@@ -180,7 +180,7 @@ function hosting_db_server_form(&$node) {
   $form['db_passwd'] = array(
     '#type' => 'password_confirm',
     '#required' => ($node->db_passwd) ? FALSE : TRUE,
-    '#description' => $passwd_description . t('The user account that will be used to create new mysql users and databases for new sites'),
+    '#description' => $passwd_description . t('The password for the privileged database user above.'),
     '#size' => 30,
     '#weight' => 10
   );

@@ -232,8 +232,6 @@ function hostmaster_bootstrap() {
   $node->type = 'db_server';
   $node->title = $url['host'];
   $node->db_type = $url['scheme'];
-  $node->db_user = $url['user'];
-  $node->db_passwd = $url['pass'];
   $node->status = 1;
 
   node_save($node);
