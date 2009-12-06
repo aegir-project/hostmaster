@@ -154,13 +154,12 @@ function hostmaster_task_dbserver() {
 
   $form['introduction']['#weight'] = -9;
   $form['introduction']['#value'] = 
-    t('<p>You need at least one fully functional database server to be able to manage sites. 
-       Luckily, if you can read this, you are already most of the way there.</p>
-        <p> <strong>If the user you specified when first configuring the Drupal can create databases, you probably do not need to change anything here. Otherwise, create an "aegir_root" superuser per the example offered below.</strong></p>
-        <p>This configuration form is actually the !edit_page for the !own_server database server node. 
-        It has however been heavily annotated and slightly simplified for this installation wizard. And while
-        the wizard can be run multiple times, it won\'t be able to edit any database servers other than the database
-        this site is running on.</p>', 
+    t('<p>You need at least one fully functional database server to be able to manage sites.</p> 
+        <p>Aegir also requires a database user capable of creating more databases. It is advisable to not use the
+        same database user that you configured for the main aegir database at the start of this installation, but instead
+        create an "<strong>aegir_root</strong>" superuser with stronger privileges.</p>
+        <p>Consult the "How do I configure this" section below to make use of the example GRANT statement provided.
+        Then fill in the form with the credentials of that superuser.</p>',
         array('!own_server' => $own_link, '!edit_page' => l(t("edit page"), 'node/' . HOSTING_OWN_DB_SERVER . '/edit' )));
 
 
