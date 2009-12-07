@@ -161,7 +161,7 @@ Database configuration
 
 Here you want to make a basic database configuration for the Drupal site
 you are going to install. You want to run these commands using your
-mysql 'root' user.
+mysql 'root' user, substituting the 'XXXXXXXX' with a real password.
 
 SQL commands::
 
