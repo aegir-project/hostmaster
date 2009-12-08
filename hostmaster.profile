@@ -200,7 +200,7 @@ function hostmaster_form_next($form, $form_state) {
 }
 
 function hostmaster_form_previous($form, $form_state) {
-  // move forward a page
+  // move backward a page
   variable_set('hostmaster_wizard_offset', -1);
 }
 
@@ -232,8 +232,6 @@ function hostmaster_bootstrap() {
   $node->type = 'db_server';
   $node->title = $url['host'];
   $node->db_type = $url['scheme'];
-  $node->db_user = $url['user'];
-  $node->db_passwd = $url['pass'];
   $node->status = 1;
 
   node_save($node);

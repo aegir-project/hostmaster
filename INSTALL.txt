@@ -161,7 +161,7 @@ Database configuration
 
 Here you want to make a basic database configuration for the Drupal site
 you are going to install. You want to run these commands using your
-mysql 'root' user.
+mysql 'root' user, substituting the 'XXXXXXXX' with a real password.
 
 SQL commands::
 
@@ -195,16 +195,16 @@ which will then give you further configuration instructions.
 
 There is an install script part of the hostmaster profile that takes care
 of installing the right packages and preparing the Drupal frontend install
-for you. That script needs to be ran as the aegir user created
-above. This file is available alongside this one or through the web
-at:
+for you. That script needs to be run as the aegir user created above.
+This file is available alongside this one or can be downloaded through the 
+web at:
 
-http://drupalcode.org/viewvc/drupal/contributions/profiles/hostmaster/install.sh.txt?revision=HEAD&view=co
+http://git.aegirproject.org/?p=hostmaster.git;a=blob_plain;f=install.sh.txt;hb=HEAD
 
-By default, the install script will install the "right" version of
-Aegir (ie. if it was downloaded through CVS, it will install the CVS
-version, if you downloaded an official release, it should install the
-right release).
+By default, the install script will install the "correct" version of
+Aegir (ie. if it was downloaded through git, it will install the version
+from the git master branch. If you downloaded an official release, it should 
+install the official release).
 
 The install script is shipped with other default settings that you 
 will likely need to change (such as the URL of the Aegir site) prior 
@@ -246,8 +246,7 @@ filesystem layout should look something like this::
 
 Variations on this are acceptable (for example, the Drush Debian
 package works out of ``/usr/bin/drush`` and that's fine), but you are
-better to stick with those if you really want to get through this. The
-remaining of the documentation here will assume that layout.
+better to stick with the defaults if you really want to get through this. 
 
 
 4. Follow the install wizard
@@ -259,6 +258,6 @@ profile.  Some of the instructions given, you will already have
 completed, but carefully read each step in turn to ensure you don't miss
 anything.  Specifically you must still provide the database credentials,
 add the Aegir user to /etc/sudoers with the relevant command to restart
-Apache, create a MySQL superuser capable of creating more databases, and
-initialise the hosting system.  These instructions are provided to you
+the webserver, create a MySQL superuser capable of creating more databases, 
+and initialise the hosting system.  These instructions are provided to you
 by the Hostmaster install profile.
