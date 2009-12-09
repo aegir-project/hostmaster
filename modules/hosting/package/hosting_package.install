@@ -331,3 +331,14 @@ function hosting_package_update_6001() {
   return $ret;
 }
 
+// Set the hostmaster or hostslave profile packages to status = 1 in the node table per #599758
+function hosting_package_update_6002() {
+  $ret = array();
+  $result = db_query("SELECT h.nid FROM {hosting_package} h JOIN {node} n ON n.nid = h.nid 
+                      WHERE h.short_name = 'hostmaster' OR h.short_name = 'hostslave';");
+  while ($package = db_fetch_array($result)) {
+    db_query("UPDATE {node} SET status = %d WHERE nid = %d", 1, $package['nid']);
+  }
+  return $ret;
+}
+
