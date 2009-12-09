@@ -105,8 +105,7 @@ function hosting_get_profiles($platform = NULL) {
   $profiles = array();
   if (!is_null($platform)) {
     $instances = hosting_package_instances_load(array(
-      'rid' => $platform, 'package_type' => 'profile',
-      'n.status' => 1));
+      'rid' => $platform, 'package_type' => 'profile'));
 
     foreach ($instances as $iid => $instance) {
       $profiles[$instance->package_id] = $instance->title;
@@ -310,14 +309,7 @@ function hosting_package_sync(&$data) {
         $package->package_type = $type;
         $package->short_name = $short_name;
         $package->description = $file['description'];
-        // Kludge to hide the hostmaster and hostslave profiles
-        if (($type == 'profile') 
-          && in_array($short_name, array('hostslave', 'hostmaster'))) {
-          $package->status = 0;
-        }
-        else {
-          $package->status = 1;
-        }
+        $package->status = 1;
         node_save($package);
       }
 
