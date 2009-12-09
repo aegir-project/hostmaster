@@ -105,7 +105,8 @@ function hosting_get_profiles($platform = NULL) {
   $profiles = array();
   if (!is_null($platform)) {
     $instances = hosting_package_instances_load(array(
-      'rid' => $platform, 'package_type' => 'profile'));
+      'rid' => $platform, 'package_type' => 'profile',
+      'n.status' => 1));
 
     foreach ($instances as $iid => $instance) {
       $profiles[$instance->package_id] = $instance->title;
