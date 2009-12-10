@@ -72,19 +72,6 @@ function _hosting_get_db_servers() {
   return $return;
 }
 
-/**
- * Implementation of hook_form_alter()
- *
- * This extends the server node type with the web server specific fields.
- */
-function hosting_db_server_form_alter(&$form, &$form_state, &$form_id) {
-  switch ($form_id) {
-    case 'server_node_form':
-      hosting_db_server_form($form);
-      break;
-  }
-}
-
 
 /**
  * Implementation of hook_nodeapi() presave for server node type.
@@ -105,3 +92,4 @@ function hosting_db_server_views_api() {
     'path' => drupal_get_path('module', 'hosting_db_server'),
   );
 }
+

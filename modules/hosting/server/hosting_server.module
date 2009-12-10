@@ -165,10 +165,6 @@ function hosting_server_form(&$node) {
   return $form;
 }
 
-function theme_server_node_form() {
-#  print_r(func_get_args());
-}
-
 function hosting_nodeapi_server_presave(&$node) {
   hosting_server_services_from_post($node);
 
@@ -283,4 +279,6 @@ function hosting_server_view(&$node, $teaser = FALSE, $page = FALSE) {
   }
   return $node;
 }
+
+
 
