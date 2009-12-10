@@ -10,7 +10,13 @@ include_once('hosting_web_server.help.inc');
  * @see hosting_help_requirements()
  */
 function hosting_web_server_hosting_service() {
-  return array( "web_server" => t("Web Server"));
+  return array( "http" => array(
+    'title' => t("Web server"),
+    'type' => 'Apache', 
+    'class' => 'hostingService_HTTP',
+    'module' => 'hosting_web_server',
+    'file' => 'hosting_web_server.service.inc'
+  ));
 }
 
 /**
@@ -40,179 +46,13 @@ function hosting_web_server_hosting_feature() {
  */ 
 function _hosting_get_web_servers() {
   $return = array();
-  $result = db_query("SELECT n.nid, n.title FROM {node} n LEFT JOIN {hosting_web_server} w ON n.vid=w.vid WHERE n.type='server' AND n.status=1");
+  $result = db_query("SELECT n.nid, n.title FROM {node} n LEFT JOIN {hosting_service} s ON n.vid=s.vid WHERE s.service='http'");
   while($server = db_fetch_object($result)) {
     $return[$server->nid] = $server->title;
   }
   return $return;
 }
 
-/**
- * Implementation of hook_form_alter()
- *
- * This extends the server node type with the web server specific fields.
- */
-function hosting_web_server_form_alter(&$form, &$form_state, &$form_id) {
-  switch ($form_id) {
-    case 'server_node_form':
-      hosting_web_server_form($form);
-      break;
-  }
-}
-
-
-/**
- * Add in web server specific fields to the server node.
- */
-function hosting_web_server_form(&$form) {
-  $node = $form['#node'];
-
-  if (hosting_feature('ports') == HOSTING_FEATURE_ENABLED) {
-    $form['ports'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Ports'),
-      '#required' => TRUE,
-      '#size' => 40,
-      '#default_value' => ($node->ports) ? $node->ports : '80',
-      '#description' => t("All the ports enabled on this server, comma separated. Port 80 is the default http, 443 is https."),
-      '#maxlength' => 255,
-      '#weight' => -8,
-    );
-  } else {
-    $form['ports'] = array(
-      '#type' => 'value',
-      '#value' => '80',
-    );
-  }
-  
-  $form['restart_cmd'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Restart command'),
-      '#required' => TRUE,
-      '#description' => t('The command to run to restart the web server for new changes to take effect. This is required for the new site to become live'),
-      '#default_value' => ($node->restart_cmd) ? $node->restart_cmd : HOSTING_DEFAULT_RESTART_CMD,
-      '#size' => 40,
-      '#maxlength' => 255,
-      '#weight' => -7,
-  );
-  
-  $form['web_group'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Web server group'),
-    '#required' => TRUE,
-    '#description' => t('The group that the hosted files will belong to.<br />This should be the group the web server is running as.'),
-    '#default_value' => ($node->web_group) ? $node->web_group : HOSTING_DEFAULT_WEB_GROUP,
-    '#size' => 20,
-    '#maxlength' => 75,
-    '#weight' => -5,
-  );
-}
-
-
-/**
- * Implementation of hook_validate().
-  */
-function hosting_web_server_nodeapi_server_validate(&$node, &$form) {
-
-  $ports = explode(",", $node->ports);
-  if (count($ports) < 1) {
-    form_set_error('ports', t('At least one port must be provided.'));
-  }
-  foreach($ports as $port) {
-    if ($port < 1) {
-      form_set_error('ports', t('Invalid port specified'));
-    }
-  }
-}
-
-/**
- * Implementation of hook_insert().
- */
-function hosting_web_server_nodeapi_server_insert($node) {
-  db_query("INSERT INTO {hosting_web_server} (vid, nid, web_group, restart_cmd, ports) 
-      VALUES (%d, %d, '%s', '%s', '%s')", 
-        $node->vid, $node->nid, $node->web_group, $node->restart_cmd, $node->ports);
-}
-
-/**
- * Implementation of hook_update().
- *
- * As an existing node is being updated in the database, we need to do our own
- * database updates.
- *
- * This will fire up a verify task if the webserver ports have changed.
- */
-function hosting_web_server_nodeapi_server_update($node) {
-  // if this is a new node or we're adding a new revision,
-  if ($node->revision) {
-    hosting_web_server_insert($node);
-  }
-  else {
-    $oldports = db_result(db_query("SELECT ports FROM {hosting_web_server} WHERE vid = %d", $node->vid));
-    if ($oldports != $node->ports) {
-      $query = db_query("SELECT nid FROM {hosting_platform} WHERE web_server = %d", $node->nid);
-      while($nid = db_fetch_object($query)) {
-        hosting_add_task($nid->nid, 'verify');
-      }
-    }
-    db_query("UPDATE {hosting_web_server} SET 
-                  web_group = '%s', 
-                  restart_cmd = '%s',
-                  ports = '%s'
-              WHERE 
-                  vid = %d", 
-                  $node->web_group,
-                  $node->restart_cmd, 
-                  $node->ports,
-                  $node->vid);
-  }
-}
-
-/**
- * Implementation of hook_delete_revision().
- */
-function hosting_web_server_nodeapi_server_delete_revision(&$node) {
-  db_query('DELETE FROM {hosting_web_server} WHERE vid = %d', $node->vid);
-}
-
-/**
- * Implementation of hook_delete().
- */
-function hosting_web_server_nodeapi_server_delete($node) {
-  db_query('DELETE FROM {hosting_web_server} WHERE nid = %d', $node->nid);
-}
-
-/**
- * Implementation of hook_load().
- */
-function hosting_web_server_nodeapi_server_load($node) {
-  $additions = db_fetch_array(db_query('SELECT web_group, restart_cmd, ports FROM {hosting_web_server} WHERE vid = %d', $node->vid));
-  return $additions;
-}
-
-/**
- * Implementation of hook_view().
- */
-function hosting_web_server_nodeapi_server_view(&$node, $teaser = FALSE, $page = FALSE) {
-  if (hosting_feature('ports') == HOSTING_FEATURE_ENABLED) {
-    $node->content['info']['web_server']['ports'] = array(
-      '#type' => 'item',
-      '#title' => t('Ports'),
-      '#value' => $node->ports,
-    );
-  }
-  $node->content['info']['web_server']['web_group'] = array(
-    '#type' => 'item',
-    '#title' => t('Web server group'),
-    '#value' => filter_xss($node->web_group),
-  );
-  $node->content['info']['web_server']['restart_cmd'] = array(
-    '#type' => 'item',
-    '#title' => t('Restart command'),
-    '#value' => filter_xss($node->restart_cmd),
-  );
-  
-}
 
 /**
  * Implementation of hook_hosting_summary().
