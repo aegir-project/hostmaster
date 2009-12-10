@@ -279,17 +279,19 @@ function hosting_site_form($node) {
   }
 
   $client = node_load($current_client_id);
-  if ((!$node->client || $node->nid) && user_access('administer site')) {
+  // If the user is an admin, they can edit who the client of the site is
+  if (user_access('administer site')) {
     $form['client'] = array(
       '#type' => 'textfield',
       '#required' => TRUE,
       '#title' => t('Client'),
-      '#default_value' => $client->title,
+      '#default_value' => $node->client, //requires $node->client, not $client->title, or else field is null on node preview
       '#description' => t('The client who this site belongs to.'),
       '#autocomplete_path' => 'hosting_client/autocomplete/client',
     );
   }
-  elseif ($node->client) {
+  // If the user is a client, they cannot choose who the client is
+  else {
     $form['client'] = array('#type' => 'hidden', '#value' => $client->title);
     $form['info']['client'] = array(
       '#type' => 'item',
@@ -297,16 +299,6 @@ function hosting_site_form($node) {
       '#value' => $client->title,
     );
   }
-  else {
-    $form['client'] = array(
-      '#type' => 'radios',
-      '#title' => t('Client'),
-      '#default_value' => key((array) $clients),
-      '#options' => $clients,
-      '#description' => t('The client who this site belongs to.'),
-    );
-  }
-
   if (!$node->nid) {
     $platforms = _hosting_get_platforms();
     if (sizeof($platforms) > 1) {
