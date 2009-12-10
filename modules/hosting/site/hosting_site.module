@@ -279,13 +279,20 @@ function hosting_site_form($node) {
   }
 
   $client = node_load($current_client_id);
+  if (!$client) {
+    # we give up, couldn't find a client, we're probably in a preview so
+    # just use the node client
+    $client = new stdClass();
+    $client->title = $node->client;
+  }
+
   // If the user is an admin, they can edit who the client of the site is
   if (user_access('administer site')) {
     $form['client'] = array(
       '#type' => 'textfield',
       '#required' => TRUE,
       '#title' => t('Client'),
-      '#default_value' => $node->client, //requires $node->client, not $client->title, or else field is null on node preview
+      '#default_value' => $client->title,
       '#description' => t('The client who this site belongs to.'),
       '#autocomplete_path' => 'hosting_client/autocomplete/client',
     );
