@@ -51,6 +51,8 @@ function hosting_db_server_install() {
  * Get rid of db_server node type and associate ourselves with server nodes instead.
  */
 function hosting_db_server_update_6000() {
+  drupal_install_modules(array('hosting_server'));
+
   $ret = array();
   $result = db_query("SELECT nid, vid, title FROM {node} WHERE type='db_server'");
   while ($record = db_fetch_object($result)) {
@@ -74,5 +76,6 @@ function hosting_db_server_update_6000() {
 
   db_query("DELETE FROM {node} WHERE type='db_server'");
 
+  db_query("INSERT INTO {hosting_service} SELECT nid, vid, 'db', 'mysql' FROM {hosting_db_server}");
   return $ret;
 }

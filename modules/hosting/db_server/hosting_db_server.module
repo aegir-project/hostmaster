@@ -9,7 +9,13 @@ include_once('hosting_db_server.help.inc');
  * @see hosting_help_requirements()
  */
 function hosting_db_server_hosting_service() {
-  return array("db_server" => t("Database server"));
+  return array("db" => array(
+    'title' => t("Database server"),
+    'type' => 'Mysql',
+    'class' => 'hostingService_DB',
+    'module' => 'hosting_db_server',
+    'file' => 'hosting_db_server.service.inc'
+  ));
 }
 
 
@@ -66,51 +72,6 @@ function _hosting_get_db_servers() {
   return $return;
 }
 
-/**
- * Implementation of hook_form_alter()
- *
- * This extends the server node type with the web server specific fields.
- */
-function hosting_db_server_form_alter(&$form, &$form_state, &$form_id) {
-  switch ($form_id) {
-    case 'server_node_form':
-      hosting_db_server_form($form);
-      break;
-  }
-}
-
-
-/**
- * Implementation of hook_form().
- */
-function hosting_db_server_form(&$form) {
-  $node = $form['#node'];
-
-  $form['db_type'] = array(
-    '#type' => 'value',
-    '#value' => ($node->db_type) ? $node->db_type : 'mysqli'
-  );
-  $form['db_user'] = array(
-    '#type' => 'textfield',
-    '#required' => TRUE,
-    '#title' => t('Username'),
-    '#description' => t('The user that will be used to create users and databases for new sites.'),
-    '#size' => 40,
-    '#default_value' => $node->db_user,
-    '#maxlength' => 64,
-    '#weight' => 5,
-  );
-  if ($node->db_passwd) {
-    $passwd_description = t('<strong>You have already set a password for this database server.</strong><br />');
-  }
-  $form['db_passwd'] = array(
-    '#type' => 'password_confirm',
-    '#required' => ($node->db_passwd) ? FALSE : TRUE,
-    '#description' => $passwd_description . t('The user account that will be used to create new mysql users and databases for new sites'),
-    '#size' => 30,
-    '#weight' => 10
-  );
-}
 
 /**
  * Implementation of hook_nodeapi() presave for server node type.
@@ -122,80 +83,4 @@ function hosting_db_server_nodeapi_server_presave(&$node) {
   }
 }
 
-/**
- * Implementation of hook_insert().
- */
-function hosting_db_server_nodeapi_server_insert($node) {
-  db_query("INSERT INTO {hosting_db_server} (vid, nid, db_type, db_user, db_passwd) 
-      VALUES (%d, %d, '%s', '%s', '%s')", 
-        $node->vid, $node->nid, $node->db_type, $node->db_user, $node->db_passwd);
-}
-
-/**
- * Implementation of hook_update().
- *
- * As an existing node is being updated in the database, we need to do our own
- * database updates.
- */
-function hosting_db_server_nodeapi_server_update($node) {
-  // if this is a new node or we're adding a new revision,
-  if ($node->revision) {
-    hosting_db_server_insert($node);
-  }
-  else {
-    db_query("UPDATE {hosting_db_server} SET 
-                  db_type = '%s', db_user = '%s', db_passwd = '%s'
-              WHERE 
-                  vid = %d", 
-                  $node->db_type, $node->db_user, $node->db_passwd, $node->vid);
-  }
-}
-
-/**
- * Implementation of hook_nodeapi_delete_revision()
- */
-function hosting_db_server_nodeapi_server_delete_revision(&$node) {
-  db_query('DELETE FROM {hosting_db_server} WHERE vid = %d', $node->vid);
-}
-
-/**
- * Implementation of hook_delete().
- */
-function hosting_db_server_nodeapi_server_delete($node) {
-  db_query('DELETE FROM {hosting_db_server} WHERE nid = %d', $node->nid);
-}
-
-/**
- * Implementation of hook_load().
- */
-function hosting_db_server_nodeapi_server_load($node) {
-  $additions = db_fetch_array(db_query('SELECT db_type, db_user, db_passwd FROM {hosting_db_server} WHERE vid = %d', $node->vid));
-  return $additions;
-}
-
-/**
- * Implementation of hook_view().
- */
-function hosting_db_server_nodeapi_server_view(&$node, $teaser = FALSE, $page = FALSE) {
-  $node->content['info']['db_server']['db_type'] = array(
-    '#type' => 'item',
-    '#title' => t('Database type'),
-    '#value' => $node->db_type,
-  );
-  $node->content['info']['db_server']['db_user'] = array(
-    '#type' => 'item',
-    '#title' => t('Database user'),
-    '#value' => filter_xss($node->db_user),
-  );
-}
-
-/**
- * Implementation of hook_hosting_summary()
- */
-function hosting_db_server_hosting_summary() {
-  $summary = array();
-  $db_servers = _hosting_get_db_servers();
-  $summary['db_servers'] = theme('item_list', array_map('_hosting_node_link', array_keys($db_servers)), t('Database servers'));
-  return $summary;
-}
 

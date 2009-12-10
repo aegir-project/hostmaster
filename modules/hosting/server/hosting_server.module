@@ -1,4 +1,5 @@
 <?php
+include_once("hosting_server.service.inc");
 
 
 function hosting_server_node_info() {
@@ -122,10 +123,6 @@ function hosting_server_form(&$node) {
   return $form;
 }
 
-function theme_server_node_form() {
-#  print_r(func_get_args());
-}
-
 function hosting_nodeapi_server_presave(&$node) {
   if (!$node->ip_address) {
     $ip = gethostbyname($node->title);
@@ -217,6 +214,10 @@ function hosting_server_delete($node) {
  */
 function hosting_server_load($node) {
   $additions = db_fetch_object(db_query('SELECT ip_address, script_user, config_path, backup_path, drush_path FROM {hosting_server} WHERE vid = %d', $node->vid));
+
+  hosting_server_init_services($node);
+  $additions->services = $node->services;
+
   return $additions;
 }
 
@@ -226,19 +227,14 @@ function hosting_server_load($node) {
 function hosting_server_view(&$node, $teaser = FALSE, $page = FALSE) {
   $node = node_prepare($node, $teaser);
 
-  $services = module_invoke_all('hosting_service');
-
-  foreach ($services as $type => $title) {
-    $node->content['info'][$type] = array(
-      '#prefix' => '<div id="hosting-' . str_replace('_', '-', $type) . '-info">',
-      '#suffix' => '</div>'
-    );
-    $node->content['info'][$type]['title'] = array(
-      '#value' => '<h3>' . $title . '</h3>',
+  $node->content['info']['server'] = array(
+      '#prefix' => '<div class="hosting-service-info">',
+      '#suffix' => '</div>',
       '#weight' => -20
     );
-  }
 
+  $node->content['info']['server']['title'] = array('#value' => '<h3>' . t('Basic configuration') . '</h3>',
+    '#weight' => -20);
   if ($node->ip_address) {
     $node->content['info']['server']['ip_address'] = array(
       '#type' => 'item',
@@ -268,6 +264,21 @@ function hosting_server_view(&$node, $teaser = FALSE, $page = FALSE) {
     '#title' => t('Backup path'),
     '#value' => filter_xss($node->backup_path),
   );
+
+  $services = module_invoke_all('hosting_service');
+
+  foreach ($node->services as $name => $service) {
+    $node->content['info'][$name] = array(
+      '#prefix' => '<div class="hosting-service-info hosting-service-' . $name . '-info">',
+      '#suffix' => '</div>',
+    );
+    $node->content['info'][$name]['title'] = array('#value' => '<h3>' . $services[$name]['title'] . ' : ' . $services[$name]['type'] . '</h3>',
+      '#weight' => -20
+    );
+    $service->view($node->content['info'][$name]);
+  }
   return $node;
 }
+
+
 
