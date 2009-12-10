@@ -46,7 +46,7 @@ EOF
 
 Shell commands::
  useradd --home-dir /var/aegir aegir
- usermod -g apache aegir
+ gpasswd -a aegir www-data
  chmod -R 755 /var/aegir
  # Include the Aegir config
  echo "Include /var/aegir/config/vhost.d/" > /etc/httpd/conf.d/aegir.conf

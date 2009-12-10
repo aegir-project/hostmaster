@@ -161,9 +161,12 @@ function hosting_client_form(&$node) {
     if (user_access('edit client users')) {
       $form['user_edit']['new_user'] = array(
         '#type' => 'textfield',
-        '#title' => t('Add new user'),
-        '#weigth' => 2,
+        '#title' => t('Associate a user to this Client'),
+        '#weight' => 2,
         '#autocomplete_path' => 'user/autocomplete',
+        '#description' => 'This field allows you to associate an existing system user to this Client. 
+                           It does not create a new system user, but allows an existing user 
+                           to manage sites belonging to the Client.',
         );
     }
     $form['user_edit']['#theme'] = 'hosting_client_form';

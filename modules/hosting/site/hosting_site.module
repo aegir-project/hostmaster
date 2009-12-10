@@ -279,7 +279,15 @@ function hosting_site_form($node) {
   }
 
   $client = node_load($current_client_id);
-  if ((!$node->client || $node->nid) && user_access('administer site')) {
+  if (!$client) {
+    # we give up, couldn't find a client, we're probably in a preview so
+    # just use the node client
+    $client = new stdClass();
+    $client->title = $node->client;
+  }
+
+  // If the user is an admin, they can edit who the client of the site is
+  if (user_access('administer site')) {
     $form['client'] = array(
       '#type' => 'textfield',
       '#required' => TRUE,
@@ -289,7 +297,8 @@ function hosting_site_form($node) {
       '#autocomplete_path' => 'hosting_client/autocomplete/client',
     );
   }
-  elseif ($node->client) {
+  // If the user is a client, they cannot choose who the client is
+  else {
     $form['client'] = array('#type' => 'hidden', '#value' => $client->title);
     $form['info']['client'] = array(
       '#type' => 'item',
@@ -297,16 +306,6 @@ function hosting_site_form($node) {
       '#value' => $client->title,
     );
   }
-  else {
-    $form['client'] = array(
-      '#type' => 'radios',
-      '#title' => t('Client'),
-      '#default_value' => key((array) $clients),
-      '#options' => $clients,
-      '#description' => t('The client who this site belongs to.'),
-    );
-  }
-
   if (!$node->nid) {
     $platforms = _hosting_get_enabled_platforms();
     if (sizeof($platforms)) {
@@ -882,6 +881,11 @@ function hosting_site_menu() {
  */
 function _hosting_site_form_profile($platform = NULL) {
   $profiles = hosting_get_profiles($platform);
+  foreach($profiles as $id => $name) {
+    if (in_array($name, array('hostmaster', 'hostslave'))) {
+      unset($profiles[$id]);
+    }
+  }
   if (sizeof($profiles) > 1) {
     $form['profile'] = array(
       '#type' => 'radios',
