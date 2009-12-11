@@ -1,6 +1,8 @@
 <?php
 
 class hostingService_DB extends hostingService {
+  private $service = 'db';
+  private $type = 'mysql';
 
   function form(&$form) {
     $node = $form['#node'];
@@ -32,12 +34,14 @@ class hostingService_DB extends hostingService {
   }
 
   function insert() {
+    parent::insert();
     db_query("INSERT INTO {hosting_db_server} (vid, nid, db_type, db_user, db_passwd) 
       VALUES (%d, %d, '%s', '%s', '%s')", 
         $this->server->vid, $this->server->nid, $this->db_type, $this->db_user, $this->db_passwd);
   }
 
   function update() {
+    parent::update();
     db_query("UPDATE {hosting_db_server} SET 
                   db_type = '%s', db_user = '%s', db_passwd = '%s'
               WHERE 

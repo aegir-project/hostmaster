@@ -1,46 +1,15 @@
 <?php
 
-function hosting_server_init_services(&$node) {
-  $node = (is_int($node)) ? node_load($node) : $node;
-
-  $services = module_invoke_all('hosting_service');
-
-  $result = db_query("SELECT service, type FROM {hosting_service} WHERE vid=%d", $node->vid);
-  while ($record = db_fetch_object($result)) {
-    $name = $record->service;
-    $class = $services[$name]['class'];
-    if ($services[$name]['file']) {
-      include_once(drupal_get_path('module', $services[$name]['module']) . '/' . $services[$name]['file']);
-    }
-    $node->services[$name] = new $class($node);
-  }
-
-  hosting_server_invoke_services($node, 'load');
-  return $node;
-}
-
-function hosting_server_invoke_services(&$node, $method, &$arg1 = null, &$arg2 = null, &$arg3 = null, &$arg4 = null) {
-  $return = array();
-  foreach ($node->services as $name => $service) {
-    $result = $service->$method($arg1, $arg2, $arg3, $arg4);
-    if (isset($result) && is_array($result)) {
-      $return = array_merge_recursive($return, $result);
-    }
-    else if (isset($result)) {
-      $return[] = $result;
-    }
-  }
-  return $return;
-}
 
 class hostingService {
 
   public $server;
-  public $service_title = null;
-  public $type = null;
 
-  function __construct($node) {
+  function __construct($node, $values = null) {
     $this->server = (is_int($node)) ? node_load($node) : $node;
+    if (is_array($values)) {
+      $this->setValues($values);
+    }
   }
 
   public function load() { }
@@ -48,9 +17,15 @@ class hostingService {
   protected function mergeData($query) {
     $args = func_get_args();
     $result = db_fetch_array(call_user_func_array('db_query', $args));
+    $this->setValues($result);
+  }
 
-    foreach ($result as $key => $value) {
-      $this->{$key} = $value;
+
+  public function setValues($values = null) {
+    if (is_array($values)) {
+      foreach ($values as $key => $value) {
+        $this->{$key} = $value;
+      }
     }
   }
 
@@ -66,7 +41,12 @@ class hostingService {
     }
   }
 
-  public function insert() { }
+  
+  public function insert() {
+    db_query("INSERT INTO {hosting_service} (nid, vid, service, type) VALUES (%d, %d, '%s', '%s')",
+      $this->server->nid, $this->server->vid, $this->service, $this->type);
+  }
+
   public function update() { }
   
   public function delete() { }
@@ -75,5 +55,157 @@ class hostingService {
   public function form(&$form) { }
   public function view(&$render) { }
 
+  public function validate(&$node, &$form) {}
+
+
 }
+
+class hostingService_base extends hostingService {
+  private $service = 'server';
+  private $type = 'base';
+
+  function form(&$form) {
+
+    $form['ip_address'] = array(
+      '#type' => 'textfield',
+      '#title' => t('IP address'),
+      '#default_value' => $this->ip_address,
+      '#size' => 15,
+      '#maxlength' => 15,
+      '#description' => t("The IP address the server can be accessed by. This will be used to create database grants, amongst other things.<br />If this is empty, Hostmaster will attempt to resolve the hostname to get the address.<br />If that fails, the hostname (ie. the node title) will be used instead."),
+      '#weight' => -9
+    );
+
+    $form['drush_path'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Drush path'),
+      '#required' => TRUE,
+      '#size' => 40,
+      '#default_value' => ($this->drush_path) ? $this->drush_path : HOSTING_DEFAULT_PARENT_PATH.'/drush/drush.php',
+      '#description' => t("The full path to the drush.php script on this server."),
+      '#maxlength' => 255,
+      '#weight' => -8,
+    );
+
+    $form['script_user'] = array(
+      '#type' => 'textfield',
+      '#title' => t('System account'),
+      '#required' => TRUE,
+      '#description' => t('The system account that the hosted files will belong to, for security reasons.<br />This should be a different account to the account the server is running as.'),
+      '#default_value' => ($this->script_user) ? $this->script_user : HOSTING_DEFAULT_SCRIPT_USER,
+      '#size' => 20,
+      '#maxlength' => 255,
+      '#weight' => -6,
+    );
+      
+    $form['config_path'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Configuration path'),
+      '#required' => TRUE,
+      '#size' => 40,
+      '#default_value' => ($this->config_path) ? $this->config_path : HOSTING_DEFAULT_CONFIG_PATH,
+      '#description' => t("The path on the server where configuration files will be stored.<br />
+          It is essential that this directory should not be accessible via a web browser."),
+      '#maxlength' => 255,
+      '#weight' => -4,
+    
+    );
+    
+    $form['backup_path'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Backup path'),
+      '#required' => TRUE,
+      '#size' => 40,
+      '#default_value' => ($this->backup_path) ? $this->backup_path : HOSTING_DEFAULT_BACKUP_PATH,
+      '#description' => t("The path on the server where backups will be stored.<br />
+          It is essential that this directory should not be accessible via a web browser."),
+      '#maxlength' => 255,
+      '#weight' => -3,
+    );
+
+
+  }
+
+
+  function validate(&$node, &$form) {
+    if ($this->script_user == 'root') {
+      form_set_error('script_user', t('For security reasons, you should not run drush commands as the root user. Please choose a different system account name.'));
+    }
+    if ($this->ip_address) {
+      if (!_hosting_valid_ip($this->ip_address)) {
+        form_set_error('ip_address', t('Invalid IP address'));
+      }
+    }
+  }
+
+  function update() {
+    parent::update();
+    db_query("UPDATE {hosting_server} SET 
+      ip_address = '%s', script_user = '%s', config_path = '%s',
+      backup_path = '%s', drush_path = '%s'
+    WHERE 
+      vid = %d", 
+        $this->ip_address, $this->script_user, 
+        $this->config_path, $this->backup_path,  
+        $this->drush_path,
+        $this->server->vid);
+  }
+
+  function insert() {
+    // we specifically don't call the parent function because we need the base server configuration to be IMPLICITLY defined.
+
+    db_query("INSERT INTO {hosting_server} (vid, nid, ip_address, script_user, config_path, backup_path, drush_path) 
+        VALUES (%d, %d, '%s', '%s', '%s', '%s', '%s')", 
+          $this->server->vid, $this->server->nid, $this->ip_address, $this->script_user, $this->config_path, $this->backup_path, $this->drush_path);
+  }
+
+  function delete_revision() {
+    db_query('DELETE FROM {hosting_server} WHERE vid = %d', $this->server->vid);
+  }
+
+  function delete() {
+    db_query('DELETE FROM {hosting_server} WHERE nid = %d', $this->server->nid);
+  }
+
+  function load() {
+    parent::load();
+    $this->mergeData('SELECT ip_address, script_user, config_path, backup_path, drush_path FROM {hosting_server} WHERE vid = %d', $this->server->vid);
+  }
+
+  function view(&$render) {
+    if ($this->ip_address) {
+      $render['ip_address'] = array(
+        '#type' => 'item',
+        '#title' => t('IP address'),
+        '#value' => filter_xss($this->ip_address),
+      );    
+    }
+    $render['drush_path'] = array(
+      '#type' => 'item',
+      '#title' => t('Drush path'),
+      '#value' => filter_xss($this->drush_path),
+    );
+
+    $render['script_user'] = array(
+      '#type' => 'item',
+      '#title' => t('Script user'),
+      '#value' => filter_xss($this->script_user),
+    );
+
+    $render['config_path'] = array(
+      '#type' => 'item',
+      '#title' => t('Configuration path'),
+      '#value' => filter_xss($this->config_path),
+    );
+    $render['backup_path'] = array(
+      '#type' => 'item',
+      '#title' => t('Backup path'),
+      '#value' => filter_xss($this->backup_path),
+    );
+
+
+
+  }
+}
+
 
