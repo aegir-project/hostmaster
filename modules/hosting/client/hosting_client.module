@@ -633,20 +633,22 @@ function hosting_client_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
     case 'update':
       if ($node->type == 'platform') {
         // Enter access rights in to the db for clients if any were selected
-        $clients = $node->clients;
-        foreach ($clients as $cid => $choice) {
-          if ($choice) {
-            // Client has been selected, add them to the access table
-            $existing = db_result(db_query("SELECT cid FROM {hosting_platform_client_access} WHERE pid = %d AND cid = %d", $node->nid, $cid));
-            if (!$existing) {
-              db_query("INSERT INTO {hosting_platform_client_access} (pid, cid) VALUES (%d, %d)", $node->nid, $cid);
+        if ($node->clients) {
+          $clients = $node->clients;
+          foreach ($clients as $cid => $choice) {
+            if ($choice) {
+              // Client has been selected, add them to the access table
+              $existing = db_result(db_query("SELECT cid FROM {hosting_platform_client_access} WHERE pid = %d AND cid = %d", $node->nid, $cid));
+              if (!$existing) {
+                db_query("INSERT INTO {hosting_platform_client_access} (pid, cid) VALUES (%d, %d)", $node->nid, $cid);
+              }
             }
-          }
-          else {
-            // Client has not been selected, or unselected
-            $existing = db_result(db_query("SELECT cid FROM {hosting_platform_client_access} WHERE pid = %d AND cid = %d", $node->nid, $cid));
-            if ($existing) {
-              db_query("DELETE FROM {hosting_platform_client_access} WHERE pid = %d AND cid = %d", $node->nid, $cid);
+            else {
+              // Client has not been selected, or unselected
+              $existing = db_result(db_query("SELECT cid FROM {hosting_platform_client_access} WHERE pid = %d AND cid = %d", $node->nid, $cid));
+              if ($existing) {
+                db_query("DELETE FROM {hosting_platform_client_access} WHERE pid = %d AND cid = %d", $node->nid, $cid);
+              }
             }
           }
         }
