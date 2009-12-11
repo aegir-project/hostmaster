@@ -1,8 +1,8 @@
 <?php
 
 class hostingService_DB extends hostingService {
-  protected $service = 'db';
-  protected $type = 'mysql';
+  private $service = 'db';
+  private $type = 'mysql';
 
   function form(&$form) {
     $node = $form['#node'];

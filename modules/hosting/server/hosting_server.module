@@ -161,6 +161,7 @@ function hosting_server_form(&$node) {
 
     $service->form($form['services'][$name]);
   }
+ 
 
   return $form;
 }
@@ -211,7 +212,6 @@ function hosting_server_update($node) {
   }
   else {
     hosting_server_invoke_services($node, 'save', $node);
-    hosting_server_invoke_services($node, 'update', $node);
   }
 }
 
@@ -220,7 +220,6 @@ function hosting_server_update($node) {
  */
 function hosting_server_insert($node) {
   hosting_server_invoke_services($node, 'save', $node);
-  hosting_server_invoke_services($node, 'insert', $node);
 }
 
 /**
@@ -280,5 +279,6 @@ function hosting_server_view(&$node, $teaser = FALSE, $page = FALSE) {
   return $node;
 }
 
+function hosting_server_nodeapi_server_prepare(&$node) {
 
-
+}
