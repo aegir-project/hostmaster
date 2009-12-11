@@ -1,7 +1,6 @@
 <?php
 include_once("hosting_server.service.inc");
 
-
 function hosting_server_node_info() {
   $types["server"] =  array(
     "type" => 'server', "name" => 'Server',
@@ -47,11 +46,81 @@ function hosting_server_access($op, $node, $account) {
 
 
 /**
+ * Implementation of hook_hosting_service()
+ *
+ * @see hosting_help_requirements()
+ */
+function hosting_server_hosting_service() {
+  return array("server" => array(
+    'title' => t("Server configuration"),
+    'type' => 'basic',
+    'class' => 'hostingService_base',
+    'module' => 'hosting_server',
+    'file' => 'hosting_server.service.inc',
+    'weight' => -20
+  ));
+}
+
+function hosting_services_new_object($name, $node = null, $values = null) {
+  static $services = array();
+
+  if (!sizeof($services)) {
+    $services = module_invoke_all('hosting_service');
+  }
+
+  $class = $services[$name]['class'];
+  if ($services[$name]['file']) {
+    include_once(drupal_get_path('module', $services[$name]['module']) . '/' . $services[$name]['file']);
+  }
+
+  return new $class($node, $values);
+}
+
+function hosting_server_init_services(&$node) {
+  $node = (is_int($node)) ? node_load($node) : $node;
+
+  $node->services['server'] = new hostingService_base($node);
+
+  $result = db_query("SELECT service, type FROM {hosting_service} WHERE vid=%d", $node->vid);
+  while ($record = db_fetch_object($result)) {
+    $name = $record->service;
+    $node->services[$name] = hosting_services_new_object($name, $node);
+  }
+
+  return $node;
+}
+
+function hosting_server_services_from_post(&$node) {
+  if (is_array($node->services)) {
+    foreach ($node->services as $name => $data) {
+      $node->services[$name] = hosting_services_new_object($name, $node, $data);
+    }
+  }
+}
+
+
+function hosting_server_invoke_services(&$node, $method, &$arg1 = null, &$arg2 = null, &$arg3 = null, &$arg4 = null) {
+  $return = array();
+  foreach ($node->services as $name => $service) {
+    $result = $service->$method($arg1, $arg2, $arg3, $arg4);
+    if (isset($result) && is_array($result)) {
+      $return = array_merge_recursive($return, $result);
+    }
+    else if (isset($result)) {
+      $return[] = $result;
+    }
+  }
+  return $return;
+}
+
+
+/**
  * Implementation of hook_form().
  */
 function hosting_server_form(&$node) {
   $type = node_get_types('type', $node);
 
+  $services = module_invoke_all('hosting_service');
 
   $form['title'] = array(
     '#type' => 'textfield',
@@ -61,69 +130,46 @@ function hosting_server_form(&$node) {
     '#description' => t('The host name of the server. This is the address that will be used by Hostmaster to connect to the server to issue commands.<br /><strong>Be careful when changing the node title, it is used to create the SQL users if the IP address, below, is not set.</strong>'),
     '#weight' => -10
   );
+ 
 
-  $form['ip_address'] = array(
-    '#type' => 'textfield',
-    '#title' => t('IP address'),
-    '#default_value' => $node->ip_address,
-    '#size' => 15,
-    '#maxlength' => 15,
-    '#description' => t("The IP address the server can be accessed by. This will be used to create database grants, amongst other things.<br />If this is empty, Hostmaster will attempt to resolve the hostname to get the address.<br />If that fails, the hostname (ie. the node title) will be used instead."),
-    '#weight' => -9
-  );
+  $form['services'] = array('#weight' => -5, '#tree' => TRUE);
 
-  $form['drush_path'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Drush path'),
-    '#required' => TRUE,
-    '#size' => 40,
-    '#default_value' => ($node->drush_path) ? $node->drush_path : HOSTING_DEFAULT_PARENT_PATH.'/drush/drush.php',
-    '#description' => t("The full path to the drush.php script on this server."),
-    '#maxlength' => 255,
-    '#weight' => -8,
-  );
+  if (!$node->nid) {
+    foreach ($services as $name => $service) {
+      $class = $services[$name]['class'];
+      if ($services[$name]['file']) {
+        include_once(drupal_get_path('module', $services[$name]['module']) . '/' . $services[$name]['file']);
+      }
+      $node->services[$name] = new $class($node, $node->services[$name]);
+    }
+  }
 
-  $form['script_user'] = array(
-    '#type' => 'textfield',
-    '#title' => t('System account'),
-    '#required' => TRUE,
-    '#description' => t('The system account that the hosted files will belong to, for security reasons.<br />This should be a different account to the account the server is running as.'),
-    '#default_value' => ($node->script_user) ? $node->script_user : HOSTING_DEFAULT_SCRIPT_USER,
-    '#size' => 20,
-    '#maxlength' => 255,
-    '#weight' => -6,
-  );
-    
-  $form['config_path'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Configuration path'),
-    '#required' => TRUE,
-    '#size' => 40,
-    '#default_value' => ($node->config_path) ? $node->config_path : HOSTING_DEFAULT_CONFIG_PATH,
-    '#description' => t("The path on the server where configuration files will be stored.<br />
-        It is essential that this directory should not be accessible via a web browser."),
-    '#maxlength' => 255,
-    '#weight' => -4,
-  
-  );
-  
-  $form['backup_path'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Backup path'),
-    '#required' => TRUE,
-    '#size' => 40,
-    '#default_value' => ($node->backup_path) ? $node->backup_path : HOSTING_DEFAULT_BACKUP_PATH,
-    '#description' => t("The path on the server where backups will be stored.<br />
-        It is essential that this directory should not be accessible via a web browser."),
-    '#maxlength' => 255,
-    '#weight' => -3,
-  );
-  
+  foreach ($node->services as $name => $service) {
+    $form['services'][$name] = array(
+      '#type' => 'fieldset',
+      '#title' => $services[$name]['title'] . ' : ' . $services[$name]['type'],
+    );
+
+    if (isset($services[$name]['weight'])) {
+      $form['services'][$name]['#weight'] = $services[$name]['weight'];
+    }
+    else {
+      $form['services'][$name]['#weight'] = 0;
+    }
+
+
+
+    $service->form($form['services'][$name]);
+  }
+ 
 
   return $form;
 }
 
 function hosting_nodeapi_server_presave(&$node) {
+  hosting_server_services_from_post($node);
+
+
   if (!$node->ip_address) {
     $ip = gethostbyname($node->title);
 
@@ -145,15 +191,10 @@ function hosting_server_validate(&$node, &$form) {
   if (!_hosting_valid_fqdn($node->title)) {
     form_set_error('title', t('Invalid valid domain name. Either choose a proper domain name or hardcode the IP address of the webserver.'));
   }
-  
-  if ($node->script_user == 'root') {
-    form_set_error('script_user', t('For security reasons, you should not run drush commands as the root user. Please choose a different system account name.'));
-  }
-  if ($node->ip_address) {
-    if (!_hosting_valid_ip($node->ip_address)) {
-      form_set_error('ip_address', t('Invalid IP address'));
-    }
-  }
+
+  hosting_server_services_from_post($node);
+
+  hosting_server_invoke_services($node, 'validate', $node, $form);
 }
 
 /**
@@ -170,16 +211,7 @@ function hosting_server_update($node) {
     hosting_server_insert($node);
   }
   else {
-
-    db_query("UPDATE {hosting_server} SET 
-      ip_address = '%s', script_user = '%s', config_path = '%s',
-      backup_path = '%s', drush_path = '%s'
-    WHERE 
-      vid = %d", 
-        $node->ip_address, $node->script_user, 
-        $node->config_path, $node->backup_path,  
-        $node->drush_path,
-        $node->vid);
+    hosting_server_invoke_services($node, 'save', $node);
   }
 }
 
@@ -187,35 +219,32 @@ function hosting_server_update($node) {
  * Implementation of hook_insert().
  */
 function hosting_server_insert($node) {
-  db_query("INSERT INTO {hosting_server} (vid, nid, ip_address, script_user, config_path, backup_path, drush_path) 
-      VALUES (%d, %d, '%s', '%s', '%s', '%s', '%s')", 
-        $node->vid, $node->nid, $node->ip_address, $node->script_user, $node->config_path, $node->backup_path, $node->drush_path);
+  hosting_server_invoke_services($node, 'save', $node);
 }
-
-
-
 
 /**
  * Implementation of hook_delete_revision().
  */
 function hosting_nodeapi_server_delete_revision(&$node) {
-  db_query('DELETE FROM {hosting_server} WHERE vid = %d', $node->vid);
+  hosting_server_invoke_services($node, 'delete_revision');
 }
 
 /**
  * Implementation of hook_delete().
  */
 function hosting_server_delete($node) {
-  db_query('DELETE FROM {hosting_server} WHERE nid = %d', $node->nid);
+  hosting_server_invoke_services($node, 'delete_revision');
 }
 
 /**
  * Implementation of hook_load().
  */
 function hosting_server_load($node) {
-  $additions = db_fetch_object(db_query('SELECT ip_address, script_user, config_path, backup_path, drush_path FROM {hosting_server} WHERE vid = %d', $node->vid));
-
   hosting_server_init_services($node);
+  hosting_server_invoke_services($node, 'load');
+
+
+  $additions = new stdClass();
   $additions->services = $node->services;
 
   return $additions;
@@ -227,44 +256,6 @@ function hosting_server_load($node) {
 function hosting_server_view(&$node, $teaser = FALSE, $page = FALSE) {
   $node = node_prepare($node, $teaser);
 
-  $node->content['info']['server'] = array(
-      '#prefix' => '<div class="hosting-service-info">',
-      '#suffix' => '</div>',
-      '#weight' => -20
-    );
-
-  $node->content['info']['server']['title'] = array('#value' => '<h3>' . t('Basic configuration') . '</h3>',
-    '#weight' => -20);
-  if ($node->ip_address) {
-    $node->content['info']['server']['ip_address'] = array(
-      '#type' => 'item',
-      '#title' => t('IP address'),
-      '#value' => filter_xss($node->ip_address),
-    );    
-  }
-  $node->content['info']['server']['drush_path'] = array(
-    '#type' => 'item',
-    '#title' => t('Drush path'),
-    '#value' => filter_xss($node->drush_path),
-  );
-
-  $node->content['info']['server']['script_user'] = array(
-    '#type' => 'item',
-    '#title' => t('Script user'),
-    '#value' => filter_xss($node->script_user),
-  );
-
-  $node->content['info']['server']['config_path'] = array(
-    '#type' => 'item',
-    '#title' => t('Configuration path'),
-    '#value' => filter_xss($node->config_path),
-  );
-  $node->content['info']['server']['backup_path'] = array(
-    '#type' => 'item',
-    '#title' => t('Backup path'),
-    '#value' => filter_xss($node->backup_path),
-  );
-
   $services = module_invoke_all('hosting_service');
 
   foreach ($node->services as $name => $service) {
@@ -272,13 +263,22 @@ function hosting_server_view(&$node, $teaser = FALSE, $page = FALSE) {
       '#prefix' => '<div class="hosting-service-info hosting-service-' . $name . '-info">',
       '#suffix' => '</div>',
     );
-    $node->content['info'][$name]['title'] = array('#value' => '<h3>' . $services[$name]['title'] . ' : ' . $services[$name]['type'] . '</h3>',
+    if (isset($services[$name]['weight'])) {
+      $node->content['info'][$name]['#weight'] = $services[$name]['weight'];
+    }
+
+    $title = $services[$name]['title'];
+    $title .= (isset($services[$name]['type'])) ? ' : ' . $services[$name]['type'] : '';
+
+    $node->content['info'][$name]['title'] = array('#value' => '<h3>' . $title . '</h3>',
       '#weight' => -20
     );
+
     $service->view($node->content['info'][$name]);
   }
   return $node;
 }
 
+function hosting_server_nodeapi_server_prepare(&$node) {
 
-
+}
