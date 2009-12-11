@@ -212,6 +212,7 @@ function hosting_server_update($node) {
   }
   else {
     hosting_server_invoke_services($node, 'save', $node);
+    hosting_server_invoke_services($node, 'update', $node);
   }
 }
 
@@ -220,6 +221,7 @@ function hosting_server_update($node) {
  */
 function hosting_server_insert($node) {
   hosting_server_invoke_services($node, 'save', $node);
+  hosting_server_invoke_services($node, 'insert', $node);
 }
 
 /**

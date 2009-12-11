@@ -1,8 +1,8 @@
 <?php
 
 class hostingService_HTTP extends hostingService {
-  private $service = 'http';
-  private $type = 'apache';
+  protected $service = 'http';
+  protected $type = 'apache';
 
   public function load() {
     parent::load();
@@ -10,6 +10,7 @@ class hostingService_HTTP extends hostingService {
   }
 
   function insert($node) {
+    parent::insert();
     db_query("INSERT INTO {hosting_web_server} (vid, nid, web_group, restart_cmd, ports) 
         VALUES (%d, %d, '%s', '%s', '%s')", 
           $this->server->vid, $this->server->nid, $this->web_group, $this->restart_cmd, $this->ports);
