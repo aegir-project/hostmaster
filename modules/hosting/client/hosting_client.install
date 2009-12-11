@@ -62,6 +62,22 @@ function hosting_client_schema() {
     'primary key' => array('user', 'client'),
   );
 
+  $schema['hosting_client_platform_access'] = array(
+    'fields' => array(
+      'pid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'cid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+  );
   return $schema;
 }
 
@@ -167,5 +183,33 @@ function hosting_client_update_6() {
 function hosting_client_update_7() {
   node_access_rebuild();
   return array();
+}
+
+/**
+ * Add the hosting_client_platforms table and default all clients
+ * to have access to all platforms
+ */
+function hosting_client_update_8() {
+  $ret = array();
+  $q = db_query("SELECT nid FROM {node} WHERE type = 'platform' AND status = '1';");
+  $pids = array();
+  while ($result = db_fetch_array($q)) {
+    $pids[] = $result['nid'];
+  }
+  $ret[] = update_sql("CREATE TABLE {hosting_platform_client_access} 
+                       (pid int(10) unsigned NOT NULL default '0', 
+                        cid int(10) unsigned NOT NULL default '0')");
+
+  $cids=array();
+  $result = db_query("SELECT nid from {hosting_client}");
+  while ($row = db_fetch_array($result)) {
+    $cids[] = $row['nid'];
+  }
+  foreach ($cids as $cid) {
+    foreach ($pids as $pid) {
+      $result = db_query("INSERT INTO {hosting_platform_client_access} (pid, cid) VALUES (%d, %d)", $pid, $cid);
+    }
+  }
+  return $ret;
 }
 

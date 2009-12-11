@@ -307,7 +307,16 @@ function hosting_site_form($node) {
     );
   }
   if (!$node->nid) {
-    $platforms = _hosting_get_enabled_platforms();
+    /* If Client module exists, non-admin user sees only accessible platforms
+     * Otherwise, use enabled platforms
+     * Admin user isn't restricted to only accessible platforms for the client
+    */
+    if (user_access('administer sites') || !module_exists('hosting_client')) { 
+      $platforms = _hosting_get_enabled_platforms();
+    }
+    else {
+      $platforms = _hosting_get_allowed_platforms($client_id);
+    }
     if (sizeof($platforms)) {
       if (sizeof($platforms) > 1) {
         $form['platform'] = array(
