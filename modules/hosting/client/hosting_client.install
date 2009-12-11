@@ -62,7 +62,7 @@ function hosting_client_schema() {
     'primary key' => array('user', 'client'),
   );
 
-  $schema['hosting_client_platform_access'] = array(
+  $schema['hosting_platform_client_access'] = array(
     'fields' => array(
       'pid' => array(
         'type' => 'int',
