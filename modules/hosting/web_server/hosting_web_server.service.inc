@@ -1,6 +1,8 @@
 <?php
 
 class hostingService_HTTP extends hostingService {
+  private $service = 'http';
+  private $type = 'apache';
 
   public function load() {
     parent::load();
@@ -19,7 +21,7 @@ class hostingService_HTTP extends hostingService {
     */
   function validate(&$node, &$form) {
 
-    $ports = explode(",", $node->ports);
+    $ports = explode(",", $this->ports);
     if (count($ports) < 1) {
       form_set_error('ports', t('At least one port must be provided.'));
     }
