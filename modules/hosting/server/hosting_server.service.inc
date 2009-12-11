@@ -60,8 +60,8 @@ class hostingService {
 }
 
 class hostingService_base extends hostingService {
-  private $service = 'server';
-  private $type = 'base';
+  protected $service = 'server';
+  protected $type = 'base';
 
   function form(&$form) {
 
@@ -151,8 +151,7 @@ class hostingService_base extends hostingService {
   }
 
   function insert() {
-    // we specifically don't call the parent function because we need the base server configuration to be IMPLICITLY defined.
-
+    parent::insert();
     db_query("INSERT INTO {hosting_server} (vid, nid, ip_address, script_user, config_path, backup_path, drush_path) 
         VALUES (%d, %d, '%s', '%s', '%s', '%s', '%s')", 
           $this->server->vid, $this->server->nid, $this->ip_address, $this->script_user, $this->config_path, $this->backup_path, $this->drush_path);

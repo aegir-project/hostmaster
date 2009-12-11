@@ -1,8 +1,8 @@
 <?php
 
 class hostingService_HTTP extends hostingService {
-  private $service = 'http';
-  private $type = 'apache';
+  protected $service = 'http';
+  protected $type = 'apache';
 
   public function load() {
     parent::load();
