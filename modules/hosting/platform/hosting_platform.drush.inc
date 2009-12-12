@@ -73,6 +73,7 @@ function hosting_platform_post_hosting_delete_task($task, $data) {
   $task->ref->platform_status = HOSTING_PLATFORM_DELETED;
   $task->ref->no_verify = TRUE;
   node_save($task->ref);
+  db_query("DELETE FROM {hosting_platform_client_access} WHERE pid = %d", $task->ref->nid);
 }
 
 function hosting_platform_post_hosting_lock_task($task, $data) {
