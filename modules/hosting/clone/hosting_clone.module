@@ -46,6 +46,9 @@ function hosting_clone_theme($existing, $type, $theme, $path) {
 
 function hosting_task_clone_form($node) {
   $form = hosting_task_migrate_form($node);
+  // One can always clone to the current platform, so the error displayed 
+  // in the no_targets field in the migrate form is not applicable here 
+  unset($form['no_targets']);
   $form['new_name'] = array (
     '#title' => t('New site name'),
     '#type' => 'textfield',
