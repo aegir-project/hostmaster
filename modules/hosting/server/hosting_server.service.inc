@@ -63,6 +63,10 @@ class hostingService_base extends hostingService {
   protected $service = 'server';
   protected $type = 'base';
 
+  function options($task) {
+    $task->options['drush_path'] = $web->drush_path;
+  }
+
   function form(&$form) {
 
     $form['ip_address'] = array(
