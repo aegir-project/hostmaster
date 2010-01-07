@@ -877,11 +877,6 @@ function hosting_site_menu() {
  */
 function _hosting_site_form_profile($platform = NULL) {
   $profiles = hosting_get_profiles($platform);
-  foreach($profiles as $id => $name) {
-    if (in_array($name, array('hostmaster', 'hostslave'))) {
-      unset($profiles[$id]);
-    }
-  }
   if (sizeof($profiles) > 1) {
     $form['profile'] = array(
       '#type' => 'radios',

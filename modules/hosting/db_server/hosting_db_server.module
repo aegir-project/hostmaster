@@ -77,7 +77,7 @@ function hosting_get_db_server($hostname, $web_server = null) {
  */
 function hosting_db_server_as_url($nid) {
   $node = node_load($nid);
-  return sprintf("%s://%s:%s@%s", $node->db_type, $node->db_user, $node->db_passwd, $node->title);
+  return sprintf("%s://%s:%s@%s", $node->db_type, urlencode($node->db_user), urlencode($node->db_passwd), urlencode($node->title));
 }
 
 /**
