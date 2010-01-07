@@ -129,7 +129,8 @@ mkdir -p $AEGIR_HOME/backups
 chmod 0711 $AEGIR_HOME/config
 chmod 0700 $AEGIR_HOME/backups
 
-if which drush 2> /dev/null ; then
+# we need to check both because some platforms (like SunOS) return 0 even if the binary is not found
+if which drush 2> /dev/null && which drush | grep -v 'no drush in' > /dev/null; then
 	msg "Drush is in the path, good"
 	DRUSH=drush
 elif [ -x $DRUSH ] ; then
@@ -139,7 +140,7 @@ else
 	msg "Installing drush in $AEGIR_HOME"
 	cd $AEGIR_HOME
 	wget http://ftp.drupal.org/files/projects/drush-$DRUSH_VERSION.tar.gz
-	tar -xzf drush-$DRUSH_VERSION.tar.gz
+        gunzip -c drush-$DRUSH_VERSION.tar.gz | tar -xf -
 	rm drush-$DRUSH_VERSION.tar.gz
 	DRUSH="php $AEGIR_HOME/drush/drush.php"
 fi
@@ -151,15 +152,17 @@ else
 	exit 1
 fi
 
-if ! $DRUSH help | grep -q "^ make" ; then
+if $DRUSH help | grep "^ make" > /dev/null ; then
+	msg "Drush make already seems to be installed"
+else
 	msg "Installing drush make in $AEGIR_HOME/.drush"
 	mkdir -p $AEGIR_HOME/.drush
 	$DRUSH dl drush_make --destination=$AEGIR_HOME/.drush
-else
-	msg "Drush make already seems to be installed"
 fi
 
-if ! $DRUSH help | grep -q "^ provision install" ; then
+if $DRUSH help | grep "^ provision install" > /dev/null ; then
+	msg "Provision already seems to be installed"
+else
 	msg "Installing provision backend in $AEGIR_HOME/.drush"
 	mkdir -p $AEGIR_HOME/.drush
 	if [ "$AEGIR_VERSION" = "HEAD" ]; then
@@ -167,11 +170,9 @@ if ! $DRUSH help | grep -q "^ provision install" ; then
 	else
 		$DRUSH dl provision-$AEGIR_VERSION --destination=$AEGIR_HOME/.drush
 	fi
-else
-	msg "Provision already seems to be installed"
 fi
 
-if ! [ -e $HOSTMASTER_DIR ] ; then
+if [ ! -d $HOSTMASTER_DIR ] ; then
 	msg "Deploying hostmaster application"
 	$DRUSH hostmaster make $HOSTMASTER_DIR
 	cd $HOSTMASTER_DIR
@@ -184,7 +185,7 @@ if ! [ -e $HOSTMASTER_DIR ] ; then
 	chgrp $WEB_GROUP sites/$AEGIR_DOMAIN/files
 fi
 
-if ! [ -e $AEGIR_HOME/config/vhost.d/$AEGIR_DOMAIN ]; then
+if [ -f $AEGIR_HOME/config/vhost.d/$AEGIR_DOMAIN ]; then
 	sed -e "s#DocumentRoot .*#DocumentRoot $HOSTMASTER_DIR#" -e "s#Directory .*#Directory $HOSTMASTER_DIR>#" -e "s/ServerName .*/ServerName $AEGIR_DOMAIN/" $HOSTMASTER_DIR/profiles/hostmaster/apache2.conf.txt > $AEGIR_HOME/config/vhost.d/$AEGIR_DOMAIN
 	msg "Installed apache configuration file for $AEGIR_DOMAIN, you will need to restart apache"
 fi
