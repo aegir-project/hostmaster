@@ -25,7 +25,7 @@ function hosting_dispatch() {
     foreach ($queues as $queue => $info) {
       if ($info['enabled']) {
         if (($now - $info["last"]) >= $info["calc_frequency"]) {
-          drush_backend_fork("hosting", array($queue, 'items' => $info['calc_items']));
+          drush_backend_fork("hosting-" . $queue, array('items' => $info['calc_items']));
         } else {
           drush_log(dt("too early for queue @queue", array('@queue' => $queue)));
         }
@@ -158,7 +158,7 @@ function hosting_tasks_queue($count = 20) {
     // this is to avoid concurrent task runs
     $task->task_status = HOSTING_TASK_PROCESSING;
     node_save($task);
-    drush_backend_fork("hosting task", array($task->nid));
+    drush_backend_fork("hosting-task", array($task->nid));
   }
 }
 
