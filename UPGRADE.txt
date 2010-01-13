@@ -33,9 +33,9 @@ you are reading this document.
 
 Shell commands::
 
-  export DRUPAL_DIR=/var/aegir/drupal-6.14
-  export OLD_DRUPAL_DIR=/var/aegir/drupal-6.13
-  export AEGIR_TAG=DRUPAL-6--0-4-ALPHA2
+  export AEGIR_TAG=HEAD
+  export DRUPAL_DIR=/var/aegir/hostmaster-$AEGIR_TAG
+  export OLD_DRUPAL_DIR=/var/aegir/drupal-6.14
 
 This document also assumes drush is installed properly and we use a
 environment variable to simplify the documentation again.
@@ -109,7 +109,7 @@ you will need to run the hostmaster migrate command.
 Shell commands::
 
   cd $OLD_DRUPAL_DIR
-  $DRUSH hostmaster migrate aegir.example.com $DRUPAL_DIR
+  $DRUSH hostmaster-migrate aegir.example.com $DRUPAL_DIR
 
 The directory specified must be an absolute path to where you want
 the new release to be stored. If the directory does not exist, provision
