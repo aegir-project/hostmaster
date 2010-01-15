@@ -286,8 +286,8 @@ function hosting_site_form($node) {
     $client->title = $node->client;
   }
 
-  // If the user is an admin, they can edit who the client of the site is
-  if (user_access('administer site')) {
+  // If the user is an admin or if it's a new site, they can edit who the client of the site is
+  if ((!$node->client || $node->nid) || user_access('administer site')) {
     $form['client'] = array(
       '#type' => 'textfield',
       '#required' => TRUE,
