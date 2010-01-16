@@ -174,7 +174,7 @@ fi
 
 if [ ! -d $HOSTMASTER_DIR ] ; then
 	msg "Deploying hostmaster application"
-	$DRUSH hostmaster make $HOSTMASTER_DIR
+	$DRUSH hostmaster-make $HOSTMASTER_DIR
 	cd $HOSTMASTER_DIR
 	mkdir sites/$AEGIR_DOMAIN
 	cp sites/default/default.settings.php sites/$AEGIR_DOMAIN/settings.php
