@@ -39,8 +39,20 @@ function drush_hosting_migrate_pre_hosting_task($task) {
 function hosting_migrate_post_hosting_migrate_task($task, $data) {
   if ($task->ref->type == 'site') {
     $target = $task->task_args['target_platform'];
-    $task->ref->verified = 0;
-    $task->ref->platform = $target;
-    node_save($task->ref);
+    $site = $task->ref;
+
+    $profile = hosting_package_instance_load(array(
+      'rid' => $target,
+      'short_name' => $data['context']['profile']
+    ));
+    if ($profile) {
+      $site->profile = $profile->package_id;
+    }
+
+    $site->verified = 0;
+    $site->platform = $target;
+    node_save($site);
+
+    $task->ref = $site;
   }
 }
