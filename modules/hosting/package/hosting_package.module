@@ -370,3 +370,12 @@ function hosting_package_list($ref, $type = null) {
   return theme('table',  $header, $rows, array('class' => 'hosting-table')) . theme('pager', null, 25, 2);
 }
 
+/**
+ * Views integration
+ */
+function hosting_package_views_api() {
+  return array(
+    'api' => 2, 
+    'path' => drupal_get_path('module', 'hosting_package'),
+  );
+}

@@ -518,3 +518,13 @@ function hosting_web_server_form_alter($form_id, &$form) {
       break;
   }
 }
+
+/**
+ * Views integration
+ */
+function hosting_web_server_views_api() {
+  return array(
+    'api' => 2, 
+    'path' => drupal_get_path('module', 'hosting_web_server'),
+  );
+}

@@ -291,3 +291,12 @@ function hosting_db_server_hosting_summary() {
   return $summary;
 }
 
+/**
+ * Views integration
+ */
+function hosting_db_server_views_api() {
+  return array(
+    'api' => 2, 
+    'path' => drupal_get_path('module', 'hosting_db_server'),
+  );
+}
