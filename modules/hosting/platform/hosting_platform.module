@@ -295,8 +295,10 @@ function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
  */
 function hosting_platform_hosting_summary() {
   $summary = array();
-  $platforms = _hosting_get_platforms();
-  $summary['platforms'] = theme('item_list', array_map('_hosting_node_link', array_keys($platforms)), t('Platforms'));
+  if (user_access('view platform')) {
+    $platforms = _hosting_get_platforms();
+    $summary['platforms'] = theme('item_list', array_map('_hosting_node_link', array_keys($platforms)), t('Platforms'));
+  }
   return $summary;
 }
 
