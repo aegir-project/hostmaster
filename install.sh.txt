@@ -174,7 +174,7 @@ fi
 
 if [ ! -d $HOSTMASTER_DIR ] ; then
 	msg "Deploying hostmaster application"
-	$DRUSH hostmaster make $HOSTMASTER_DIR
+	$DRUSH hostmaster-make $HOSTMASTER_DIR
 	cd $HOSTMASTER_DIR
 	mkdir sites/$AEGIR_DOMAIN
 	cp sites/default/default.settings.php sites/$AEGIR_DOMAIN/settings.php
@@ -185,7 +185,7 @@ if [ ! -d $HOSTMASTER_DIR ] ; then
 	chgrp $WEB_GROUP sites/$AEGIR_DOMAIN/files
 fi
 
-if [ -f $AEGIR_HOME/config/vhost.d/$AEGIR_DOMAIN ]; then
+if [ ! -f $AEGIR_HOME/config/vhost.d/$AEGIR_DOMAIN ]; then
 	sed -e "s#DocumentRoot .*#DocumentRoot $HOSTMASTER_DIR#" -e "s#Directory .*#Directory $HOSTMASTER_DIR>#" -e "s/ServerName .*/ServerName $AEGIR_DOMAIN/" $HOSTMASTER_DIR/profiles/hostmaster/apache2.conf.txt > $AEGIR_HOME/config/vhost.d/$AEGIR_DOMAIN
 	msg "Installed apache configuration file for $AEGIR_DOMAIN, you will need to restart apache"
 fi
