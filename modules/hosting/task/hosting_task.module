@@ -945,3 +945,13 @@ function hosting_task_status_class($status = null) {
 
   return $class;
 }
+
+/**
+ * Views integration
+ */
+function hosting_task_views_api() {
+  return array(
+    'api' => 2, 
+    'path' => drupal_get_path('module', 'hosting_task'),
+  );
+}

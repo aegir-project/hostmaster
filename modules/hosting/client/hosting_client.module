@@ -595,3 +595,13 @@ function hosting_client_autocomplete($type, $keyword) {
   drupal_json($matches);
   exit();
 }
+
+/**
+ * Views integration
+ */
+function hosting_client_views_api() {
+  return array(
+    'api' => 2, 
+    'path' => drupal_get_path('module', 'hosting_client'),
+  );
+} 

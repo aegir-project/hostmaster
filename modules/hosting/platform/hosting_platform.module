@@ -299,3 +299,13 @@ function hosting_platform_hosting_summary() {
   $summary['platforms'] = theme('item_list', array_map('_hosting_node_link', array_keys($platforms)), t('Platforms'));
   return $summary;
 }
+
+/**
+ * Views integration
+ */
+function hosting_platform_views_api() {
+  return array(
+    'api' => 2, 
+    'path' => drupal_get_path('module', 'hosting_platform'),
+  );
+}
