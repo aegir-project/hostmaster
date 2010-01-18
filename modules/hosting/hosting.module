@@ -345,9 +345,7 @@ function hosting_queue_block() {
 }
 
 function hosting_summary_block() {
-  if (user_access('administer hosting')) {
-    return theme('hosting_summary_block', module_invoke_all('hosting_summary'));
-  }
+  return theme('hosting_summary_block', module_invoke_all('hosting_summary'));
 }
 
 function theme_hosting_summary_block($components) {
