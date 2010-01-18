@@ -1005,3 +1005,13 @@ function hosting_site_goto($node) {
   drupal_goto($theurl);
   exit();
 }
+
+/**
+ * Views integration
+ */
+function hosting_site_views_api() {
+  return array(
+    'api' => 2, 
+    'path' => drupal_get_path('module', 'hosting_site'),
+  );
+}
