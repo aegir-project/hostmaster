@@ -503,11 +503,11 @@ function _hosting_hosting_setup_requirements() {
 EOF;
   $setup_cmd = <<<EOF
     cd $docroot
-    php $drush_path --uri=$uri hosting setup
+    php $drush_path --uri=$uri hosting-setup
 EOF;
-  $help['title'] = t('Perform initial configuration by running the <code>Hosting Setup</code> command');
+  $help['title'] = t('Perform initial configuration by running the <code>hosting-setup</code> command');
 
-  $help['summary'][] = t('The hosting setup command performs several useful installation functions, but its primary responsibility
+  $help['summary'][] = t('The hosting-setup command performs several useful installation functions, but its primary responsibility
         is adding the crontab entry for the queue dispatcher and ensuring that has been correctly installed.');
 
   $help['summary'][] = t('The queue dispatcher runs every minute. It keeps track of what work needs to be done on the system 
@@ -531,7 +531,7 @@ function _hosting_cron_requirements() {
   $help['summary'][] = t('Changes to this system are executed via a back end script which needs to be called by a user other than 
     the web server user for security reasons at regular intervals.');
   $help['summary'][] = t('The intervals at which these commands are run can be customised by going to the !queueconf section.', $cron_cmd);
-  $help['summary'][] = t('The <code>hosting setup</code> command installs the required cron entry for you.', $cron_cmd);
+  $help['summary'][] = t('The <code>hosting-setup</code> command installs the required cron entry for you.', $cron_cmd);
   $help['configuration'] = t('Add the following line to your crontab : <code>@cron_line</code>', $cron_cmd);
   return $help;
 }

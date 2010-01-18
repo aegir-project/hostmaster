@@ -54,7 +54,7 @@ function drush_hosting_hosting_task() {
   $data = array_merge($task->args, $task->options);
   $data['uri'] = null; // provision commands do not need the url passed to them.
   $mode = drush_get_option('debug', FALSE) ? 'GET' : 'POST';
-  $output = drush_backend_invoke("provision " . $task->task_type, $data, $mode, TRUE, $drush_path, $hostname, $username);
+  $output = drush_backend_invoke("provision-" . $task->task_type, $data, $mode, TRUE, $drush_path, $hostname, $username);
 
   drush_set_context('HOSTING_DRUSH_OUTPUT', $output);
   $code = drush_get_error();

@@ -203,7 +203,7 @@ function hosting_init() {
   define('HOSTING_DEFAULT_VHOST_PATH', HOSTING_DEFAULT_CONFIG_PATH .'/vhost.d');
 
   /** 
-   * Find the base URL, this is used by the initial 'hosting setup' drush command
+   * Find the base URL, this is used by the initial 'hosting-setup' drush command
    * This gets defined in the bootstrap, so just using the global definition.
    */
   define('HOSTING_DEFAULT_BASE_URL', $GLOBALS['base_url']); 
@@ -373,7 +373,7 @@ function hosting_domain_allowed($url, $params = array()) {
 
 /**
  * Initial hosting setup
- * Runs the 'hosting dispatch' command, and 
+ * Runs the 'hosting-dispatch' command, and 
  * move on to setting up the crontab
  */ 
 function hosting_setup() {
@@ -401,7 +401,7 @@ function hosting_setup() {
 }
 
 /**
- * Set up the hosting dispatch command in the aegir user's crontab
+ * Set up the hosting-dispatch command in the aegir user's crontab
  * Replace the crontab entry if it exists, else create it from scratch
  */
 function _hosting_setup_cron() {
@@ -427,7 +427,7 @@ function _hosting_setup_cron() {
   fclose($fp);
   system(sprintf('crontab %s', escapeshellarg($tmpnam)));
   unlink($tmpnam);
-  drush_log(dt("Installed hosting dispatch cron entry to run every minute"), 'message');
+  drush_log(dt("Installed hosting-dispatch cron entry to run every minute"), 'message');
   return null;
 }
 
