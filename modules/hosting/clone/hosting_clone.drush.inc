@@ -7,6 +7,17 @@ function drush_hosting_clone_pre_hosting_task($task) {
     $task->args[2] = $task->task_args['new_name'];
     $platform = node_load($task->task_args['target_platform']);
     $task->args[3] = $platform->publish_path;
+
+
+    $profile_instance = _hosting_migrate_get_target_profile_name($task);
+
+    if (sizeof($profile_instance)) {
+      $task->options['profile'] = $profile_instance->short_name;
+    }
+    else {
+      drush_set_error("HOSTING_NO_VALID_PROFILE", dt("There are no valid install profiles on the target platform to migrate to"));
+    }
+
     if (module_exists('hosting_alias')) {
       $task->options['aliases'] = str_replace("\n", ",", $task->task_args['aliases']);
       $task->options['redirection'] = $task->task_args['redirection'];
@@ -29,6 +40,15 @@ function hosting_clone_post_hosting_clone_task($task, $data) {
     $clone->verified = 0; # ... and it does verify
     $clone->aliases = $task->task_args['aliases'];
     $clone->redirection = $task->task_args['redirection'];
+
+    $profile = hosting_package_instance_load(array(
+      'rid' => $target,
+      'short_name' => $data['context']['profile']
+    ));
+    if ($profile) {
+      $clone->profile = $profile->package_id;
+    }
+
     node_save($clone);
   }
 }
