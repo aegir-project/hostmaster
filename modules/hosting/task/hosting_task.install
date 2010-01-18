@@ -157,7 +157,7 @@ function hosting_task_update_2() {
  */
 function hosting_task_update_6000() {
 
-  $ret = array();
+  $ret = hosting_package_update_6002();
 
   // this update needs to be run before tasks can be added, in other update functions. 
   if (!variable_get('hosting_task_update_6000_run', FALSE)) {
