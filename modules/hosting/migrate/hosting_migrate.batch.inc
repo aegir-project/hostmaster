@@ -185,6 +185,13 @@ function hosting_migrate_platform_batch($site_id, $target_platform, &$context) {
     array('i.rid' => $target_platform, 
           'r.type' => 'platform',
           'n.nid' => $site->profile));
+  if (!$profile_instance) {
+    // Check if there is a possibly renamed profile available
+     $profile_instance = hosting_package_instance_load(
+      array('i.rid' => $target_platform, 
+            'r.type' => 'platform',
+            'p.old_short_name' => $profile->short_name));
+  }
   if ($profile_instance) {
     $status = hosting_package_comparison($site->nid, $profile_instance->iid);
     $batch['form_state']['storage']['status'][$site->nid] = $status;
