@@ -172,7 +172,7 @@ function hosting_client_node_access_records($node) {
   if (hosting_client_disabling()) {
     return;
   }
-
+  $grants = array();
   $base_grant = array(
       'realm' => 'hosting ' . $node->type, 
       'grant_view' => TRUE, 
@@ -201,7 +201,7 @@ function hosting_client_node_access_records($node) {
     case 'web_server' :
     case 'db_server' :
       // The rest of the node types are configuration, so only admin should see them. 
-      $base_grant['gid'] = HOSTING_DEFAULT_CLIENT;
+      $base_grant['gid'] = 1;
       break;
     default :
       //Not hosting node, don't change access.
@@ -209,16 +209,14 @@ function hosting_client_node_access_records($node) {
   }
 
   if ($base_grant['gid']) {
-    if ($base_grant['gid'] != HOSTING_DEFAULT_CLIENT) {
-      $grants[] = $base_grant;
-    }
+    $grants[] = $base_grant;
 
+    // this should _always_ happen.
     if ($base_grant['gid'] != 1) {
       // Also give full access to the administrator user.
       $base_grant['gid'] = 1;
       $grants[] = $base_grant;
     }
-
     return $grants;
   }
 }
