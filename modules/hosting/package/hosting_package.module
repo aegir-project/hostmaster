@@ -321,7 +321,6 @@ function hosting_package_sync(&$data) {
         $package->old_short_name = $file['info']['old_short_name'];
         $package->description = $file['description'];
 
-        node_save($package);
         // Kludge to hide the hostmaster and hostslave profiles
         if (($type == 'profile') 
           && in_array($short_name, array('hostslave', 'hostmaster'))) {
@@ -330,6 +329,7 @@ function hosting_package_sync(&$data) {
         else {
           $package->status = 1;
         }
+        node_save($package);
       }
 
 
