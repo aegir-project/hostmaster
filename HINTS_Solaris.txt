@@ -67,8 +67,9 @@ MySQL commands::
    'aegir'@'localhost' IDENTIFIED BY 'aegir_password';
  # Create a mysql super user (with GRANT OPTION)
  # Replace 'aegir_root_password' with a new password
- GRANT ALL PRIVILEGES ON `site\_%`.* TO 'aegir_root'@'localhost' \
+ GRANT USAGE,CREATE USER ON *.* TO 'aegir_root'@'localhost' \
    IDENTIFIED BY 'aegir_root_password' WITH GRANT OPTION;
+ GRANT ALL PRIVILEGES ON `site\_%`.* TO 'aegir_root'@'localhost';
 
 3. Install the Aegir files
 ==========================
