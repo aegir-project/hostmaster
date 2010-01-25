@@ -19,7 +19,6 @@ function hosting_cron_hosting_queues() {
 function hosting_cron_queue($count) {
   $sites = hosting_cron_get_sites($count);
 
-  drush_set_context('DRUSH_LOG_CALLBACK', '_hosting_watchdog');
   foreach ($sites as $site) {
     $platform = node_load($site->platform);
     $web_server = node_load($platform->web_server);
@@ -34,7 +33,7 @@ function hosting_cron_queue($count) {
       $username = $web_server->script_user;
     }
 
-    drush_backend_fork("cron", $data, $drush_path, $hostname, $username);
+    drush_backend_invoke("cron", $data, $drush_path, $hostname, $username);
 
     $site->revision = false;
     $site->no_verify = true; // do not generate verify task
