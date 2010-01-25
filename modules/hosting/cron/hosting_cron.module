@@ -33,7 +33,7 @@ function hosting_cron_queue($count) {
       $username = $web_server->script_user;
     }
 
-    drush_backend_fork("cron", $data, $drush_path, $hostname, $username);
+    drush_backend_invoke("cron", $data, $drush_path, $hostname, $username);
 
     $site->revision = false;
     $site->no_verify = true; // do not generate verify task
