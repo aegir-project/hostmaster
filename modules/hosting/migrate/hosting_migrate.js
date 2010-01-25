@@ -24,10 +24,16 @@ function hostingMigrateComparisonInline(elem) {
 
 function hostingMigrateToggleSize() {
   if (parent.Drupal.modalFrame.isOpen) {
-    parent.Drupal.modalFrame.resize( {
-        width: $(document).width() ,
-        height: $("body").height() + 25 }
-     );
+
+    var self = Drupal.modalFrameChild;
+    // Tell the parent window to resize the Modal Frame if the child window
+    // size has changed more than a few pixels tall or wide.
+    var newWindowSize = {width: $(window).width(), height: $('body').height() + 25};
+    if (Math.abs(self.currentWindowSize.width - newWindowSize.width) > 5 || Math.abs(self.currentWindowSize.height - newWindowSize.height) > 5) {
+      self.currentWindowSize = newWindowSize;
+      self.triggerParentEvent('childResize');
+    }
+
   }
 }
 
