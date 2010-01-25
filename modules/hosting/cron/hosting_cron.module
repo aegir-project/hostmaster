@@ -19,7 +19,6 @@ function hosting_cron_hosting_queues() {
 function hosting_cron_queue($count) {
   $sites = hosting_cron_get_sites($count);
 
-  drush_set_context('DRUSH_LOG_CALLBACK', '_hosting_watchdog');
   foreach ($sites as $site) {
     $platform = node_load($site->platform);
     $web_server = node_load($platform->web_server);
