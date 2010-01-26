@@ -24,7 +24,7 @@ AEGIR_DOMAIN=aegir.example.com
 AEGIR_VERSION=HEAD
 AEGIR_HOME=$HOME
 WEB_GROUP=www-data
-DRUSH_VERSION=All-Versions-2.1
+DRUSH_VERSION=6.x-3.0-alpha1
 # when adding a variable here, add it to the display below
 
 ########################################################################
