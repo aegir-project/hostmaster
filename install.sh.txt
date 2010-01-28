@@ -21,7 +21,7 @@
 ########################################################################
 # basic variables, change before release
 AEGIR_DOMAIN=aegir.example.com 
-AEGIR_VERSION=HEAD
+AEGIR_VERSION=0.4-alpha4
 AEGIR_HOME=$HOME
 WEB_GROUP=www-data
 DRUSH_VERSION=6.x-3.0-alpha1
@@ -170,7 +170,11 @@ else
 	if [ "$AEGIR_VERSION" = "HEAD" ]; then
 		git clone git://git.aegirproject.org/provision $AEGIR_HOME/.drush/provision
 	else
-		$DRUSH dl provision-$AEGIR_VERSION --destination=$AEGIR_HOME/.drush
+		mkdir $AEGIR_HOME/.drush/provision
+		cd $AEGIR_HOME/.drush/provision
+		wget http://files.aegirproject.org/provision-$AEGIR_VERSION.tgz
+	        gunzip -c provision-$AEGIR_VERSION.tgz | tar -xf -
+	        rm provision-$AEGIR_VERSION.tgz
 	fi
 fi
 
