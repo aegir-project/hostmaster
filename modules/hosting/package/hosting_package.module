@@ -149,6 +149,7 @@ function hosting_get_profile_languages($profile = NULL, $platform = NULL) {
  *    An associated array containing the following properties
  *      name => A string containing the friendly name of the package
  *      short_name => The name of the drupal package in the system table
+ *      old_short_name => The name that a package used to be called, for migration purposes.
  *      package_type => The type of package. (theme|module|profile|engine)
  */
 function _hosting_package_load($param) {
@@ -190,8 +191,8 @@ function hosting_get_package($short_name) {
  * Implementation of hook_insert().
  */
 function hosting_package_insert($node) {
-  db_query("INSERT INTO {hosting_package} (vid, nid, package_type, short_name, description ) VALUES (%d, %d, '%s', '%s', '%s')",
-    $node->vid, $node->nid, $node->package_type, $node->short_name, $node->description );
+  db_query("INSERT INTO {hosting_package} (vid, nid, package_type, short_name, old_short_name, description ) VALUES (%d, %d, '%s', '%s', '%s', '%s')",
+    $node->vid, $node->nid, $node->package_type, $node->short_name, $node->old_short_name, $node->description );
 }
 
 
@@ -207,8 +208,8 @@ function hosting_package_update($node) {
     hosting_package_insert($node);
   }
   else {
-    db_query("UPDATE {hosting_package} SET package_type = '%s', short_name = '%s', description = '%s' WHERE nid=%d",
-      $node->package_type, $node->short_name, $node->description, $node->nid);
+    db_query("UPDATE {hosting_package} SET package_type = '%s', short_name = '%s', old_short_name = '%s', description = '%s' WHERE nid=%d",
+      $node->package_type, $node->short_name, $node->old_short_name, $node->description, $node->nid);
   }
 }
 
@@ -227,7 +228,7 @@ function hosting_package_delete($node) {
  * Implementation of hook_load().
  */
 function hosting_package_load($node) {
-  $additions = db_fetch_object(db_query('SELECT package_type, short_name, description FROM {hosting_package} WHERE vid = %d', $node->vid));
+  $additions = db_fetch_object(db_query('SELECT package_type, short_name, old_short_name, description FROM {hosting_package} WHERE vid = %d', $node->vid));
   return $additions;
 }
 
@@ -243,9 +244,17 @@ function hosting_package_view($node, $teaser = FALSE, $page = FALSE) {
   );
   $node->content['short_name'] = array(
     '#type' => 'item',
-    '#title' => t('Project name'),
+    '#title' => t('Project Name'),
     '#value' => filter_xss($node->short_name),
   );
+
+  if (!empty($node->old_short_name)) {
+    $node->content['old_short_name'] = array(
+      '#type' => 'item',
+      '#title' => t('Previous Project Name'),
+      '#value' => filter_xss($node->old_short_name),
+    );
+  }
 
   if ($node->package_type == 'profile') {
     $node->content['sites'] = array(
@@ -309,7 +318,9 @@ function hosting_package_sync(&$data) {
         $package->title = $name;
         $package->package_type = $type;
         $package->short_name = $short_name;
+        $package->old_short_name = $file['info']['old_short_name'];
         $package->description = $file['description'];
+
         // Kludge to hide the hostmaster and hostslave profiles
         if (($type == 'profile') 
           && in_array($short_name, array('hostslave', 'hostmaster'))) {
@@ -320,6 +331,7 @@ function hosting_package_sync(&$data) {
         }
         node_save($package);
       }
+
 
       $data[$plural][$short_name]['package_id'] = $package->nid;
     }
@@ -370,3 +382,12 @@ function hosting_package_list($ref, $type = null) {
   return theme('table',  $header, $rows, array('class' => 'hosting-table')) . theme('pager', null, 25, 2);
 }
 
+/**
+ * Views integration
+ */
+function hosting_package_views_api() {
+  return array(
+    'api' => 2, 
+    'path' => drupal_get_path('module', 'hosting_package'),
+  );
+}

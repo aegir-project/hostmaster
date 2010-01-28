@@ -286,8 +286,19 @@ function hosting_db_server_view($node, $teaser = FALSE, $page = FALSE) {
  */
 function hosting_db_server_hosting_summary() {
   $summary = array();
-  $db_servers = _hosting_get_db_servers();
-  $summary['db_servers'] = theme('item_list', array_map('_hosting_node_link', array_keys($db_servers)), t('Database servers'));
+  if (user_access('view database server')) {
+    $db_servers = _hosting_get_db_servers();
+    $summary['db_servers'] = theme('item_list', array_map('_hosting_node_link', array_keys($db_servers)), t('Database servers'));
+  }
   return $summary;
 }
 
+/**
+ * Views integration
+ */
+function hosting_db_server_views_api() {
+  return array(
+    'api' => 2, 
+    'path' => drupal_get_path('module', 'hosting_db_server'),
+  );
+}

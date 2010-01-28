@@ -675,3 +675,13 @@ function _hosting_get_allowed_platforms($client_id = NULL) {
   }
   return $return;
 }
+ 
+/*
+ * Views integration
+ */
+function hosting_client_views_api() {
+  return array(
+    'api' => 2, 
+    'path' => drupal_get_path('module', 'hosting_client'),
+  );
+} 

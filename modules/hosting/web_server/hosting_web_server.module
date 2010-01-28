@@ -490,8 +490,10 @@ function hosting_web_server_view($node, $teaser = FALSE, $page = FALSE) {
  */
 function hosting_web_server_hosting_summary() {
   $summary = array();
-  $web_servers = _hosting_get_web_servers();
-  $summary['web_servers'] = theme('item_list', array_map('_hosting_node_link', array_keys($web_servers)), t('Web servers'));
+  if (user_access('view web server')) {
+    $web_servers = _hosting_get_web_servers();
+    $summary['web_servers'] = theme('item_list', array_map('_hosting_node_link', array_keys($web_servers)), t('Web servers'));
+  }
   return $summary;
 }
 
@@ -517,4 +519,14 @@ function hosting_web_server_form_alter($form_id, &$form) {
       }
       break;
   }
+}
+
+/**
+ * Views integration
+ */
+function hosting_web_server_views_api() {
+  return array(
+    'api' => 2, 
+    'path' => drupal_get_path('module', 'hosting_web_server'),
+  );
 }

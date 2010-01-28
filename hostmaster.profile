@@ -222,6 +222,7 @@ function hostmaster_bootstrap() {
   $node->status = 1;
   node_save($node);
   variable_set('hosting_default_client', $node->nid);  
+  variable_set('hosting_admin_client', $node->nid);
 
   /* Default database server */
   global $db_url;

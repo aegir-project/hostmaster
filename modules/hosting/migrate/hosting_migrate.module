@@ -89,8 +89,17 @@ function hosting_task_migrate_form($node) {
   drupal_add_js(drupal_get_path('module','hosting_migrate') . '/hosting_migrate.js');
   $packages = array();
 
+  $site_profile = node_load($node->profile);
+
   $profile_platform_instances = hosting_package_instances_load(
-    array('r.type' => 'platform', 'n.nid' => $node->profile, 'h.status' => '1'));
+    array('r.type' => 'platform', 'n.nid' => $node->profile));
+
+  // In the list of possible targets, we also include install profiles on platforms that
+  // USED to be named the same as our current install profile. Such as the d6 -> d7 rename
+  // of the default profile to standard.
+  $profile_platform_instances = array_merge($profile_platform_instances, hosting_package_instances_load(
+    array('r.type' => 'platform', 'p.old_short_name' => $site_profile->short_name)));
+
   if (sizeof($profile_platform_instances) <= 1) {
     $form['no_targets'] = array(
       '#value' => t('<br />There are no platforms that can meet the dependencies for this site<br />'));

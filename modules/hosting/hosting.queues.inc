@@ -24,7 +24,7 @@ function hosting_dispatch() {
     $queues = hosting_get_queues();
     foreach ($queues as $queue => $info) {
       if ($info['enabled']) {
-        if (($now - $info["last"]) >= $info["calc_frequency"]) {
+        if (($now - $info["last"]) >= $info["calc_frequency"] || drush_get_option('force', false)) {
           drush_backend_fork("hosting-" . $queue, array('items' => $info['calc_items']));
         } else {
           drush_log(dt("too early for queue @queue", array('@queue' => $queue)));

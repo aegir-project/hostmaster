@@ -176,6 +176,11 @@ function hosting_init() {
   define('HOSTING_DEFAULT_WEB_SERVER', variable_get('hosting_default_web_server', 3));
   define('HOSTING_DEFAULT_PLATFORM', variable_get('hosting_default_platform', 6)); 
 
+  /**
+   * This client has access to everything, see hosting_client.access.inc
+   */
+  define('HOSTING_ADMIN_CLIENT', variable_get('hosting_admin_client', 1));
+
   define('HOSTING_OWN_DB_SERVER', variable_get('hosting_own_db_server', 2));
   define('HOSTING_OWN_WEB_SERVER', variable_get('hosting_own_web_server', 3));
   define('HOSTING_OWN_PLATFORM', variable_get('hosting_own_platform', 6)); 
@@ -345,9 +350,7 @@ function hosting_queue_block() {
 }
 
 function hosting_summary_block() {
-  if (user_access('administer hosting')) {
-    return theme('hosting_summary_block', module_invoke_all('hosting_summary'));
-  }
+  return theme('hosting_summary_block', module_invoke_all('hosting_summary'));
 }
 
 function theme_hosting_summary_block($components) {

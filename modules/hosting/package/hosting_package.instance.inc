@@ -117,7 +117,7 @@ function _hosting_package_instances_load($param, $multiple = FALSE) {
   $result = db_query("SELECT 
       n.title, r.type, p.package_type, p.nid,
       i.iid, i.version, i.version_code, i.schema_version,
-      i.status, p.description, p.short_name, i.rid,
+      i.status, p.description, p.short_name, p.old_short_name, i.rid,
       i.package_id
       FROM {hosting_package_instance} i 
         LEFT JOIN {hosting_package} p ON p.nid=i.package_id 
@@ -243,5 +243,5 @@ function hosting_package_comparison($current, $target) {
 
 
 function _hosting_package_temporary_table($name, $ref) {
-  db_query("CREATE TEMPORARY TABLE %s AS SELECT nid, short_name, version_code, schema_version, version, status from hosting_package p left join hosting_package_instance i on p.nid = i.package_id where rid= %d", $name, $ref);
+  db_query("CREATE TEMPORARY TABLE %s AS SELECT nid, short_name, old_short_name, version_code, schema_version, version, status from hosting_package p left join hosting_package_instance i on p.nid = i.package_id where rid= %d", $name, $ref);
 }

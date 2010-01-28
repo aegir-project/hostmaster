@@ -94,3 +94,16 @@ function hosting_update_6003() {
   variable_set('hosting_queue_tasks_items', 5);
   return $ret;
 }
+
+/**
+ * Stricter initial permissions for the anonymous user.
+ */
+function hosting_update_6004() {
+  $ret = array();
+  install_include(array('user'));
+
+  install_remove_permissions(install_get_rid('anonymous user'), array('access content', 'access all views'));
+  install_remove_permissions(install_get_rid('authenticated user'), array('access content', 'access all views'));
+
+  return $ret;
+}

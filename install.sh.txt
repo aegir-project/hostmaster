@@ -24,7 +24,9 @@ AEGIR_DOMAIN=aegir.example.com
 AEGIR_VERSION=HEAD
 AEGIR_HOME=$HOME
 WEB_GROUP=www-data
-DRUSH_VERSION=All-Versions-2.1
+DRUSH_VERSION=6.x-3.0-alpha1
+DRUSH_MAKE_VERSION=6.x-2.0-beta6
+
 # when adding a variable here, add it to the display below
 
 ########################################################################
@@ -157,7 +159,7 @@ if $DRUSH help | grep "^ make" > /dev/null ; then
 else
 	msg "Installing drush make in $AEGIR_HOME/.drush"
 	mkdir -p $AEGIR_HOME/.drush
-	$DRUSH dl drush_make --destination=$AEGIR_HOME/.drush
+	$DRUSH dl drush_make-$DRUSH_MAKE_VERSION --destination=$AEGIR_HOME/.drush
 fi
 
 if $DRUSH help | grep "^ provision install" > /dev/null ; then

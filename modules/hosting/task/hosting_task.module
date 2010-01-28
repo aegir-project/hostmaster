@@ -767,15 +767,11 @@ function hosting_task_queue_block() {
   );
   drupal_add_js($settings, 'setting');
 
-  $offset = db_result(db_query("SELECT count(n.nid) FROM {node} n LEFT JOIN {hosting_task} t ON n.vid=t.vid WHERE n.type = 'task' AND t.task_status = %d", HOSTING_TASK_QUEUED));
-
-  $offset = ($offset < 3) ? 0 : $offset - 3;
-
-  $result = db_query_range("SELECT n.nid, n.title, t.task_type, t.task_status FROM {node} n LEFT JOIN {hosting_task} t ON n.vid=t.vid WHERE n.type = 'task' ORDER BY t.task_status ASC, n.changed DESC", $offset, 5);
+  $nodes = hosting_get_tasks('t.task-status', HOSTING_TASK_QUEUED, 5);
 
   $headers = array( t('Task'), t('Actions') );
   $rows[] = array();
-  while ($node = db_fetch_object($result)) {
+  foreach ($nodes as $node) {
     $row = array();
     $row['type'] = array(
       'data' => $node->title,
@@ -961,4 +957,14 @@ function hosting_task_status_class($status = null) {
   }
 
   return $class;
+}
+
+/**
+ * Views integration
+ */
+function hosting_task_views_api() {
+  return array(
+    'api' => 2, 
+    'path' => drupal_get_path('module', 'hosting_task'),
+  );
 }

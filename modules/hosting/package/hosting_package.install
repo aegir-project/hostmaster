@@ -30,6 +30,12 @@ function hosting_package_schema() {
         'not null' => TRUE,
         'default' => '',
       ),
+      'old_short_name' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => TRUE,
+        'default' => '',
+      ),
       'description' => array(
         'type' => 'text',
         'size' => 'big',
@@ -331,3 +337,24 @@ function hosting_package_update_6001() {
   return $ret;
 }
 
+/**
+ * Add the new old_short_name field which will be used to manage
+ * cases where install profiles change names during migrations, 
+ * such as drupal 6 'default' profile to drupal 7 'standard' profile.
+ *
+ * This needs to happen before any interaction with the packaging system
+ * can be made.
+ */
+function hosting_package_update_6002() {
+  $ret = array();
+  if (!variable_get('hosting_package_update_6002_run', FALSE)) {
+    db_add_field($ret, 'hosting_package', 'old_short_name', array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => TRUE,
+        'default' => '',
+      ));
+    variable_set('hosting_package_update_6002_run', TRUE);
+  }
+  return $ret;
+}
