@@ -170,8 +170,7 @@ else
 	if [ "$AEGIR_VERSION" = "HEAD" ]; then
 		git clone git://git.aegirproject.org/provision $AEGIR_HOME/.drush/provision
 	else
-		mkdir $AEGIR_HOME/.drush/provision
-		cd $AEGIR_HOME/.drush/provision
+		cd $AEGIR_HOME/.drush
 		wget http://files.aegirproject.org/provision-$AEGIR_VERSION.tgz
 	        gunzip -c provision-$AEGIR_VERSION.tgz | tar -xf -
 	        rm provision-$AEGIR_VERSION.tgz
