@@ -201,7 +201,7 @@ for you. That script needs to be run as the aegir user created above.
 This file is available alongside this one or can be downloaded through the 
 web at:
 
-http://git.aegirproject.org/?p=hostmaster.git;a=blob_plain;f=install.sh.txt;hb=hostmaster-0.4-alpha4
+http://git.aegirproject.org/?p=hostmaster.git;a=blob_plain;f=install.sh.txt;hb=hostmaster-0.4-alpha5
 
 By default, the install script will install the "correct" version of
 Aegir (ie. if it was downloaded through git, it will install the version
