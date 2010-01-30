@@ -85,9 +85,10 @@ Bottomline: first you upgrade the backend, then the frontend.
 
 Upgrading the backend is as simple as installing a new version of
 Drush and Provision over the old ones. The below is an example of
-downloading Drush. A new version of Drush may exist since the time
-of this writing. You should replace the generic example given below
-for the current version at the time you are reading this document.
+downloading Drush and Provision. A new version of Drush or Provision
+may exist since the time of this writing. You should replace the generic 
+example given below for the current version at the time you are reading 
+this document.
 
 Keep a copy of the old provision and drush in case something goes wrong 
 in the frontend.
@@ -99,8 +100,11 @@ Shell commands::
   wget http://ftp.drupal.org/files/projects/drush-$VERSION.tar.gz 
   tar -xvzf drush-$VERSION.tar.gz
   rm drush-$VERSION.tar.gz
-  mv .drush/provision provision.bak
-  $DRUSH dl provision --destination=.drush
+  cd /var/aegir/.drush
+  mv provision ../provision.bak
+  wget http://files.aegirproject.org/provision-$AEGIR_VERSION.tgz
+  gunzip -c provision-$AEGIR_VERSION.tgz | tar -xf -
+  rm provision-$AEGIR_VERSION.tgz
 
 Provision 0.4 has added a new dependency on drush_make, which will also
 need to be installed to upgrade the front end.
