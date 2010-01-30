@@ -43,7 +43,7 @@ prompt_yes_no() {
     printf "$* [Y/n] "
     read answer
     if [ -z "$answer" ] ; then
-	return 0
+        return 0
     fi
     case $answer in
       [Yy]|[Yy][Ee][Ss])
@@ -53,8 +53,8 @@ prompt_yes_no() {
         return 1
         ;;
       *)
-	echo "Please answer yes or no"
-	;;
+        echo "Please answer yes or no"
+        ;;
     esac
  done 
 
@@ -133,67 +133,67 @@ chmod 0700 $AEGIR_HOME/backups
 
 # we need to check both because some platforms (like SunOS) return 0 even if the binary is not found
 if which drush 2> /dev/null && which drush | grep -v 'no drush in' > /dev/null; then
-	msg "Drush is in the path, good"
-	DRUSH=drush
+        msg "Drush is in the path, good"
+        DRUSH=drush
 elif [ -x $DRUSH ] ; then
-	msg "Drush found in $DRUSH, good"
-	DRUSH="php $AEGIR_HOME/drush/drush.php"
+        msg "Drush found in $DRUSH, good"
+        DRUSH="php $AEGIR_HOME/drush/drush.php"
 else
-	msg "Installing drush in $AEGIR_HOME"
-	cd $AEGIR_HOME
-	wget http://ftp.drupal.org/files/projects/drush-$DRUSH_VERSION.tar.gz
+        msg "Installing drush in $AEGIR_HOME"
+        cd $AEGIR_HOME
+        wget http://ftp.drupal.org/files/projects/drush-$DRUSH_VERSION.tar.gz
         gunzip -c drush-$DRUSH_VERSION.tar.gz | tar -xf -
-	rm drush-$DRUSH_VERSION.tar.gz
-	DRUSH="php $AEGIR_HOME/drush/drush.php"
+        rm drush-$DRUSH_VERSION.tar.gz
+        DRUSH="php $AEGIR_HOME/drush/drush.php"
 fi
 
 if $DRUSH help > /dev/null ; then
-	msg "Drush seems to be functionning properly"
+        msg "Drush seems to be functionning properly"
 else
-	msg "Drush is broken ($DRUSH help failed)"
-	exit 1
+        msg "Drush is broken ($DRUSH help failed)"
+        exit 1
 fi
 
 if $DRUSH help | grep "^ make" > /dev/null ; then
-	msg "Drush make already seems to be installed"
+        msg "Drush make already seems to be installed"
 else
-	msg "Installing drush make in $AEGIR_HOME/.drush"
-	mkdir -p $AEGIR_HOME/.drush
-	$DRUSH dl drush_make-$DRUSH_MAKE_VERSION --destination=$AEGIR_HOME/.drush
+        msg "Installing drush make in $AEGIR_HOME/.drush"
+        mkdir -p $AEGIR_HOME/.drush
+        $DRUSH dl drush_make-$DRUSH_MAKE_VERSION --destination=$AEGIR_HOME/.drush
 fi
 
 if $DRUSH help | grep "^ provision install" > /dev/null ; then
-	msg "Provision already seems to be installed"
+        msg "Provision already seems to be installed"
 else
-	msg "Installing provision backend in $AEGIR_HOME/.drush"
-	mkdir -p $AEGIR_HOME/.drush
-	if [ "$AEGIR_VERSION" = "HEAD" ]; then
-		git clone git://git.aegirproject.org/provision $AEGIR_HOME/.drush/provision
-	else
-		cd $AEGIR_HOME/.drush
-		wget http://files.aegirproject.org/provision-$AEGIR_VERSION.tgz
-	        gunzip -c provision-$AEGIR_VERSION.tgz | tar -xf -
-            mv provision-$AEGIR_VERSION provision
-	        rm provision-$AEGIR_VERSION.tgz
-	fi
+        msg "Installing provision backend in $AEGIR_HOME/.drush"
+        mkdir -p $AEGIR_HOME/.drush
+        if [ "$AEGIR_VERSION" = "HEAD" ]; then
+                git clone git://git.aegirproject.org/provision $AEGIR_HOME/.drush/provision
+        else
+                cd $AEGIR_HOME/.drush
+                wget http://files.aegirproject.org/provision-$AEGIR_VERSION.tgz
+                gunzip -c provision-$AEGIR_VERSION.tgz | tar -xf -
+                mv provision-$AEGIR_VERSION provision
+                rm provision-$AEGIR_VERSION.tgz
+        fi
 fi
 
 if [ ! -d $HOSTMASTER_DIR ] ; then
-	msg "Deploying hostmaster application"
-	$DRUSH hostmaster-make $HOSTMASTER_DIR
-	cd $HOSTMASTER_DIR
-	mkdir sites/$AEGIR_DOMAIN
-	cp sites/default/default.settings.php sites/$AEGIR_DOMAIN/settings.php
-	chmod g+w sites/$AEGIR_DOMAIN/settings.php
-	mkdir sites/$AEGIR_DOMAIN/files
-	chmod 2770 sites/$AEGIR_DOMAIN/files
-	chgrp $WEB_GROUP sites/$AEGIR_DOMAIN/settings.php
-	chgrp $WEB_GROUP sites/$AEGIR_DOMAIN/files
+        msg "Deploying hostmaster application"
+        $DRUSH hostmaster-make $HOSTMASTER_DIR
+        cd $HOSTMASTER_DIR
+        mkdir sites/$AEGIR_DOMAIN
+        cp sites/default/default.settings.php sites/$AEGIR_DOMAIN/settings.php
+        chmod g+w sites/$AEGIR_DOMAIN/settings.php
+        mkdir sites/$AEGIR_DOMAIN/files
+        chmod 2770 sites/$AEGIR_DOMAIN/files
+        chgrp $WEB_GROUP sites/$AEGIR_DOMAIN/settings.php
+        chgrp $WEB_GROUP sites/$AEGIR_DOMAIN/files
 fi
 
 if [ ! -f $AEGIR_HOME/config/vhost.d/$AEGIR_DOMAIN ]; then
-	sed -e "s#DocumentRoot .*#DocumentRoot $HOSTMASTER_DIR#" -e "s#Directory .*#Directory $HOSTMASTER_DIR>#" -e "s/ServerName .*/ServerName $AEGIR_DOMAIN/" $HOSTMASTER_DIR/profiles/hostmaster/apache2.conf.txt > $AEGIR_HOME/config/vhost.d/$AEGIR_DOMAIN
-	msg "Installed apache configuration file for $AEGIR_DOMAIN, you will need to restart apache"
+        sed -e "s#DocumentRoot .*#DocumentRoot $HOSTMASTER_DIR#" -e "s#Directory .*#Directory $HOSTMASTER_DIR>#" -e "s/ServerName .*/ServerName $AEGIR_DOMAIN/" $HOSTMASTER_DIR/profiles/hostmaster/apache2.conf.txt > $AEGIR_HOME/config/vhost.d/$AEGIR_DOMAIN
+        msg "Installed apache configuration file for $AEGIR_DOMAIN, you will need to restart apache"
 fi
 
 msg "Install process complete: follow the wizard"
