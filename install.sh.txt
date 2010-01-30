@@ -139,8 +139,11 @@ elif [ -x $DRUSH ] ; then
 	msg "Drush found in $DRUSH, good"
 	DRUSH="php $AEGIR_HOME/drush/drush.php"
 else
-	msg "Installing drush in $AEGIR_HOME" cd $AEGIR_HOME
-	wget -O - http://ftp.drupal.org/files/projects/drush-$DRUSH_VERSION.tar.gz | gunzip -c | tar -xf -
+	msg "Installing drush in $AEGIR_HOME"
+	cd $AEGIR_HOME
+	wget http://ftp.drupal.org/files/projects/drush-$DRUSH_VERSION.tar.gz
+        gunzip -c drush-$DRUSH_VERSION.tar.gz | tar -xf -
+	rm drush-$DRUSH_VERSION.tar.gz
 	DRUSH="php $AEGIR_HOME/drush/drush.php"
 fi
 
@@ -168,11 +171,9 @@ else
 		git clone git://git.aegirproject.org/provision $AEGIR_HOME/.drush/provision
 	else
 		cd $AEGIR_HOME/.drush
-		if wget -O - http://files.aegirproject.org/provision-$AEGIR_VERSION.tgz | gunzip -c | tar -xf -; then
-            mv provision-$AEGIR_VERSION provision
-        else
-            rm -r provision-$AEGIR_VERSION
-        fi
+		wget http://files.aegirproject.org/provision-$AEGIR_VERSION.tgz
+	        gunzip -c provision-$AEGIR_VERSION.tgz | tar -xf -
+	        rm provision-$AEGIR_VERSION.tgz
 	fi
 fi
 
