@@ -31,5 +31,3 @@ function hosting_drush_command() {
 
   return $items;
 }
-
-
