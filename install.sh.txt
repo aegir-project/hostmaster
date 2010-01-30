@@ -173,6 +173,7 @@ else
 		cd $AEGIR_HOME/.drush
 		wget http://files.aegirproject.org/provision-$AEGIR_VERSION.tgz
 	        gunzip -c provision-$AEGIR_VERSION.tgz | tar -xf -
+            mv provision-$AEGIR_VERSION provision
 	        rm provision-$AEGIR_VERSION.tgz
 	fi
 fi
