@@ -155,6 +155,7 @@ function hosting_task_perm() {
     'create enable task',
     'create delete task',
     'create verify task',
+    'create login_reset task',
     'view own tasks',
     'view task',
     'access task logs',
