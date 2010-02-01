@@ -195,6 +195,11 @@ function hosting_init() {
   }
   define('HOSTING_DEFAULT_SCRIPT_USER', $user);
 
+  $userdata = posix_getpwnam($user);
+  $userhome = $userdata['dir'];
+
+  define('HOSTING_DEFAULT_SCRIPT_USER_HOME', $userhome);
+
   define('HOSTING_DEFAULT_RESTART_CMD', _hosting_default_restart_cmd());
 
   $path =  ($_SERVER['PWD']) ? $_SERVER['PWD'] : $_SERVER['DOCUMENT_ROOT'];
