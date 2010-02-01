@@ -265,7 +265,7 @@ function hosting_site_form($node) {
       }
     }
     if (!$current_client_id && ($user->uid != 1)) {
-      form_set_error('client', t('This user is not associated with any clients , and will not be able to create new sites'));
+      form_set_error('client', t('Your user is not associated with any clients so you are not be allowed to create new sites'));
     }
   }
 
