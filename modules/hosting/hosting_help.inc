@@ -396,9 +396,10 @@ EOF;
 
 function _hosting_user_requirements() {
   $username = HOSTING_DEFAULT_SCRIPT_USER;
+  $userhome = HOSTING_DEFAULT_SCRIPT_USER_HOME;
   $path = HOSTING_DEFAULT_DOCROOT_PATH;
   $add_cmd = <<<EOF
-    sudo adduser $username
+    sudo adduser --system --group --home $userhome $username
 EOF;
   $chmod_cmd = <<<EOF
     sudo chown -R $username $path

@@ -107,7 +107,11 @@ Shell commands::
   rm provision-$AEGIR_VERSION.tgz
 
 Provision 0.4 has added a new dependency on drush_make, which will also
-need to be installed to upgrade the front end.
+need to be installed to upgrade the front end if you are upgrading from
+a pre-0.4 release.
+
+If you are upgrading from an earlier 0.4 release, replace your copy of
+drush_make with the latest recommended release.
 
 Shell commands::
 
