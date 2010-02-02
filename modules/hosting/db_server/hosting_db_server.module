@@ -72,7 +72,10 @@ function _hosting_get_db_servers() {
   return $return;
 }
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 06352c0a16927e0d9df72d8c6b8ad9cd4a9d8671
 /**
  * Implementation of hook_nodeapi() presave for server node type.
  */
@@ -83,6 +86,7 @@ function hosting_db_server_nodeapi_server_presave(&$node) {
   }
 }
 
+<<<<<<< HEAD
 /**
  * Views integration
  */
@@ -92,4 +96,6 @@ function hosting_db_server_views_api() {
     'path' => drupal_get_path('module', 'hosting_db_server'),
   );
 }
+=======
+>>>>>>> 06352c0a16927e0d9df72d8c6b8ad9cd4a9d8671
 
