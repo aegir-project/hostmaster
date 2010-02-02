@@ -20,10 +20,93 @@ function hostmaster_task_intro($current) {
 //====================================================================
 //====================================================================
 
+function hostmaster_task_server() {
+  drupal_set_title(t("Basic server configuration"));
+  $node = node_load(HOSTING_OWN_WEB_SERVER);
+  $form = array();
+  $form['#validate'][] = 'hostmaster_task_server_validate';
+  $form['#submit'][] = 'hostmaster_task_server_submit';
+  $form['#nid'] = $node->nid;
+  $node->services['server']->form($form);
+  return hostmaster_form($form);
+}
+
+
+function hostmaster_task_server_validate($form, $form_state) {
+  $node = node_load($form['#nid']); 
+  $node->services['server']->setValues($form_state['values']);
+  $node->services['server']->validate($node, $form);
+}
+
+function hostmaster_task_server_submit($form, $form_state) {
+  $node = node_load($form['#nid']);
+  $node->services['server']->setValues($form_state['values']);
+  $node->services['server']->save($node);
+  $node->services['server']->update($node);
+}
+
+//====================================================================
+//====================================================================
+//====================================================================
+
+
+function hostmaster_task_dbserver() {
+  drupal_set_title(t("Database server configuration"));
+  $node = node_load(HOSTING_OWN_WEB_SERVER);
+  $form = array();
+  $form['#validate'][] = 'hostmaster_task_dbserver_validate';
+  $form['#submit'][] = 'hostmaster_task_dbserver_submit';
+  $form['#nid'] = $node->nid;
+  $node->services['db']->form($form);
+  return hostmaster_form($form);
+}
+
+
+
+function hostmaster_task_dbserver_validate($form, $form_state) {
+  $node = node_load($form['#nid']); 
+  $node->services['db']->setValues($form_state['values']);
+  $node->services['db']->validate($node, $form);
+}
+
+function hostmaster_task_dbserver_submit($form, $form_state) {
+  $node = node_load($form['#nid']);
+  $node->services['db']->setValues($form_state['values']);
+  $node->services['db']->save($node);
+  $node->services['db']->update($node);
+}
+
 /**
  * Configures web_server_node_form minus almost all the forms.
  */
 function hostmaster_task_webserver() {
+  drupal_set_title(t("Web server configuration"));
+  $node = node_load(HOSTING_OWN_WEB_SERVER);
+  $form = array();
+  $form['#validate'][] = 'hostmaster_task_webserver_validate';
+  $form['#submit'][] = 'hostmaster_task_webserver_submit';
+  $form['#nid'] = $node->nid;
+  $node->services['http']->form($form);
+  return hostmaster_form($form);
+}
+
+
+function hostmaster_task_webserver_validate($form, $form_state) {
+  $node = node_load($form['#nid']); 
+  $node->services['http']->setValues($form_state['values']);
+  $node->services['http']->validate($node, $form);
+}
+
+function hostmaster_task_webserver_submit($form, $form_state) {
+  $node = node_load($form['#nid']);
+  $node->services['http']->setValues($form_state['values']);
+  $node->services['http']->save($node);
+  $node->services['http']->update($node);
+}
+
+
+/*
+
 
   drupal_set_title(st("Configure your web server"));
   $form = node_form($form_state, node_load(HOSTING_OWN_WEB_SERVER));
@@ -144,7 +227,7 @@ function hostmaster_task_filesystem() {
  * Inherits the db_server_node_form, and shifts some things around.
  * Perhaps those changes need to go in upstream?
  */
-function hostmaster_task_dbserver() {
+function hostmaster_task_sadfasdfsdfadbserver() {
   drupal_set_title(st('Configure your database server'));
 /* TODO drupal_retrieve_form() now accepts a form_state parameter. */
   $form = node_form($form_state, node_load(HOSTING_OWN_DB_SERVER));

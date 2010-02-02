@@ -10,7 +10,7 @@
 function hostmaster_profile_modules() {
   return array(
     /* core */ 'block', 'color', 'filter', 'help', 'menu', 'node', 'system', 'user',
-    /* aegir contrib */ 'hosting', 'hosting_task', 'hosting_client', 'hosting_db_server', 'hosting_package', 'hosting_platform', 'hosting_site', 'hosting_web_server',
+    /* aegir contrib */ 'hosting', 'hosting_task', 'hosting_client', 'hosting_db_server', 'hosting_package', 'hosting_platform', 'hosting_site', 'hosting_web_server', 'hosting_server',
     /* other contrib */ 'install_profile_api' /* needs >= 2.1 */, 'jquery_ui', 'modalframe'
   );
 }
@@ -38,14 +38,17 @@ function pr($var) {
 function hostmaster_profile_task_list() {
   return array(
     'intro' => st('Getting started'),
+    'server' => st('Basic'),
     'webserver' => st('Web server'),
-    'filesystem' => st('Filesystem'),
     'dbserver' => st('Database server'),
     'features' => st('Features'),
+
+/*
     'init' => st('Initialize system'),
+
     'verify' => st('Verify settings'),
-    'import' => st('Import sites'),
-    'finalize' => st('Finalize')
+    'import' => st('Import sites'),*/
+    'finalize' => st('Finalize') 
   );
 }
 
@@ -224,31 +227,38 @@ function hostmaster_bootstrap() {
   variable_set('hosting_default_client', $node->nid);  
   variable_set('hosting_admin_client', $node->nid);
 
-  /* Default database server */
+  /* Default server */
   global $db_url;
   $url = parse_url($db_url);
 
+
   $node = new stdClass();
   $node->uid = 1;
-  $node->type = 'db_server';
-  $node->title = $url['host'];
-  $node->db_type = $url['scheme'];
+  $node->type = 'server';
+  $node->title = $_SERVER['HTTP_HOST'];
   $node->status = 1;
+  $node->services = array();
+  hosting_services_add($node, "server", array(
+   'script_user' => HOSTING_DEFAULT_SCRIPT_USER,
+ ));
+  hosting_services_add($node, "db", array(
+    'db_type' => $url['scheme'],
+  ));
+  hosting_services_add($node, "http", array(
+   'web_group' => HOSTING_DEFAULT_WEB_GROUP,
+ ));
 
   node_save($node);
+
   variable_set('hosting_default_db_server', $node->nid);
   variable_set('hosting_own_db_server', $node->nid);
-  
-  $node = new stdClass();
-  $node->uid = 1;
-  $node->type = 'web_server';
-  $node->title = $_SERVER['HTTP_HOST'];
-  $node->script_user = HOSTING_DEFAULT_SCRIPT_USER;
-  $node->web_group = HOSTING_DEFAULT_WEB_GROUP;
-  $node->status = 1;
-  node_save($node);
   variable_set('hosting_default_web_server', $node->nid);
- 
+  variable_set('hosting_own_web_server', $node->nid);
+
+  // @todo - check if we need to create a separate server for the db service.
+
+
+
   $node = new stdClass();
   $node->uid = 1;
   $node->title = 'Drupal';

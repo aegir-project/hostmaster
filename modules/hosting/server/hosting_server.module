@@ -72,8 +72,11 @@ function hosting_services_new_object($name, $node = null, $values = null) {
   if ($services[$name]['file']) {
     include_once(drupal_get_path('module', $services[$name]['module']) . '/' . $services[$name]['file']);
   }
-
   return new $class($node, $values);
+}
+
+function hosting_services_add(&$node, $name, $values = array()) {
+  $node->services[$name] = hosting_services_new_object($name, $node, $values);
 }
 
 function hosting_server_init_services(&$node) {
