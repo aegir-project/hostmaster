@@ -78,6 +78,22 @@ class hostingService_DB extends hostingService {
     );
 
   }
+
+  public function db_url() {
+    return sprintf("%s://%s:%s@%s", $this->db_type, urlencode($this->db_user), urlencode($this->db_passwd), urlencode($this->server->title));
+  }
+
+
+  public function options($task_type, $ref_type, &$task) {
+    if ($ref_type == 'platform' && $task_type == 'verify') {
+      $task->options['master_db'] = $this->db_url();
+    }
+
+    if ($ref_type == 'site') {
+      $task->options['db_id'] = $this->node->nid;
+    }
+
+  }
 }
 
 

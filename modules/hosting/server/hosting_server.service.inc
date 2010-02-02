@@ -63,10 +63,6 @@ class hostingService_base extends hostingService {
   protected $service = 'server';
   protected $type = 'base';
 
-  function options($task) {
-    $task->options['drush_path'] = $web->drush_path;
-  }
-
   function form(&$form) {
 
     $form['ip_address'] = array(
@@ -204,9 +200,17 @@ class hostingService_base extends hostingService {
       '#title' => t('Backup path'),
       '#value' => filter_xss($this->backup_path),
     );
+  }
 
+  public function options($task_type, $ref_type, &$task) {
+    $task->options['drush_path'] = $this->drush_path;
+    $task->options['web_ip'] = $this->ip_address;
+    $task->options['script_user'] = $this->script_user;
 
-
+    if ($task_type == 'verify' && $ref_type == 'platform') {
+      $task->options['config_path'] = $this->config_path;
+      $task->options['backup_path'] = $this->backup_path;
+    }
   }
 }
 

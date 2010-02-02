@@ -158,7 +158,7 @@ function _hosting_queues_clean_output($return) {
 
 function _hosting_dispatch_cmd() {
   $node = node_load(HOSTING_OWN_WEB_SERVER);
-  $cmd = sprintf("php %s hosting-dispatch --root=%s", escapeshellarg($node->drush_path), 
+  $cmd = sprintf("php %s hosting-dispatch --root=%s", escapeshellarg($node->services['server']->drush_path), 
   escapeshellarg(HOSTING_DEFAULT_DOCROOT_PATH));
   if (function_exists('drush_get_option')) {
     if ($uri = drush_get_option('uri')) {

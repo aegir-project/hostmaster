@@ -129,5 +129,24 @@ class hostingService_HTTP extends hostingService {
                   $this->server->vid);
   }
 
+  public function options($task_type, $ref_type, &$task) {
+
+    $task->options['web_id'] = $this->server->nid;
+    $task->options['web_host'] = $this->server->title;
+
+    $task->options['web_ports'] = explode(",", $this->ports);
+    foreach($task->options['web_ports'] as $key=>$val) {
+      $val = trim($val);
+      $task->options['web_ports'][$key] = $val;
+      if(!is_numeric($val)) {
+        unset($task->options['web_ports'][$key]);
+      }
+    }
+
+   if ($task_type == 'verify' && $ref_type == 'platform') {
+      $task->options['web_group'] = $this->web_group;
+      $task->options['restart_cmd'] = $this->restart_cmd;
+    }
+  }
 }
 
