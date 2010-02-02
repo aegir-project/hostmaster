@@ -28,6 +28,42 @@ function hostmaster_task_server() {
   $form['#submit'][] = 'hostmaster_task_server_submit';
   $form['#nid'] = $node->nid;
   $node->services['server']->form($form);
+
+  $form['ip_address']['#type'] = 'value';
+  
+  $form['script_user']['#weight'] = 1;
+  $form['user_help'] = hostmaster_requirement_help('user', array(
+    '#weight' => 0,
+    '#summary' => HOSTING_HELP_ENABLED, 
+    '#configuration' => HOSTING_HELP_COLLAPSED
+  ));
+
+  // drush path field
+
+  $form['drush_path']['#weight'] = 5;
+  $form['drush_path_help'] = hostmaster_requirement_help('drush_path', array(
+    '#weight' => 4, 
+    '#summary' => HOSTING_HELP_ENABLED, 
+    '#configuration' => HOSTING_HELP_DISABLED
+  ));
+
+  // config path field
+  $form['config_path']['#weight'] = 10;
+  $form['config_path_help'] = hostmaster_requirement_help('config_path', array(
+    '#weight' => 9, 
+    '#summary' => HOSTING_HELP_ENABLED, 
+    '#configuration' => HOSTING_HELP_COLLAPSED
+  ));
+
+  // backup path field
+  $form['backup_path']['#weight'] = 15;  
+  $form['backup_path_help'] = hostmaster_requirement_help('backup_path', array(
+    '#weight' => 14, 
+    '#summary' => HOSTING_HELP_ENABLED, 
+    '#configuration' => HOSTING_HELP_COLLAPSED
+  ));
+
+
   return hostmaster_form($form);
 }
 
@@ -58,6 +94,34 @@ function hostmaster_task_dbserver() {
   $form['#submit'][] = 'hostmaster_task_dbserver_submit';
   $form['#nid'] = $node->nid;
   $node->services['db']->form($form);
+
+
+  $own_link = _hosting_node_link(HOSTING_OWN_DB_SERVER);
+
+  $form['introduction']['#weight'] = -9;
+  $form['introduction']['#value'] = 
+    t('<p>You need at least one fully functional database server to be able to manage sites.</p> 
+        <p>Aegir also requires a database user capable of creating more databases. It is advisable to not use the
+        same database user that you configured for the main aegir database at the start of this installation, but instead
+        create an "<strong>aegir_root</strong>" superuser with stronger privileges.</p>
+        <p>Consult the "How do I configure this" section below to make use of the example GRANT statement provided.
+        Then fill in the form with the credentials of that superuser.</p>',
+        array('!own_server' => $own_link, '!edit_page' => l(t("edit page"), 'node/' . HOSTING_OWN_DB_SERVER . '/edit' )));
+
+ 
+  $form['db_details'] = array(
+    '#type' => 'fieldset',
+    '#collapsed' => false,
+    '#title' => t('Database account details'),
+  );
+  $form['db_details']['help'] = hostmaster_requirement_help('mysql_user', array('#configuration' => HOSTING_HELP_COLLAPSED, '#summary' => HOSTING_HELP_COLLAPSED));
+
+  $form['db_details']['db_user'] = $form['db_user'];
+  unset($form['db_user']);
+  $form['db_details']['db_passwd'] = $form['db_passwd'];
+  unset($form['db_passwd']);
+
+
   return hostmaster_form($form);
 }
 
@@ -87,6 +151,36 @@ function hostmaster_task_webserver() {
   $form['#submit'][] = 'hostmaster_task_webserver_submit';
   $form['#nid'] = $node->nid;
   $node->services['http']->form($form);
+
+  $form['group_help'] = hostmaster_requirement_help('group', array(
+    '#weight' => 0,
+    '#summary' => HOSTING_HELP_ENABLED, 
+    '#configuration' => HOSTING_HELP_COLLAPSED
+  ));
+  $form['web_group']['#weight'] = 1;
+
+  $form['restart_cmd_help'] = hostmaster_requirement_help('visudo', array(
+    '#weight' => 4,
+    '#summary' => HOSTING_HELP_ENABLED, 
+    '#configuration' => HOSTING_HELP_COLLAPSED
+  ));
+  $form['restart_cmd']['#weight'] = 5;
+
+  $form['ports_help'] = hostmaster_requirement_help('ports', array(
+    '#weight' => 9,
+    '#summary' => HOSTING_HELP_ENABLED,
+  ));
+  $form['ports']['#weight'] = 10;
+
+
+  // httpd.conf description
+  $form['httpd_conf'] = hostmaster_requirement_help('httpd_conf', array(
+    '#weight' => 14,
+    '#summary' => HOSTING_HELP_ENABLED, 
+    '#configuration' => HOSTING_HELP_ENABLED,
+  ));
+
+
   return hostmaster_form($form);
 }
 
@@ -104,164 +198,6 @@ function hostmaster_task_webserver_submit($form, $form_state) {
   $node->services['http']->update($node);
 }
 
-
-/*
-
-
-  drupal_set_title(st("Configure your web server"));
-  $form = node_form($form_state, node_load(HOSTING_OWN_WEB_SERVER));
-
-  _hostmaster_clean_node_form($form);
-
-  $own_link = _hosting_node_link(HOSTING_OWN_WEB_SERVER);
-
-  $form['title']['#type'] = 'value';
-  $form['ip_address']['#type'] = 'value';
-  $form['backup_path']['#type'] = 'value';  
-  $form['config_path']['#type'] = 'value';  
-  $form['drush_path']['#type'] = 'value';  
-  $form['drush_path']['#required'] = FALSE;  
-
-  $form['user_help'] = hostmaster_requirement_help('user', array(
-    '#weight' => 0,
-    '#summary' => HOSTING_HELP_ENABLED, 
-    '#configuration' => HOSTING_HELP_COLLAPSED
-  ));
-  $form['script_user']['#weight'] = 1;
-
-
-  $form['group_help'] = hostmaster_requirement_help('group', array(
-    '#weight' => 10,
-    '#summary' => HOSTING_HELP_ENABLED, 
-    '#configuration' => HOSTING_HELP_COLLAPSED
-  ));
-  $form['web_group']['#weight'] = 11;
-
-  $form['restart_cmd_help'] = hostmaster_requirement_help('visudo', array(
-    '#weight' => 19,
-    '#summary' => HOSTING_HELP_ENABLED, 
-    '#configuration' => HOSTING_HELP_COLLAPSED
-  ));
-  $form['restart_cmd']['#weight'] = 20;
-
-  $form['ports_help'] = hostmaster_requirement_help('ports', array(
-    '#weight' => 21,
-    '#summary' => HOSTING_HELP_ENABLED,
-  ));
-  $form['ports']['#weight'] = 22;
-
-  // remove all the things i don't want from the node form.
-  return hostmaster_form($form);
-}
-
-//====================================================================
-//====================================================================
-//====================================================================
-
-
-/**
- * Configures web_server_node_form paths.
- *
- * @todo pull changes in the form upstream
- */
-function hostmaster_task_filesystem() {
-  drupal_set_title(st("Configure where to store your data"));
-/* TODO drupal_retrieve_form() now accepts a form_state parameter. */
-  $form = node_form($form_state, node_load(HOSTING_OWN_WEB_SERVER));
-  _hostmaster_clean_node_form($form);
-
-  $own_link = _hosting_node_link(HOSTING_OWN_WEB_SERVER);
-
-  $form['ports']['#type'] = 'value';
-  $form['script_user']['#type'] = 'value';
-  $form['web_group']['#type'] = 'value';
-
-  $form['title']['#type'] = 'value';
-  $form['ip_address']['#type'] = 'value';
-  $form['restart_cmd']['#type'] = 'value';
-
-  // drush path field
-  $form['drush_path_help'] = hostmaster_requirement_help('drush_path', array(
-    '#weight' => 4, 
-    '#summary' => HOSTING_HELP_ENABLED, 
-    '#configuration' => HOSTING_HELP_DISABLED
-  ));
-  $form['drush_path']['#weight'] = 5;
-
-  // config path field
-  $form['config_path_help'] = hostmaster_requirement_help('config_path', array(
-    '#weight' => 9, 
-    '#summary' => HOSTING_HELP_ENABLED, 
-    '#configuration' => HOSTING_HELP_COLLAPSED
-  ));
-  $form['config_path']['#weight'] = 10;
-
-  // backup path field
-  $form['backup_path_help'] = hostmaster_requirement_help('backup_path', array(
-    '#weight' => 14, 
-    '#summary' => HOSTING_HELP_ENABLED, 
-    '#configuration' => HOSTING_HELP_COLLAPSED
-  ));
-  $form['backup_path']['#weight'] = 15;  
-
-  // httpd.conf description
-  $form['httpd_conf'] = hostmaster_requirement_help('httpd_conf', array(
-    '#weight' => 20,
-    '#summary' => HOSTING_HELP_ENABLED, 
-    '#configuration' => HOSTING_HELP_ENABLED,
-  ));
-
-
-  // remove all the things i don't want from the node form.
-  return hostmaster_form($form);
-}
-
-//====================================================================
-//====================================================================
-//====================================================================
-
-
-/**
- * Database configuration form
- *
- * Inherits the db_server_node_form, and shifts some things around.
- * Perhaps those changes need to go in upstream?
- */
-function hostmaster_task_sadfasdfsdfadbserver() {
-  drupal_set_title(st('Configure your database server'));
-/* TODO drupal_retrieve_form() now accepts a form_state parameter. */
-  $form = node_form($form_state, node_load(HOSTING_OWN_DB_SERVER));
-  _hostmaster_clean_node_form($form);
-
-  $own_link = _hosting_node_link(HOSTING_OWN_DB_SERVER);
-
-  $form['introduction']['#weight'] = -9;
-  $form['introduction']['#value'] = 
-    t('<p>You need at least one fully functional database server to be able to manage sites.</p> 
-        <p>Aegir also requires a database user capable of creating more databases. It is advisable to not use the
-        same database user that you configured for the main aegir database at the start of this installation, but instead
-        create an "<strong>aegir_root</strong>" superuser with stronger privileges.</p>
-        <p>Consult the "How do I configure this" section below to make use of the example GRANT statement provided.
-        Then fill in the form with the credentials of that superuser.</p>',
-        array('!own_server' => $own_link, '!edit_page' => l(t("edit page"), 'node/' . HOSTING_OWN_DB_SERVER . '/edit' )));
-
-
-  $form['title']['#type'] = 'value';
-  
-  $form['db_details'] = array(
-    '#type' => 'fieldset',
-    '#collapsed' => false,
-    '#title' => t('Database account details'),
-  );
-  $form['db_details']['help'] = hostmaster_requirement_help('mysql_user', array('#configuration' => HOSTING_HELP_COLLAPSED, '#summary' => HOSTING_HELP_COLLAPSED));
-
-  $form['db_details']['db_user'] = $form['db_user'];
-  unset($form['db_user']);
-  $form['db_details']['db_passwd'] = $form['db_passwd'];
-  unset($form['db_passwd']);
-
-  return hostmaster_form($form);
-}
 
 
 //====================================================================
@@ -383,10 +319,6 @@ function hostmaster_task_import() {
       . t('<p>In the future, any additional platforms you create will also automatically have existing sites imported, and at any time you can request an verify task on any existing platform to find and import any sites that may have been added manually.</p>');
   }
   return hostmaster_form($form);
-}
-
-function hostmaster_task_import_submit() {
-  drupal_set_message(conf_path() , conf_path());
 }
 
 function hostmaster_task_finalize() {

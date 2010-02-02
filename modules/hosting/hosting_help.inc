@@ -478,7 +478,7 @@ function _hosting_basic_unix_requirements() {
  */
 function _hosting_hosting_setup_requirements() {
   $node = node_load(HOSTING_OWN_WEB_SERVER);
-  $drush_path = $node->drush_path;
+  $drush_path = $node->services['server']->drush_path;
   $docroot = HOSTING_DEFAULT_DOCROOT_PATH;
   $uri = HOSTING_DEFAULT_BASE_URL;
   $username = HOSTING_DEFAULT_SCRIPT_USER;

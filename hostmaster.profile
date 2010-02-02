@@ -42,12 +42,9 @@ function hostmaster_profile_task_list() {
     'webserver' => st('Web server'),
     'dbserver' => st('Database server'),
     'features' => st('Features'),
-
-/*
     'init' => st('Initialize system'),
-
     'verify' => st('Verify settings'),
-    'import' => st('Import sites'),*/
+    'import' => st('Import sites'),
     'finalize' => st('Finalize') 
   );
 }
@@ -243,6 +240,8 @@ function hostmaster_bootstrap() {
  ));
   hosting_services_add($node, "db", array(
     'db_type' => $url['scheme'],
+    'db_user' => $url['user'],
+    'db_passwd' => $url['pass'],
   ));
   hosting_services_add($node, "http", array(
    'web_group' => HOSTING_DEFAULT_WEB_GROUP,
