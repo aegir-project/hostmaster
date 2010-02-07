@@ -3,8 +3,8 @@
 
 function hosting_drush_command() {
   $items['hosting-dispatch'] = array(
-    'callback' => 'hosting_dispatch',
     'description' => dt('Centralized command for dispatching the various queue processors (hosting, cron, backup etc.)'),
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL
   );
 
   $items['hosting-setup'] = array(
@@ -31,5 +31,3 @@ function hosting_drush_command() {
 
   return $items;
 }
-
-

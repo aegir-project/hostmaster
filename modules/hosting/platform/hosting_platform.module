@@ -372,13 +372,14 @@ function _hosting_platform_status($node) {
  */
 function hosting_platform_hosting_summary() {
   $summary = array();
-  if (user_access('view locked platforms', $account)) {
+  if (user_access('view locked platforms')) {
     $platforms = _hosting_get_platforms();
+    $summary['platforms'] = theme('item_list', array_map('_hosting_node_link', array_keys($platforms)), t('Platforms'));
   }
-  else {
+  else if (user_access('view platform')) {
     $platforms = _hosting_get_enabled_platforms();
+    $summary['platforms'] = theme('item_list', array_map('_hosting_node_link', array_keys($platforms)), t('Platforms'));
   }
-  $summary['platforms'] = theme('item_list', array_map('_hosting_node_link', array_keys($platforms)), t('Platforms'));
   return $summary;
 }
 

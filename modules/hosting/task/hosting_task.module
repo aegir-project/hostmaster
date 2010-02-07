@@ -172,6 +172,7 @@ function hosting_task_perm() {
     'create verify task',
     'create lock task',
     'create unlock task',
+    'create login_reset task',
     'view own tasks',
     'view task',
     'access task logs',

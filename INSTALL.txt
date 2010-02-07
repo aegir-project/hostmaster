@@ -86,10 +86,12 @@ an MTA like sendmail, postfix, or exim and do the minimal configuration.
 Other utilities: sudo, git and unzip
 ------------------------------
 
-Aegir installs itself via a drush_make file that downloads via git.
-If you don't have the git program you will need to install it on the server.
+Aegir installs itself via a drush_make file that downloads via git if you want
+the bleeding edge code, or via wget if you want the latest official release.
+If you want the latest development version, and don't have the git program you 
+will need to install it on the server.
 The jQueryUI library is used in the Aegir UI, unzip is required to extract it.
-Sudo is required to allow the aegir user the limited privileges to restart the webserver
+Sudo is required to allow the aegir user the limited privilege to restart the webserver
 when required.
 
 Summary
@@ -204,7 +206,8 @@ http://git.aegirproject.org/?p=hostmaster.git;a=blob_plain;f=install.sh.txt;hb=H
 By default, the install script will install the "correct" version of
 Aegir (ie. if it was downloaded through git, it will install the version
 from the git master branch. If you downloaded an official release, it should 
-install the official release).
+install the official release.). You can modify which version to install by 
+editing the AEGIR_VERSION variable in the script.
 
 The install script is shipped with other default settings that you 
 will likely need to change (such as the URL of the Aegir site) prior 
