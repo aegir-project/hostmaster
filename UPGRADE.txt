@@ -29,14 +29,16 @@ variables. Since 0.4, the hostmaster platform is prepended with 'hostmaster'
 so as not to clash with any other Drupal platforms. If you are upgrading from
 Aegir version 0.3, your hostmaster platform may be called 'drupal-6.14'.
 
-You should replace following command for current versions at the time
+You should replace the following variables for current versions at the time
 you are reading this document.
 
 Shell commands::
 
-  export AEGIR_TAG=HEAD
+  export AEGIR_VERSION=HEAD
   export DRUPAL_DIR=/var/aegir/hostmaster-$AEGIR_TAG
   export OLD_DRUPAL_DIR=/var/aegir/drupal-6.14
+  export DRUSH_VERSION=6.x-3.0-alpha1.tar.gz
+  export DRUSH_MAKE_VERSION=6.x-2.0-beta6
 
 This document also assumes drush is installed properly and we use an
 environment variable to simplify the documentation again.
@@ -53,8 +55,9 @@ Shell commands::
 
  apt-get install unzip
 
-Finally, we use git to install some packages, so this needs to be
-installed for upgrades. On Debian, this means:
+If you intend on upgrading your system to the bleeding edge version of the
+code from our git repositories, you will need the git program installed.
+On Debian, this means:
 
 Shell commands::
 
@@ -84,22 +87,18 @@ upgrade the frontend soon after.
 Bottomline: first you upgrade the backend, then the frontend.
 
 Upgrading the backend is as simple as installing a new version of
-Drush and Provision over the old ones. The below is an example of
-downloading Drush and Provision. A new version of Drush or Provision
-may exist since the time of this writing. You should replace the generic 
-example given below for the current version at the time you are reading 
-this document.
+Drush and Provision over the old ones.
 
-Keep a copy of the old provision and drush in case something goes wrong 
+Keep a copy of the old Provision and Drush in case something goes wrong 
 in the frontend.
 
 Shell commands::
 
   cd /var/aegir
   mv drush drush.bak
-  wget http://ftp.drupal.org/files/projects/drush-$VERSION.tar.gz 
-  tar -xvzf drush-$VERSION.tar.gz
-  rm drush-$VERSION.tar.gz
+  wget http://ftp.drupal.org/files/projects/drush-$DRUSH_VERSION.tar.gz 
+  gunzip -c drush-$DRUSH_VERSION.tar.gz | tar -xf -
+  rm drush-$DRUSH_VERSION.tar.gz
   cd /var/aegir/.drush
   mv provision ../provision.bak
   wget http://files.aegirproject.org/provision-$AEGIR_VERSION.tgz
@@ -115,7 +114,7 @@ drush_make with the latest recommended release.
 
 Shell commands::
 
-  $DRUSH dl drush_make --destination='/var/aegir/.drush'
+  $DRUSH dl drush_make-$DRUSH_MAKE_VERSION --destination='/var/aegir/.drush'
 
 Upgrading the frontend
 ----------------------
@@ -146,128 +145,3 @@ will be halted as it is necessary for the task queue to be processed.
 The command above will fetch the latest stable Drupal release, so it can simply
 be run again when a new security release of Drupal is made available.
 
-
-Specific upgrade procedures
-===========================
-
-This section describes specific upgrade steps that must be taken
-between certain point releases. If one of those section applies to
-your installation, disregard the generic instructions and use those.
-
-Upgrading the frontend from 0.2 (Drupal 5)
-------------------------------------------
-
-The major change between 0.3 and 0.2 is that 0.3 now targets the
-Drupal 6 platform on the frontend (note the backend still supports
-both Drupal 5 and 6).We also switch away from using the sites/default/
-for Aegir in 0.3. So the upgrade procedure is basically the "Upgrading
-the Drupal core safely" procedure detailed above, with some extra
-steps.
-
-Make sure you also checkout the install_profile_api module (>=2.1) as
-it is a new dependency.
-
-The first step is to import and verify the current aegir site
-(sites/default) so it has a proper configuration. This needs to be
-done because the default site was completely ignored by Aegir up until
-now and needs to be transfered now.
-
-In this case, the old drupal is a drupal 5:
-
-Shell commands::
-
-  export DRUPAL_DIR=/var/aegir/drupal-6.13
-  export OLD_DRUPAL_DIR=/var/aegir/drupal-5.9
-
-Note that this assumes you have already updated provision to a proper
-version, see above.
-
-Shell commands::
-
- cd /var/aegir
- $DRUSH dl drupal
- cd $DRUPAL_DIR
- cvs co -d profiles/hostmaster -r$AEGIR_TAG contributions/profiles/hostmaster
- mkdir profiles/hostmaster/modules
- $DRUSH dl --destination=./profiles/hostmaster/modules hosting install_profile_api
- $DRUSH dl --destination=./profiles/hostmaster/themes eldir 
- # also checkout any modules you may have enabled in the d5 platform
- # now you want to add the platform in the frontend (Create content -> platform) and wait for the task to be processed
- $DRUSH -r $OLD_DRUPAL_DIR provision verify
- $DRUSH -r $OLD_DRUPAL_DIR provision import default
- $DRUSH -r $OLD_DRUPAL_DIR provision verify default
- $DRUSH -r $OLD_DRUPAL_DIR provision backup default ~/default.tar.gz
- $DRUSH -r $DRUPAL_DIR provision verify
- $DRUSH -r $DRUPAL_DIR provision deploy d6.aegir.example.com ~/default.tar.gz
- # review changes, see if it works to your liking, when you're done:
- $DRUSH -r $DRUPAL_DIR provision delete d6.aegir.example.com
- crontab -e # disable the cronjob to avoid warnings
- $DRUSH -r $OLD_DRUPAL_DIR provision delete aegir.example.com
- # here you should really use the backup generated in the above step,
- # but the old backups also works, it's just not up to date
- $DRUSH -r $DRUPAL_DIR provision deploy aegir.example.com ~/default.tar.gz
- crontab -e # change root to new platform, make sure you have a --uri=aegir.example.com
-
-Note that the import/verify of the 'default' site is required only
-because that site is typically ignored in Aegir. This procedure will
-migrate your main frontend away from that 'default' setup. See
-http://drupal.org/node/453540 for details.
-
-Upgrading Aegir from 0.1
-------------------------
-
-Note: to upgrade from 0.1 to 0.3, it is highly recommended that you
-first upgrade to 0.2.
-
-Upgrading hostmaster should be as simple as removing the provision and
-drush modules from your profiles/hostmaster/modules directory. You
-also need to create a new drush and provision checkout. Finally, you
-can remove the drush.php symlink.
-
-You will also need to update the hosting module and run update.php so
-that new changes to the database are taken into account. This will
-trigger platform verification and other cleanup tasks. Starting with
-0.2, this process will be automated (see the above process).
-
-Finally, you will need to put the path to that new drush in the
-webserver node configuration. Rerunning the wizard will prompt you for
-that. Make sure you also run the hosting setup command.
-
-Those commands need to be ran as your "aegir" user.
-
-Shell commands::
-
- export CVSROOT=:pserver:anonymous:anonymous@cvs.drupal.org:/cvs/drupal
- cd /var/aegir
- cvs co -d drush -rDRUPAL-6--2-1 contributions/modules/drush
- mkdir .drush
- cvs co -d .drush/provision -rDRUPAL-6--0-2 contributions/modules/provision
- rm drupal-5.x/drush.php
- rm -r drupal-5.x/profiles/hostmaster/modules/provision
- rm -r drupal-5.x/profiles/hostmaster/modules/drush
- cvs up -A drupal-5.x/profiles/hostmaster/modules/hosting
- # here run update.php on the site and setup your drush path
- cd drupal-5.x && php ../drush/drush.php hosting setup
-
-Upgrading Hostslave platforms from 0.1
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Provision has been migrated out of the platforms. It used to be
-installed in the profiles/hostslave/modules directory. It is now in
-~/.drush/provision. So you can simply cleanup the hostslave profile
-and the virtual host created for the hostslave profile. You can also
-remove the drush symlink.
-
-Shell commands::
-
- cd /var/aegir
- rm -r drupal-6.x/profiles/hostslave
- rm config/vhost.d/hostslave
- rm drupal-6.x/drush.php
-
-You should also delete the database created during the hostslave
-install:
-
-SQL commands::
-
- DROP DATABASE hostslave;
