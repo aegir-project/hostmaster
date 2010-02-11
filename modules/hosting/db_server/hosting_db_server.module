@@ -1,57 +1,24 @@
 <?php
 
+include_once('hosting_db_server.help.inc');
+
+
 /**
  * Implementation of hook_hosting_service()
  *
  * @see hosting_help_requirements()
  */
 function hosting_db_server_hosting_service() {
-  return array("db_server" => t("Mysql database server"));
+  return array("db" => array(
+    'title' => t("Database server"),
+    'type' => 'Mysql',
+    'class' => 'hostingService_DB',
+    'module' => 'hosting_db_server',
+    'file' => 'hosting_db_server.service.inc'
+  ));
 }
 
-/**
- * Implementation of hook_help().
- */
-function hosting_db_server_help($section) {
-  switch ($section) {
-    case 'admin/help/provision#requirements':
-      $output .= _hosting_requirements('mysql_user');
-      return $output;
-      break;
-  }
-}
 
-/**
- * Display helpful information regarding the creation
- * of a MySQL superuser
- */
-function _hosting_mysql_user_requirements() {
-   $username = HOSTING_DEFAULT_SCRIPT_USER;
-   $command = <<<EOF
-     mysql -uroot -pXXXXXXXXX mysql
-
-     mysql> GRANT ALL PRIVILEGES ON *.* TO 'aegir_root'@'localhost' \
-            IDENTIFIED BY 'mypassword' WITH GRANT OPTION;
-
-     Note: If your database server is not running on localhost alongside
-     the webserver but on a remote host, you may wish to change the query
-     to allow these privileges for the user from the specific IP address,
-     or more generally, grant them access from the wildcard '%' per the
-     following query:
-
-     mysql> GRANT ALL PRIVILEGES ON *.* TO 'aegir_root'@'%' IDENTIFIED \
-            BY 'mypassword' WITH GRANT OPTION;
-EOF;
-   $help['title'] = t('Mysql user account capable of creating new databases');
-   $help['summary'] = t('To be able to create new sites, the provisioning framework needs a database
-     superuser to create new databases and users. It is not recommended to use the mysql root password 
-     for this, but any account with the correct permissions will do. As a standard, it is recommended
-     to name this superuser "aegir_root".');
-   $help['configuration'] = t('Log in to your mysql server as root, and type in the following command:
-     <pre>@command_text</pre>', array('@command_text' => $command));     
-
-  return $help;
-}
 
 /**
  * Find the database server()
@@ -64,33 +31,12 @@ function hosting_get_db_server($hostname, $web_server = null) {
   else {
     $ip = gethostbyname($hostname);
   }
-  $result = db_result(db_query("SELECT nid FROM {node} WHERE title in ('%s', '%s') and type='db_server'", $ip, $hostname));
+  $result = db_result(db_query("SELECT nid FROM {node} WHERE title in ('%s', '%s') and type='server'", $ip, $hostname));
   if ($result) {
     return node_load($result);
   }
 
   return false;
-}
-
-/**
- * Populate a database URL string
- */
-function hosting_db_server_as_url($nid) {
-  $node = node_load($nid);
-  return sprintf("%s://%s:%s@%s", $node->db_type, urlencode($node->db_user), urlencode($node->db_passwd), urlencode($node->title));
-}
-
-/**
- * Implementation of hook_info()
- */
-function hosting_db_server_node_info() {
-  $types["db_server"] =  array(
-    "type" => 'db_server', "name" => 'Database server',
-    "module" => 'hosting_db_server',
-    "has_title" => TRUE, "title_label" => t('Host name'), 
-    "description" => hosting_node_help("db_server"),
-    "has_body" => 0, "body_label" => '', "min_word_count" => 0);    
-  return $types;
 }
 
 /**
@@ -106,191 +52,26 @@ function hosting_db_server_hosting_feature() {
   return $features;
 
 }
-
-/**
- * Implementation of hook_perm()
- */
-function hosting_db_server_perm() {
-  return array('create database server','view database server', 'edit database server', 'delete database server');
-}
-
-/**
- * Implementation of hook_access()
- */
-function hosting_db_server_access($op, $node, $account) {
-  switch($op) {
-    case 'create':
-      return user_access('create database server', $account);
-      break;
-    case 'update':
-      return user_access('edit database server', $account);
-      break;
-    case 'delete':
-      return user_access('delete database server', $account);
-      break;
-    default:
-      break;
-  }
-  //return hosting_access($op, $node, $account);
-}
-
 /**
  * Small helper function to get web servers.
 */ 
 function _hosting_get_db_servers() {
   $return = array();
-  $result = db_query("SELECT nid, title FROM {node} WHERE type='db_server' AND status=1");
+  $result = db_query("SELECT n.nid, n.title FROM {node} n LEFT JOIN {hosting_service} s ON n.vid=s.vid AND s.available=1 WHERE s.service='db'");
   while($server = db_fetch_object($result)) {
     $return[$server->nid] = $server->title;
   }
   return $return;
 }
 
-
 /**
- * Implementation of hook_form().
+ * Implementation of hook_nodeapi() presave for server node type.
  */
-function hosting_db_server_form(&$node) {
-  $form['title'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Hostname'),
-    '#description' => t('The address of the database server to connect to.'),
-    '#size' => 30,
-    '#default_value' => $node->title,
-    '#maxlength' => 64,
-    '#weight' => 0,
-  );
-  $form['db_type'] = array(
-    '#type' => 'value',
-    '#value' => ($node->db_type) ? $node->db_type : 'mysqli'
-  );
-  $form['db_user'] = array(
-    '#type' => 'textfield',
-    '#required' => TRUE,
-    '#title' => t('Username'),
-    '#description' => t('The user that will be used to create users and databases for new sites.'),
-    '#size' => 40,
-    '#default_value' => $node->db_user,
-    '#maxlength' => 64,
-    '#weight' => 5,
-  );
-  if ($node->db_passwd) {
-    $passwd_description = t('<strong>You have already set a password for this database server.</strong><br />');
+function hosting_db_server_nodeapi_server_presave(&$node) {
+  if (empty($node->db_passwd) && $node->nid) {
+    $old = node_load($node->nid);
+    $node->db_passwd = $old->db_passwd;
   }
-  $form['db_passwd'] = array(
-    '#type' => 'password_confirm',
-    '#required' => ($node->db_passwd) ? FALSE : TRUE,
-    '#description' => $passwd_description . t('The password for the privileged database user above.'),
-    '#size' => 30,
-    '#weight' => 10
-  );
-  return $form;
-}
-
-/**
- * Implementation of hook_nodeapi().
- */
-function hosting_db_server_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
-  switch ($op) {
-    case 'presave':
-      if (empty($node->db_passwd) && $node->nid) {
-        $old = node_load($node->nid);
-        $node->db_passwd = $old->db_passwd;
-      }
-    break;
-  }
-}
-
-/**
- * Implementation of hook_insert().
- */
-function hosting_db_server_insert($node) {
-  db_query("INSERT INTO {hosting_db_server} (vid, nid, db_type, db_user, db_passwd) 
-      VALUES (%d, %d, '%s', '%s', '%s')", 
-        $node->vid, $node->nid, $node->db_type, $node->db_user, $node->db_passwd);
-}
-
-/**
- * Implementation of hook_update().
- *
- * As an existing node is being updated in the database, we need to do our own
- * database updates.
- */
-function hosting_db_server_update($node) {
-  // if this is a new node or we're adding a new revision,
-  if ($node->revision) {
-    hosting_db_server_insert($node);
-  }
-  else {
-    db_query("UPDATE {hosting_db_server} SET 
-                  db_type = '%s', db_user = '%s', db_passwd = '%s'
-              WHERE 
-                  vid = %d", 
-                  $node->db_type, $node->db_user, $node->db_passwd, $node->vid);
-  }
-}
-
-/**
- * Implementation of hook_nodeapi_delete_revision()
- */
-function hosting_nodeapi_db_server_delete_revision(&$node) {
-  db_query('DELETE FROM {hosting_db_server} WHERE vid = %d', $node->vid);
-}
-
-/**
- * Implementation of hook_delete().
- */
-function hosting_db_server_delete($node) {
-  db_query('DELETE FROM {hosting_db_server} WHERE nid = %d', $node->nid);
-}
-
-/**
- * Implementation of hook_load().
- */
-function hosting_db_server_load($node) {
-  $additions = db_fetch_object(db_query('SELECT db_type, db_user, db_passwd FROM {hosting_db_server} WHERE vid = %d', $node->vid));
-  return $additions;
-}
-
-/**
- * Implementation of hook_view().
- */
-function hosting_db_server_view($node, $teaser = FALSE, $page = FALSE) {
-  $node = node_prepare($node, $teaser);
-  $node->content['info'] = array(
-    '#prefix' => '<div id="hosting-dbserver-info">',
-    '#suffix' => '</div>'
-  );
-  $node->content['info']['db_type'] = array(
-    '#type' => 'item',
-    '#title' => t('Database type'),
-    '#value' => $node->db_type,
-  );
-  $node->content['info']['db_user'] = array(
-    '#type' => 'item',
-    '#title' => t('Database user'),
-    '#value' => filter_xss($node->db_user),
-  );
-  $node->content['sites_view'] = array(
-    '#type' => 'item',
-    '#value' => hosting_site_list("db_server", $node->nid), 
-    '#prefix' => '<div id="hosting-site-list">',
-    '#suffix' => '</div>',
-    '#weight' => 10
-  );
-  return $node;
-}
-
-/**
- * Implementation of hook_hosting_summary()
- */
-function hosting_db_server_hosting_summary() {
-  $summary = array();
-  if (user_access('view database server')) {
-    $db_servers = _hosting_get_db_servers();
-    $summary['db_servers'] = theme('item_list', array_map('_hosting_node_link', array_keys($db_servers)), t('Database servers'));
-  }
-  return $summary;
 }
 
 /**
@@ -302,3 +83,4 @@ function hosting_db_server_views_api() {
     'path' => drupal_get_path('module', 'hosting_db_server'),
   );
 }
+

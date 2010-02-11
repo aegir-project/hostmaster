@@ -1,0 +1,357 @@
+<?php
+include_once("hosting_server.service.inc");
+
+function hosting_server_node_info() {
+  $types["server"] =  array(
+    "type" => 'server', "name" => 'Server',
+    "module" => 'hosting_server',
+    "has_title" => true, "title_label" => t('Host name'), 
+    "description" => hosting_node_help("server"),
+    "has_body" => 0, "body_label" => '', "min_word_count" => 0);
+  return $types;
+}
+
+
+/**
+ * Implementation of hook_menu().
+ */
+function hosting_server_menu() {
+  $items = array();
+  $items['hosting/servers'] = array(
+    'title' => 'Servers',
+    'description' => 'List of servers',
+    'page callback' => 'hosting_server_listing',
+    'access arguments' => array('view server'),
+  );
+
+  return $items;
+}
+
+/**
+ * Implementation of hook_perm()
+ */
+function hosting_server_perm() {
+  return array('create server', 'view server', 'edit server', 'delete server');
+}
+
+/**
+ * Implementation of hook_access()
+ */
+function hosting_server_access($op, $node, $account) {
+  if (!hosting_feature('server')) {
+    return FALSE;
+  }
+  switch ($op) {
+    case 'create':
+      return user_access('create server', $account);
+      break;
+    case 'view':
+      return user_access('view server', $account);
+      break;
+    case 'update':
+      return user_access('edit server', $account);
+      break;
+    case 'delete':
+      return user_access('delete server', $account);
+      break;
+    default:
+      break;
+  }
+}
+
+
+/**
+ * Implementation of hook_hosting_service()
+ *
+ * @see hosting_help_requirements()
+ */
+function hosting_server_hosting_service() {
+  return array("server" => array(
+    'title' => t("Server configuration"),
+    'type' => 'basic',
+    'class' => 'hostingService_base',
+    'module' => 'hosting_server',
+    'file' => 'hosting_server.service.inc',
+    'weight' => -20
+  ));
+}
+
+function hosting_services_new_object($name, $node = null, $values = null) {
+  static $services = array();
+
+  if (!sizeof($services)) {
+    $services = module_invoke_all('hosting_service');
+  }
+
+  $class = $services[$name]['class'];
+  if ($services[$name]['file']) {
+    include_once(drupal_get_path('module', $services[$name]['module']) . '/' . $services[$name]['file']);
+  }
+  return new $class($node, $values);
+}
+
+function hosting_services_add(&$node, $name, $values = array()) {
+  $values['available'] = (isset($values['available'])) ? $values['available'] : 1;
+
+  $node->services[$name] = hosting_services_new_object($name, $node, $values);
+}
+
+function hosting_server_init_services(&$node) {
+
+  $result = db_query("SELECT service, type FROM {hosting_service} WHERE vid=%d AND available=1", $node->vid);
+  while ($record = db_fetch_object($result)) {
+    $name = $record->service;
+    $node->services[$name] = hosting_services_new_object($name, $node);
+  }
+
+  return $node;
+}
+
+function hosting_server_services_from_post(&$node) {
+  if (is_array($node->services)) {
+
+    $services = module_invoke_all('hosting_service');
+
+    foreach ($services as $name => $data) {
+      if (is_array($node->services[$name])) {
+        $node->services[$name] = hosting_services_new_object($name, $node, $node->services[$name]);
+      }
+    }
+  }
+}
+
+
+function hosting_server_invoke_services(&$node, $method, &$arg1 = null, &$arg2 = null, &$arg3 = null, &$arg4 = null) {
+  $return = array();
+  foreach ($node->services as $name => $service) {
+    $result = $service->$method($arg1, $arg2, $arg3, $arg4);
+    if (isset($result) && is_array($result)) {
+      $return = array_merge_recursive($return, $result);
+    }
+    else if (isset($result)) {
+      $return[] = $result;
+    }
+  }
+  return $return;
+}
+
+
+/**
+ * Implementation of hook_form().
+ */
+function hosting_server_form(&$node) {
+  $type = node_get_types('type', $node);
+
+  $services = module_invoke_all('hosting_service');
+  $form['title'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Server hostname'),
+    '#required' => TRUE,
+    '#default_value' => $node->title,
+    '#description' => t('The host name of the server. This is the address that will be used by Hostmaster to connect to the server to issue commands.<br /><strong>Be careful when changing the node title, it is used to create the SQL users if the IP address, below, is not set.</strong>'),
+    '#weight' => -10
+  );
+ 
+
+  $form['services'] = array('#weight' => -5, '#tree' => TRUE);
+
+  if (!$node->nid) {
+    $node->services = array();
+  }
+
+  foreach ($services as $name => $service) {
+    if (!isset($node->services[$name])) {
+
+      $class = $services[$name]['class'];
+      if ($services[$name]['file']) {
+        include_once(drupal_get_path('module', $services[$name]['module']) . '/' . $services[$name]['file']);
+      }
+      $node->services[$name] = new $class($node, $node->services[$name]);
+    }
+  }
+
+  foreach ($node->services as $name => $service) {
+    $form['services'][$name] = array(
+      '#type' => 'fieldset',
+      '#title' => $services[$name]['title'] . ' : ' . $services[$name]['type'],
+      '#prefix' => "<div class='hosting-service-form'>",
+      '#suffix' => "</div>"
+    );
+
+    if ($name != 'server') {
+      $form['services'][$name]['available'] = array(
+        '#type' => 'checkbox',
+        '#default_value' => isset($service->available) ? $service->available : 1,
+        '#title' => t('Available'),
+        '#weight' => -100,
+        '#attributes' => array('class' => 'hosting-service-toggle'),
+      );
+    }
+    else {
+      $form['services'][$name]['available'] = array(
+        '#type' => 'hidden',
+        '#value' => 1
+      );
+    }
+    if (isset($services[$name]['weight'])) {
+      $form['services'][$name]['#weight'] = $services[$name]['weight'];
+    }
+    else {
+      $form['services'][$name]['#weight'] = 0;
+    }
+
+    $service->form($form['services'][$name]);
+  }
+ 
+
+  return $form;
+}
+
+function hosting_nodeapi_server_presave(&$node) {
+  hosting_server_services_from_post($node);
+
+
+  if (!$node->ip_address) {
+    $ip = gethostbyname($node->title);
+
+    // setup IP only if resolution succeeded
+    if ($ip != $node->title) {
+      $node->ip_address = $ip; // required to fool the ip check below
+      drupal_set_message(t('Initialized the webserver IP to %ip based on hostname %name. This will be used to create database grants so make sure it is the right address, as seen from the database server.', array('%ip' => $ip, '%name' => $node->title)), 'message');
+    } else {
+      form_set_error('title', t('Could not resolve IP address of webserver %name. Either set the server name to a FQDN (Fully Qualified Domain Name) or hardcode the IP here.', array('%name' => $node->title)));
+    }
+  }
+
+}
+
+/**
+ * Implementation of hook_validate().
+  */
+function hosting_server_validate(&$node, &$form) {
+  if (!_hosting_valid_fqdn($node->title)) {
+    form_set_error('title', t('Invalid valid domain name. Either choose a proper domain name or hardcode the IP address of the webserver.'));
+  }
+
+  hosting_server_services_from_post($node);
+
+  hosting_server_invoke_services($node, 'validate', $node, $form);
+}
+
+/**
+ * Implementation of hook_update().
+ *
+ * As an existing node is being updated in the database, we need to do our own
+ * database updates.
+ *
+ * This will fire up a verify task if the webserver ports have changed.
+ */
+function hosting_server_update($node) {
+  // if this is a new node or we're adding a new revision,
+  if ($node->revision) {
+    hosting_server_insert($node);
+  }
+  else {
+    hosting_server_invoke_services($node, 'save', $node);
+    hosting_server_invoke_services($node, 'update', $node);
+  }
+}
+
+/**
+ * Implementation of hook_insert().
+ */
+function hosting_server_insert($node) {
+  hosting_server_invoke_services($node, 'save', $node);
+  hosting_server_invoke_services($node, 'insert', $node);
+}
+
+/**
+ * Implementation of hook_delete_revision().
+ */
+function hosting_nodeapi_server_delete_revision(&$node) {
+  hosting_server_invoke_services($node, 'delete_revision');
+}
+
+/**
+ * Implementation of hook_delete().
+ */
+function hosting_server_delete($node) {
+  hosting_server_invoke_services($node, 'delete_revision');
+}
+
+/**
+ * Implementation of hook_load().
+ */
+function hosting_server_load($node) {
+  hosting_server_init_services($node);
+  hosting_server_invoke_services($node, 'load');
+  $additions = new stdClass();
+  $additions->services = $node->services;
+
+  return $additions;
+}
+
+/**
+ * Implementation of hook_view().
+ */
+function hosting_server_view(&$node, $teaser = FALSE, $page = FALSE) {
+
+  $node = node_prepare($node, $teaser);
+
+  $services = module_invoke_all('hosting_service');
+
+  foreach ($node->services as $name => $service) {
+    $node->content['info'][$name] = array(
+      '#prefix' => '<div class="hosting-service-info hosting-service-' . $name . '-info">',
+      '#suffix' => '</div>',
+    );
+    if (isset($services[$name]['weight'])) {
+      $node->content['info'][$name]['#weight'] = $services[$name]['weight'];
+    }
+
+    $title = $services[$name]['title'];
+    $title .= (isset($services[$name]['type'])) ? ' : ' . $services[$name]['type'] : '';
+
+    $node->content['info'][$name]['title'] = array('#value' => '<h3>' . $title . '</h3>',
+      '#weight' => -20
+    );
+
+    $service->view($node->content['info'][$name]);
+  }
+  return $node;
+}
+
+function hosting_server_nodeapi_server_prepare(&$node) {
+
+}
+
+function hosting_server_listing() {
+  $services = module_invoke_all('hosting_service');
+  $header = array(t('Server'));
+  foreach ($services as $name => $data) {
+    if ($name != 'server') {
+      $header[] = $data['type'];
+    }
+  }
+  $result = db_query(db_rewrite_sql("SELECT n.nid FROM {node} n WHERE n.type='server' AND n.status = 1 ORDER BY n.title"));
+  $rows = array();
+  while ($obj = db_fetch_object($result)) {
+    $row = array();
+    $server = node_load($obj->nid);
+    $row[] = l($server->title, 'node/' . $server->nid);
+    foreach ($services as $name => $data) {
+
+      if ($name != 'server') {
+        if ($server->services[$name]->available) {
+          $row[] = 1;
+        }
+        else {
+          $row[] = 0;
+        }
+      }
+    }
+    $rows[] = $row; 
+  }
+  
+  return theme('table', $header, $rows);
+}

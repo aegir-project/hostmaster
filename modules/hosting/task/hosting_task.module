@@ -647,7 +647,7 @@ function hosting_get_most_recent_task($rid, $type) {
  * @arg $element integer which element to start from
  */
 function hosting_get_tasks($filter_by = null, $filter_value = null, $count = 5, $element = 0) {
-  $node = array();
+  $nodes = array();
   $args[] = 'task';
   $cond = '';
 
