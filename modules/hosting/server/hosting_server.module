@@ -97,11 +97,8 @@ function hosting_services_add(&$node, $name, $values = array()) {
 }
 
 function hosting_server_init_services(&$node) {
-  $node = (is_int($node)) ? node_load($node) : $node;
 
-  $node->services['server'] = new hostingService_base($node);
-
-  $result = db_query("SELECT service, type FROM {hosting_service} WHERE vid=%d", $node->vid);
+  $result = db_query("SELECT service, type FROM {hosting_service} WHERE vid=%d AND available=1", $node->vid);
   while ($record = db_fetch_object($result)) {
     $name = $record->service;
     $node->services[$name] = hosting_services_new_object($name, $node);
@@ -288,8 +285,6 @@ function hosting_server_delete($node) {
 function hosting_server_load($node) {
   hosting_server_init_services($node);
   hosting_server_invoke_services($node, 'load');
-
-
   $additions = new stdClass();
   $additions->services = $node->services;
 
@@ -300,6 +295,7 @@ function hosting_server_load($node) {
  * Implementation of hook_view().
  */
 function hosting_server_view(&$node, $teaser = FALSE, $page = FALSE) {
+
   $node = node_prepare($node, $teaser);
 
   $services = module_invoke_all('hosting_service');

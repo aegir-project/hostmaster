@@ -33,6 +33,7 @@ class hostingService {
     $this->server = new stdClass();
     $this->server->nid = $node->nid;
     $this->server->vid = $node->vid;
+    $this->server->title = $node->title;
   }
 
   
