@@ -13,6 +13,21 @@ function hosting_server_node_info() {
 
 
 /**
+ * Implementation of hook_menu().
+ */
+function hosting_server_menu() {
+  $items = array();
+  $items['hosting/servers'] = array(
+    'title' => 'Servers',
+    'description' => 'List of servers',
+    'page callback' => 'hosting_server_listing',
+    'access arguments' => array('view server'),
+  );
+
+  return $items;
+}
+
+/**
  * Implementation of hook_perm()
  */
 function hosting_server_perm() {
@@ -308,4 +323,35 @@ function hosting_server_view(&$node, $teaser = FALSE, $page = FALSE) {
 
 function hosting_server_nodeapi_server_prepare(&$node) {
 
+}
+
+function hosting_server_listing() {
+  $services = module_invoke_all('hosting_service');
+  $header = array(t('Server'));
+  foreach ($services as $name => $data) {
+    if ($name != 'server') {
+      $header[] = $data['type'];
+    }
+  }
+  $result = db_query(db_rewrite_sql("SELECT n.nid FROM {node} n WHERE n.type='server' AND n.status = 1 ORDER BY n.title"));
+  $rows = array();
+  while ($obj = db_fetch_object($result)) {
+    $row = array();
+    $server = node_load($obj->nid);
+    $row[] = l($server->title, 'node/' . $server->nid);
+    foreach ($services as $name => $data) {
+
+      if ($name != 'server') {
+        if ($server->services[$name]->available) {
+          $row[] = 1;
+        }
+        else {
+          $row[] = 0;
+        }
+      }
+    }
+    $rows[] = $row; 
+  }
+  
+  return theme('table', $header, $rows);
 }
