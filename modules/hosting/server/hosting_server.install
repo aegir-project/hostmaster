@@ -73,6 +73,12 @@ function hosting_server_schema() {
         'size' => 'small',
         'not null' => TRUE,
       ),
+      'available' => array(
+        'type' => 'int',
+        'size' => 'small', 
+        'not null' => TRUE,
+        'default' => 1,
+       ),
     ),
   );
 

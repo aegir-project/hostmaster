@@ -6,6 +6,7 @@ class hostingService {
   public $server;
 
   function __construct($node, $values = null) {
+    $this->available = 1;
     $this->server = (is_int($node)) ? node_load($node) : $node;
     if (is_array($values)) {
       $this->setValues($values);
@@ -31,22 +32,19 @@ class hostingService {
 
   public function save($node) {
     $this->server = $node;
-    // if this is a new node or we're adding a new revision,
-    if ($this->server->revision) {
-    #  $this->insert();
-    }
-    else {
-    #  $this->update();
-    }
   }
 
   
   public function insert() {
-    db_query("INSERT INTO {hosting_service} (nid, vid, service, type) VALUES (%d, %d, '%s', '%s')",
-      $this->server->nid, $this->server->vid, $this->service, $this->type);
+    db_query("INSERT INTO {hosting_service} (nid, vid, service, type, available) VALUES (%d, %d, '%s', '%s', %d)",
+      $this->server->nid, $this->server->vid, $this->service, $this->type, $this->available);
   }
 
-  public function update() { }
+  public function update() {
+
+    db_query("DELETE FROM {hosting_service} WHERE type = '%s' AND vid=%d", $this->type, $this->server->vid);
+    self::insert();
+  }
   
   public function delete() { }
   public function delete_revision() { }
@@ -55,7 +53,6 @@ class hostingService {
   public function view(&$render) { }
 
   public function validate(&$node, &$form) {}
-
 
 }
 

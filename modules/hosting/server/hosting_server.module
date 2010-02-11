@@ -95,8 +95,11 @@ function hosting_server_init_services(&$node) {
 
 function hosting_server_services_from_post(&$node) {
   if (is_array($node->services)) {
-    foreach ($node->services as $name => $data) {
-      $node->services[$name] = hosting_services_new_object($name, $node, $data);
+
+    $services = module_invoke_all('hosting_service');
+
+    foreach ($services as $name => $data) {
+      $node->services[$name] = hosting_services_new_object($name, $node, $node->services[$name]);
     }
   }
 }
@@ -124,7 +127,6 @@ function hosting_server_form(&$node) {
   $type = node_get_types('type', $node);
 
   $services = module_invoke_all('hosting_service');
-
   $form['title'] = array(
     '#type' => 'textfield',
     '#title' => t('Server hostname'),
@@ -138,7 +140,12 @@ function hosting_server_form(&$node) {
   $form['services'] = array('#weight' => -5, '#tree' => TRUE);
 
   if (!$node->nid) {
-    foreach ($services as $name => $service) {
+    $node->services = array();
+  }
+
+  foreach ($services as $name => $service) {
+    if (!isset($node->services[$name])) {
+
       $class = $services[$name]['class'];
       if ($services[$name]['file']) {
         include_once(drupal_get_path('module', $services[$name]['module']) . '/' . $services[$name]['file']);
@@ -152,7 +159,12 @@ function hosting_server_form(&$node) {
       '#type' => 'fieldset',
       '#title' => $services[$name]['title'] . ' : ' . $services[$name]['type'],
     );
-
+    $form['services'][$name]['available'] = array(
+      '#type' => 'checkbox',
+      '#default_value' => $service->available,
+      '#title' => t('Available'),
+      '#weight' => -100
+    );
     if (isset($services[$name]['weight'])) {
       $form['services'][$name]['#weight'] = $services[$name]['weight'];
     }

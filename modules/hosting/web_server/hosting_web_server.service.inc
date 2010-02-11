@@ -101,15 +101,17 @@ class hostingService_HTTP extends hostingService {
   }
 
   function delete() {
+    parent::delete();
     db_query('DELETE FROM {hosting_web_server} WHERE nid = %d', $this->server->nid);
   }
 
   function delete_revision() {
+    parent::delete_revision();
     db_query('DELETE FROM {hosting_web_server} WHERE vid = %d', $this->server->vid);
   }
 
   function update() {
-
+    parent::update();
     $oldports = db_result(db_query("SELECT ports FROM {hosting_web_server} WHERE vid = %d", $this->server->vid));
     if ($oldports != $node->ports) {
       $query = db_query("SELECT nid FROM {hosting_platform} WHERE web_server = %d", $this->server->nid);
