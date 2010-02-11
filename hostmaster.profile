@@ -235,6 +235,8 @@ function hostmaster_bootstrap() {
   $node->title = $_SERVER['HTTP_HOST'];
   $node->status = 1;
   $node->services = array();
+
+
   hosting_services_add($node, "server", array(
     'script_user' => HOSTING_DEFAULT_SCRIPT_USER,
     'available' => 1,
@@ -248,9 +250,11 @@ function hostmaster_bootstrap() {
   hosting_services_add($node, "http", array(
    'web_group' => HOSTING_DEFAULT_WEB_GROUP,
     'available' => 1,
- ));
+  ));
 
+      drupal_set_message(var_export($node, true));
   node_save($node);
+      drupal_set_message(var_export($node, true));
 
   variable_set('hosting_default_db_server', $node->nid);
   variable_set('hosting_own_db_server', $node->nid);

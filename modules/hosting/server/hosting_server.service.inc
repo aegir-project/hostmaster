@@ -6,10 +6,8 @@ class hostingService {
   public $server;
 
   function __construct($node, $values = null) {
-    $this->server = (is_int($node)) ? node_load($node) : $node;
-    if (is_array($values)) {
-      $this->setValues($values);
-    }
+    self::save($node);
+    self::setValues($values);
   }
 
   public function load() {
@@ -32,7 +30,9 @@ class hostingService {
   }
 
   public function save($node) {
-    $this->server = $node;
+    $this->server = new stdClass();
+    $this->server->nid = $node->nid;
+    $this->server->vid = $node->vid;
   }
 
   

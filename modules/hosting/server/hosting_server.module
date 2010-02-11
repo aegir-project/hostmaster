@@ -116,7 +116,9 @@ function hosting_server_services_from_post(&$node) {
     $services = module_invoke_all('hosting_service');
 
     foreach ($services as $name => $data) {
-      $node->services[$name] = hosting_services_new_object($name, $node, $node->services[$name]);
+      if (is_array($node->services[$name])) {
+        $node->services[$name] = hosting_services_new_object($name, $node, $node->services[$name]);
+      }
     }
   }
 }
