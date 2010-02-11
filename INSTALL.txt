@@ -46,8 +46,7 @@ windows support.
 
 The level of access required to be able to configure this system is very
 far beyond what is commonly available to users with shared hosting.
-Commands are assumed to be run as root user. Prefix them with sudo if
-you are working with a privileged user instead of root.
+Commands are assumed to be run as root user. 
 
 Web server
 ----------
