@@ -84,7 +84,7 @@ function hosting_server_init_services(&$node) {
 
   $node->services['server'] = new hostingService_base($node);
 
-  $result = db_query("SELECT service, type FROM {hosting_service} WHERE vid=%d", $node->vid);
+  $result = db_query("SELECT service, type FROM {hosting_service} WHERE vid=%d AND available=1", $node->vid);
   while ($record = db_fetch_object($result)) {
     $name = $record->service;
     $node->services[$name] = hosting_services_new_object($name, $node);
