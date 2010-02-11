@@ -46,3 +46,36 @@ function hosting_db_server_install() {
   // Create tables.
   drupal_install_schema('hosting_db_server');
 }
+
+/**
+ * Get rid of db_server node type and associate ourselves with server nodes instead.
+ */
+function hosting_db_server_update_6000() {
+  drupal_install_modules(array('hosting_server'));
+
+  $ret = array();
+  $result = db_query("SELECT nid, vid, title FROM {node} WHERE type='db_server'");
+  while ($record = db_fetch_object($result)) {
+    // Remove old revisions to make the data migration simpler.
+    db_query("DELETE FROM {hosting_db_server} WHERE nid=%d AND NOT (vid = %d)", $record->nid, $record->vid);
+    // find a web server that can be associated with this db server.
+    $web_server = db_fetch_object(
+      db_query("SELECT n.nid, n.vid FROM {node} n LEFT JOIN {hosting_web_server} w ON n.vid=w.vid WHERE (n.type='web_server') AND (n.title='%s' OR w.ip_address='%s')", $record->title, gethostbyname($record->title)));
+    if ($web_server->nid) {
+      db_query("UPDATE {hosting_db_server} SET nid = %d, vid = %d WHERE nid=%d", $web_server->nid, $web_server->vid, $record->nid);
+
+      db_query("UPDATE {hosting_site} SET db_server = %d WHERE db_server=%d", $web_server->nid, $record->nid);
+    }
+    else {
+      // couldn't find a relative web server, so we will need to lose this db server.
+      db_query("DELETE FROM {hosting_db_server} WHERE nid=%d", $record->nid);
+    }
+
+    db_query("DELETE FROM {node_revisions} WHERE nid=%d", $record->nid);
+  }
+
+  db_query("DELETE FROM {node} WHERE type='db_server'");
+
+  db_query("INSERT INTO {hosting_service} SELECT nid, vid, 'db', 'mysql' FROM {hosting_db_server}");
+  return $ret;
+}

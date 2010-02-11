@@ -99,13 +99,6 @@ function _hosting_help_class($state) {
 }
 
 /**
- * Implementation of hook_hosting_service()
- */
-function hosting_hosting_service() {
-  return array('hosting' => t("Basic configuration"));
-} 
-
-/**
  * Implementation of hook_help()
  */
 function hosting_help($path, $arg) {
@@ -189,19 +182,9 @@ function hosting_node_help($type) {
                 If you do not intend on having more than one client access the system, 
                 you will not need to create any additional clients for your purposes.");
       break;
-    case 'web_server' :
-      return t("<strong>The physical machine where files will be stored for publication.</strong>
-                Each web server hosts one or more platforms, which act as publishing points for the hosted sites.
-                If you are not intending to use Hostmaster in a distributed fashion, you will not need to create
-                additional web servers for your purposes.");
-      break;
-    case 'db_server' :
-      return t("<strong>The database server on which sites will host their data.</strong>
-                Most web servers and database servers are on the same machine, but for performance reasons 
-                external database servers might be required. It is not uncommon for one database server
-                to be shared amongst all site instances.
-                If you are not intending to use an external database server, or multiple database servers, you
-                will not need to create any additional database servers for your purposes.");
+    case 'server' :
+      return t("<strong>The physical machine which will provide various services to your site.</strong>
+                Each server can have multiple services associated to it. To host a site you require a database service and a web service, which can either be provided by a single or multiple servers.");
       break;
     case 'task' :
       return t("<strong>The mechanism whereby Hostmaster keeps track of all changes that occur to the system.</strong>
@@ -495,7 +478,7 @@ function _hosting_basic_unix_requirements() {
  */
 function _hosting_hosting_setup_requirements() {
   $node = node_load(HOSTING_OWN_WEB_SERVER);
-  $drush_path = $node->drush_path;
+  $drush_path = $node->services['server']->drush_path;
   $docroot = HOSTING_DEFAULT_DOCROOT_PATH;
   $uri = HOSTING_DEFAULT_BASE_URL;
   $username = HOSTING_DEFAULT_SCRIPT_USER;

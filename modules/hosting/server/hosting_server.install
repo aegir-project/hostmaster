@@ -1,0 +1,93 @@
+<?php
+// $Id$
+
+
+/**
+ * Implementation of hook_schema().
+ */
+function hosting_server_schema() {
+  $schema['hosting_server'] = array(
+    'fields' => array(
+      'vid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'ip_address' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+      ),
+      'script_user' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+      ),
+     'config_path' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+      ),
+      'backup_path' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+      ),
+     'drush_path' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+      ),
+    ),
+    'primary key' => array('vid'),
+  );
+
+  $schema['hosting_service'] = array(
+    'fields' => array(
+      'vid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'service' => array(
+        'type' => 'text',
+        'size' => 'small',
+        'not null' => TRUE,
+      ),
+      'type' => array(
+        'type' => 'text',
+        'size' => 'small',
+        'not null' => TRUE,
+      ),
+      'available' => array(
+        'type' => 'int',
+        'size' => 'small', 
+        'not null' => TRUE,
+        'default' => 1,
+       ),
+    ),
+  );
+
+
+  return $schema;
+}
+
+function hosting_server_install() {
+  // Create tables.
+  drupal_install_schema('hosting_server');
+}
+

@@ -848,10 +848,9 @@ function hosting_site_menu() {
   $items = array();
 
   $items['hosting/sites'] = array(
-    'title' => 'Hosted sites',
+    'title' => 'Sites',
     'description' => 'Display a list of sites',
     'page callback' => 'hosting_sites',
-    'type' => MENU_CALLBACK,
     'access arguments' => array('create site') 
   );
 
