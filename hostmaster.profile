@@ -236,15 +236,18 @@ function hostmaster_bootstrap() {
   $node->status = 1;
   $node->services = array();
   hosting_services_add($node, "server", array(
-   'script_user' => HOSTING_DEFAULT_SCRIPT_USER,
+    'script_user' => HOSTING_DEFAULT_SCRIPT_USER,
+    'available' => 1,
  ));
   hosting_services_add($node, "db", array(
     'db_type' => $url['scheme'],
     'db_user' => $url['user'],
     'db_passwd' => $url['pass'],
+    'available' => 1,
   ));
   hosting_services_add($node, "http", array(
    'web_group' => HOSTING_DEFAULT_WEB_GROUP,
+    'available' => 1,
  ));
 
   node_save($node);
@@ -326,6 +329,7 @@ function hostmaster_setup_optional_modules() {
           $admin = install_menu_get_item($admin[0]['mlid']);
           $admin['menu_name'] = $menu_name;
           $admin['customized'] = 1;
+          $admin['hidden'] = 0;
           menu_link_save($admin);
           menu_rebuild();
 

@@ -325,6 +325,26 @@ function hostmaster_task_finalize() {
   variable_set('install_profile', 'hostmaster');
   drupal_set_title(st("Configuring roles, blocks and theme"));
 
+  install_include(array('menu'));
+  $menu_name = variable_get('menu_primary_links_source', 'primary-links');
+
+  $items = install_menu_get_items('hosting/servers');
+  $item = db_fetch_array(db_query("SELECT * FROM {menu_links} WHERE mlid = %d", $items[0]['mlid']));
+  $item['menu_name'] = $menu_name;
+  $item['customized'] = 1;
+  $item['options'] = unserialize($item['options']);
+  install_menu_update_menu_item($item);
+
+  $items = install_menu_get_items('hosting/sites');
+  $item = db_fetch_array(db_query("SELECT * FROM {menu_links} WHERE mlid = %d", $items[0]['mlid']));
+  $item['menu_name'] = $menu_name;
+  $item['customized'] = 1;
+  $item['options'] = unserialize($item['options']);
+  install_menu_update_menu_item($item);
+
+  menu_rebuild();
+
+
   // enable the eldir theme, if present
   $themes = system_theme_data();
   if ($themes['eldir'] || file_exists("profiles/hostmaster/themes/eldir/eldir.info")) {
