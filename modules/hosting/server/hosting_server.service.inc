@@ -6,14 +6,15 @@ class hostingService {
   public $server;
 
   function __construct($node, $values = null) {
-    $this->available = 1;
     $this->server = (is_int($node)) ? node_load($node) : $node;
     if (is_array($values)) {
       $this->setValues($values);
     }
   }
 
-  public function load() { }
+  public function load() {
+    $this->mergeData("SELECT available FROM {hosting_service} WHERE vid = %d AND type = '%s'", $this->server->vid, $this->type);
+  }
 
   protected function mergeData($query) {
     $args = func_get_args();
