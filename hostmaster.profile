@@ -252,9 +252,7 @@ function hostmaster_bootstrap() {
     'available' => 1,
   ));
 
-      drupal_set_message(var_export($node, true));
   node_save($node);
-      drupal_set_message(var_export($node, true));
 
   variable_set('hosting_default_db_server', $node->nid);
   variable_set('hosting_own_db_server', $node->nid);
