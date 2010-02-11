@@ -280,7 +280,6 @@ function hostmaster_bootstrap() {
   $node->publish_path = $_SERVER['DOCUMENT_ROOT'];
   $node->web_server = variable_get('hosting_default_web_server', 3);
   $node->status = 1;
-  $node->no_verify = TRUE;
   node_save($node);
   variable_set('hosting_default_platform', $node->nid);
   variable_set('hosting_own_platform', $node->nid);
