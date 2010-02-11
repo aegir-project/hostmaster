@@ -158,13 +158,17 @@ function hosting_server_form(&$node) {
     $form['services'][$name] = array(
       '#type' => 'fieldset',
       '#title' => $services[$name]['title'] . ' : ' . $services[$name]['type'],
+      '#prefix' => "<div class='hosting-service-form'>",
+      '#suffix' => "</div>"
     );
+
     if ($name != 'server') {
       $form['services'][$name]['available'] = array(
         '#type' => 'checkbox',
         '#default_value' => isset($service->available) ? $service->available : 1,
         '#title' => t('Available'),
-        '#weight' => -100
+        '#weight' => -100,
+        '#attributes' => array('class' => 'hosting-service-toggle'),
       );
     }
     else {
@@ -179,8 +183,6 @@ function hosting_server_form(&$node) {
     else {
       $form['services'][$name]['#weight'] = 0;
     }
-
-
 
     $service->form($form['services'][$name]);
   }
