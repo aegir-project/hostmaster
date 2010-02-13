@@ -53,7 +53,7 @@ function hosting_db_server_hosting_feature() {
 
 }
 /**
- * Small helper function to get web servers.
+ * Small helper function to get db servers.
 */ 
 function _hosting_get_db_servers() {
   $return = array();
