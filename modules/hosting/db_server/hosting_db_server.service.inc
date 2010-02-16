@@ -81,26 +81,24 @@ class hostingService_DB extends hostingService {
 
   }
 
-  public function db_url() {
-    return sprintf("%s://%s:%s@%s", $this->db_type, urlencode($this->db_user), urlencode($this->db_passwd), urlencode($this->server->title));
-  }
-
-
   public function options($task_type, $ref_type, &$task) {
+    $web_server = _hosting_get_web_server($task);
+
+    // If the web server nid is the same as the db server nid, assume the db_host to be localhost
+    if ($web_server->nid == $this->server->nid) {
+      $db_host = 'localhost';
+    }
+    else {
+      $db_host = $this->server->title;
+    }
+
     if ($ref_type == 'platform' && $task_type == 'verify') {
-      $task->options['master_db'] = $this->db_url();
+      $task->options['master_db'] = sprintf("%s://%s:%s@%s", $this->db_type, urlencode($this->db_user), urlencode($this->db_passwd), urlencode($db_host));
     }
 
     if ($ref_type == 'site') {
       $task->options['db_id'] = $this->server->nid;
-      $web_server = _hosting_get_web_server($task);
-      // If the web server nid is the same as the db server nid, assume the db_host to be localhost
-      if ($web_server->nid == $this->server->nid) {
-        $task->options['db_host'] = 'localhost';
-      }
-      else {
-       $task->options['db_host'] = $this->server->title;
-      }
+      $task->options['db_host'] = $db_host;
     }
 
   }
