@@ -93,7 +93,14 @@ class hostingService_DB extends hostingService {
 
     if ($ref_type == 'site') {
       $task->options['db_id'] = $this->server->nid;
-      $task->options['db_host'] = $this->server->title;
+      $web_server = _hosting_get_web_server($task);
+      // If the web server nid is the same as the db server nid, assume the db_host to be localhost
+      if ($web_server->nid == $this->server->nid) {
+        $task->options['db_host'] = 'localhost';
+      }
+      else {
+       $task->options['db_host'] = $this->server->title;
+      }
     }
 
   }
