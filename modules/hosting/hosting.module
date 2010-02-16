@@ -530,6 +530,9 @@ function hosting_set_breadcrumb($node) {
     case 'site' :
       $breadcrumbs[] = _hosting_node_link($node->platform);
       break;
+    case 'server' :
+      $breadcrumbs[] = l(t('Servers'), 'hosting/servers');
+      break;
   }
   drupal_set_breadcrumb($breadcrumbs);
 }

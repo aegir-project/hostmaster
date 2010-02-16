@@ -178,21 +178,13 @@ function hosting_server_form(&$node) {
       '#suffix' => "</div>"
     );
 
-    if ($name != 'server') {
-      $form['services'][$name]['available'] = array(
-        '#type' => 'checkbox',
-        '#default_value' => isset($service->available) ? $service->available : 0,
-        '#title' => t('Available'),
-        '#weight' => -100,
-        '#attributes' => array('class' => 'hosting-service-toggle'),
-      );
-    }
-    else {
-      $form['services'][$name]['available'] = array(
-        '#type' => 'hidden',
-        '#value' => 1
-      );
-    }
+    $form['services'][$name]['available'] = array(
+      '#type' => 'checkbox',
+      '#default_value' => isset($service->available) ? $service->available : 0,
+      '#title' => t('Available'),
+      '#weight' => -100,
+      '#attributes' => array('class' => 'hosting-service-toggle'),
+    );
     if (isset($services[$name]['weight'])) {
       $form['services'][$name]['#weight'] = $services[$name]['weight'];
     }
@@ -296,6 +288,8 @@ function hosting_server_load($node) {
  */
 function hosting_server_view(&$node, $teaser = FALSE, $page = FALSE) {
 
+  hosting_set_breadcrumb($node);
+
   $node = node_prepare($node, $teaser);
 
   $services = module_invoke_all('hosting_service');
@@ -343,15 +337,15 @@ function hosting_server_listing() {
 
       if ($name != 'server') {
         if ($server->services[$name]->available) {
-          $row[] = 1;
+          $row[] = array('class' => 'hosting-service-available', 'data' => t('Yes'));
         }
         else {
-          $row[] = 0;
+          $row[] = array('class' => 'hosting-service-unavailable', 'data' => t('No'));
         }
       }
     }
     $rows[] = $row; 
   }
   
-  return theme('table', $header, $rows);
+  return theme('table',  $header, $rows, array('class' => 'hosting-table'));
 }
