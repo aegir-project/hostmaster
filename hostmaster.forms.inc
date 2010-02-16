@@ -88,7 +88,7 @@ function hostmaster_task_server_submit($form, $form_state) {
 
 function hostmaster_task_dbserver() {
   drupal_set_title(t("Database server configuration"));
-  $node = node_load(HOSTING_OWN_WEB_SERVER);
+  $node = node_load(HOSTING_OWN_DB_SERVER);
   $form = array();
   $form['#validate'][] = 'hostmaster_task_dbserver_validate';
   $form['#submit'][] = 'hostmaster_task_dbserver_submit';

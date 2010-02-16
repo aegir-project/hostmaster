@@ -41,24 +41,24 @@ class hostingService_DB extends hostingService {
   }
 
   function update() {
-    parent::update();
     if (!empty($this->db_passwd)) {
-      db_query("UPDATE {hosting_db_server} SET 
-                    db_type = '%s', db_user = '%s', db_passwd = '%s'
-                WHERE 
-                    vid = %d", 
-                    $this->db_type, $this->db_user, $this->db_passwd, $this->server->vid);
+      parent::update();
     }
-
+    else {
+      // only do the parent's update routine.
+      parent::delete_revision();
+      parent::insert();
+    }
   }
 
   function delete_revision() {
+    parent::delete_revision();
     db_query('DELETE FROM {hosting_db_server} WHERE vid = %d', $this->server->vid);
   }
 
   function delete() {
+    parent::delete();
     db_query('DELETE FROM {hosting_db_server} WHERE nid = %d', $this->server->nid);
-
   }
 
 

@@ -43,13 +43,17 @@ class hostingService {
   }
 
   public function update() {
-
-    db_query("DELETE FROM {hosting_service} WHERE type = '%s' AND vid=%d", $this->type, $this->server->vid);
-    self::insert();
+    $this->delete_revision();
+    $this->insert();
   }
   
-  public function delete() { }
-  public function delete_revision() { }
+  public function delete() {
+    db_query("DELETE FROM {hosting_service} WHERE type = '%s' AND nid=%d", $this->type, $this->server->nid);
+  }
+
+  public function delete_revision() {
+    db_query("DELETE FROM {hosting_service} WHERE type = '%s' AND vid=%d", $this->type, $this->server->vid);
+  }
 
   public function form(&$form) { }
   public function view(&$render) { }
@@ -136,19 +140,6 @@ class hostingService_base extends hostingService {
     }
   }
 
-  function update() {
-    parent::update();
-    db_query("UPDATE {hosting_server} SET 
-      ip_address = '%s', script_user = '%s', config_path = '%s',
-      backup_path = '%s', drush_path = '%s'
-    WHERE 
-      vid = %d", 
-        $this->ip_address, $this->script_user, 
-        $this->config_path, $this->backup_path,  
-        $this->drush_path,
-        $this->server->vid);
-  }
-
   function insert() {
     parent::insert();
     db_query("INSERT INTO {hosting_server} (vid, nid, ip_address, script_user, config_path, backup_path, drush_path) 
@@ -157,10 +148,12 @@ class hostingService_base extends hostingService {
   }
 
   function delete_revision() {
+    parent::delete_revision();
     db_query('DELETE FROM {hosting_server} WHERE vid = %d', $this->server->vid);
   }
 
   function delete() {
+    parent::delete();
     db_query('DELETE FROM {hosting_server} WHERE nid = %d', $this->server->nid);
   }
 

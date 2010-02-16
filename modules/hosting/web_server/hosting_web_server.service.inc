@@ -9,7 +9,7 @@ class hostingService_HTTP extends hostingService {
     $this->mergeData('SELECT web_group, restart_cmd, ports FROM {hosting_web_server} WHERE vid = %d', $this->server->vid);
   }
 
-  function insert($node) {
+  function insert() {
     parent::insert();
     db_query("INSERT INTO {hosting_web_server} (vid, nid, web_group, restart_cmd, ports) 
         VALUES (%d, %d, '%s', '%s', '%s')", 
@@ -112,23 +112,10 @@ class hostingService_HTTP extends hostingService {
 
   function update() {
     parent::update();
-    $oldports = db_result(db_query("SELECT ports FROM {hosting_web_server} WHERE vid = %d", $this->server->vid));
-    if ($oldports != $node->ports) {
-      $query = db_query("SELECT nid FROM {hosting_platform} WHERE web_server = %d", $this->server->nid);
-      while($nid = db_fetch_object($query)) {
-        hosting_add_task($nid->nid, 'verify');
-      }
+    $query = db_query("SELECT nid FROM {hosting_platform} WHERE web_server = %d", $this->server->nid);
+    while($nid = db_fetch_object($query)) {
+      hosting_add_task($nid->nid, 'verify');
     }
-    db_query("UPDATE {hosting_web_server} SET 
-                  web_group = '%s', 
-                  restart_cmd = '%s',
-                  ports = '%s'
-              WHERE 
-                  vid = %d", 
-                  $this->web_group,
-                  $this->restart_cmd, 
-                  $this->ports,
-                  $this->server->vid);
   }
 
   public function options($task_type, $ref_type, &$task) {

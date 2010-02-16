@@ -241,23 +241,36 @@ function hostmaster_bootstrap() {
     'script_user' => HOSTING_DEFAULT_SCRIPT_USER,
     'available' => 1,
  ));
-  hosting_services_add($node, "db", array(
-    'db_type' => $url['scheme'],
-    'db_user' => $url['user'],
-    'db_passwd' => $url['pass'],
-    'available' => 1,
-  ));
   hosting_services_add($node, "http", array(
    'web_group' => HOSTING_DEFAULT_WEB_GROUP,
     'available' => 1,
   ));
 
   node_save($node);
-
-  variable_set('hosting_default_db_server', $node->nid);
-  variable_set('hosting_own_db_server', $node->nid);
   variable_set('hosting_default_web_server', $node->nid);
   variable_set('hosting_own_web_server', $node->nid);
+
+
+  if (!in_array($url['host'], array('localhost', '127.0.0.1', $_SERVER['HTTP_HOST']))) {
+    $node = new stdClass();
+    $node->uid = 1;
+    $node->type = 'server';
+    $node->title = $url['host'];
+    $node->status = 1;
+    $node->services = array();
+  }
+
+  hosting_services_add($node, "db", array(
+    'db_type' => $url['scheme'],
+    'db_user' => $url['user'],
+    'db_passwd' => $url['pass'],
+    'available' => 1,
+  ));
+
+  node_save($node);
+  variable_set('hosting_default_db_server', $node->nid);
+  variable_set('hosting_own_db_server', $node->nid);
+
 
   // @todo - check if we need to create a separate server for the db service.
 
