@@ -342,6 +342,13 @@ function hostmaster_task_finalize() {
   $item['options'] = unserialize($item['options']);
   install_menu_update_menu_item($item);
 
+  $items = install_menu_get_items('hosting/platforms');
+  $item = db_fetch_array(db_query("SELECT * FROM {menu_links} WHERE mlid = %d", $items[0]['mlid']));
+  $item['menu_name'] = $menu_name;
+  $item['customized'] = 1;
+  $item['options'] = unserialize($item['options']);
+  install_menu_update_menu_item($item);
+
   menu_rebuild();
 
 

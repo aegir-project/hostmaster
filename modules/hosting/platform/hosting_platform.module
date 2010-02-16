@@ -6,6 +6,20 @@ define('HOSTING_PLATFORM_QUEUED', 0);
 define('HOSTING_PLATFORM_ENABLED', 1);
 
 /**
+ * Implementation of hook_menu().
+ */
+function hosting_platform_menu() {
+  $items = array();
+  $items['hosting/platforms'] = array(
+    'title' => 'Platforms',
+    'description' => 'List of platforms',
+    'page callback' => 'hosting_platform_listing',
+    'access arguments' => array('view platform'));
+
+  return $items;
+}
+
+/**
  * @file Platform node type definition
  */
 
@@ -392,3 +406,46 @@ function hosting_platform_views_api() {
     'path' => drupal_get_path('module', 'hosting_platform'),
   );
 }
+
+
+/**
+ * Define the classes that correspond to the platform status.
+ */
+function _hosting_platform_list_class($node) {
+  static $labels = array(
+    HOSTING_PLATFORM_QUEUED => "hosting-queue",
+    HOSTING_PLATFORM_ENABLED => "hosting-success",
+    HOSTING_PLATFORM_DELETED => "hosting-error",
+    HOSTING_PLATFORM_LOCKED => "hosting-warning",
+  );
+
+  return $labels[$node->platform_status]; 
+}
+
+/**
+ * Simple list for top level navigation
+ */
+
+function hosting_platform_listing() {
+  $platforms = _hosting_get_platforms();
+
+  $header = array(t('Platform') , t('Release'), t('Server'), t('Verified'));
+
+  $rows[] = array();
+
+  foreach ($platforms as $nid => $title) {
+    $row = array();
+    $node = node_load($nid);
+    $row[] = array('class' => 'hosting-status' , 'data' => _hosting_node_link($nid));
+    $release = sprintf("%s %s", $node->release->title, $node->release->version);
+    $row[] = _hosting_node_link($node->release->nid, $release);
+    $row[] = _hosting_node_link($node->web_server);
+    $row[] = hosting_format_interval($node->verified);
+    $rows[] = array('data' => $row, 'class' => _hosting_platform_list_class($node));
+  }
+
+
+  return theme('table',  $header, $rows, array('class' => 'hosting-table'));
+}
+
+

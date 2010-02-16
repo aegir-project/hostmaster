@@ -90,3 +90,24 @@ function hosting_platform_update_6001() {
   return $ret;
 }
 
+/**
+ * Move the new menu item to the primary navigation
+ */
+function hosting_platform_update_6002() {
+  $ret = array();
+
+  install_include(array('menu'));
+  $menu_name = variable_get('menu_primary_links_source', 'primary-links');
+
+  $items = install_menu_get_items('hosting/platforms');
+  $item = db_fetch_array(db_query("SELECT * FROM {menu_links} WHERE mlid = %d", $items[0]['mlid']));
+  $item['menu_name'] = $menu_name;
+  $item['customized'] = 1;
+  $item['options'] = unserialize($item['options']);
+  install_menu_update_menu_item($item);
+
+  menu_rebuild();
+
+  return $ret;
+}
+
