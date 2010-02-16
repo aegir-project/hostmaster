@@ -655,7 +655,7 @@ function hosting_get_tasks($filter_by = null, $filter_value = null, $count = 5, 
     $cond = ' AND t.' . $filter_by . ' = %d';
     $args[] = $filter_value;
   }
-  $result = pager_query(db_rewrite_sql("SELECT n.*, t.task_status FROM {node} n INNER JOIN {hosting_task} t on n.vid=t.vid WHERE type='%s'" . $cond . " ORDER BY n.vid DESC"), $count, $element, NULL, $args);
+  $result = pager_query(db_rewrite_sql("SELECT n.*, t.task_status, t.task_type, t.rid FROM {node} n INNER JOIN {hosting_task} t on n.vid=t.vid WHERE type='%s'" . $cond . " ORDER BY n.vid DESC"), $count, $element, NULL, $args);
   
   while ($row = db_fetch_object($result)) {
     $nodes[] = $row;
@@ -775,7 +775,7 @@ function hosting_task_queue_block() {
   foreach ($nodes as $node) {
     $row = array();
     $row['type'] = array(
-      'data' => $node->title,
+      'data' => drupal_ucfirst($node->task_type) . ' ' . _hosting_node_link($node->rid),
       'class' => 'hosting-status'
     );
 
