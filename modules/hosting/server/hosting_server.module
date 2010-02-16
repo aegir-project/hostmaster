@@ -181,7 +181,7 @@ function hosting_server_form(&$node) {
     if ($name != 'server') {
       $form['services'][$name]['available'] = array(
         '#type' => 'checkbox',
-        '#default_value' => isset($service->available) ? $service->available : 1,
+        '#default_value' => isset($service->available) ? $service->available : 0,
         '#title' => t('Available'),
         '#weight' => -100,
         '#attributes' => array('class' => 'hosting-service-toggle'),
