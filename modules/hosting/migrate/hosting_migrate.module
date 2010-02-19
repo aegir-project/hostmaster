@@ -92,7 +92,7 @@ function hosting_task_migrate_form($node) {
   $site_profile = node_load($node->profile);
 
   $profile_platform_instances = hosting_package_instances_load(
-    array('r.type' => 'platform', 'n.nid' => $node->profile));
+    array('r.type' => 'platform', 'n.nid' => $node->profile, 'h.status' => HOSTING_PLATFORM_ENABLED));
 
   // In the list of possible targets, we also include install profiles on platforms that
   // USED to be named the same as our current install profile. Such as the d6 -> d7 rename
