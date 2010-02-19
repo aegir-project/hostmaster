@@ -222,7 +222,7 @@ function hosting_nodeapi_server_presave(&$node) {
   */
 function hosting_server_validate(&$node, &$form) {
   if (!_hosting_valid_fqdn($node->title)) {
-    form_set_error('title', t('Invalid valid domain name. Either choose a proper domain name or hardcode the IP address of the webserver.'));
+    form_set_error('title', t('Invalid domain name. Use a proper domain name or an IP address.'));
   }
 
   hosting_server_services_from_post($node);
