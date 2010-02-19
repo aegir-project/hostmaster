@@ -32,6 +32,7 @@ function hosting_platform_post_hosting_verify_task($task, $data) {
 
     $node->verified = mktime(); // set verified flag on platform, to let it know it has been checked.
     $node->platform_status = HOSTING_PLATFORM_ENABLED;
+    $node->no_verify = TRUE;
     // Save the platform being verified
     node_save($node);
 

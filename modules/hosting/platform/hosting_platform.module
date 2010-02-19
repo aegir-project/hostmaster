@@ -243,6 +243,9 @@ function hosting_platform_update($node) {
     db_query("UPDATE {hosting_platform} SET publish_path = '%s', web_server = %d, verified = %d, status= %d WHERE nid=%d",
               $node->publish_path, $node->web_server, $node->verified, $node->platform_status, $node->nid);
   }
+  if (!$node->no_verify) {
+    hosting_add_task($node->nid, 'verify');
+  }
 }
 
 /**
