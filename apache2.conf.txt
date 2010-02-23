@@ -6,8 +6,6 @@
 # Note that this file may eventually be automatically be managed by
 # aegir.
 
-NameVirtualHost *:80
-
 # This only covers the base platforms, extra platforms should deploy
 # their own configuration
 #
