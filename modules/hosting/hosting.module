@@ -123,7 +123,7 @@ function hosting_menu_alter(&$items) {
   foreach ($types as $feature => $type) {
     $path = sprintf('node/add/%s', str_replace('_', '-', $type));
     $items[$path]['access callback'] = 'hosting_menu_access';
-    $items[$path]['access arguments'] = array($type, $feature);
+    $items[$path]['access arguments'] = array(str_replace('_', ' ', $type), $feature);
   }
   
   // These node types should remain hidden, and provide no user interface.
