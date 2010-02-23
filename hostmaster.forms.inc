@@ -172,15 +172,6 @@ function hostmaster_task_webserver() {
   ));
   $form['ports']['#weight'] = 10;
 
-
-  // httpd.conf description
-  $form['httpd_conf'] = hostmaster_requirement_help('httpd_conf', array(
-    '#weight' => 14,
-    '#summary' => HOSTING_HELP_ENABLED, 
-    '#configuration' => HOSTING_HELP_ENABLED,
-  ));
-
-
   return hostmaster_form($form);
 }
 
