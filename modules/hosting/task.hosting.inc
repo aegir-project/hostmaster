@@ -44,7 +44,11 @@ function drush_hosting_hosting_task() {
   $username = null;
   if (isset($task->options['web_id']) && ($task->options['web_id'] != HOSTING_OWN_WEB_SERVER)) {
     $username = $task->options['script_user'];
-    $hostname = $task->options['web_host'];
+    if ($task->options['web_ip']) {
+      $hostname = $task->options['web_ip'];
+    } else {
+      $hostname = $task->options['web_host'];
+    }
   }
   $drush_path = $task->options['drush_path'];
   $task->options['root'] = $task->options['publish_path'];
