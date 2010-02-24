@@ -99,6 +99,9 @@ class hostingService_DB extends hostingService {
     if ($ref_type == 'site') {
       $task->options['db_id'] = $this->server->nid;
       $task->options['db_host'] = $db_host;
+      $task->options['master_db_host'] = $db_host;
+      $task->options['master_db_user'] = $this->db_user;
+      $task->options['master_db_passwd'] = $this->db_passwd;
     }
 
   }
