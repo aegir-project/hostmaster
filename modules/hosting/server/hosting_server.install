@@ -78,10 +78,12 @@ function hosting_server_schema() {
         'size' => 'small', 
         'not null' => TRUE,
         'default' => 1,
-       ),
+      ),
+    ),
+    'indexes' => array(
+      'vid' => array('vid'),
     ),
   );
-
 
   return $schema;
 }
@@ -91,3 +93,14 @@ function hosting_server_install() {
   drupal_install_schema('hosting_server');
 }
 
+function hosting_server_uninstall() {
+  drupal_uninstall_schema('hosting_server');
+}
+
+function hosting_server_update_6000() {
+  $return = array();
+
+  db_add_index($return, 'hosting_service', 'vid', array('vid'));
+
+  return $return;
+}
