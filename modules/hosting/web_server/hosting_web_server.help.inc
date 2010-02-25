@@ -60,9 +60,9 @@ function _hosting_drush_path_requirements() {
 
 
 function _hosting_httpd_conf_requirements() {
-  $vhost_path = HOSTING_DEFAULT_VHOST_PATH;
+  $vhost_path = HOSTING_DEFAULT_CONFIG_PATH;
   $vhost_line = <<<EOF
-    Include $vhost_path
+    Include $vhost_path/apache.conf
 EOF;
   $help['title'] = t('Modify the web server\'s configuration file');
   $help['summary'] = t('To allow the system to load additional virtual hosts that are generated,
