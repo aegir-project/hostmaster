@@ -27,6 +27,17 @@ function hosting_server_menu() {
   return $items;
 }
 
+function hosting_server_hosting_feature() {
+  $features['server'] = array(
+    'title' => t('Server administration'),
+    'description' => t('Manage multiple servers.'),
+    'status' => HOSTING_FEATURE_ENABLED,
+    'node' => 'server',
+    );
+  return $features;
+}
+
+
 /**
  * Implementation of hook_perm()
  */
