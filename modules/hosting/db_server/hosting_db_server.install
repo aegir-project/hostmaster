@@ -76,6 +76,6 @@ function hosting_db_server_update_6000() {
 
   db_query("DELETE FROM {node} WHERE type='db_server'");
 
-  db_query("INSERT INTO {hosting_service} SELECT nid, vid, 'db', 'mysql' FROM {hosting_db_server}");
+  db_query("INSERT INTO {hosting_service} (nid, vid, service, type) SELECT nid, vid, 'db', 'mysql' FROM {hosting_db_server}");
   return $ret;
 }
