@@ -41,7 +41,7 @@ class hostingService_HTTP extends hostingService {
       $form['ports'] = array(
         '#type' => 'textfield',
         '#title' => t('Ports'),
-        '#required' => TRUE,
+        '#required' => $this->available,
         '#size' => 40,
         '#default_value' => ($this->ports) ? $this->ports : '80',
         '#description' => t("All the ports enabled on this server, comma separated. Port 80 is the default http, 443 is https."),
@@ -58,7 +58,7 @@ class hostingService_HTTP extends hostingService {
     $form['restart_cmd'] = array(
         '#type' => 'textfield',
         '#title' => t('Restart command'),
-        '#required' => TRUE,
+        '#required' => $this->available,
         '#description' => t('The command to run to restart the web server for new changes to take effect. This is required for the new site to become live'),
         '#default_value' => ($this->restart_cmd) ? $this->restart_cmd : HOSTING_DEFAULT_RESTART_CMD,
         '#size' => 40,
@@ -69,7 +69,7 @@ class hostingService_HTTP extends hostingService {
     $form['web_group'] = array(
       '#type' => 'textfield',
       '#title' => t('Web server group'),
-      '#required' => TRUE,
+      '#required' => $this->available,
       '#description' => t('The group that the hosted files will belong to.<br />This should be the group the web server is running as.'),
       '#default_value' => ($this->web_group) ? $this->web_group : HOSTING_DEFAULT_WEB_GROUP,
       '#size' => 20,
