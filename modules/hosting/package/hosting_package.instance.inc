@@ -187,8 +187,8 @@ function hosting_package_instance_version_code($version) {
   );
 
   $regex = array(
-    'core' => '/^(?<platform_major>\d?)\.(?<platform_minor>[x\d]*)?(-(?<package_version_type>dev|unstable|alpha|beta|rc)?(?<package_patch_level>\d)*)?$/',
-    'contrib' => "/(?<platform_major>\d?)\.(?<platform_minor>[x\d]*)?(-(?<package_major>\d*)?\.(?<package_minor>[x\d]*)?(-(?<package_version_type>alpha|unstable|beta|rc|dev)?(?<package_patch_level>[\d]*)?)?)?/");
+    'core' => '/^(?P<platform_major>\d?)\.(?P<platform_minor>[x\d]*)?(-(?P<package_version_type>dev|unstable|alpha|beta|rc)?(?P<package_patch_level>\d)*)?$/',
+    'contrib' => "/(?P<platform_major>\d?)\.(?P<platform_minor>[x\d]*)?(-(?P<package_major>\d*)?\.(?P<package_minor>[x\d]*)?(-(?P<package_version_type>alpha|unstable|beta|rc|dev)?(?P<package_patch_level>[\d]*)?)?)?/");
 
   $matches = array();
   if (preg_match($regex['core'], $version, $matches)) {
