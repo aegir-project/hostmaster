@@ -4,7 +4,8 @@ function drush_hosting_web_server_pre_hosting_task() {
   $task =& drush_get_context('HOSTING_TASK');
   if (in_array($task->ref->type, array('server', 'site', 'platform'))) {
     $server = _hosting_get_web_server($task);
-    $server->services['server']->options($task->task_type, $task->ref->type, $task);
+    # uh? http://drupal.org/node/725834
+    #$server->services['server']->options($task->task_type, $task->ref->type, $task);
     $server->services['http']->options($task->task_type, $task->ref->type, $task);
   }
 }
