@@ -19,25 +19,7 @@ function hosting_web_server_hosting_service() {
   ));
 }
 
-/**
- * "Feature" definition
- *
- * @see hosting.features.inc
- */
-function hosting_web_server_hosting_feature() {
-  $features['web_server'] = array(
-      'title' => t('Web servers'), 
-      'description' => t('Allow for creation of multiple web server nodes, and for distributed management of sites.'),
-      'status' => HOSTING_FEATURE_DISABLED,
-      'node' => 'web_server',
-    'group' => 'experimental');
-  $features['ports'] = array(
-      'title' => t('Ports'),
-      'description' => t('Allow configuration of multiple ports per server and non-default ports for sites.'),
-      'status' => HOSTING_FEATURE_ENABLED,
-  );
-  return $features;
-}
+
 
 /**
  * Small helper function to get web servers.

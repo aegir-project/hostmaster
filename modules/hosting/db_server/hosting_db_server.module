@@ -39,19 +39,7 @@ function hosting_get_db_server($hostname, $web_server = null) {
   return false;
 }
 
-/**
- * Implementation of hook_hosting_feature()
- */
-function hosting_db_server_hosting_feature() {
-  $features['db_server'] = array(
-    'title' => t('Database servers'),
-    'description' => t('Configure and maintain multiple database servers.'),
-    'status' => HOSTING_FEATURE_DISABLED,
-    'node' => 'db_server',
-  'group' => 'experimental');
-  return $features;
 
-}
 /**
  * Small helper function to get db servers.
 */ 

@@ -201,8 +201,7 @@ function hosting_client_node_access_records($node) {
       $base_grant['grant_update'] = FALSE;
     case 'task' :
     case 'platform' :
-    case 'web_server' :
-    case 'db_server' :
+    case 'server' :
       // The rest of the node types are configuration, so only admin should see them. 
       $base_grant['gid'] = HOSTING_ADMIN_CLIENT;
       break;
