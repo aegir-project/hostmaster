@@ -315,7 +315,7 @@ function hosting_site_form($node) {
       $platforms = _hosting_get_enabled_platforms();
     }
     else {
-      $platforms = _hosting_get_allowed_platforms($client_id);
+      $platforms = _hosting_get_allowed_platforms();
     }
     if (sizeof($platforms)) {
       if (sizeof($platforms) > 1) {
