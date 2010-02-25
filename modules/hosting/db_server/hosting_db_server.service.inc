@@ -13,7 +13,7 @@ class hostingService_DB extends hostingService {
     );
     $form['db_user'] = array(
       '#type' => 'textfield',
-      '#required' => TRUE,
+      '#required' => $this->available,
       '#title' => t('Username'),
       '#description' => t('The user that will be used to create users and databases for new sites.'),
       '#size' => 40,
@@ -26,7 +26,7 @@ class hostingService_DB extends hostingService {
     }
     $form['db_passwd'] = array(
       '#type' => 'password_confirm',
-      '#required' => ($this->db_passwd) ? FALSE : TRUE,
+      '#required' => ($this->db_passwd) ? FALSE : $this->available,
       '#description' => $passwd_description . t('The user account that will be used to create new mysql users and databases for new sites'),
       '#size' => 30,
       '#weight' => 10
