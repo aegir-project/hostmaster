@@ -200,10 +200,21 @@ function hosting_client_node_access_records($node) {
     case 'package' :
       $base_grant['grant_update'] = FALSE;
     case 'task' :
-    case 'platform' :
     case 'server' :
       // The rest of the node types are configuration, so only admin should see them. 
       $base_grant['gid'] = HOSTING_ADMIN_CLIENT;
+      break;
+    case 'platform' :
+      $base_grant['gid'] = HOSTING_ADMIN_CLIENT;
+      /*
+      if (sizeof($node->clients)) {
+        foreach ($node->clients as $cid => $client) {
+          if ($cid != HOSTING_ADMIN_CLIENT) {
+            $grants[] = array_merge($base_grant, array('gid' => $cid, 'grant_update' => FALSE));
+          }
+        }
+      }
+       */
       break;
     default :
       //Not hosting node, don't change access.

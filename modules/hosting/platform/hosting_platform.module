@@ -127,7 +127,7 @@ function _hosting_get_platforms() {
 function _hosting_get_enabled_platforms() {
   $return = array();
   $result = db_query("SELECT n.nid, n.title FROM {node} n LEFT JOIN {hosting_platform} h ON n.nid = h.nid 
-                      WHERE n.type='platform' AND n.status=1 AND h.status > %d", HOSTING_PLATFORM_LOCKED);
+                      WHERE n.type='platform' AND n.status=1 AND h.status <> %d", HOSTING_PLATFORM_LOCKED);
   while($server = db_fetch_object($result)) {
     $return[$server->nid] = $server->title;
   }

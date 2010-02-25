@@ -311,26 +311,36 @@ function hosting_site_form($node) {
      * Otherwise, use enabled platforms
      * Admin user isn't restricted to only accessible platforms for the client
     */
-    if (user_access('administer sites') || !module_exists('hosting_client')) { 
-      $platforms = _hosting_get_enabled_platforms();
-    }
-    else {
-      $platforms = _hosting_get_allowed_platforms();
-    }
+    $platforms = _hosting_get_platforms();
+    $user = user_load($GLOBALS['user']->uid);
     if (sizeof($platforms)) {
-      if (sizeof($platforms) > 1) {
+      foreach ($platforms as $nid => $title) {
+        $platform = node_load($nid);
+
+        if ($platform->platform_status != HOSTING_PLATFORM_LOCKED) {
+          if (!isset($platform->clients) || sizeof(array_intersect(array_keys($user->client_id), $platform->clients))) {
+            $options[$nid] = $title;
+          }
+        }
+      }
+
+      if (sizeof($options) > 1) {
         $form['platform'] = array(
           '#type' => 'radios',
           '#title' => t('Platform'),
           '#required' => TRUE,
           '#description' => t('The platform you want the site to be hosted on.'),
-          '#options' => $platforms,
+          '#options' => $options,
           '#default_value' => HOSTING_DEFAULT_PLATFORM,
         );
       }
-      else {
-        $form['platform'] = array('#type' => 'hidden', '#value' => key($platforms));
+      elseif (sizeof($options) == 1) {
+        $form['platform'] = array('#type' => 'hidden', '#value' => key($options));
       }
+      else { 
+        drupal_set_message(t('You have no enabled platforms! Please add or unlock a platform before attempting to create a site.'), 'error');
+      }
+
       $form['port'] = _hosting_site_form_port();
       $form['profile'] = _hosting_site_form_profile();
       $form['site_language'] = _hosting_site_form_site_language();

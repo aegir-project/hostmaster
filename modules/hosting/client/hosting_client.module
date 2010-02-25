@@ -605,30 +605,26 @@ function hosting_client_form_alter(&$form, $form_state, $form_id) {
       $node = $form["#node"];
       // Show a list of clients to give access to this platform
       $clients = _hosting_get_clients();
-      if ($node->nid) {
-        foreach ($clients as $cid => $name) {
-          $existing = db_result(db_query("SELECT cid FROM {hosting_platform_client_access} WHERE pid = %d AND cid = %d", $node->nid, $cid));
-          if ($existing) {
-            $client[$key][] = $cid;
-          }
-        }
-      }
-      else {
-        if ($user->uid == HOSTING_DEFAULT_CLIENT) {
-          $client[$key][] = $user->uid;
-        }
-      }
       $form['clients'] = array(
         '#type' => 'checkboxes',
         '#title' => t('Platform access control'),
         '#options' => $clients,
-        '#default_value' => isset($client[$key]) ? $client[$key] : array(),
+        '#default_value' => isset($node->clients) ? $node->clients : array(),
         '#description' => t('Grant access to this platform for relevant clients where required.'),
       );
     }
   }
 }
 
+function hosting_nodeapi_platform_load(&$node) {
+  $result = db_query("SELECT cid FROM {hosting_platform_client_access} WHERE pid = %d", $node->nid);
+
+  while ($record = db_fetch_object($result)) {
+    $additions['clients'][$record->cid] = $record->cid;
+  }
+
+  return $additions;
+}
 /**
  * Implementation of hook_nodeapi()
  */

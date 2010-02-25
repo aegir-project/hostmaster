@@ -90,6 +90,10 @@ function hosting_task_menu_access($node, $task) {
       return (!$site_enabled && $on_delete_task) || ($site_enabled && !$on_delete_task);
     }
     if ($node->type == 'platform') {
+      // if the user can't edit this node, he can't create tasks on it
+      if (!node_access('update', $node, $GLOBALS['user'])) {
+        return FALSE;
+      }
       // If the platform is in a deleted state, nothing else can be done with it
       if (hosting_task_outstanding($node->nid, 'delete') || ($node->platform_status ==  HOSTING_PLATFORM_DELETED)) {
         return FALSE;
@@ -831,7 +835,7 @@ function hosting_task_table($node) {
 }
 
 function _hosting_task_button($title, $link, $description, $class = '', $status = TRUE) {
-  if ($status) {
+  if ($status && user_access('access task logs')) {
     return l($title, $link, array(
         'attributes' => array(
           'title' => $description,
