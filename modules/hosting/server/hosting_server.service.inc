@@ -81,7 +81,7 @@ class hostingService_base extends hostingService {
     $form['drush_path'] = array(
       '#type' => 'textfield',
       '#title' => t('Drush path'),
-      '#required' => TRUE,
+      '#required' => $this->available,
       '#size' => 40,
       '#default_value' => ($this->drush_path) ? $this->drush_path : HOSTING_DEFAULT_PARENT_PATH.'/drush/drush.php',
       '#description' => t("The full path to the drush.php script on this server."),
@@ -92,7 +92,7 @@ class hostingService_base extends hostingService {
     $form['script_user'] = array(
       '#type' => 'textfield',
       '#title' => t('System account'),
-      '#required' => TRUE,
+      '#required' => $this->available,
       '#description' => t('The system account that the hosted files will belong to, for security reasons.<br />This should be a different account to the account the server is running as.'),
       '#default_value' => ($this->script_user) ? $this->script_user : HOSTING_DEFAULT_SCRIPT_USER,
       '#size' => 20,
@@ -103,7 +103,7 @@ class hostingService_base extends hostingService {
     $form['config_path'] = array(
       '#type' => 'textfield',
       '#title' => t('Configuration path'),
-      '#required' => TRUE,
+      '#required' => $this->available,
       '#size' => 40,
       '#default_value' => ($this->config_path) ? $this->config_path : HOSTING_DEFAULT_CONFIG_PATH,
       '#description' => t("The path on the server where configuration files will be stored.<br />
@@ -116,7 +116,7 @@ class hostingService_base extends hostingService {
     $form['backup_path'] = array(
       '#type' => 'textfield',
       '#title' => t('Backup path'),
-      '#required' => TRUE,
+      '#required' => $this->available,
       '#size' => 40,
       '#default_value' => ($this->backup_path) ? $this->backup_path : HOSTING_DEFAULT_BACKUP_PATH,
       '#description' => t("The path on the server where backups will be stored.<br />
