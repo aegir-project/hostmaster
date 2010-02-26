@@ -129,7 +129,26 @@ function hosting_update_6005() {
   $item['options'] = unserialize($item['options']);
   install_menu_update_menu_item($item);
 
-
   menu_rebuild();
+  return array();
+}
+
+/**
+ * move the platforms into primary links
+ */
+function hosting_update_6006() {
+  install_include(array('menu'));
+  $menu_name = variable_get('menu_primary_links_source', 'primary-links');
+
+
+  $items = install_menu_get_items('hosting/platforms');
+  $item = db_fetch_array(db_query("SELECT * FROM {menu_links} WHERE mlid = %d", $items[0]['mlid']));
+  $item['menu_name'] = $menu_name;
+  $item['customized'] = 1;
+  $item['options'] = unserialize($item['options']);
+  install_menu_update_menu_item($item);
+
+
+
   return array();
 }
