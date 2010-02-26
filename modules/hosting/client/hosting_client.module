@@ -610,7 +610,7 @@ function hosting_client_form_alter(&$form, $form_state, $form_id) {
         '#title' => t('Platform access control'),
         '#options' => $clients,
         '#default_value' => isset($node->clients) ? $node->clients : array(),
-        '#description' => t('Grant access to this platform for relevant clients where required.'),
+        '#description' => t('Grant access to this platform for relevant clients where required. Leave all checkboxes unchecked to grant all clients access to this platform.'),
       );
     }
   }
