@@ -191,25 +191,9 @@ function hosting_client_update_7() {
  */
 function hosting_client_update_8() {
   $ret = array();
-  $q = db_query("SELECT nid FROM {node} WHERE type = 'platform' AND status = '1';");
-  $pids = array();
-  while ($result = db_fetch_array($q)) {
-    $pids[] = $result['nid'];
-  }
   $ret[] = update_sql("CREATE TABLE {hosting_platform_client_access} 
                        (pid int(10) unsigned NOT NULL default '0', 
                         cid int(10) unsigned NOT NULL default '0')");
-
-  $cids=array();
-  $result = db_query("SELECT nid from {hosting_client}");
-  while ($row = db_fetch_array($result)) {
-    $cids[] = $row['nid'];
-  }
-  foreach ($cids as $cid) {
-    foreach ($pids as $pid) {
-      $result = db_query("INSERT INTO {hosting_platform_client_access} (pid, cid) VALUES (%d, %d)", $pid, $cid);
-    }
-  }
   return $ret;
 }
 
