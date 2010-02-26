@@ -112,6 +112,9 @@ function hosting_update_6004() {
  * Move some menu items to the primary links menu.
  */
 function hosting_update_6005() {
+  drupal_install_modules(array('hosting_server'));
+  menu_rebuild();
+
   install_include(array('menu'));
   $menu_name = variable_get('menu_primary_links_source', 'primary-links');
 
