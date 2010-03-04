@@ -161,6 +161,6 @@ function hosting_update_6006() {
  * See http://drupal.org/node/731550
  */
 function hosting_update_6007() {
-  variable_set('hosting_default_db_server', HOSTING_DEFAULT_WEB_SERVER);
-  variable_set('hosting_own_db_server', HOSTING_DEFAULT_WEB_SERVER);
+  variable_set('hosting_default_db_server', variable_get('hosting_default_web_server', 3));
+  variable_set('hosting_own_db_server', variable_get('hosting_default_web_server', 3));
 }
