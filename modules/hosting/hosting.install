@@ -155,3 +155,12 @@ function hosting_update_6006() {
 
   return array();
 }
+
+/**
+ * Update the default db_server now that we've merged the webserver and dbserver nodes
+ * See http://drupal.org/node/731550
+ */
+function hosting_update_6007() {
+  variable_set('hosting_default_db_server', HOSTING_DEFAULT_WEB_SERVER);
+  variable_set('hosting_own_db_server', HOSTING_DEFAULT_WEB_SERVER);
+}
