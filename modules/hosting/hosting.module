@@ -608,6 +608,10 @@ function hosting_queues_configure() {
       '#default_value' => $frequency_length,
     );
   }
+  $form['help'] = array(
+    '#type' => 'item',
+    '#description' => t('Increasing the queue frequency to every 1 second will not cause them to be dispatched every second, as the dispatcher can only run once per minute via cron. However, with such a short frequency, executing the hosting-dispatch command manually from the CLI will allow you to \'force\' the queues to be dispatched between cron runs. This may be useful for development purposes.'),
+  );
   $form['submit'] = array('#type' => 'submit', '#value' => t('Save changes'));
   return $form;
 }
@@ -628,6 +632,7 @@ function theme_hosting_queues_configure($form) {
     $rows[] = $row;
   }
   $output = theme('table', $header, $rows);
+  $output .= drupal_render($form['help']);
   $output .= drupal_render($form['submit']);
   $output .= drupal_render($form);
   return $output;
