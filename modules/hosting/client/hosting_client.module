@@ -600,7 +600,7 @@ function hosting_client_autocomplete($type, $keyword) {
  */
 function hosting_client_form_alter(&$form, $form_state, $form_id) {
   if (user_access('administer clients')) {
-    if ($form_id == 'platform_node_form') {
+    if (hosting_feature('client') && $form_id == 'platform_node_form') {
       global $user;
       $node = $form["#node"];
       // Show a list of clients to give access to this platform

@@ -318,7 +318,7 @@ function hosting_site_form($node) {
         $platform = node_load($nid);
 
         if ($platform->platform_status != HOSTING_PLATFORM_LOCKED) {
-          if (!isset($platform->clients) || sizeof(array_intersect(array_keys($user->client_id), $platform->clients))) {
+          if (!isset($platform->clients) || sizeof(array_intersect(array_keys($user->client_id), $platform->clients)) || $user->uid == 1) {
             $options[$nid] = $title;
           }
         }
