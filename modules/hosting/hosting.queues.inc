@@ -157,7 +157,7 @@ function _hosting_queues_clean_output($return) {
 
 
 function _hosting_dispatch_cmd() {
-  $cmd = sprintf("php %s hosting-dispatch --root=%s", DRUSH_COMMAND, escapeshellarg(HOSTING_DEFAULT_DOCROOT_PATH));
+  $cmd = sprintf("%s hosting-dispatch --root=%s", DRUSH_COMMAND, escapeshellarg(HOSTING_DEFAULT_DOCROOT_PATH));
   if (function_exists('drush_get_option')) {
     if ($uri = drush_get_option('uri')) {
       $cmd .= ' --uri=' . escapeshellarg($uri);
