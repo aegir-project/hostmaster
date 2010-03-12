@@ -686,3 +686,24 @@ function hosting_form_alter(&$form, &$form_state, $form_id) {
   }
 }
 
+/**
+ * Hosting version of menu_rebuild() from Drupal 6.15
+ * This is needed for the upgrade path of a hostmaster platform from 
+ * 6.15 to 6.16. The Hosting module calls update hooks that run 
+ * menu_rebuild() which break on a 6.16 platform as the semaphore 
+ * table has not yet been introduced by system_update_6054() 
+ * It is considered safe enough to ignore the new locking checks in 
+ * 6.16's menu_rebuild() to get us past this step to successfully 
+ * complete the hostmaster-migrate task.
+ */
+function hosting_menu_rebuild() {
+  variable_del('menu_rebuild_needed');
+  $menu = menu_router_build(TRUE);
+  _menu_navigation_links_rebuild($menu);
+  // Clear the menu, page and block caches.
+  menu_cache_clear_all();
+  _menu_clear_page_cache();
+  if (defined('MAINTENANCE_MODE')) {
+    variable_set('menu_rebuild_needed', TRUE);
+  }
+}
