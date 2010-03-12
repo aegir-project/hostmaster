@@ -10,6 +10,16 @@ define('HOSTING_FEATURE_DISABLED', 0);
 define('HOSTING_FEATURE_ENABLED', 1);
 define('HOSTING_FEATURE_REQUIRED', 2);
 
+
+/**
+ * Determine whether a specific feature of the hosting system is turned on.
+ *
+ * param @feature
+ *    The feature to check, ie "client" or "platform" and so forth.
+ *
+ * return
+ *    Boolean. Yes if enabled, False if disabled.
+ */
 function hosting_feature($feature) {
   static $features = array();
 
