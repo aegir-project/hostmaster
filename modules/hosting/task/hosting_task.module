@@ -886,6 +886,9 @@ function _hosting_task_list($filter_by, $filter_value, $count = 5, $element = 0,
        $headers[t('Created')] = '';
      }
 
+     $row['executed'] = t("@interval ago", array('@interval' => format_interval(mktime() - $node->changed, 1)));
+     $headers[t('Executed')] = '';
+
      $headers[t('Actions')] = '';
 
      $actions['log'] = l(t('View'), 'node/' . $node->nid, array('attributes' => array('class' => 'hosting-button-enabled hosting-button-log')));
