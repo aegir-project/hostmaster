@@ -148,6 +148,18 @@ function _hosting_get_locked_platforms() {
 }
 
 /**
+ * Small helper function to check if a platform is locked
+ */
+function _hosting_platform_is_locked($node) {
+  if (in_array($node, array_keys(_hosting_get_locked_platforms()))) {
+    return TRUE;
+  }
+  else {
+    return FALSE;
+  }
+}
+
+/**
  * Implementation of hook_form().
  */
 function hosting_platform_form(&$node) {
@@ -453,5 +465,4 @@ function hosting_platform_listing() {
 
   return theme('table',  $header, $rows, array('class' => 'hosting-table'));
 }
-
 

@@ -102,20 +102,24 @@ function hosting_task_migrate_form($node) {
 
   if (sizeof($profile_platform_instances) <= 1) {
     $form['no_targets'] = array(
-      '#value' => t('<br />There are no platforms that can meet the dependencies for this site<br />'));
+      '#type' => 'item',
+      '#description' => t('There are no platforms that can meet the dependencies for this site.'));
     $form['hidden'] = array(
       '#type' => 'hidden',
       '#value' => t('no_targets')); 
   }
   $site_platform = node_load($node->platform);
-  $form[$node->platform]['target_platform'] = array(
-    '#type' => 'radio',
-    '#title' => $site_platform->title,
-    "#return_value" => $node->platform,
-    "#default_value" => $node->platform,
-    '#description' => t("Current platform"),
-    '#parents' => array('parameters', 'target_platform'),
-  );
+  // Don't show the current platform if it's locked
+  if (!_hosting_platform_is_locked($node->platform)) {
+    $form[$node->platform]['target_platform'] = array(
+      '#type' => 'radio',
+      '#title' => $site_platform->title,
+      "#return_value" => $node->platform,
+      "#default_value" => $node->platform,
+      '#description' => t("Current platform"),
+      '#parents' => array('parameters', 'target_platform'),
+    );
+  }
   foreach ($profile_platform_instances as $profile_instance) {
     if ($profile_instance->rid != $node->platform) {
       $status = hosting_package_comparison($node->nid, $profile_instance->iid);

@@ -46,29 +46,38 @@ function hosting_clone_theme($existing, $type, $theme, $path) {
 
 function hosting_task_clone_form($node) {
   $form = hosting_task_migrate_form($node);
-  // One can always clone to the current platform, so the error displayed 
-  // in the no_targets field in the migrate form is not applicable here 
-  unset($form['no_targets']);
-  $form['new_name'] = array (
-    '#title' => t('New site name'),
-    '#type' => 'textfield',
-    '#weight' => '-1',
-    '#required' => TRUE,
-    '#default_value' => $node->title
-  );
-  if (module_exists('hosting_alias')) {
-    $form['aliases'] = array(
-      '#type' => 'textarea',
-      '#title' => t('Domain aliases'),
-      '#description' => t('Your site can also be accessed through these domain names. This field requires each domain alias to be on its own line'),
-      '#default_value' => implode("\n", (array) $form['#node']->aliases),
-      '#weight' => 10,
+  // Don't show the current platform if it's locked
+  if (!_hosting_platform_is_locked($node->platform)) {
+    // A profile package dependency check on a target platform is not relevant
+    // in the case of a clone, as the target may be the current platform
+    unset($form['no_targets']); 
+    $form['new_name'] = array (
+      '#title' => t('New site name'),
+      '#type' => 'textfield',
+      '#weight' => '-1',
+      '#required' => TRUE,
+      '#default_value' => $node->title
     );
-    $form['redirection'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Redirection'),
-      '#description' => t('Aliases will all be redirected to the main domain if this is checked. Otherwise, all aliases will be accessible transparently.'),
-      '#default_value' => isset($form['#node']->redirection) ? $form['#node']->redirection : variable_get('hosting_alias_redirection', FALSE),
+    if (module_exists('hosting_alias')) {
+      $form['aliases'] = array(
+        '#type' => 'textarea',
+        '#title' => t('Domain aliases'),
+        '#description' => t('Your site can also be accessed through these domain names. This field requires each domain alias to be on its own line'),
+        '#default_value' => implode("\n", (array) $form['#node']->aliases),
+        '#weight' => 10,
+      );
+      $form['redirection'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Redirection'),
+        '#description' => t('Aliases will all be redirected to the main domain if this is checked. Otherwise, all aliases will be accessible transparently.'),
+        '#default_value' => isset($form['#node']->redirection) ? $form['#node']->redirection : variable_get('hosting_alias_redirection', FALSE),
+      );
+    }
+  }
+  else {
+    $form['no_targets'] = array (
+      '#type' => 'item',
+      '#description' => t('There are no valid platforms to clone this site to. Please add or unlock a valid platform.'),
     );
   }
   return $form;
