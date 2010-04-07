@@ -220,6 +220,6 @@ function theme_hosting_migrate_comparison($packages) {
     $rows[] = array('data' => $row, 'class' => ($instance->enabled) ? 'hosting-success' : 'hosting-info');
   }
   $options['attributes']['class'] = 'hosting-migrate-comparison-return';
-  $link = l(t('Back to Migrate'), 'node/' . arg(3) . '/site_migrate', $options);
+  $link = l(t('Go back'), 'node/' . arg(3) . '/site_migrate', $options);
   return "<div id='hosting-package-comparison'>" . $link . theme('table', $headers, $rows) . $link . "</div>";
 }
