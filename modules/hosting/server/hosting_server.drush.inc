@@ -12,7 +12,7 @@ function hosting_server_post_hosting_verify_task($task, $data) {
 
   if ($node->type === 'server') {
     foreach ($node->services as $name => $service) {
-      if ($node->services[$name]['available']) {
+      if ($node->services[$name]->available) {
         // todo set available to result
       }
     }
