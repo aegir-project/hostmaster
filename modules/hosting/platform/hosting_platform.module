@@ -369,13 +369,14 @@ function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
       '#weight' => 10
     );
 
+    // Task list
     if ($node->nid) {
       $node->content['tasks_view'] = array(
         '#type' => 'item',
         '#value' => hosting_task_table($node),
         '#prefix' => '<div id="hosting-task-list">',
         '#suffix' => '</div>',
-        '#weight' => 10 
+        '#weight' => 10,
       );
       $settings['hostingTaskRefresh'] = array(
         'nid' => $node->nid,

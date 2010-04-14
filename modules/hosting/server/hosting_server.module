@@ -37,6 +37,18 @@ function hosting_server_hosting_feature() {
   return $features;
 }
 
+/**
+ * Implementation of hook_hosting_tasks()
+ */
+function hosting_server_hosting_tasks() {
+  $tasks = array();
+  $tasks['server']['verify'] = array(
+    'title' => t('Verify'),
+    'description' => t('Verify that the server is correctly installed and working.'),
+    'weight' => 10,
+  );
+  return $tasks;
+}
 
 /**
  * Implementation of hook_perm()
@@ -259,6 +271,10 @@ function hosting_server_update($node) {
     hosting_server_invoke_services($node, 'save', $node);
     hosting_server_invoke_services($node, 'update', $node);
   }
+
+  if (!$node->no_verify) {
+    hosting_add_task($node->nid, 'verify');
+  }
 }
 
 /**
@@ -267,6 +283,10 @@ function hosting_server_update($node) {
 function hosting_server_insert($node) {
   hosting_server_invoke_services($node, 'save', $node);
   hosting_server_invoke_services($node, 'insert', $node);
+
+  if (!$node->no_verify) {
+    hosting_add_task($node->nid, 'verify');
+  }
 }
 
 /**
@@ -306,6 +326,11 @@ function hosting_server_view(&$node, $teaser = FALSE, $page = FALSE) {
 
   $services = module_invoke_all('hosting_service');
 
+  $node->content['info'] = array(
+    '#prefix' => '<div id="hosting-server-info">',
+    '#suffix' => '</div>'
+  );
+
   foreach ($node->services as $name => $service) {
     $node->content['info'][$name] = array(
       '#prefix' => '<div class="hosting-service-info hosting-service-' . $name . '-info">',
@@ -324,6 +349,27 @@ function hosting_server_view(&$node, $teaser = FALSE, $page = FALSE) {
 
     $service->view($node->content['info'][$name]);
   }
+
+  if ($page) {
+    // Task list
+    if ($node->nid) {
+      $node->content['tasks_view'] = array(
+        '#type' => 'item',
+        '#value' => hosting_task_table($node),
+        '#prefix' => '<div id="hosting-task-list">',
+        '#suffix' => '</div>',
+        '#weight' => 10,
+      );
+      $settings['hostingTaskRefresh'] = array(
+        'nid' => $node->nid,
+        'changed' => $node->changed,
+      );
+      drupal_add_js($settings, 'setting');
+
+      drupal_add_js(drupal_get_path('module','hosting_task') . '/hosting_task.js');
+    }
+  }
+
   return $node;
 }
 

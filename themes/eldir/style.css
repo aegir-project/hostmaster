@@ -737,6 +737,7 @@ table.hosting-table th {
   float:right;
 }
 
+#hosting-server-info,
 #hosting-platform-info,
 #hosting-site-info,
 #hosting-task-info,
@@ -751,15 +752,6 @@ table.hosting-table th {
   }
 
 #hosting-site-list { clear: both }
-
-#hosting-server-info,
-.hosting-service-info {
-  font-size:11px;
-  background:#f8f8f8;
-  padding:9px;
-  border:1px solid #e8e8e8;
-  margin:0px 0px 10px;
-}
 
   #hosting-site-edit-info,
   #hosting-site-edit-info div.form-item {

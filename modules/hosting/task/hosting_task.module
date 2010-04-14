@@ -8,7 +8,7 @@
  */
 function hosting_task_menu() {
   $items = array();
-  foreach (array('site', 'platform') as $type) {
+  foreach (array('site', 'platform', 'server') as $type) {
     foreach (hosting_available_tasks($type) as $task => $info) {
       if (!$info['hidden']) {
         $path = sprintf("node/%%hosting_task_%s/%s_%s", $type, $type, $task);
@@ -112,15 +112,21 @@ function hosting_task_menu_access($node, $task) {
         }
       }
       return (in_array($task, $platform_tasks)); 
-    } else {
-      return true;
+    }
+    if ($node->type === 'server') {
+      // If the user can't edit this node, he can't create tasks on it.
+      if (!node_access('update', $node, $GLOBALS['user'])) {
+        return FALSE;
+      }
+      // todo probably need more checks
+      return TRUE;
     }
   }
   return FALSE;
 }
 
 function hosting_task_site_load($arg) {
- if (!is_numeric($arg)) {
+  if (!is_numeric($arg)) {
     return FALSE;
   }
   if ($node = node_load($arg)) {
@@ -132,11 +138,23 @@ function hosting_task_site_load($arg) {
 }
 
 function hosting_task_platform_load($arg) {
- if (!is_numeric($arg)) {
+  if (!is_numeric($arg)) {
     return FALSE;
   }
   if ($node = node_load($arg)) {
     if ($node->type == 'platform') {
+      return $node;
+    }
+  }
+  return FALSE;
+}
+
+function hosting_task_server_load($arg) {
+  if (!is_numeric($arg)) {
+    return FALSE;
+  }
+  if ($node = node_load($arg)) {
+    if ($node->type === 'server') {
       return $node;
     }
   }

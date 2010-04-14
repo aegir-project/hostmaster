@@ -40,7 +40,7 @@ function hosting_server_schema() {
         'size' => 'big',
         'not null' => FALSE,
       ),
-     'drush_path' => array(
+      'drush_path' => array(
         'type' => 'text',
         'size' => 'big',
         'not null' => FALSE,
