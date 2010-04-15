@@ -2,9 +2,14 @@
 
 function drush_hosting_server_pre_hosting_task($task) {
   $task =& drush_get_context('HOSTING_TASK');
-  $node = $task->ref;
 
-  // todo set up task
+  if ($task->ref->type === 'server') {
+    foreach ($task->ref->services as $service) {
+      if ($service->available) {
+        $service->options($task->task_type, $task->ref->type, $task);
+      }
+    }
+  }
 }
 
 function hosting_server_post_hosting_verify_task($task, $data) {

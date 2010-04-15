@@ -119,7 +119,6 @@ class hostingService_HTTP extends hostingService {
   }
 
   public function options($task_type, $ref_type, &$task) {
-
     $task->options['web_id'] = $this->server->nid;
     $task->options['web_host'] = $this->server->title;
 
@@ -132,7 +131,7 @@ class hostingService_HTTP extends hostingService {
       }
     }
 
-   if ($task_type == 'verify' && $ref_type == 'platform') {
+    if ($task_type === 'verify' && $ref_type === 'server') {
       $task->options['web_group'] = $this->web_group;
       $task->options['restart_cmd'] = $this->restart_cmd;
     }
