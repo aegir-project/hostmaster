@@ -82,6 +82,8 @@ class hostingService_DB extends hostingService {
   }
 
   public function options($task_type, $ref_type, &$task) {
+    parent::options($task_type, $ref_type, $task);
+
     $web_server = _hosting_get_web_server($task);
 
     // If the web server nid is the same as the db server nid, assume the db_host to be localhost

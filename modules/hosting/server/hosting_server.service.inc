@@ -60,6 +60,11 @@ class hostingService {
 
   public function validate(&$node, &$form) {}
 
+  public function options($task_type, $ref_type, &$task) {
+    if ($task_type == 'verify' && $ref_type == 'server') {
+      $task->options['init_' . $this->service] = $this->type;
+    }
+  }
 }
 
 class hostingService_base extends hostingService {
