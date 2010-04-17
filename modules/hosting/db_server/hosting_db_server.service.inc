@@ -94,7 +94,7 @@ class hostingService_DB extends hostingService {
       $db_host = $this->server->title;
     }
 
-    if ($ref_type == 'platform' && $task_type == 'verify') {
+    if (($ref_type === 'server' || $ref_type === 'platform') && $task_type === 'verify') {
       $task->options['master_db'] = sprintf("%s://%s:%s@%s", $this->db_type, urlencode($this->db_user), urlencode($this->db_passwd), urlencode($db_host));
     }
 
