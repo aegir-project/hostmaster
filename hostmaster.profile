@@ -75,6 +75,7 @@ function hostmaster_bootstrap() {
 
   hosting_services_add($node, "server", array(
     'script_user' => HOSTING_DEFAULT_SCRIPT_USER,
+    'drush_path' => DRUSH_COMMAND,
     'available' => 1,
  ));
   hosting_services_add($node, "http", array(
