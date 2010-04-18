@@ -202,11 +202,5 @@ class hostingService_base extends hostingService {
   public function options($task_type, $ref_type, &$task) {
     $task->options['drush_path'] = $this->drush_path;
     $task->options['web_ip'] = $this->ip_address;
-    $task->options['script_user'] = $this->script_user;
-
-    if ($task_type == 'verify' && $ref_type == 'server') {
-      $task->options['config_path'] = $this->config_path;
-      $task->options['backup_path'] = $this->backup_path;
-    }
   }
 }

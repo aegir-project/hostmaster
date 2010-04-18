@@ -99,8 +99,6 @@ function hostmaster_bootstrap() {
 
   hosting_services_add($node, "db", array(
     'db_type' => $url['scheme'],
-    'db_user' => $url['user'],
-    'db_passwd' => $url['pass'],
     'available' => 1,
   ));
 
