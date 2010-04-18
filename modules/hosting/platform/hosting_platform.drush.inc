@@ -11,10 +11,6 @@ function drush_hosting_platform_pre_hosting_task($task) {
     $node = $task->ref;
   }
   $task->options['platform'] = $node->nid;
-  $task->options['publish_path'] = $node->publish_path;
-  if ($task->task_type == 'verify') {
-    $task->options['master_url'] = variable_get('install_url', $GLOBALS['base_url']);
-  }
 }
 
 
