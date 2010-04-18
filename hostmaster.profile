@@ -29,179 +29,15 @@ function hostmaster_profile_details() {
   );
 }
 
-function pr($var) {
-  echo "<pre>";
-  print_r($var);
-  echo "</pre>";
-}
-
-function hostmaster_profile_task_list() {
-  return array(
-    'intro' => st('Getting started'),
-    'server' => st('Basic'),
-    'webserver' => st('Web server'),
-    'dbserver' => st('Database server'),
-    'features' => st('Features'),
-    'init' => st('Initialize system'),
-    'verify' => st('Verify settings'),
-    'import' => st('Import sites'),
-    'finalize' => st('Finalize') 
-  );
-}
-
-function hostmaster_get_task($task, $offset = 0) {
-  static $tasks;
-  static $keys;
-  if (!$tasks) {
-    $tasks = hostmaster_profile_task_list();
-    $keys = array_keys($tasks);
-  }
-
-
-  if (($task == $keys[sizeof($keys) - 1]) && ($offset > 0)) {
-    return 'profile-finished';
-  }
-
-  // finish if the task is the last one and the offset is positive
-  if (($tid = array_search($task, $keys)) === FALSE ) {
-    // at beginning 
-    $tid = 0;
-  }
-
-  $tid = $tid + $offset;
-  
-  // reset to beginning if it tries to go back too far 
-  if ($tid < 0) {
-    $tid = 0;
-  }
-
-
-  return $keys[$tid];
-}
-
-
-
 function hostmaster_profile_tasks(&$task, $url) {
+  // Install dependencies
   install_include(hostmaster_profile_modules());
-  include_once(dirname(__FILE__) . '/hostmaster.forms.inc');
-  define("HOSTMASTER_FORM_REDIRECT", $url);
-  if ($task == 'profile') {
-    hostmaster_bootstrap();
-  }
-  include_once(drupal_get_path('module', 'node') . '/node.pages.inc');
-  $task = hostmaster_get_task($task, variable_get('hostmaster_wizard_offset', 0));
-  variable_del('hostmaster_wizard_offset');
-  define("HOSTMASTER_CURRENT_TASK", $task);
 
+  // Bootstrap and create all the initial nodes
+  hostmaster_bootstrap();
 
-   $func = sprintf("hostmaster_task_%s", $task);
-  if (function_exists($func)) {
-    return drupal_get_form($func);
-  }
-
-
-  return $task;
-  return "123";
-
-
-  if ($tid == (sizeof($keys) - 1)) {
-  #  $task = 'profile-finished';
-  }
-}
-
-function hostmaster_requirement_help($requirement, $options = array()) {
-  $form = array_merge(_element_info('requirement_help'), $options);
-  $form['#requirement'] = $requirement;
-  $form['#help'] = hosting_get_requirement($requirement);
-  $form['#value'] = theme_requirement_help($form);
-  return $form;
-}
-
-/**
- * modify the settings.php
- *
- * add the install_profile variable to the settings.php so that Drupal
- * picks up the theme in our install profile
- *
- * This is a bug in the Drupal core: http://drupal.org/node/330297
- */
-function hostmaster_settings_php() {
-  $settings_file = realpath(conf_path() . '/settings.php');
-  drupal_verify_install_file($settings_file, FILE_READABLE|FILE_WRITABLE);
-  $fp = fopen($settings_file, "a");
-  fwrite($fp, "\n\n\$conf['install_profile'] = 'hostmaster';\n");
-  fclose($fp);
-  drupal_verify_install_file($settings_file, FILE_READABLE|FILE_NOT_WRITABLE);
-}
-
-/**
- * Form modifier similar to confirm_form
- *
- * Handles some bookkeeping like adding the js and css, 
- * embedded the right classes, and most importantly : adding the wizard_form_submit
- * to the #submit element. Without this, you would never be forwarded to the next
- * page.
- */
-function hostmaster_form($form) {
-  global $task;
-
-  $form['#redirect'] = HOSTMASTER_FORM_REDIRECT;
-
-  $form['#prefix'] = '<div id="hosting-wizard-form">';
-  $form['#suffix'] = '</div>';
-
-
-  $form['wizard_form'] = array(
-    '#prefix' => '<div id="hosting-wizard-form-buttons">',
-    '#suffix' => '</div>',
-    '#weight' => 100
-  );
-
-  if (HOSTMASTER_CURRENT_TASK != 'intro') {
-    // add a back button
-    $button = array(
-      '#type' => 'submit',
-      '#value' =>  '<- Previous',
-    );
-    $button['#submit'][] = 'hostmaster_form_previous';
-
-    $form['wizard_form']['back'] = $button;
-  }
-
-  // add a next button
-  $button = array(
-    '#type' => 'submit',
-    '#value' =>  'Next ->',
-  );
-
-  // only validate when next is pressed
-  // also inherit the whole form's validate callback
-  $button['#validate'] = $form['#validate'];
-  $button['#validate'][] = 'hostmaster_form_validate';
-  unset($form['#validate']);
-
-  $button['#submit'] = array();
-  if ($form['#node']) {
-    $button['#submit'][] = 'node_form_submit';
-  }
-  // hook the regular form submit hooks on the wizard submit hook
-  if ($form['#submit']) {
-    $button['#submit'] = array_merge($button['#submit'], $form['#submit']);
-  }
-  $button['#submit'][] = 'hostmaster_form_next';
-
-  $form['wizard_form']['submit'] = $button;
-  return $form;
-}
-
-function hostmaster_form_next($form, $form_state) {
-  // move forward a page
-  variable_set('hostmaster_wizard_offset', 1);
-}
-
-function hostmaster_form_previous($form, $form_state) {
-  // move backward a page
-  variable_set('hostmaster_wizard_offset', -1);
+  // Finalize and setup themes, menus, optional modules etc
+  hostmaster_task_finalize();
 }
 
 function hostmaster_bootstrap() {
@@ -354,34 +190,69 @@ function hostmaster_setup_optional_modules() {
 }
 
 
-/**
- * Take a node form and get rid of all the crud that we don't
- * need on a wizard form, in a non destructive manner.
- */
-function _hostmaster_clean_node_form(&$form) {
-  $form['revision_information']['revision']['#type'] = 'value';
-  $form['revision_information']['log']['#type'] = 'value';
-  $form['revision_information']['#type'] = 'markup';
+function hostmaster_task_finalize() {
+  variable_set('install_profile', 'hostmaster');
+  drupal_set_title(st("Configuring roles, blocks and theme"));
 
-  $form['author']['name']['#type'] = 'value';
-  $form['author']['date']['#type'] = 'value';
-  $form['author']['#type'] = 'markup';
+  install_include(array('menu'));
+  $menu_name = variable_get('menu_primary_links_source', 'primary-links');
 
-  $form['options']['sticky']['#type'] = 'value';
-  $form['options']['status']['#type'] = 'value';
-  $form['options']['promote']['#type'] = 'value';
-  $form['options']['#type'] = 'markup';
+  $items = install_menu_get_items('hosting/servers');
+  $item = db_fetch_array(db_query("SELECT * FROM {menu_links} WHERE mlid = %d", $items[0]['mlid']));
+  $item['menu_name'] = $menu_name;
+  $item['customized'] = 1;
+  $item['options'] = unserialize($item['options']);
+  install_menu_update_menu_item($item);
 
-  unset($form['buttons']);
-}
+  $items = install_menu_get_items('hosting/sites');
+  $item = db_fetch_array(db_query("SELECT * FROM {menu_links} WHERE mlid = %d", $items[0]['mlid']));
+  $item['menu_name'] = $menu_name;
+  $item['customized'] = 1;
+  $item['options'] = unserialize($item['options']);
+  install_menu_update_menu_item($item);
 
-function hostmaster_form_alter($form, $values, $form_id) {
-  if ($form_id == 'install_configure') {
-    // Put the install profile into settings.php so that it will pick up
-    // the eldir theme in profiles/hostmaster/themes
-    if (!variable_get('hostmaster_settings_php_alter', FALSE)) {
-      hostmaster_settings_php();
-      variable_set('hostmaster_settings_php_alter', TRUE);
-    }
+  $items = install_menu_get_items('hosting/platforms');
+  $item = db_fetch_array(db_query("SELECT * FROM {menu_links} WHERE mlid = %d", $items[0]['mlid']));
+  $item['menu_name'] = $menu_name;
+  $item['customized'] = 1;
+  $item['options'] = unserialize($item['options']);
+  install_menu_update_menu_item($item);
+
+  menu_rebuild();
+
+
+  // enable the eldir theme, if present
+  $themes = system_theme_data();
+  if ($themes['eldir'] || file_exists("profiles/hostmaster/themes/eldir/eldir.info")) {
+    drupal_set_message(st("Enabling optional Eldir theme"));
+    install_disable_theme('garland');
+    install_default_theme('eldir');
+    $theme = 'eldir';
+  } else {
+    $theme = 'garland';
+    drupal_set_message(st("Could not find optional Eldir theme"));
   }
+  // not sure this is necessary
+  system_theme_data();
+  db_query("DELETE FROM {cache}");
+
+  drupal_set_message(st('Adding default blocks'));
+  install_add_block('hosting', 'hosting_queues', $theme, 1, 5, 'right', 1);
+  install_add_block('hosting', 'hosting_summary', $theme, 1, 10, 'right', 1);
+
+  drupal_set_message(st('Setting up roles'));
+  install_remove_permissions(install_get_rid('anonymous user'), array('access content', 'access all views'));
+  install_remove_permissions(install_get_rid('authenticated user'), array('access content', 'access all views'));
+  install_add_role('aegir client');
+  // @todo we may need to have a hook here to consider plugins
+  install_add_permissions(install_get_rid('aegir client'), array('access content', 'access all views', 'edit own client', 'view client', 'create site', 'delete site', 'view site', 'create backup task', 'create delete task', 'create disable task', 'create enable task', 'create restore task', 'view own tasks', 'view task'));
+  install_add_role('aegir account manager');
+  install_add_permissions(install_get_rid('aegir account manager'), array('create client', 'edit client users', 'view client'));
+
+  drupal_set_message(st('Enabling optional, yet recommended modules'));
+  hostmaster_setup_optional_modules();
+
+  node_access_rebuild();
+
 }
+
