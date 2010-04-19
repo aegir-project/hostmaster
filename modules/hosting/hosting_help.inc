@@ -380,12 +380,8 @@ EOF;
 function _hosting_user_requirements() {
   $username = HOSTING_DEFAULT_SCRIPT_USER;
   $userhome = HOSTING_DEFAULT_SCRIPT_USER_HOME;
-  $path = HOSTING_DEFAULT_DOCROOT_PATH;
   $add_cmd = <<<EOF
     sudo adduser --system --group --home $userhome $username
-EOF;
-  $chmod_cmd = <<<EOF
-    sudo chown -R $username $path
 EOF;
   $help['title'] = t('A separate system account for the scripts');
   $help['summary'] = t('The provision framework requires that the scripts run as a non-root system account, to ensure that
@@ -393,7 +389,6 @@ EOF;
     new system account.');
   $help['suggestion'] = t('Based on your server configuration, we have determined that your user account should be <code>@script_user</code>', array('@script_user' => HOSTING_DEFAULT_SCRIPT_USER));
   $help['configuration'][] = t('If your system supports it, run the adduser command (if this command is unavailable, please consult your operating system documentation on how to add new system accounts) : <pre>@cmd</pre>', array('@cmd' => $add_cmd));
-  $help['configuration'][] = t('Once you have created the user account, you need to modify the ownership of the files. Use the following command : <pre>@cmd</pre>', array('@cmd' => $chmod_cmd));
   return $help;
 }
 
@@ -470,38 +465,6 @@ function _hosting_basic_server_requirements() {
 function _hosting_basic_unix_requirements() {
   $help['title'] = t('A unix based operating system');
   $help['summary'] = t('The majority of functionality in this system occurs in the back-end, through command line scripting. There are several features (such as symlinks), that are not available to users on Windows. There are no plans currently to add Windows support.</p>');
-  return $help;
-}
-
-/**
- * Implementation of hook_requirements()
- */
-function _hosting_hosting_setup_requirements() {
-  $node = node_load(HOSTING_OWN_WEB_SERVER);
-  $drush_path = $node->services['server']->drush_path;
-  $docroot = HOSTING_DEFAULT_DOCROOT_PATH;
-  $uri = HOSTING_DEFAULT_BASE_URL;
-  $username = HOSTING_DEFAULT_SCRIPT_USER;
-  $login_cmd = <<<EOF
-    su -s /bin/sh $username
-EOF;
-  $setup_cmd = <<<EOF
-    cd $docroot
-    php $drush_path --uri=$uri hosting-setup
-EOF;
-  $help['title'] = t('Perform initial configuration by running the <code>hosting-setup</code> command');
-
-  $help['summary'][] = t('The hosting-setup command performs several useful installation functions, but its primary responsibility
-        is adding the crontab entry for the queue dispatcher and ensuring that has been correctly installed.');
-
-  $help['summary'][] = t('The queue dispatcher runs every minute. It keeps track of what work needs to be done on the system 
-    and instructs the provisioning framework to perform the needed tasks in the task queue.');
-  $help['summary'][] = t('Otherwise said, without the dispatcher, changes on the front-end will not translate in the required back-end configuration preventing actual sites management.');
-  $help['configuration'][] = t('If you are not logged in as %script_user user, log in with command : <pre>@login_cmd</pre>', 
-     array('%script_user' => $username, '@login_cmd' => $login_cmd));
-  $help['configuration'][] = t('Now execute the following commands : <pre>@setup_cmd</pre>', 
-     array('%script_user' => $username, '@setup_cmd' => $setup_cmd));
-
   return $help;
 }
 
