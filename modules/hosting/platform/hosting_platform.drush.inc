@@ -11,6 +11,7 @@ function drush_hosting_platform_pre_hosting_task($task) {
     $node = $task->ref;
   }
   $task->options['platform'] = $node->nid;
+  $task->options['publish_path'] = $node->publish_path;
 }
 
 
