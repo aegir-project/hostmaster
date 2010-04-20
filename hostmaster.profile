@@ -45,7 +45,6 @@ function hostmaster_bootstrap() {
   $types =  node_types_rebuild();
 
   variable_set('install_profile', 'hostmaster');
-  global $user;
   // Initialize the hosting defines
   hosting_init();
   
@@ -53,8 +52,7 @@ function hostmaster_bootstrap() {
   $node = new stdClass();
   $node->uid = 1;
   $node->type = 'client';
-  $node->email = $user->mail;
-  $node->client_name = $user->name;
+  $node->email = drush_get_option('client_email', 'webmaster@localhost');
   $node->status = 1;
   node_save($node);
   variable_set('hosting_default_client', $node->nid);  
