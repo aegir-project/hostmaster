@@ -325,6 +325,10 @@ function hosting_client_update($node) {
       db_query('DELETE FROM {hosting_client_user} WHERE user = %d AND client = %d', $user, $node->nid);
     }
   }
+  if ($node->new_user) {
+    $user = user_load(array('name' => $node->new_user));
+    db_query('INSERT INTO {hosting_client_user} (client, user, contact_type) VALUES (%d, %d, "%s")', $node->nid, $user->uid, '');
+  }
 }
 
 function hosting_nodeapi_client_delete_revision(&$node) {
