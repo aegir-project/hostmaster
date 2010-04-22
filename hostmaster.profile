@@ -72,13 +72,18 @@ function hostmaster_bootstrap() {
 
 
   hosting_services_add($node, "server", array(
-    'script_user' => HOSTING_DEFAULT_SCRIPT_USER,
+    'script_user' => drush_get_option('script_user'),
     'drush_path' => DRUSH_COMMAND,
     'available' => 1,
- ));
+  ));
+
   hosting_services_add($node, "http", array(
-   'web_group' => HOSTING_DEFAULT_WEB_GROUP,
-    'available' => 1,
+   'web_group' => drush_get_option('web_group'),
+   'restart_cmd' => drush_get_option('restart_cmd', _provision_default_restart_cmd()),
+   'ports' => drush_get_option('web_port'),
+   'config_path' => drush_get_option('config_path'),
+   'backup_path' => drush_get_option('backup_path'),
+   'available' => 1,
   ));
 
   node_save($node);
