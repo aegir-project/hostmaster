@@ -158,37 +158,37 @@ function hostmaster_bootstrap() {
 /**
  * Enable optional modules, if present
  */
-function hostmaster_setup_optional_modules() {
-  $optional = array('admin_menu');
+function hostmaster_setup_modules() {
+  $modules = array('admin_menu');
 
-  foreach ($optional as $name) {
-    $exists = db_result(db_query("SELECT name FROM {system} WHERE type='module' and name='%s'", $name));
+  foreach ($modules as $name) {
 
     drupal_install_modules(array($name));
 
-    if ($exists == $name) {
-      drupal_set_message(st("Enabling module !module", array('!module' => $name)));
-      switch ($name) {
-        case 'admin_menu' :
-          variable_set('admin_menu_margin_top', 1);
-          variable_set('admin_menu_position_fixed', 1);
-          variable_set('admin_menu_tweak_menu', 0);
-          variable_set('admin_menu_tweak_modules', 0);
-          variable_set('admin_menu_tweak_tabs', 0);
+    drupal_set_message(st("Enabling module !module", array('!module' => $name)));
+    $func = "_hostmaster_setup_" . $name;
 
-          $menu_name = install_menu_create_menu(t('Administration'));
-          $admin = install_menu_get_items('admin');
-          $admin = install_menu_get_item($admin[0]['mlid']);
-          $admin['menu_name'] = $menu_name;
-          $admin['customized'] = 1;
-          $admin['hidden'] = 0;
-          menu_link_save($admin);
-          menu_rebuild();
-
-          break;
-      }
+    if (function_exists($func)) {
+      $func();
     }
   }
+}
+
+function _hostmaster_setup_admin_menu() {
+    variable_set('admin_menu_margin_top', 1);
+    variable_set('admin_menu_position_fixed', 1);
+    variable_set('admin_menu_tweak_menu', 0);
+    variable_set('admin_menu_tweak_modules', 0);
+    variable_set('admin_menu_tweak_tabs', 0);
+
+    $menu_name = install_menu_create_menu(t('Administration'));
+    $admin = install_menu_get_items('admin');
+    $admin = install_menu_get_item($admin[0]['mlid']);
+    $admin['menu_name'] = $menu_name;
+    $admin['customized'] = 1;
+    $admin['hidden'] = 0;
+    menu_link_save($admin);
+    menu_rebuild();
 }
 
 
@@ -199,6 +199,7 @@ function hostmaster_task_finalize() {
   install_include(array('menu'));
   $menu_name = variable_get('menu_primary_links_source', 'primary-links');
 
+  // @TODO - seriously need to simplify this, but in our own code i think, not install profile api
   $items = install_menu_get_items('hosting/servers');
   $item = db_fetch_array(db_query("SELECT * FROM {menu_links} WHERE mlid = %d", $items[0]['mlid']));
   $item['menu_name'] = $menu_name;
@@ -223,19 +224,12 @@ function hostmaster_task_finalize() {
   menu_rebuild();
 
 
-  // enable the eldir theme, if present
-  $themes = system_theme_data();
-  if ($themes['eldir'] || file_exists("profiles/hostmaster/themes/eldir/eldir.info")) {
-    drupal_set_message(st("Enabling optional Eldir theme"));
-    install_disable_theme('garland');
-    install_default_theme('eldir');
-    $theme = 'eldir';
-  } else {
-    $theme = 'garland';
-    drupal_set_message(st("Could not find optional Eldir theme"));
-  }
-  // not sure this is necessary
+  $theme = 'eldir';
+  drupal_set_message(st("Enabling Eldir theme"));
+  install_disable_theme('garland');
+  install_default_theme('eldir');
   system_theme_data();
+
   db_query("DELETE FROM {cache}");
 
   drupal_set_message(st('Adding default blocks'));
@@ -252,7 +246,7 @@ function hostmaster_task_finalize() {
   install_add_permissions(install_get_rid('aegir account manager'), array('create client', 'edit client users', 'view client'));
 
   drupal_set_message(st('Enabling optional, yet recommended modules'));
-  hostmaster_setup_optional_modules();
+  hostmaster_setup_modules();
 
   node_access_rebuild();
 
