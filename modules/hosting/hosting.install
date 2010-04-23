@@ -163,4 +163,5 @@ function hosting_update_6006() {
 function hosting_update_6007() {
   variable_set('hosting_default_db_server', variable_get('hosting_default_web_server', 3));
   variable_set('hosting_own_db_server', variable_get('hosting_default_web_server', 3));
+  return array();
 }
