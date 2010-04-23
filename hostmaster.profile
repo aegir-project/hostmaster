@@ -74,6 +74,8 @@ function hostmaster_bootstrap() {
   hosting_services_add($node, "server", array(
     'script_user' => drush_get_option('script_user'),
     'drush_path' => DRUSH_COMMAND,
+    'config_path' => drush_get_option('config_path'),
+    'backup_path' => drush_get_option('backup_path'),
     'available' => 1,
   ));
 
@@ -81,8 +83,6 @@ function hostmaster_bootstrap() {
    'web_group' => drush_get_option('web_group'),
    'restart_cmd' => drush_get_option('restart_cmd', _provision_default_restart_cmd()),
    'ports' => drush_get_option('web_port'),
-   'config_path' => drush_get_option('config_path'),
-   'backup_path' => drush_get_option('backup_path'),
    'available' => 1,
   ));
 
