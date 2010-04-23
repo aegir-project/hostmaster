@@ -1,8 +1,5 @@
 <?php
 
-include_once('hosting_db_server.help.inc');
-
-
 /**
  * Implementation of hook_hosting_service()
  *

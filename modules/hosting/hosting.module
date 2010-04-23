@@ -12,7 +12,6 @@
  */
 
 include_once('hosting.inc');
-include_once('hosting_help.inc');
 include_once('hosting.queues.inc');
 include_once('hosting.features.inc');
 
@@ -165,6 +164,48 @@ function hosting_nodeapi(&$node, $op, $arg1, $arg2) {
  */
 function hosting_perm() {
   return array('access hosting wizard', 'administer hosting queues', 'administer hosting features', 'administer hosting');
+}
+
+/**
+ * Per node type description text. To be stored in the node_type table.
+ *
+ * @param type
+ *  The node type.
+ * @return
+ *  Description text for the node type.
+ */
+function hosting_node_help($type) {
+  switch ($type) {
+    case 'site' :
+      return t("<strong>An instance of a hosted site.</strong>
+                It contains information relating to the site, most notably the domain name, database server 
+                and platform it is being published on. A site may also have several aliases for additional
+                domains the site needs to be accessible on.");
+      break;
+    case 'platform' :
+      return t("<strong>The file system location on a specific web server on which to publish sites.</strong>
+                Multiple platforms can co-exist on the same web server, and need to do so for
+                upgrades to be managed, as this is accomplished by migrating the site between platforms.
+                Platforms are most commonly built for specific releases of Drupal.");
+      break;
+    case 'client' :
+      return t("<strong>The person or group that runs the site.</strong> 
+                This information is usually required for billing and access purposes, to ensure
+                that only certain people are able to view the information for sites they run. 
+                If you do not intend on having more than one client access the system, 
+                you will not need to create any additional clients for your purposes.");
+      break;
+    case 'server' :
+      return t("<strong>The physical machine which will provide various services to your site.</strong>
+                Each server can have multiple services associated to it. To host a site you require a database service and a web service, which can either be provided by a single or multiple servers.");
+      break;
+    case 'task' :
+      return t("<strong>The mechanism whereby Hostmaster keeps track of all changes that occur to the system.</strong>
+                Each task acts as a command for the back-end, and contains a full log of all changes that have occurred.
+                If a task should fail, the administrator will be notified with an explanation of exactly what went wrong,
+                and how to fix it.");
+      break;      
+  }
 }
 
 /**
