@@ -45,13 +45,6 @@ function hosting_menu() {
   );
 
   
-  $items['admin/help/provision/requirements'] = array(
-    'title' => 'Provisioning requirements',
-    'description' => "Information of how to configure the provisioning system.",
-    'page callback' => 'hosting_help_requirements',
-    'type' => MENU_CALLBACK
-  );
-
 
   $items['admin/hosting'] = array(
     'title' => 'Hosting',
@@ -302,12 +295,6 @@ function hosting_theme() {
     ),
     'hosting_queues_configure' => array(
       'file' => 'hosting.module',
-      'arguments' => array(
-        'form' => NULL,
-      ),
-    ),
-    'requirement_help' => array(
-      'file' => 'hosting_help.inc',
       'arguments' => array(
         'form' => NULL,
       ),

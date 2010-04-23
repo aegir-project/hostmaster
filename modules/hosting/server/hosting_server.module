@@ -86,7 +86,6 @@ function hosting_server_access($op, $node, $account) {
 /**
  * Implementation of hook_hosting_service()
  *
- * @see hosting_help_requirements()
  */
 function hosting_server_hosting_service() {
   return array("server" => array(

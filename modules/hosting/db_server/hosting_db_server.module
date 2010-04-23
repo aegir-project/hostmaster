@@ -3,7 +3,6 @@
 /**
  * Implementation of hook_hosting_service()
  *
- * @see hosting_help_requirements()
  */
 function hosting_db_server_hosting_service() {
   return array("db" => array(
