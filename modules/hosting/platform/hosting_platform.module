@@ -258,7 +258,7 @@ function hosting_platform_update($node) {
     if ($node->default_platform == 1) {
       variable_set('hosting_default_platform', $node->nid);
     }
-    if ($node->platform_status != HOSTING_PLATFORM_ENABLED) {
+    if ($node->platform_status == HOSTING_PLATFORM_DELETED) {
       $node->no_verify = TRUE;
     }
     db_query("UPDATE {hosting_platform} SET publish_path = '%s', web_server = %d, verified = %d, status= %d WHERE nid=%d",
