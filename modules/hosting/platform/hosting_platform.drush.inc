@@ -31,7 +31,15 @@ function hosting_platform_post_hosting_verify_task($task, $data) {
     $packages = $context['packages'];
 
     $node->verified = mktime(); // set verified flag on platform, to let it know it has been checked.
-    $node->platform_status = HOSTING_PLATFORM_ENABLED;
+    /**
+     * If we are verifying a Locked platform (i.e if the publish_path has changed), 
+     * don't reset the status to Enabled. We don't need to check whether a platform 
+     * is deleted here for the same reason, because we don't allow a deleted platform 
+     * to be reverified.
+     */
+    if ($node->platform_status != HOSTING_PLATFORM_LOCKED) {
+      $node->platform_status = HOSTING_PLATFORM_ENABLED;
+    }
     $node->no_verify = TRUE;
     // Save the platform being verified
     node_save($node);
