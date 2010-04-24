@@ -401,9 +401,9 @@ function hosting_site_form($node) {
     );
     $form['db_server'] = array('#type' => 'hidden', '#value' => $node->db_server);
   }
-    foreach(array('verified', 'last_cron', 'site_status') as $extra_attribute) {
-      $form["$extra_attribute"] = array('#type' => 'value', '#value' => $node->$extra_attribute);
-    }
+  foreach(array('verified', 'last_cron', 'site_status') as $extra_attribute) {
+    $form["$extra_attribute"] = array('#type' => 'value', '#value' => $node->$extra_attribute);
+  }
   return $form;
 }
 
@@ -506,6 +506,9 @@ function hosting_site_update(&$node) {
   else {
     $client = hosting_get_client($node->client);
     $node->client = $client->nid;
+    if ($node->site_status == HOSTING_SITE_DELETED) {
+      $node->no_verify = TRUE;
+    }
     db_query("UPDATE {hosting_site} SET client = %d, db_server = %d, platform = %d, last_cron = %d, status = %d, profile = %d, language = '%s', verified = %d, port = %d, `ssl` = %d, ssl_redirect = %d WHERE vid=%d",
              $node->client, $node->db_server, $node->platform, $node->last_cron, $node->site_status, $node->profile, $node->site_language, $node->verified, $node->port, $node->ssl, $node->ssl_redirect, $node->vid);
   }

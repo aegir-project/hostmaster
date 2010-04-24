@@ -210,6 +210,9 @@ function hosting_platform_form(&$node) {
       '#value' => 1
     );
   }
+  foreach(array('verified', 'platform_status') as $extra_attribute) {
+    $form["$extra_attribute"] = array('#type' => 'value', '#value' => $node->$extra_attribute);
+  }
   return $form;
 }
 
@@ -254,6 +257,9 @@ function hosting_platform_update($node) {
   else {
     if ($node->default_platform == 1) {
       variable_set('hosting_default_platform', $node->nid);
+    }
+    if ($node->platform_status != HOSTING_PLATFORM_ENABLED) {
+      $node->no_verify = TRUE;
     }
     db_query("UPDATE {hosting_platform} SET publish_path = '%s', web_server = %d, verified = %d, status= %d WHERE nid=%d",
               $node->publish_path, $node->web_server, $node->verified, $node->platform_status, $node->nid);
