@@ -731,3 +731,28 @@ function hosting_menu_rebuild() {
     variable_set('menu_rebuild_needed', TRUE);
   }
 }
+
+
+
+function hosting_context_load($name) {
+  $name = ltrim($name, '@');
+  // TODO : introduce static caching ?
+
+  $result = db_query("SELECT nid FROM {hosting_context} WHERE name='%s'", $name);
+
+  if ($obj = db_fetch_object($result)) {
+    return node_load($obj->nid);
+  }
+}
+
+/**
+ * Add a node to the context lookup db.
+ */ 
+function hosting_context_register($nid, $name) {
+  db_query("INSERT INTO {hosting_context} (nid, name) VALUES (%d, '%s')", $nid, $name);
+}
+
+function hosting_context_node_types() {
+  return array('site', 'platform', 'server');
+}
+

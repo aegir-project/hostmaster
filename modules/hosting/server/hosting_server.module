@@ -286,6 +286,9 @@ function hosting_server_insert($node) {
   if (!$node->no_verify) {
     hosting_add_task($node->nid, 'verify');
   }
+  if (!$node->old_vid) {
+    hosting_context_register($node->nid, 'server_' . preg_replace("/[!\W\.\-]/", "", $node->title));
+  }
 }
 
 /**
