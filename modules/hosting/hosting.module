@@ -147,11 +147,8 @@ function hosting_site_maintenance() {
 function hosting_nodeapi(&$node, $op, $arg1, $arg2) {
   $hook = "nodeapi_" . $node->type . "_" . str_replace(" ", "_", $op);
   return module_invoke_all($hook, $node, $arg1, $arg2);
-
-  /*if (function_exists($func)) {
-    $func($node, $op, $teaser);
-  }*/
 }
+
 /**
  * Implementation of hook_perm
  */
