@@ -121,7 +121,6 @@ class hostingService_HTTP extends hostingService {
   public function options($task_type, $ref_type, &$task) {
     parent::options($task_type, $ref_type, $task);
 
-    $task->options['web_id'] = $this->server->nid;
     $task->options['web_host'] = $this->server->title;
 
     $task->options['web_ports'] = explode(",", $this->ports);

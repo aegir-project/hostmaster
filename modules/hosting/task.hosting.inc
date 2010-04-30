@@ -41,6 +41,7 @@ function drush_hosting_hosting_task_validate($task) {
 function drush_hosting_hosting_task() {
   $task =& drush_get_context('HOSTING_TASK');
   $task->options['provision_context'] = $task->ref->type;
+  // todo move out for at least server verify
   $hostname = null;
   $username = null;
   if (isset($task->options['web_id']) && ($task->options['web_id'] != HOSTING_OWN_WEB_SERVER)) {

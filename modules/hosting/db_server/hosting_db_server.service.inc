@@ -84,26 +84,11 @@ class hostingService_DB extends hostingService {
   public function options($task_type, $ref_type, &$task) {
     parent::options($task_type, $ref_type, $task);
 
-    $web_server = _hosting_get_web_server($task);
-
-    // If the web server nid is the same as the db server nid, assume the db_host to be localhost
-    if ($web_server->nid == $this->server->nid) {
-      $db_host = 'localhost';
-    }
-    else {
-      $db_host = $this->server->title;
-    }
-
-    if ($ref_type == 'site') {
-      $task->options['db_id'] = $this->server->nid;
-      $task->options['db_host'] = $db_host;
-      $task->options['master_db_host'] = $db_host;
+    if ($ref_type === 'site' || $ref_type === 'server') {
+      $task->options['db_host'] = $this->server->title;
+      $task->options['master_db_host'] = $this->server->title;
       $task->options['master_db_user'] = $this->db_user;
       $task->options['master_db_passwd'] = $this->db_passwd;
     }
-
   }
 }
-
-
-
