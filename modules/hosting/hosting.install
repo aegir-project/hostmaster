@@ -3,6 +3,31 @@
 
 function hosting_install() {
   db_query("UPDATE {system} SET weight = 10 WHERE type='module' and name='hosting'");
+  drupal_install_schema('hosting');
+}
+
+function hosting_schema() {
+  $schema['hosting_context'] = array(
+    'fields' => array(
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'name' => array(
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => TRUE,
+      ),
+     ),
+    'primary key' => array('nid'),
+    'unique keys' => array(
+      'name'     => array('name')
+    ),    
+  
+  );
+  return $schema;
 }
 
 function hosting_update_1() {
@@ -165,3 +190,33 @@ function hosting_update_6007() {
   variable_set('hosting_own_db_server', variable_get('hosting_default_web_server', 3));
   return array();
 }
+
+/**
+ * Add hosting_context table to map alias names.
+ */
+function hosting_update_6008() {
+  drupal_install_schema('hosting');
+
+  $records = array();
+
+  $result = db_query("SELECT n.nid, title FROM {node} n LEFT JOIN {hosting_site} s ON n.nid=s.nid WHERE s.status <> -2 AND n.type='site'");
+  while ($object = db_fetch_object($result)) {
+    $records[$object->nid] = $object->title;
+  }
+
+  $result =  db_query("SELECT n.nid, title FROM {node} n LEFT JOIN {hosting_server} s ON n.nid=s.nid WHERE n.status = 1 AND n.type='server'");
+  while ($object = db_fetch_object($result)) {
+    $records[$object->nid] = 'server_' . preg_replace("/[!\W\.\-]/", "", $object->title);
+  }
+
+  $result = db_query("SELECT nid, title FROM {node} WHERE type='platform'");
+  while ($object = db_fetch_object($result)) {
+    $records[$object->nid] = 'platform_' . preg_replace("/[!\W]/", "", $object->title);
+  }
+
+  foreach ($records as $nid => $name) {
+    db_query("INSERT INTO {hosting_context} (nid, name) VALUES (%d, '%s')", $nid, $name);
+  }
+  return array();
+}
+

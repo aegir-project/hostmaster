@@ -470,6 +470,7 @@ function hosting_site_insert(&$node) {
   db_query("INSERT INTO {hosting_site} (vid, nid, client, db_server, platform, profile, language, last_cron, status, verified, port, `ssl`, ssl_redirect) VALUES (%d, %d, %d, %d, %d, %d, '%s', %d, %d, %d, %d, %d, %d)",
            $node->vid, $node->nid, $node->client, $node->db_server, $node->platform, $node->profile, $node->site_language, $node->last_cron, $node->site_status, $node->verified, $node->port, $node->ssl, $node->ssl_redirect);
   if ((!$node->old_vid)) {
+    hosting_context_register($node->nid, $node->title);
     if ($node->import) {
       hosting_add_task($node->nid, 'import');
     }

@@ -238,6 +238,9 @@ function hosting_platform_insert($node) {
   }
   db_query("INSERT INTO {hosting_platform} (vid, nid, publish_path, verified, web_server, status) VALUES (%d, %d, '%s', %d, %d, %d)",
     $node->vid, $node->nid, $node->publish_path, $node->verified, $node->web_server, $node->platform_status);
+  if (!$node->old_vid) {
+    hosting_context_register($node->nid, 'platform_' . preg_replace("/[!\W]/", "", $node->title));
+  }
 }
 
 /**
