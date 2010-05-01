@@ -42,6 +42,7 @@ function drush_hosting_hosting_task() {
   $task =& drush_get_context('HOSTING_TASK');
   $task->options['provision_context'] = $task->ref->type;
   // todo move out for at least server verify
+  // todo and probabbly should go to hosting_web_server.service.inc. Currently broken due to lack of web_id.
   $hostname = null;
   $username = null;
   if (isset($task->options['web_id']) && ($task->options['web_id'] != HOSTING_OWN_WEB_SERVER)) {
@@ -54,6 +55,8 @@ function drush_hosting_hosting_task() {
   }
   $drush_path = $task->options['drush_path'];
   $task->options['root'] = $task->options['publish_path'];
+
+  $task->options['hosting_name'] = $task->ref->hosting_name;
 
   // make sure argument order is correct
   ksort($task->args);
