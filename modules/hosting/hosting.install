@@ -195,7 +195,27 @@ function hosting_update_6007() {
  * Add hosting_context table to map alias names.
  */
 function hosting_update_6008() {
-  drupal_install_schema('hosting');
+  $return = array();
+
+  db_create_table($return, 'hosting_context', array(
+    'fields' => array(
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'name' => array(
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => TRUE,
+      ),
+     ),
+    'primary key' => array('nid'),
+    'unique keys' => array(
+      'name'     => array('name')
+    ),    
+  ));
 
   $records = array();
 
@@ -217,6 +237,6 @@ function hosting_update_6008() {
   foreach ($records as $nid => $name) {
     db_query("INSERT INTO {hosting_context} (nid, name) VALUES (%d, '%s')", $nid, $name);
   }
-  return array();
+  return $return;
 }
 
