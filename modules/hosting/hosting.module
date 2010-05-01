@@ -145,6 +145,10 @@ function hosting_site_maintenance() {
  * from an incessant amount of intricately nested code, and allow easier extension / maintenance.
  */
 function hosting_nodeapi(&$node, $op, $arg1, $arg2) {
+  if ($op === 'load' && in_array($node->type, hosting_context_node_types())) {
+    return db_fetch_array(db_query("SELECT name AS hosting_name FROM {hosting_context} WHERE nid = %d", $node->nid));
+  }
+
   $hook = "nodeapi_" . $node->type . "_" . str_replace(" ", "_", $op);
   return module_invoke_all($hook, $node, $arg1, $arg2);
 }
@@ -755,4 +759,3 @@ function hosting_context_register($nid, $name) {
 function hosting_context_node_types() {
   return array('site', 'platform', 'server');
 }
-
