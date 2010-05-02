@@ -451,10 +451,11 @@ function _hosting_platform_list_class($node) {
 function hosting_platform_listing() {
   $platforms = _hosting_get_platforms();
 
-  $header = array(t('Platform') , t('Release'), t('Server'), t('Verified'));
+  $header = array(t('Platform') , t('Release'), t('Server'), t('Verified'), t('Sites'));
 
   $rows[] = array();
 
+  $total = 0;
   foreach ($platforms as $nid => $title) {
     $row = array();
     $node = node_load($nid);
@@ -463,9 +464,14 @@ function hosting_platform_listing() {
     $row[] = _hosting_node_link($node->release->nid, $release);
     $row[] = _hosting_node_link($node->web_server);
     $row[] = hosting_format_interval($node->verified);
+    $total += $count = hosting_site_count($nid);
+    $row[] = $count;
     $rows[] = array('data' => $row, 'class' => _hosting_platform_list_class($node));
   }
-
+  $row = array();
+  $row[] = array('data' => t('Total sites hosted'), 'colspan' => 4);
+  $row[] = $total;
+  $rows[] = $row;
 
   return theme('table',  $header, $rows, array('class' => 'hosting-table'));
 }

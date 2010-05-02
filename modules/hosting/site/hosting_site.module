@@ -111,8 +111,14 @@ function hosting_site_access($op, $node, $account) {
  *
  * This is used by cron and statistics to batch the number of sites that are processed with each call
  */
-function hosting_site_count() {
-  return db_result(db_query("SELECT count(nid) FROM {hosting_site} WHERE status = %d", HOSTING_SITE_ENABLED));
+function hosting_site_count($platform = null) {
+  $query = "SELECT count(nid) FROM {hosting_site} WHERE status = %d";
+  $args = array(HOSTING_SITE_ENABLED);
+  if (!is_null($platform)) {
+    $query .= " AND platform = %d";
+    $args[] = $platform;
+  }
+  return db_result(db_query($query, $args));
 }
 
 /**
