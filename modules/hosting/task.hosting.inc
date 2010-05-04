@@ -60,8 +60,9 @@ function drush_hosting_hosting_task() {
   $task->options['hosting_name'] = $task->ref->hosting_name;
   // Set up aliases to use
   if ($task->ref->type === 'site') {
-    $db_server = node_load($task->ref->db_server);
-    $task->args[] = '@' . $db_server->hosting_name . '-' . $db_server->services['db']->type;
+    // todo not ready for this yet. needs to be a full site alias and remove other arguments
+    //$db_server = node_load($task->ref->db_server);
+    //$task->args[0] = '@' . $db_server->hosting_name . '-' . $db_server->services['db']->type;
   }
 
   // make sure argument order is correct
