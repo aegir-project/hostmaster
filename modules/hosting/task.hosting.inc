@@ -56,7 +56,13 @@ function drush_hosting_hosting_task() {
   $drush_path = $task->options['drush_path'];
   $task->options['root'] = $task->options['publish_path'];
 
+  // For saving drush aliases
   $task->options['hosting_name'] = $task->ref->hosting_name;
+  // Set up aliases to use
+  if ($task->ref->type === 'site') {
+    $db_server = node_load($task->ref->db_server);
+    $task->args[] = '@' . $db_server->hosting_name . '-' . $db_server->services['db']->type;
+  }
 
   // make sure argument order is correct
   ksort($task->args);

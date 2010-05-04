@@ -2,7 +2,7 @@
 
 class hostingService_DB extends hostingService {
   protected $service = 'db';
-  protected $type = 'mysql';
+  public $type = 'mysql';
 
   function form(&$form) {
     $node = $form['#node'];
@@ -84,11 +84,10 @@ class hostingService_DB extends hostingService {
   public function options($task_type, $ref_type, &$task) {
     parent::options($task_type, $ref_type, $task);
 
-    if ($ref_type === 'site' || $ref_type === 'server') {
-      $task->options['db_host'] = $this->server->title;
-      $task->options['master_db_host'] = $this->server->title;
-      $task->options['master_db_user'] = $this->db_user;
-      $task->options['master_db_passwd'] = $this->db_passwd;
-    }
+    // Provide options for verification and writing out to an alias
+    $task->options['db_host'] = $this->server->title;
+    $task->options['master_db_host'] = $this->server->title;
+    $task->options['master_db_user'] = $this->db_user;
+    $task->options['master_db_passwd'] = $this->db_passwd;
   }
 }
