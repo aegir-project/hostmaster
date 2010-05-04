@@ -85,9 +85,6 @@ class hostingService_DB extends hostingService {
     parent::options($task_type, $ref_type, $task);
 
     // Provide options for verification and writing out to an alias
-    $task->options['db_host'] = $this->server->title;
-    $task->options['master_db_host'] = $this->server->title;
-    $task->options['master_db_user'] = $this->db_user;
-    $task->options['master_db_passwd'] = $this->db_passwd;
+    $task->options['master_db'] = $this->db_type . '://' . $this->db_user . ':' . $this->db_passwd . '@' . $this->server->title;
   }
 }
