@@ -151,10 +151,12 @@ function hosting_nodeapi(&$node, $op, $arg1, $arg2) {
     switch ($op) {
       case 'load':
         $return = db_fetch_array(db_query("SELECT name AS hosting_name FROM {hosting_context} WHERE nid = %d", $node->nid));
+        break;
 
       case 'delete':
         db_query("DELETE FROM {hosting_context} WHERE nid = %d", $node->nid);
         break;
+    }
   }
 
   $hook = "nodeapi_" . $node->type . "_" . str_replace(" ", "_", $op);
