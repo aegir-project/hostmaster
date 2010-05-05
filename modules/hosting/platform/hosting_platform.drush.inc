@@ -9,6 +9,9 @@ function drush_hosting_platform_pre_hosting_task($task) {
   }
   elseif ($task->ref->type == 'platform') {
     $node = $task->ref;
+
+    $web_server = node_load($node->web_server);
+    $task->options['parent'] = '@' . $web_server->hosting_name . '-' . $web_server->services['http']->type;
   }
   $task->options['platform'] = $node->nid;
   $task->options['publish_path'] = $node->publish_path;
