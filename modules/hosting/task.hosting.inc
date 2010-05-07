@@ -94,5 +94,10 @@ function drush_hosting_hosting_task_rollback() {
 
 function drush_hosting_post_hosting_task($task) {
   $task =& drush_get_context('HOSTING_TASK');
+
+  if ($task->task_type === 'named-context-save') {
+    hosting_add_task($task->ref->nid, 'verify');
+  }
+
   module_invoke_all(sprintf("post_hosting_%s_task", $task->task_type), $task, drush_get_context('HOSTING_DRUSH_OUTPUT'));
 }
