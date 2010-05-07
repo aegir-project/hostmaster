@@ -3,13 +3,20 @@
 function drush_hosting_server_pre_hosting_task($task) {
   $task =& drush_get_context('HOSTING_TASK');
 
-
   if ($task->task_type === 'named-context-save' && $task->ref->type === 'server') {
     foreach ($task->ref->services as $service) {
       if ($service->available) {
         $service->options($task->task_type, $task->ref->type, $task);
       }
     }
+  }
+}
+
+function drush_hosting_server_post_hosting_task($task, $data) {
+  $task =& drush_get_context('HOSTING_TASK');
+
+  if ($task->task_type === 'named-context-save' && $task->ref->type === 'server') {
+    hosting_add_task($task->ref->nid, 'verify');
   }
 }
 

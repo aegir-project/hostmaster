@@ -277,7 +277,7 @@ function hosting_server_update($node) {
   }
 
   if (!$node->no_verify) {
-    hosting_add_task($node->nid, 'verify');
+    hosting_add_task($node->nid, 'named-context-save');
   }
 }
 
@@ -289,7 +289,7 @@ function hosting_server_insert($node) {
   hosting_server_invoke_services($node, 'insert', $node);
 
   if (!$node->no_verify) {
-    hosting_add_task($node->nid, 'verify');
+    hosting_add_task($node->nid, 'named-context-save');
   }
   if (!$node->old_vid) {
     hosting_context_register($node->nid, 'server_' . preg_replace("/[!\W\.\-]/", "", $node->title));
