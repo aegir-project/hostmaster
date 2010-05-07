@@ -95,12 +95,15 @@ function hosting_site_views_data() {
       'field' => array(
         'handler' => 'views_handler_field',
       ),
+      'filter' => array(
+        'handler' => 'views_handler_filter_numeric',
+      ),
     ),
     'port' => array(
       'title' => t('Port'),
       'help' => t('The HTTP port the site is running on.'),
       'field' => array(
-        'handler' => 'views_handler_field_numberic',
+        'handler' => 'views_handler_field_numeric',
         'click sortable' => TRUE,
       ),
     ),
