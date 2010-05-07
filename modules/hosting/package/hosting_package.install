@@ -358,3 +358,15 @@ function hosting_package_update_6002() {
   }
   return $ret;
 }
+
+/**
+ * The hostmaster and/or hostslave profiles no longer need to be status 0
+ * as it prevents the main aegir site node from being edited. Instead, 
+ * just hide the hostmaster/hostslave profiles in the site node form when
+ * creating new sites. See #599758
+ */
+function hosting_package_update_6003() {
+  $ret = array();
+  $ret[] = update_sql("UPDATE {hosting_package} h JOIN {node} n ON n.nid = h.nid SET status = 1 WHERE h.short_name = 'hostmaster' OR h.short_name = 'hostslave'");
+  return $ret;
+}
