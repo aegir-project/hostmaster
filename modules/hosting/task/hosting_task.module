@@ -105,10 +105,10 @@ function hosting_task_menu_access($node, $task) {
       else {   
         // If this platform is the default platform, we can't lock it or delete it
         if ($node->nid == HOSTING_DEFAULT_PLATFORM) {
-          $platform_tasks = array('verify', 'migrate');
+          $platform_tasks = array('named-context-save', 'verify', 'migrate');
         } else {
           // If the platform's unlocked, we can lock it, delete it or batch migrate sites
-          $platform_tasks = array('verify', 'lock', 'delete', 'migrate');
+          $platform_tasks = array('named-context-save', 'verify', 'lock', 'delete', 'migrate');
         }
       }
       return (in_array($task, $platform_tasks)); 

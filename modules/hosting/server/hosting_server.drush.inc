@@ -12,14 +12,6 @@ function drush_hosting_server_pre_hosting_task($task) {
   }
 }
 
-function drush_hosting_server_post_hosting_task($task, $data) {
-  $task =& drush_get_context('HOSTING_TASK');
-
-  if ($task->task_type === 'named-context-save' && $task->ref->type === 'server') {
-    hosting_add_task($task->ref->nid, 'verify');
-  }
-}
-
 function hosting_server_post_hosting_verify_task($task, $data) {
   $node = $task->ref;
 

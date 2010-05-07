@@ -61,7 +61,7 @@ function drush_hosting_hosting_task() {
     $task->options['hosting_name'] = $task->ref->hosting_name;
   }
   else {
-    if ($task->ref->type === 'server') { // todo roll out for platform
+    if ($task->ref->type === 'server' || $task->ref->type === 'platform') { // todo roll out for site (remove if)
       $named_context = '@' . $task->ref->hosting_name;
     }
   }

@@ -40,6 +40,11 @@ function hosting_platform_node_info() {
  */
 function hosting_platform_hosting_tasks() {
   $tasks = array();
+  $tasks['platform']['named-context-save'] = array(
+    'title' => t('Named context save'),
+    'description' => t('Save Drush alias for this platform.'),
+    'weight' => 10,
+  );
   $tasks['platform']['verify'] = array(
     'title' => t('Verify'),
     'description' => t('Verify that the platform is correctly installed and working.'),
@@ -234,7 +239,7 @@ function hosting_platform_insert($node) {
     variable_set('hosting_default_platform', $node->nid);
   }
   if (!isset($node->no_verify)) {
-    hosting_add_task($node->nid, 'verify');
+    hosting_add_task($node->nid, 'named-content-save');
   }
   db_query("INSERT INTO {hosting_platform} (vid, nid, publish_path, verified, web_server, status) VALUES (%d, %d, '%s', %d, %d, %d)",
     $node->vid, $node->nid, $node->publish_path, $node->verified, $node->web_server, $node->platform_status);
@@ -262,7 +267,7 @@ function hosting_platform_update($node) {
               $node->publish_path, $node->web_server, $node->verified, $node->platform_status, $node->nid);
   }
   if (!$node->no_verify) {
-    hosting_add_task($node->nid, 'verify');
+    hosting_add_task($node->nid, 'named-context-save');
   }
 }
 
