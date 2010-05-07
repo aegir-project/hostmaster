@@ -56,13 +56,14 @@ function drush_hosting_hosting_task() {
   $drush_path = $task->options['drush_path'];
   $task->options['root'] = $task->options['publish_path'];
 
-  // For saving drush aliases
-  $task->options['hosting_name'] = $task->ref->hosting_name;
-  // Set up aliases to use
-  if ($task->ref->type === 'site') {
-    // todo not ready for this yet. needs to be a full site alias and remove other arguments
-    //$db_server = node_load($task->ref->db_server);
-    //$task->args[0] = '@' . $db_server->hosting_name . '-' . $db_server->services['db']->type;
+  $named_context = '';
+  if ($task->task_type === 'named-context-save') {
+    $task->options['hosting_name'] = $task->ref->hosting_name;
+  }
+  else {
+    if ($task->ref->type === 'server') { // todo roll out for platform
+      $named_context = '@' . $task->ref->hosting_name;
+    }
   }
 
   // make sure argument order is correct
@@ -70,7 +71,8 @@ function drush_hosting_hosting_task() {
   $data = array_merge($task->args, $task->options);
   $data['uri'] = null; // provision commands do not need the url passed to them.
   $mode = drush_get_option('debug', FALSE) ? 'GET' : 'POST';
-  $output = drush_backend_invoke("provision-" . $task->task_type, $data, $mode, TRUE, $drush_path, $hostname, $username);
+  // todo this is kinda hacky. Thanks Drush API.
+  $output = drush_backend_invoke_args($named_context . " provision-" . $task->task_type . ' --alias-path=' . drush_server_home() . '/.drush/aliases', array(), $data, $mode, TRUE, $drush_path, $hostname, $username);
 
   drush_set_context('HOSTING_DRUSH_OUTPUT', $output);
   $code = drush_get_error();
