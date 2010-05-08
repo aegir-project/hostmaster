@@ -8,12 +8,15 @@
 function drush_hosting_site_pre_hosting_task($task) {
   $task =& drush_get_context('HOSTING_TASK');
 
-  if ($task->ref->type == 'site') {
-    $task->args[0] = $task->ref->title;
+  if ($task->ref->type === 'site' && $task->task_type === 'named-context-save') {
+    $db_server = node_load($task->ref->db_server);
+    $task->options['parent'] = '@' . $db_server->hosting_name . '-' . $db_server->services['db']->type;
+    $platform = node_load($task->ref->platform);
+    $task->options['parent'] .= ',@' . $platform->hosting_name;
+
+    $task->options['provision-uri'] = $task->ref->title;
     $task->options['site_id'] = $task->ref->nid;
-    if ($task->task_type != 'import') {
-      $task->options['language'] = $task->ref->site_language;
-    }
+    $task->options['language'] = $task->ref->site_language;
   }
   if ($task->task_type == 'restore') {
     $backup = hosting_site_get_backup($task->task_args['bid']);

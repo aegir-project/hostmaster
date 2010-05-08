@@ -35,6 +35,12 @@ function hosting_site_hosting_tasks() {
     'description' => t('Restore this site to a previous backup. A new backup will be created before this is attempted.'),
   );
 
+  $tasks['site']['named-context-save'] = array(
+    'title' => t('Named context save'),
+    'description' => t('Save Drush alias for this site.'),
+    'weight' => 10,
+  );
+
   $tasks['site']['verify'] = array(
     'title' => t('Verify'),
     'description' => t('Confirm that the site has been correctly installed and regenerate all configuration files to match the hosting front end.'),
@@ -517,7 +523,7 @@ function hosting_site_update(&$node) {
              $node->client, $node->db_server, $node->platform, $node->last_cron, $node->site_status, $node->profile, $node->site_language, $node->verified, $node->port, $node->ssl, $node->ssl_redirect, $node->vid);
   }
   if (!$node->no_verify) {
-    hosting_add_task($node->nid, 'verify');
+    hosting_add_task($node->nid, 'named-context-save');
   }
 }
 
