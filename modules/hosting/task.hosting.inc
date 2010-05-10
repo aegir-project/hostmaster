@@ -40,7 +40,6 @@ function drush_hosting_hosting_task_validate($task) {
 
 function drush_hosting_hosting_task() {
   $task =& drush_get_context('HOSTING_TASK');
-  $task->options['provision_context'] = $task->ref->type;
   // todo move out for at least server verify
   // todo and probabbly should go to hosting_web_server.service.inc. Currently broken due to lack of web_id.
   $hostname = null;
@@ -58,6 +57,7 @@ function drush_hosting_hosting_task() {
 
   $named_context = '';
   if ($task->task_type === 'named-context-save') {
+    $task->options['provision-context'] = $task->ref->type;
     $task->options['hosting_name'] = $task->ref->hosting_name;
   }
   else {
