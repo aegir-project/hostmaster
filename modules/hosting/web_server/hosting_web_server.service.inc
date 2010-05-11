@@ -121,10 +121,8 @@ class hostingService_HTTP extends hostingService {
   public function options($task_type, $ref_type, &$task) {
     parent::options($task_type, $ref_type, $task);
 
-    $task->options['web_host'] = $this->server->title;
-
     $task->options['web_ports'] = explode(",", $this->ports);
-    foreach($task->options['web_ports'] as $key=>$val) {
+    foreach($task->options['web_ports'] as $key => $val) {
       $val = trim($val);
       $task->options['web_ports'][$key] = $val;
       if(!is_numeric($val)) {
@@ -136,4 +134,3 @@ class hostingService_HTTP extends hostingService {
     $task->options['restart_cmd'] = $this->restart_cmd;
   }
 }
-

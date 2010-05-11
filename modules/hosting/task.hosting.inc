@@ -40,20 +40,6 @@ function drush_hosting_hosting_task_validate($task) {
 
 function drush_hosting_hosting_task() {
   $task =& drush_get_context('HOSTING_TASK');
-  // todo move out for at least server verify
-  // todo and probabbly should go to hosting_web_server.service.inc. Currently broken due to lack of web_id.
-  $hostname = null;
-  $username = null;
-  if (isset($task->options['web_id']) && ($task->options['web_id'] != HOSTING_OWN_WEB_SERVER)) {
-    $username = $task->options['script_user'];
-    if ($task->options['web_ip']) {
-      $hostname = $task->options['web_ip'];
-    } else {
-      $hostname = $task->options['web_host'];
-    }
-  }
-  $drush_path = $task->options['drush_path'];
-  $task->options['root'] = $task->options['publish_path'];
 
   $named_context = '';
   if ($task->task_type === 'named-context-save') {
@@ -70,7 +56,7 @@ function drush_hosting_hosting_task() {
   $data['uri'] = null; // provision commands do not need the url passed to them.
   $mode = drush_get_option('debug', FALSE) ? 'GET' : 'POST';
   // todo this is kinda hacky. Thanks Drush API.
-  $output = drush_backend_invoke_args($named_context . " provision-" . $task->task_type . ' --alias-path=' . drush_server_home() . '/.drush/aliases', array(), $data, $mode, TRUE, $drush_path, $hostname, $username);
+  $output = drush_backend_invoke_args($named_context . ' provision-' . $task->task_type . ' --alias-path=' . drush_server_home() . '/.drush/aliases', array(), $data, $mode);
 
   drush_set_context('HOSTING_DRUSH_OUTPUT', $output);
   $code = drush_get_error();

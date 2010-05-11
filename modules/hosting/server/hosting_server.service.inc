@@ -199,8 +199,14 @@ class hostingService_base extends hostingService {
     );
   }
 
+  /**
+   * Override hostingService::options() because we don't want to initialize
+   * this service in provision.
+   */
   public function options($task_type, $ref_type, &$task) {
+    $task->options['web_host'] = $this->server->title;
     $task->options['drush_path'] = $this->drush_path;
     $task->options['web_ip'] = $this->ip_address;
+    $task->options['remote-user'] = $this->script_user;
   }
 }
