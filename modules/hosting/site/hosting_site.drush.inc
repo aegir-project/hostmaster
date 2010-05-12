@@ -14,7 +14,7 @@ function drush_hosting_site_pre_hosting_task($task) {
     $platform = node_load($task->ref->platform);
     $task->options['parent'] .= ',@' . $platform->hosting_name;
 
-    $task->options['provision-uri'] = $task->ref->title;
+    $task->options['uri'] = $task->ref->title;
     $task->options['site_id'] = $task->ref->nid;
     $task->options['language'] = $task->ref->site_language;
   }

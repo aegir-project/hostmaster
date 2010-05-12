@@ -12,7 +12,7 @@ function drush_hosting_platform_pre_hosting_task($task) {
     elseif ($task->ref->type === 'platform') {
       $web_server = node_load($task->ref->web_server);
       $task->options['parent'] = '@' . $web_server->hosting_name . '-' . $web_server->services['http']->type;
-      $task->options['publish_path'] = $task->ref->publish_path;
+      $task->options['root'] = $task->ref->publish_path;
     }
   }
 }

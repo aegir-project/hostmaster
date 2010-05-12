@@ -41,22 +41,21 @@ function drush_hosting_hosting_task_validate($task) {
 function drush_hosting_hosting_task() {
   $task =& drush_get_context('HOSTING_TASK');
 
-  $named_context = '';
+  drush_set_option('alias-path', drush_server_home() . '/.drush/aliases');
+  // Make sure argument order is correct
+  ksort($task->args);
+
   if ($task->task_type === 'named-context-save') {
+    $task->options['alias-path'] = drush_get_option('alias-path');
     $task->options['provision-context'] = $task->ref->type;
     $task->options['hosting_name'] = $task->ref->hosting_name;
+
+    $mode = drush_get_option('debug', FALSE) ? 'GET' : 'POST';
+    $output = drush_backend_invoke_args('provision-' . $task->task_type, $task->args, $task->options, $mode);
   }
   else {
-    $named_context = '@' . $task->ref->hosting_name;
+    drush_do_site_command(drush_sitealias_get_record('@' . $task->ref->hosting_name), 'provision-' . $task->task_type, $task->args, $task->options, TRUE);
   }
-
-  // make sure argument order is correct
-  ksort($task->args);
-  $data = array_merge($task->args, $task->options);
-  $data['uri'] = null; // provision commands do not need the url passed to them.
-  $mode = drush_get_option('debug', FALSE) ? 'GET' : 'POST';
-  // todo this is kinda hacky. Thanks Drush API.
-  $output = drush_backend_invoke_args($named_context . ' provision-' . $task->task_type . ' --alias-path=' . drush_server_home() . '/.drush/aliases', array(), $data, $mode);
 
   drush_set_context('HOSTING_DRUSH_OUTPUT', $output);
   $code = drush_get_error();
