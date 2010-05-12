@@ -54,7 +54,7 @@ function drush_hosting_hosting_task() {
     $output = drush_backend_invoke_args('provision-' . $task->task_type, $task->args, $task->options, $mode);
   }
   else {
-    drush_do_site_command(drush_sitealias_get_record('@' . $task->ref->hosting_name), 'provision-' . $task->task_type, $task->args, $task->options, TRUE);
+    $output = drush_do_site_command(drush_sitealias_get_record('@' . $task->ref->hosting_name), 'provision-' . $task->task_type, $task->args, $task->options, TRUE);
   }
 
   drush_set_context('HOSTING_DRUSH_OUTPUT', $output);
