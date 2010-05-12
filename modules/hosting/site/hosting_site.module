@@ -912,7 +912,7 @@ function hosting_site_menu() {
  */
 function _hosting_site_form_profile($platform = NULL) {
   $profiles = hosting_get_profiles($platform);
-  if (sizeof($profiles) > 1) {
+  if (sizeof($profiles) >= 1) {
     $form['profile'] = array(
       '#type' => 'radios',
       '#title' => t('Install profile'),
