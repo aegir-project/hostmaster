@@ -2,22 +2,24 @@
 
 // $Id$
 
+function hosting_site_context_options(&$task) {
+  $db_server = node_load($task->ref->db_server);
+  $task->context_options['parent'] = '@' . $db_server->hosting_name . '-' . $db_server->services['db']->type;
+  $platform = node_load($task->ref->platform);
+  $task->context_options['parent'] .= ',@' . $platform->hosting_name;
+
+  $task->context_options['uri'] = $task->ref->title;
+  $task->context_options['site_port'] = $task->ref->port;
+  $task->context_options['site_id'] = $task->ref->nid;
+  $task->context_options['language'] = $task->ref->site_language;
+}
+
 /**
  * Map values of site node into command line arguments
  */
 function drush_hosting_site_pre_hosting_task($task) {
   $task =& drush_get_context('HOSTING_TASK');
 
-  if ($task->ref->type === 'site' && $task->task_type === 'named-context-save') {
-    $db_server = node_load($task->ref->db_server);
-    $task->options['parent'] = '@' . $db_server->hosting_name . '-' . $db_server->services['db']->type;
-    $platform = node_load($task->ref->platform);
-    $task->options['parent'] .= ',@' . $platform->hosting_name;
-
-    $task->options['uri'] = $task->ref->title;
-    $task->options['site_id'] = $task->ref->nid;
-    $task->options['language'] = $task->ref->site_language;
-  }
   if ($task->task_type == 'restore') {
     $backup = hosting_site_get_backup($task->task_args['bid']);
     $task->args[1] = $backup['filename'];

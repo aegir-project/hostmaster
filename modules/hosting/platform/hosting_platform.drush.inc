@@ -1,20 +1,10 @@
 <?php
 // $Id$
 
-function drush_hosting_platform_pre_hosting_task($task) {
-  $task =& drush_get_context('HOSTING_TASK');
-
-  if ($task->task_type === 'named-context-save') {
-    if ($task->ref->type === 'site') {
-      $node = node_load($task->ref->platform);
-      $task->options['site_port'] = $task->ref->port;
-    }
-    elseif ($task->ref->type === 'platform') {
-      $web_server = node_load($task->ref->web_server);
-      $task->options['parent'] = '@' . $web_server->hosting_name . '-' . $web_server->services['http']->type;
-      $task->options['root'] = $task->ref->publish_path;
-    }
-  }
+function hosting_platform_context_options(&$task) {
+  $web_server = node_load($task->ref->web_server);
+  $task->context_options['parent'] = '@' . $web_server->hosting_name . '-' . $web_server->services['http']->type;
+  $task->context_options['root'] = $task->ref->publish_path;
 }
 
 /**

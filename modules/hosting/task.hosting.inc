@@ -45,17 +45,19 @@ function drush_hosting_hosting_task() {
   // Make sure argument order is correct
   ksort($task->args);
 
-  if ($task->task_type === 'named-context-save') {
-    $task->options['alias-path'] = drush_get_option('alias-path');
-    $task->options['provision-context'] = $task->ref->type;
-    $task->options['hosting_name'] = $task->ref->hosting_name;
+  $output = array();
+  if ($task->task_type === 'install' || $task->task_type === 'verify') {
+    $task->context_options = array();
+    module_invoke('hosting_' . $task->ref->type, 'context_options', $task);
+    $task->context_options['alias-path'] = drush_get_option('alias-path');
+    $task->context_options['provision-context'] = $task->ref->type;
+    $task->context_options['hosting_name'] = $task->ref->hosting_name;
 
     $mode = drush_get_option('debug', FALSE) ? 'GET' : 'POST';
-    $output = drush_backend_invoke_args('provision-' . $task->task_type, $task->args, $task->options, $mode);
+    $output = drush_backend_invoke_args('provision-named-context-save', $task->args, $task->context_options, $mode);
   }
-  else {
-    $output = drush_do_site_command(drush_sitealias_get_record('@' . $task->ref->hosting_name), 'provision-' . $task->task_type, $task->args, $task->options, TRUE);
-  }
+
+  $output = array_merge_recursive($output, drush_do_site_command(drush_sitealias_get_record('@' . $task->ref->hosting_name), 'provision-' . $task->task_type, $task->args, $task->options, TRUE));
 
   drush_set_context('HOSTING_DRUSH_OUTPUT', $output);
   $code = drush_get_error();
@@ -77,10 +79,6 @@ function drush_hosting_hosting_task_rollback() {
 
 function drush_hosting_post_hosting_task($task) {
   $task =& drush_get_context('HOSTING_TASK');
-
-  if ($task->task_type === 'named-context-save') {
-    hosting_add_task($task->ref->nid, 'verify');
-  }
 
   module_invoke_all(sprintf("post_hosting_%s_task", $task->task_type), $task, drush_get_context('HOSTING_DRUSH_OUTPUT'));
 }

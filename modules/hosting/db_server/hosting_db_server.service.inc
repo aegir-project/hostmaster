@@ -81,10 +81,10 @@ class hostingService_DB extends hostingService {
 
   }
 
-  public function options($task_type, $ref_type, &$task) {
-    parent::options($task_type, $ref_type, $task);
+  public function context_options($task_type, $ref_type, &$task) {
+    parent::context_options($task_type, $ref_type, $task);
 
-    // Provide options for verification and writing out to an alias
-    $task->options['master_db'] = $this->db_type . '://' . $this->db_user . ':' . $this->db_passwd . '@' . $this->server->title;
+    // Provide context_options for verification and writing out to an alias
+    $task->context_options['master_db'] = $this->db_type . '://' . $this->db_user . ':' . $this->db_passwd . '@' . $this->server->title;
   }
 }

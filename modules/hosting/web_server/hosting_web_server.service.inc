@@ -118,19 +118,19 @@ class hostingService_HTTP extends hostingService {
     }
   }
 
-  public function options($task_type, $ref_type, &$task) {
-    parent::options($task_type, $ref_type, $task);
+  public function context_options($task_type, $ref_type, &$task) {
+    parent::context_options($task_type, $ref_type, $task);
 
-    $task->options['web_ports'] = explode(",", $this->ports);
-    foreach($task->options['web_ports'] as $key => $val) {
+    $task->context_options['web_ports'] = explode(",", $this->ports);
+    foreach($task->context_options['web_ports'] as $key => $val) {
       $val = trim($val);
-      $task->options['web_ports'][$key] = $val;
+      $task->context_options['web_ports'][$key] = $val;
       if(!is_numeric($val)) {
-        unset($task->options['web_ports'][$key]);
+        unset($task->context_options['web_ports'][$key]);
       }
     }
 
-    $task->options['web_group'] = $this->web_group;
-    $task->options['restart_cmd'] = $this->restart_cmd;
+    $task->context_options['web_group'] = $this->web_group;
+    $task->context_options['restart_cmd'] = $this->restart_cmd;
   }
 }

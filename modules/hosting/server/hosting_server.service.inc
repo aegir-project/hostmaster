@@ -60,9 +60,9 @@ class hostingService {
 
   public function validate(&$node, &$form) {}
 
-  public function options($task_type, $ref_type, &$task) {
-    if ($task_type === 'named-context-save' && $ref_type === 'server') {
-      $task->options['provision-service-' . $this->service] = $this->type;
+  public function context_options($task_type, $ref_type, &$task) {
+    if ($this->type !== 'base') {
+      $task->context_options['provision-service-' . $this->service] = $this->type;
     }
   }
 }
