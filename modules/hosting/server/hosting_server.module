@@ -42,11 +42,6 @@ function hosting_server_hosting_feature() {
  */
 function hosting_server_hosting_tasks() {
   $tasks = array();
-  $tasks['server']['named-context-save'] = array(
-    'title' => t('Named context save'),
-    'description' => t('Save Drush aliases to connect to each service.'),
-    'weight' => 10,
-  );
   $tasks['server']['verify'] = array(
     'title' => t('Verify'),
     'description' => t('Verify that the server is correctly installed and working.'),
@@ -277,7 +272,7 @@ function hosting_server_update($node) {
   }
 
   if (!$node->no_verify) {
-    hosting_add_task($node->nid, 'named-context-save');
+    hosting_add_task($node->nid, 'verify');
   }
 }
 
@@ -289,7 +284,7 @@ function hosting_server_insert($node) {
   hosting_server_invoke_services($node, 'insert', $node);
 
   if (!$node->no_verify) {
-    hosting_add_task($node->nid, 'named-context-save');
+    hosting_add_task($node->nid, 'verify');
   }
   if (!$node->old_vid) {
     hosting_context_register($node->nid, 'server_' . preg_replace("/[!\W\.\-]/", "", $node->title));
