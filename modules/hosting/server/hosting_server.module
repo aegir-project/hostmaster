@@ -120,10 +120,10 @@ function hosting_services_new_object($name, $type, $node, $values = null) {
   return new $class($node, $values);
 }
 
-function hosting_services_add(&$node, $name, $values = array()) {
+function hosting_services_add(&$node, $name, $type, $values = array()) {
   $values['available'] = (isset($values['available'])) ? $values['available'] : 1;
 
-  $node->services[$name] = hosting_services_new_object($name, 'todo', $node, $values);
+  $node->services[$name] = hosting_services_new_object($name, $type, $node, $values);
 }
 
 function hosting_server_init_services(&$node) {
