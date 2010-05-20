@@ -5,7 +5,7 @@
  */
 function hosting_db_server_hosting_service() {
   return array(
-    'db' => 'MySQL',
+    'db' => 'mysql',
   );
 }
 

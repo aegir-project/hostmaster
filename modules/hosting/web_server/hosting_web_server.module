@@ -8,7 +8,7 @@
  */
 function hosting_web_server_hosting_service() {
   return array(
-    'http' => 'Apache', 
+    'http' => 'apache', 
   );
 }
 

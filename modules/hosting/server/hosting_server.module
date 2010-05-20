@@ -113,25 +113,23 @@ function hosting_server_services() {
   return $services;
 }
 
-function hosting_services_new_object($name, $node = null, $values = null) {
+function hosting_services_new_object($name, $type, $node, $values = null) {
   $services = hosting_server_services();
 
-  //todo use correct instead of first
-  $class = reset($services[$name]['types']);
+  $class = $services[$name]['types'][$type];
   return new $class($node, $values);
 }
 
 function hosting_services_add(&$node, $name, $values = array()) {
   $values['available'] = (isset($values['available'])) ? $values['available'] : 1;
 
-  $node->services[$name] = hosting_services_new_object($name, $node, $values);
+  $node->services[$name] = hosting_services_new_object($name, 'todo', $node, $values);
 }
 
 function hosting_server_init_services(&$node) {
   $result = db_query("SELECT service, type FROM {hosting_service} WHERE vid=%d AND available=1", $node->vid);
   while ($record = db_fetch_object($result)) {
-    $name = $record->service;
-    $node->services[$name] = hosting_services_new_object($name, $node);
+    $node->services[$record->service] = hosting_services_new_object($record->service, $record->type, $node);
   }
 
   return $node;
@@ -141,10 +139,9 @@ function hosting_server_services_from_post(&$node) {
   if (is_array($node->services)) {
     $services = hosting_server_services();
 
-    //todo broken
     foreach ($services as $name => $data) {
       if (is_array($node->services[$name])) {
-        $node->services[$name] = hosting_services_new_object($name, $node, $node->services[$name]);
+        $node->services[$name] = hosting_services_new_object($name, 'todo', $node, $node->services[$name]);
       }
     }
   }
