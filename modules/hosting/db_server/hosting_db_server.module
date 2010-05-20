@@ -2,19 +2,20 @@
 
 /**
  * Implementation of hook_hosting_service()
- *
  */
 function hosting_db_server_hosting_service() {
-  return array("db" => array(
-    'title' => t("Database server"),
-    'type' => 'Mysql',
-    'class' => 'hostingService_DB',
-    'module' => 'hosting_db_server',
-    'file' => 'hosting_db_server.service.inc'
-  ));
+  return array(
+    'db' => 'MySQL',
+  );
 }
 
-
+function hosting_db_server_hosting_service_type() {
+  return array(
+    'db' => array(
+      'title' => t('Database'),
+    ),
+  );
+}
 
 /**
  * Find the database server()

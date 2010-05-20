@@ -1,6 +1,6 @@
 <?php
 
-class hostingService_DB extends hostingService {
+class hostingService_db_MySQL extends hostingService {
   protected $service = 'db';
   public $type = 'mysql';
 

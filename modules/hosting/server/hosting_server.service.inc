@@ -67,7 +67,7 @@ class hostingService {
   }
 }
 
-class hostingService_base extends hostingService {
+class hostingService_server_base extends hostingService {
   protected $service = 'server';
   protected $type = 'base';
 

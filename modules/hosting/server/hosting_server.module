@@ -67,48 +67,57 @@ function hosting_server_access($op, $node, $account) {
   switch ($op) {
     case 'create':
       return user_access('create server', $account);
-      break;
+
     case 'view':
       return user_access('view server', $account);
-      break;
+
     case 'update':
       return user_access('edit server', $account);
-      break;
+
     case 'delete':
       return user_access('delete server', $account);
-      break;
-    default:
-      break;
   }
 }
-
 
 /**
  * Implementation of hook_hosting_service()
- *
  */
 function hosting_server_hosting_service() {
-  return array("server" => array(
-    'title' => t("Server configuration"),
-    'type' => 'basic',
-    'class' => 'hostingService_base',
-    'module' => 'hosting_server',
-    'file' => 'hosting_server.service.inc',
-    'weight' => -20
-  ));
+  return array(
+    'server' => 'base',
+  );
+}
+
+function hosting_server_hosting_service_type() {
+  return array(
+    'server' => array(
+      'title' => t('Server configuration'),
+      'weight' => -20
+    ),
+  );
+}
+
+function hosting_server_services() {
+  static $services;
+
+  if (!isset($services)) {
+    $services = module_invoke_all('hosting_service_type');
+    foreach (module_implements('hosting_service') as $module) {
+      foreach (module_invoke($module, 'hosting_service') as $service_type => $service) {
+        module_load_include('service.inc', $module);
+        $services[$service_type]['types'][$service] = 'hostingService_' . $service_type . '_' . $service;
+      }
+    }
+  }
+
+  return $services;
 }
 
 function hosting_services_new_object($name, $node = null, $values = null) {
-  static $services = array();
+  $services = hosting_server_services();
 
-  if (!sizeof($services)) {
-    $services = module_invoke_all('hosting_service');
-  }
-
-  $class = $services[$name]['class'];
-  if ($services[$name]['file']) {
-    include_once(drupal_get_path('module', $services[$name]['module']) . '/' . $services[$name]['file']);
-  }
+  //todo use correct instead of first
+  $class = reset($services[$name]['types']);
   return new $class($node, $values);
 }
 
@@ -119,7 +128,6 @@ function hosting_services_add(&$node, $name, $values = array()) {
 }
 
 function hosting_server_init_services(&$node) {
-
   $result = db_query("SELECT service, type FROM {hosting_service} WHERE vid=%d AND available=1", $node->vid);
   while ($record = db_fetch_object($result)) {
     $name = $record->service;
@@ -131,9 +139,9 @@ function hosting_server_init_services(&$node) {
 
 function hosting_server_services_from_post(&$node) {
   if (is_array($node->services)) {
+    $services = hosting_server_services();
 
-    $services = module_invoke_all('hosting_service');
-
+    //todo broken
     foreach ($services as $name => $data) {
       if (is_array($node->services[$name])) {
         $node->services[$name] = hosting_services_new_object($name, $node, $node->services[$name]);
@@ -164,7 +172,8 @@ function hosting_server_invoke_services(&$node, $method, &$arg1 = null, &$arg2 =
 function hosting_server_form(&$node) {
   $type = node_get_types('type', $node);
 
-  $services = module_invoke_all('hosting_service');
+  // todo broken
+  $services = hosting_server_services();
   $form['title'] = array(
     '#type' => 'textfield',
     '#title' => t('Server hostname'),
@@ -183,11 +192,7 @@ function hosting_server_form(&$node) {
 
   foreach ($services as $name => $service) {
     if (!isset($node->services[$name])) {
-
       $class = $services[$name]['class'];
-      if ($services[$name]['file']) {
-        include_once(drupal_get_path('module', $services[$name]['module']) . '/' . $services[$name]['file']);
-      }
       $node->services[$name] = new $class($node, $node->services[$name]);
     }
   }
@@ -321,12 +326,12 @@ function hosting_server_load($node) {
  * Implementation of hook_view().
  */
 function hosting_server_view(&$node, $teaser = FALSE, $page = FALSE) {
-
   hosting_set_breadcrumb($node);
 
   $node = node_prepare($node, $teaser);
 
-  $services = module_invoke_all('hosting_service');
+  // todo broken
+  $services = hosting_server_services();
 
   $node->content['info'] = array(
     '#prefix' => '<div id="hosting-server-info">',
@@ -380,11 +385,12 @@ function hosting_server_nodeapi_server_prepare(&$node) {
 }
 
 function hosting_server_listing() {
-  $services = module_invoke_all('hosting_service');
+  //todo broken
+  $services = hosting_server_services();
   $header = array(t('Server'));
-  foreach ($services as $name => $data) {
-    if ($name != 'server') {
-      $header[] = $data['type'];
+  foreach ($services as $service => $data) {
+    if ($service !== 'server') {
+      $header[] = $data['title'];
     }
   }
   $result = db_query(db_rewrite_sql("SELECT n.nid FROM {node} n WHERE n.type='server' AND n.status = 1 ORDER BY n.title"));
@@ -393,15 +399,18 @@ function hosting_server_listing() {
     $row = array();
     $server = node_load($obj->nid);
     $row[] = l($server->title, 'node/' . $server->nid);
-    foreach ($services as $name => $data) {
-
-      if ($name != 'server') {
-        if ($server->services[$name]->available) {
+    foreach ($services as $service => $data) {
+      if ($service !== 'server') {
+        /*
+        if ($server->services[$service]->available) {
           $row[] = array('class' => 'hosting-service-available', 'data' => t('Yes'));
         }
         else {
+        */
           $row[] = array('class' => 'hosting-service-unavailable', 'data' => t('No'));
+          /*
         }
+        */
       }
     }
     $rows[] = $row; 
