@@ -330,7 +330,6 @@ function hosting_server_view(&$node, $teaser = FALSE, $page = FALSE) {
 
   $node = node_prepare($node, $teaser);
 
-  // todo broken
   $services = hosting_server_services();
 
   $node->content['info'] = array(
@@ -347,8 +346,7 @@ function hosting_server_view(&$node, $teaser = FALSE, $page = FALSE) {
       $node->content['info'][$name]['#weight'] = $services[$name]['weight'];
     }
 
-    $title = $services[$name]['title'];
-    $title .= (isset($services[$name]['type'])) ? ' : ' . $services[$name]['type'] : '';
+    $title = $services[$name]['title'] . ' : ' . $service->type;
 
     $node->content['info'][$name]['title'] = array('#value' => '<h3>' . $title . '</h3>',
       '#weight' => -20

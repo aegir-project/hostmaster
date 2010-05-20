@@ -69,7 +69,7 @@ class hostingService {
 
 class hostingService_server_base extends hostingService {
   protected $service = 'server';
-  protected $type = 'base';
+  public $type = 'base';
 
   function form(&$form) {
 
