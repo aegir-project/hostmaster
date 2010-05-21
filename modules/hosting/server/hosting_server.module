@@ -92,7 +92,7 @@ function hosting_server_hosting_service_type() {
   return array(
     'server' => array(
       'title' => t('Server configuration'),
-      'weight' => -20
+      'weight' => -20,
     ),
   );
 }

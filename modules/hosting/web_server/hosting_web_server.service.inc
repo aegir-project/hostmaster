@@ -1,6 +1,6 @@
 <?php
 
-class hostingService_http_Apache extends hostingService {
+class hostingService_http_apache extends hostingService {
   protected $service = 'http';
   public $type = 'apache';
 
