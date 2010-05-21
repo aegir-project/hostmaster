@@ -275,6 +275,11 @@ function hosting_server_update($node) {
   else {
     hosting_server_invoke_services($node, 'save', $node);
     hosting_server_invoke_services($node, 'update', $node);
+
+    // Remove disabled services
+    foreach (array_diff(array_keys(hosting_server_services()), array_keys($node->services)) as $name) {
+      db_query("DELETE FROM {hosting_service} WHERE service = '%s' AND nid = %d", $name, $node->nid);
+    }
   }
 
   if (!$node->no_verify) {
