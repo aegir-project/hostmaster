@@ -137,11 +137,13 @@ function hosting_server_init_services(&$node) {
 
 function hosting_server_services_from_post(&$node) {
   if (is_array($node->services)) {
-    $services = hosting_server_services();
-
-    foreach ($services as $name => $data) {
-      if (is_array($node->services[$name])) {
-        $node->services[$name] = hosting_services_new_object($name, 'todo', $node, $node->services[$name]);
+    foreach (hosting_server_services() as $name => $data) {
+      if ($node->services[$name]['type'] !== 'null') {
+        $node->services[$name] = hosting_services_new_object($name, $node->services[$name]['type'], $node, $node->services[$name][$node->services[$name]['type']]);
+        $node->services[$name]->available = TRUE;
+      }
+      else {
+        unset($node->services[$name]);
       }
     }
   }
@@ -167,10 +169,6 @@ function hosting_server_invoke_services(&$node, $method, &$arg1 = null, &$arg2 =
  * Implementation of hook_form().
  */
 function hosting_server_form(&$node) {
-  $type = node_get_types('type', $node);
-
-  // todo broken
-  $services = hosting_server_services();
   $form['title'] = array(
     '#type' => 'textfield',
     '#title' => t('Server hostname'),
@@ -187,36 +185,34 @@ function hosting_server_form(&$node) {
     $node->services = array();
   }
 
-  foreach ($services as $name => $service) {
-    if (!isset($node->services[$name])) {
-      $class = $services[$name]['class'];
-      $node->services[$name] = new $class($node, $node->services[$name]);
-    }
-  }
-
-  foreach ($node->services as $name => $service) {
+  foreach (hosting_server_services() as $name => $service) {
     $form['services'][$name] = array(
       '#type' => 'fieldset',
-      '#title' => $services[$name]['title'] . ' : ' . $services[$name]['type'],
-      '#prefix' => "<div class='hosting-service-form'>",
-      '#suffix' => "</div>"
+      '#title' => $service['title'],
+      '#prefix' => '<div class="hosting-service-form">',
+      '#suffix' => '</div>',
+      '#weight' => isset($service['weight']) ? $service['weight'] : 0,
     );
 
-    $form['services'][$name]['available'] = array(
-      '#type' => 'checkbox',
-      '#default_value' => isset($service->available) ? $service->available : 0,
-      '#title' => t('Available'),
-      '#weight' => -100,
-      '#attributes' => array('class' => 'hosting-service-toggle'),
-    );
-    if (isset($services[$name]['weight'])) {
-      $form['services'][$name]['#weight'] = $services[$name]['weight'];
+    if ($name === 'server') {
+      $form['services'][$name]['type'] = array(
+        '#type' => 'value',
+        '#value' => 'base',
+      );
     }
     else {
-      $form['services'][$name]['#weight'] = 0;
+      $form['services'][$name]['type'] = array(
+        '#type' => 'radios',
+        '#weight' => -99,
+        '#options' => array_merge(array('null' => 'None'), drupal_map_assoc(array_keys($service['types']))),
+        '#default_value' => isset($node->services[$name]->available) && $node->services[$name]->available ? $node->services[$name]->type : 'null',
+      );
     }
 
-    $service->form($form['services'][$name]);
+    //todo add every form
+    if (isset($node->services[$name])) {
+      $node->services[$name]->form($form['services'][$name][$node->services[$name]->type]);
+    }
   }
  
 
@@ -226,18 +222,16 @@ function hosting_server_form(&$node) {
 function hosting_nodeapi_server_presave(&$node) {
   hosting_server_services_from_post($node);
 
+  if (!$node->services['server']->ip_address) {
+    $ip = gethostbyname($node->title);
 
-  if ($node->services['server']->available) {
-    if (!$node->services['server']->ip_address) {
-      $ip = gethostbyname($node->title);
-
-      // setup IP only if resolution succeeded
-      if ($ip != $node->title) {
-        $node->services['server']->ip_address = $ip; // required to fool the ip check below
-        drupal_set_message(t('Initialized the IP to %ip based on hostname %name. This will be used to create database grants so make sure it is the right address, as seen from the database server.', array('%ip' => $ip, '%name' => $node->title)), 'message');
-      } else {
-        form_set_error('title', t('Could not resolve IP address of %name. Either set the server name to a FQDN (Fully Qualified Domain Name) or hardcode the IP here.', array('%name' => $node->title)));
-      }
+    // setup IP only if resolution succeeded
+    if ($ip != $node->title) {
+      $node->services['server']->ip_address = $ip; // required to fool the ip check below
+      drupal_set_message(t('Initialized the IP to %ip based on hostname %name. This will be used to create database grants so make sure it is the right address, as seen from the database server.', array('%ip' => $ip, '%name' => $node->title)), 'message');
+    }
+    else {
+      form_set_error('title', t('Could not resolve IP address of %name. Either set the server name to a FQDN (Fully Qualified Domain Name) or hardcode the IP here.', array('%name' => $node->title)));
     }
   }
 }
