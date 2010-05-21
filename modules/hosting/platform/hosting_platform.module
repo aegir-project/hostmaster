@@ -184,7 +184,7 @@ function hosting_platform_form(&$node) {
     '#maxlength' => 255,
   );
 
-  $servers = _hosting_get_web_servers();
+  $servers = hosting_get_servers('http');
   if (sizeof($servers) > 1) {
     $form['web_server'] = array(
       '#type' => 'radios',

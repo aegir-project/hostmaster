@@ -417,3 +417,20 @@ function hosting_server_listing() {
   
   return theme('table',  $header, $rows, array('class' => 'hosting-table'));
 }
+
+/**
+ * Get servers providing a service.
+ *
+ * @param $service
+ *   Service type string, like 'http' or 'db'
+ *
+ * @return array pairs of nid -> title of enabled webservers
+ */ 
+function hosting_get_servers($service) {
+  $return = array();
+  $result = db_query("SELECT n.nid, n.title FROM {node} n INNER JOIN {hosting_service} s ON n.vid = s.vid AND s.available = 1 AND s.service = '%s'", $service);
+  while($server = db_fetch_object($result)) {
+    $return[$server->nid] = $server->title;
+  }
+  return $return;
+}

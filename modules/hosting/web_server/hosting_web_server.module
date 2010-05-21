@@ -33,18 +33,3 @@ function hosting_web_server_hosting_feature() {
   );
   return $features;
 }
-
-/**
- * Small helper function to get web servers.
- *
- * @return array pairs of nid -> title of enabled webservers
- */ 
-function _hosting_get_web_servers() {
-  $return = array();
-  $result = db_query("SELECT n.nid, n.title FROM {node} n LEFT JOIN {hosting_service} s ON n.vid=s.vid AND s.available=1 WHERE s.service='http'");
-  while($server = db_fetch_object($result)) {
-    $return[$server->nid] = $server->title;
-  }
-  return $return;
-}
-

@@ -383,8 +383,7 @@ function hosting_site_form($node) {
   }
 
   if (!$node->nid) {
-
-    $db_servers = _hosting_get_db_servers();
+    $db_servers = hosting_get_servers('db');
     if (sizeof($db_servers) > 1) {
       $form['db_server'] = array(
         '#type' => 'radios',
@@ -407,9 +406,10 @@ function hosting_site_form($node) {
     );
     $form['db_server'] = array('#type' => 'hidden', '#value' => $node->db_server);
   }
-    foreach(array('verified', 'last_cron', 'site_status') as $extra_attribute) {
-      $form["$extra_attribute"] = array('#type' => 'value', '#value' => $node->$extra_attribute);
-    }
+  foreach(array('verified', 'last_cron', 'site_status') as $extra_attribute) {
+    $form["$extra_attribute"] = array('#type' => 'value', '#value' => $node->$extra_attribute);
+  }
+
   return $form;
 }
 

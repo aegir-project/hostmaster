@@ -36,19 +36,6 @@ function hosting_get_db_server($hostname, $web_server = null) {
   return false;
 }
 
-
-/**
- * Small helper function to get db servers.
-*/ 
-function _hosting_get_db_servers() {
-  $return = array();
-  $result = db_query("SELECT n.nid, n.title FROM {node} n LEFT JOIN {hosting_service} s ON n.vid=s.vid AND s.available=1 WHERE s.service='db'");
-  while($server = db_fetch_object($result)) {
-    $return[$server->nid] = $server->title;
-  }
-  return $return;
-}
-
 /**
  * Implementation of hook_nodeapi() presave for server node type.
  */
