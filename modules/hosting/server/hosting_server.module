@@ -169,6 +169,8 @@ function hosting_server_invoke_services(&$node, $method, &$arg1 = null, &$arg2 =
  * Implementation of hook_form().
  */
 function hosting_server_form(&$node) {
+  drupal_add_js(drupal_get_path('module','hosting_server') . '/hosting_server.js');
+
   $form['title'] = array(
     '#type' => 'textfield',
     '#title' => t('Server hostname'),
@@ -209,12 +211,20 @@ function hosting_server_form(&$node) {
       );
     }
 
-    //todo add every form
-    if (isset($node->services[$name])) {
-      $node->services[$name]->form($form['services'][$name][$node->services[$name]->type]);
+    foreach ($service['types'] as $type => $class) {
+      $form['services'][$name][$type] = array(
+        '#prefix' => '<div id="provision-service-settings-' . $name . '-' . $type . '" class="provision-service-settings-' . $name . '">',
+        '#suffix' => '</div>',
+      );
+      if (isset($node->services[$name]) && $node->services[$name]->type === $type) {
+        $node->services[$name]->form($form['services'][$name][$type]);
+      }
+      else {
+        $service_object = hosting_services_new_object($name, $type, $node);
+        $service_object->form($form['services'][$name][$type]);
+      }
     }
   }
- 
 
   return $form;
 }
