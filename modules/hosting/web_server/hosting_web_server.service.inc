@@ -1,7 +1,10 @@
 <?php
 
-class hostingService_http_apache extends hostingService {
+class hostingService_http extends hostingService {
   protected $service = 'http';
+}
+
+class hostingService_http_apache extends hostingService_http {
   public $type = 'apache';
 
   public function load() {
@@ -19,9 +22,8 @@ class hostingService_http_apache extends hostingService {
 
   /**
    * Implementation of hook_validate().
-    */
+   */
   function validate(&$node, &$form) {
-
     $ports = explode(",", $this->ports);
     if (count($ports) < 1) {
       form_set_error('ports', t('At least one port must be provided.'));
@@ -35,7 +37,6 @@ class hostingService_http_apache extends hostingService {
 
   public function form(&$form) {
     parent::form($form);
-    $node = $form['#node'];
 
     if (hosting_feature('ports') == HOSTING_FEATURE_ENABLED) {
       $form['ports'] = array(

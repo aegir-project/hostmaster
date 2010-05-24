@@ -291,14 +291,15 @@ function hosting_server_update($node) {
  * Implementation of hook_insert().
  */
 function hosting_server_insert($node) {
+  if (!$node->old_vid) {
+    hosting_context_register($node->nid, 'server_' . preg_replace("/[!\W\.\-]/", "", $node->title));
+  }
+
   hosting_server_invoke_services($node, 'save', $node);
   hosting_server_invoke_services($node, 'insert', $node);
 
   if (!$node->no_verify) {
     hosting_add_task($node->nid, 'verify');
-  }
-  if (!$node->old_vid) {
-    hosting_context_register($node->nid, 'server_' . preg_replace("/[!\W\.\-]/", "", $node->title));
   }
 }
 
