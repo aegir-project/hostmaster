@@ -40,30 +40,40 @@ function drush_hosting_hosting_task_validate($task) {
 
 function drush_hosting_hosting_task() {
   $task =& drush_get_context('HOSTING_TASK');
+  $output = array();
+  $mode = drush_get_option('debug', FALSE) ? 'GET' : 'POST';
 
   drush_set_option('alias-path', drush_server_home() . '/.drush/aliases');
   // Make sure argument order is correct
   ksort($task->args);
 
-  $output = array();
+  // On install/verify, save the named context
   if ($task->task_type === 'install' || $task->task_type === 'verify') {
-    $task->context_options = array();
+    $task->context_options = array(
+      'alias-path' => drush_get_option('alias-path'),
+      'provision-context' => $task->ref->type,
+      'hosting_name' => $task->ref->hosting_name,
+    );
     module_invoke('hosting_' . $task->ref->type, 'context_options', $task);
-    $task->context_options['alias-path'] = drush_get_option('alias-path');
-    $task->context_options['provision-context'] = $task->ref->type;
-    $task->context_options['hosting_name'] = $task->ref->hosting_name;
 
-    $mode = drush_get_option('debug', FALSE) ? 'GET' : 'POST';
-    $output = drush_backend_invoke_args('provision-named-context-save', $task->args, $task->context_options, $mode);
+    $output = drush_backend_invoke_args('provision-named-context-save', array(), $task->context_options, $mode);
   }
 
+  // Run the actual command.
   $output = array_merge_recursive($output, drush_do_site_command(drush_sitealias_get_record('@' . $task->ref->hosting_name), 'provision-' . $task->task_type, $task->args, $task->options, TRUE));
-
   drush_set_context('HOSTING_DRUSH_OUTPUT', $output);
   $code = drush_get_error();
-  // record status 
   // We return 0 on success, so anything else is an error.
   $task->task_status = ($code) ? HOSTING_TASK_ERROR : HOSTING_TASK_SUCCESS;
+
+  // On succesful delete, remove the named context.
+  if ($task->task_type === 'delete' && $task->task_status === HOSTING_TASK_SUCCESS) {
+    $task->context_options = array(
+      'alias-path' => drush_get_option('alias-path'),
+      'hosting_name' => $task->ref->hosting_name,
+    );
+    $output = array_merge_recursive(drush_backend_invoke_args('provision-named-context-delete', array(), $task->context_options, $mode));
+  }
 
   // New revision is created at the beginning of function.
   $task->revision = FALSE;
