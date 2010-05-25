@@ -203,12 +203,11 @@ class hostingService_server_base extends hostingService {
    * Override hostingService::options() because we don't want to initialize
    * this service in provision.
    */
-  public function options($task_type, $ref_type, &$task) {
-    $task->options['web_host'] = $this->server->title;
-    $task->options['drush_path'] = $this->drush_path;
-    $task->options['web_ip'] = $this->ip_address;
-    $task->options['remote-user'] = $this->script_user;
-    $task->options['config_path'] = $this->config_path;
-    $task->options['backup_path'] = $this->backup_path;
+  public function context_options($task_type, $ref_type, &$task) {
+    $task->context_options['provision-host'] = $this->server->title;
+    $task->context_options['provision-user'] = $this->script_user;
+
+    $task->context_options['config_path'] = $this->config_path;
+    $task->context_options['backup_path'] = $this->backup_path;
   }
 }

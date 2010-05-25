@@ -4,9 +4,9 @@
 
 function hosting_site_context_options(&$task) {
   $db_server = node_load($task->ref->db_server);
-  $task->context_options['parent'] = '@' . $db_server->hosting_name . '-' . $db_server->services['db']->type;
+  $task->context_options['provision-db-server'] = $db_server->hosting_name;
   $platform = node_load($task->ref->platform);
-  $task->context_options['parent'] .= ',@' . $platform->hosting_name;
+  $task->context_options['provision-platform'] = $platform->hosting_name;
 
   $task->context_options['uri'] = $task->ref->title;
   $task->context_options['site_port'] = $task->ref->port;
