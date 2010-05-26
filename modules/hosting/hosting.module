@@ -766,6 +766,14 @@ function hosting_context_register($nid, $name) {
   db_query("INSERT INTO {hosting_context} (nid, name) VALUES (%d, '%s')", $nid, $name);
 }
 
+/**
+ * Return the hosting context name for a node.
+ */
+function hosting_context_name($nid) {
+  $node = node_load($nid);
+  return $node->hosting_name;
+}
+
 function hosting_context_node_types() {
   return array('site', 'platform', 'server');
 }
