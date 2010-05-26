@@ -21,7 +21,13 @@ function drush_hosting_hosting_task_validate($task) {
   }
   if ($task->type == 'task') {
     $task->ref = node_load($task->rid);
-    $task->options = array();
+    $task->options = array(
+      'provision-context' => $task->ref->type,
+      'alias-path' => drush_get_option('alias-path'),
+    );
+    $task->context_options = array_merge($task->options, array(
+      'hosting_name' => $task->ref->hosting_name,
+    ));
     $task->args = array();
     $task->changed = mktime();
     $task->executed = mktime();
@@ -49,11 +55,6 @@ function drush_hosting_hosting_task() {
 
   // On install/verify, save the named context
   if ($task->task_type === 'install' || $task->task_type === 'verify') {
-    $task->context_options = array(
-      'alias-path' => drush_get_option('alias-path'),
-      'provision-context' => $task->ref->type,
-      'hosting_name' => $task->ref->hosting_name,
-    );
     module_invoke('hosting_' . $task->ref->type, 'context_options', $task);
 
     $output = drush_backend_invoke_args('provision-named-context-save', array(), $task->context_options, $mode);
@@ -68,10 +69,6 @@ function drush_hosting_hosting_task() {
 
   // On succesful delete, remove the named context.
   if ($task->task_type === 'delete' && $task->task_status === HOSTING_TASK_SUCCESS) {
-    $task->context_options = array(
-      'alias-path' => drush_get_option('alias-path'),
-      'hosting_name' => $task->ref->hosting_name,
-    );
     $output = array_merge_recursive(drush_backend_invoke_args('provision-named-context-delete', array(), $task->context_options, $mode));
   }
 
