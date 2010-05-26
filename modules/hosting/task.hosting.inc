@@ -56,7 +56,6 @@ function drush_hosting_hosting_task() {
   // On install/verify, save the named context
   if ($task->task_type === 'install' || $task->task_type === 'verify') {
     module_invoke('hosting_' . $task->ref->type, 'context_options', $task);
-
     $output = drush_backend_invoke_args('provision-named-context-save', array(), $task->context_options, $mode);
   }
 
@@ -69,7 +68,7 @@ function drush_hosting_hosting_task() {
 
   // On succesful delete, remove the named context.
   if ($task->task_type === 'delete' && $task->task_status === HOSTING_TASK_SUCCESS) {
-    $output = array_merge_recursive(drush_backend_invoke_args('provision-named-context-delete', array(), $task->context_options, $mode));
+    $output = array_merge_recursive($output, drush_backend_invoke_args('provision-named-context-delete', array(), $task->context_options, $mode));
   }
 
   // New revision is created at the beginning of function.
