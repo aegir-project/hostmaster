@@ -20,14 +20,12 @@ function drush_hosting_hosting_task_validate($task) {
     $task = node_load($task);
   }
   if ($task->type == 'task') {
+    drush_set_option('alias-path', drush_server_home() . '/.drush/aliases');
     $task->ref = node_load($task->rid);
-    $task->options = array(
-      'provision-context' => $task->ref->type,
+    $task->options = $task->context_options = array(
       'alias-path' => drush_get_option('alias-path'),
+      'hosting-name' => '@' . $task->ref->hosting_name,
     );
-    $task->context_options = array_merge($task->options, array(
-      'hosting_name' => $task->ref->hosting_name,
-    ));
     $task->args = array();
     $task->changed = mktime();
     $task->executed = mktime();
@@ -49,7 +47,6 @@ function drush_hosting_hosting_task() {
   $output = array();
   $mode = drush_get_option('debug', FALSE) ? 'GET' : 'POST';
 
-  drush_set_option('alias-path', drush_server_home() . '/.drush/aliases');
   // Make sure argument order is correct
   ksort($task->args);
 
