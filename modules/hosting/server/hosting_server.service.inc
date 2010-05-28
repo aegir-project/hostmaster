@@ -62,7 +62,7 @@ class hostingService {
 
   public function context_options($task_type, $ref_type, &$task) {
     if ($this->type !== 'base') {
-      $task->context_options['provision-service-' . $this->service] = $this->type;
+      $task->context_options[$this->service . '-service-type'] = $this->type;
     }
   }
 }
