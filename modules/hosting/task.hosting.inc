@@ -57,7 +57,7 @@ function drush_hosting_hosting_task() {
   }
 
   // Run the actual command.
-  $output = array_merge_recursive($output, drush_do_site_command(drush_sitealias_get_record('@' . $task->ref->hosting_name), 'provision-' . $task->task_type, $task->args, $task->options, TRUE));
+  $output = array_merge_recursive($output, drush_backend_invoke_args('provision-' . $task->task_type, $task->args, $task->options, $mode));
   drush_set_context('HOSTING_DRUSH_OUTPUT', $output);
   $code = drush_get_error();
   // We return 0 on success, so anything else is an error.
