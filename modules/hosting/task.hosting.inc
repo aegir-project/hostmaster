@@ -25,13 +25,14 @@ function drush_hosting_hosting_task_validate($task) {
     $task->args = array();
     $task->changed = mktime();
     $task->executed = mktime();
-    $task->revision = FALSE; // changing the existing revision
     /* if not already running, remove the task from the queue
      * this is to avoid concurrent task runs */
     if ($task->task_status == HOSTING_TASK_PROCESSING) {
       return drush_set_error('HOSTING_TASK_RUNNING', dt("This task is already running"));
     }
     $task->task_status = HOSTING_TASK_PROCESSING;
+    // New revision are created when the node is added to the queue, not here
+    $task->revision = FALSE;
     node_save($task);
     drush_set_context('HOSTING_TASK', $task);
     drush_set_context('DRUSH_LOG_CALLBACK', '_hosting_task_log');
@@ -70,7 +71,7 @@ function drush_hosting_hosting_task() {
   // We return 0 on success, so anything else is an error.
   $task->task_status = ($code) ? HOSTING_TASK_ERROR : HOSTING_TASK_SUCCESS;
 
-  // New revision is created at the beginning of function.
+  // New revision are created when the node is added to the queue, not here
   $task->revision = FALSE;
   $task->delta = mktime() - $task->executed;
   node_save($task);
