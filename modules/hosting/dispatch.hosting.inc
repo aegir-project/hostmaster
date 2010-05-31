@@ -18,19 +18,21 @@ function drush_hosting_dispatch() {
   if (variable_get('hosting_dispatch_enabled', false)) {
     $queues = hosting_get_queues();
     foreach ($queues as $queue => $info) {
-      if ($info['enabled']) {
-        if (($now - $info["last"]) >= $info["calc_frequency"] || drush_get_option('force', false)) {
-          drush_backend_fork("hosting-" . $queue, array('items' => $info['calc_items']));
-        } else {
-          drush_log(dt("too early for queue @queue", array('@queue' => $queue)));
-        }
+      if ($info['running']) {
+        drush_log(dt("queue @queue already running", array('@queue' => $queue)));
       } else {
-        drush_log(dt("queue @queue disabled", array('@queue' => $queue)));
+        if ($info['enabled']) {
+          if (($now - $info["last"]) >= $info["calc_frequency"] || drush_get_option('force', false)) {
+            drush_backend_fork("hosting-" . $queue, array('items' => $info['calc_items']));
+          } else {
+            drush_log(dt("too early for queue @queue", array('@queue' => $queue)));
+          }
+        } else {
+          drush_log(dt("queue @queue disabled", array('@queue' => $queue)));
+        }
       }
     }
   } else {
     drush_log(dt("dispatching disabled"));
   }
 }
-
-
