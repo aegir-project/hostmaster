@@ -23,7 +23,13 @@ function drush_hosting_dispatch() {
       } else {
         if ($info['enabled']) {
           if (($now - $info["last"]) >= $info["calc_frequency"] || drush_get_option('force', false)) {
-            drush_backend_fork("hosting-" . $queue, array('items' => $info['calc_items']));
+            $count = $info['calc_items'] - $info['running_items'];
+            if ($count <= 0) {
+              drush_log(dt("maximum number of tasks (@count) already running", array('@count' => $info['running_items'])));
+            } else {
+              drush_log(dt("found @running running tasks, starting @count out of @max items", array('@running' => $info['running_items'], '@count' => $count, '@max' => $info['calc_items'])));
+              drush_backend_fork("hosting-" . $queue, array('items' => $count));
+            }
           } else {
             drush_log(dt("too early for queue @queue", array('@queue' => $queue)));
           }
