@@ -11,7 +11,7 @@
 function drush_hosting_dispatch() {
   $now = mktime();
   variable_set("hosting_dispatch_last_run", $now);
-  drush_log('hosting_dispatch', t("dispatching queues"));
+  drush_log(t("dispatching queues"));
   $platform = node_load(HOSTING_OWN_PLATFORM);
   $root = $platform->publish_path;
 
