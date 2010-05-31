@@ -25,8 +25,12 @@ function drush_hosting_hosting_task_validate($task) {
     $task->args = array();
     $task->changed = mktime();
     $task->executed = mktime();
-    // remove the task from the queue at the start of execution
-    // this is to avoid concurrent task runs
+    $task->revision = FALSE; // changing the existing revision
+    /* if not already running, remove the task from the queue
+     * this is to avoid concurrent task runs */
+    if ($task->task_status == HOSTING_TASK_PROCESSING) {
+      return drush_set_error('HOSTING_TASK_RUNNING', dt("This task is already running"));
+    }
     $task->task_status = HOSTING_TASK_PROCESSING;
     node_save($task);
     drush_set_context('HOSTING_TASK', $task);
