@@ -884,8 +884,14 @@ function _hosting_task_list($filter_by, $filter_value, $count = 5, $element = 0,
    $headers[t('Task')] = '';
    foreach ($nodes as $node) {
      $row = array();
+
+     if ($field == 'title') {
+       $data = drupal_ucfirst($node->task_type) . ' ' . _hosting_node_link($node->rid);
+     } else {
+       $data = $node->{$field};
+     }
      $row['type'] = array(
-       'data' => $node->{$field},
+       'data' => $data,
        'class' => 'hosting-status'
      );
 
