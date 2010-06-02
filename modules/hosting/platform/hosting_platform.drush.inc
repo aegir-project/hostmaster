@@ -56,7 +56,6 @@ function hosting_platform_post_hosting_verify_task($task, $data) {
     }
  
     foreach ($context['sites'] as $url) {
-      hosting_package_sync($packages['sites'][$url]);
 
       if (!($site = hosting_get_site_by_url($url))) {
         // Import any sites that have not been created yet.
@@ -70,7 +69,6 @@ function hosting_platform_post_hosting_verify_task($task, $data) {
         node_save($site);
         drush_log(dt("Imported existing site !domain", array('!domain' => _hosting_node_link($site->nid))));
       }
-      hosting_package_instance_sync($site->nid, $packages['base'], $packages['sites'][$url]);
     }
   }
 }
