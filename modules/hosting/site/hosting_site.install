@@ -74,11 +74,6 @@ function hosting_site_schema() {
         'type' => 'int',
         'not null' => TRUE,
       ),
-      'admin_user' => array(
-        'type' => 'varchar',
-        'length' => 60,
-        'not null' => TRUE,
-      ),
     ),
     'primary key' => array('vid'),
   );
@@ -248,8 +243,3 @@ function hosting_site_update_6004() {
   return array();
 }
 
-function hosting_site_update_6005() {
-  $ret = array();
-  db_add_field($ret, 'hosting_site', 'admin_user', array('type' => 'varchar', 'not null' => TRUE, 'length' => 60));
-  return $ret;
-}

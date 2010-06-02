@@ -410,18 +410,6 @@ function hosting_site_form($node) {
   foreach(array('verified', 'last_cron', 'site_status') as $extra_attribute) {
     $form["$extra_attribute"] = array('#type' => 'value', '#value' => $node->$extra_attribute);
   }
-
-  if (!$node->nid) {
-    $form['admin_user'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Admin username'),
-      '#required' => TRUE,
-      '#maxlength' => USERNAME_MAX_LENGTH,
-      '#description' => t('Spaces are allowed; punctuation is not allowed except for periods, hyphens, and underscores.'),
-      '#default_value' => 'admin',
-      );
-  }
-
   return $form;
 }
 
@@ -464,9 +452,6 @@ function hosting_site_validate($node, &$form) {
     form_set_error('site_language', t('Please fill in a valid language'));
   }
 
-  if (!$node->nid && $error = user_validate_name($node->admin_user)) {
-    form_set_error('admin_user', $error);
-  }
 }
 
 /**
@@ -488,8 +473,8 @@ function hosting_site_insert(&$node) {
   $node->client = $client->nid;
   $node->site_language = ($node->site_language) ? $node->site_language : 'en';
 
-  db_query("INSERT INTO {hosting_site} (vid, nid, client, db_server, platform, profile, language, last_cron, status, verified, port, `ssl`, ssl_redirect, admin_user) VALUES (%d, %d, %d, %d, %d, %d, '%s', %d, %d, %d, %d, %d, %d, '%s')",
-           $node->vid, $node->nid, $node->client, $node->db_server, $node->platform, $node->profile, $node->site_language, $node->last_cron, $node->site_status, $node->verified, $node->port, $node->ssl, $node->ssl_redirect, $node->admin_user);
+  db_query("INSERT INTO {hosting_site} (vid, nid, client, db_server, platform, profile, language, last_cron, status, verified, port, `ssl`, ssl_redirect) VALUES (%d, %d, %d, %d, %d, %d, '%s', %d, %d, %d, %d, %d, %d)",
+           $node->vid, $node->nid, $node->client, $node->db_server, $node->platform, $node->profile, $node->site_language, $node->last_cron, $node->site_status, $node->verified, $node->port, $node->ssl, $node->ssl_redirect);
   if ((!$node->old_vid)) {
     if ($node->import) {
       hosting_add_task($node->nid, 'import');
@@ -530,8 +515,8 @@ function hosting_site_update(&$node) {
     if ($node->site_status == HOSTING_SITE_DELETED) {
       $node->no_verify = TRUE;
     }
-    db_query("UPDATE {hosting_site} SET client = %d, db_server = %d, platform = %d, last_cron = %d, status = %d, profile = %d, language = '%s', verified = %d, port = %d, `ssl` = %d, ssl_redirect = %d, admin_user = '%s' WHERE vid=%d",
-             $node->client, $node->db_server, $node->platform, $node->last_cron, $node->site_status, $node->profile, $node->site_language, $node->verified, $node->port, $node->ssl, $node->ssl_redirect, $node->admin_user, $node->vid);
+    db_query("UPDATE {hosting_site} SET client = %d, db_server = %d, platform = %d, last_cron = %d, status = %d, profile = %d, language = '%s', verified = %d, port = %d, `ssl` = %d, ssl_redirect = %d WHERE vid=%d",
+             $node->client, $node->db_server, $node->platform, $node->last_cron, $node->site_status, $node->profile, $node->site_language, $node->verified, $node->port, $node->ssl, $node->ssl_redirect, $node->vid);
   }
   if (!$node->no_verify) {
     hosting_add_task($node->nid, 'verify');
@@ -542,7 +527,7 @@ function hosting_site_update(&$node) {
  * Implementation of hook_load().
  */
 function hosting_site_load($node) {
-  $additions = db_fetch_object(db_query('SELECT  client, db_server, platform, profile, language as site_language, last_cron, status AS site_status, verified, port, `ssl`, ssl_redirect, admin_user FROM {hosting_site} WHERE vid = %d', $node->vid));
+  $additions = db_fetch_object(db_query('SELECT  client, db_server, platform, profile, language as site_language, last_cron, status AS site_status, verified, port, `ssl`, ssl_redirect FROM {hosting_site} WHERE vid = %d', $node->vid));
   return $additions;
 }
 

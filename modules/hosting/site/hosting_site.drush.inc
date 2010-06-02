@@ -11,7 +11,6 @@ function drush_hosting_site_pre_hosting_task($task) {
   if ($task->ref->type == 'site') {
     $task->args[0] = $task->ref->title;
     $task->options['site_id'] = $task->ref->nid;
-    $task->options['admin_user'] = $task->ref->admin_user;
     if ($task->task_type != 'import') {
       $task->options['language'] = $task->ref->site_language;
     }
