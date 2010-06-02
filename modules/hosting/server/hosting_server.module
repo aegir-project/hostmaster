@@ -142,7 +142,7 @@ function hosting_server_init_services(&$node) {
 function hosting_server_services_from_post(&$node) {
   if (is_array($node->services)) {
     foreach (hosting_server_services() as $name => $data) {
-      if (!is_object($node->services[$name])) {
+      if (is_array($node->services[$name])) {
         if ($node->services[$name]['type'] !== 'null') {
           $node->services[$name] = hosting_services_new_object($name, $node->services[$name]['type'], $node, $node->services[$name][$node->services[$name]['type']]);
           $node->services[$name]->available = TRUE;
