@@ -20,11 +20,11 @@ function drush_hosting_hosting_task_validate($task) {
     $task = node_load($task);
   }
   if ($task->type == 'task') {
-    drush_set_option('alias-path', drush_server_home() . '/.drush/aliases');
     $task->ref = node_load($task->rid);
-    $task->options = $task->context_options = array(
-      'alias-path' => drush_get_option('alias-path'),
-      'hosting-name' => '@' . $task->ref->hosting_name,
+    $task->options = array();
+    $task->context_options = array(
+      'context_type' => $task->ref->type,
+      'master_url' => url('', array('absolute' => TRUE)),
     );
     $task->args = array();
     $task->changed = mktime();
@@ -53,11 +53,11 @@ function drush_hosting_hosting_task() {
   // On install/verify, save the named context
   if ($task->task_type === 'install' || $task->task_type === 'verify') {
     module_invoke('hosting_' . $task->ref->type, 'context_options', $task);
-    $output = drush_backend_invoke_args('provision-named-context-save', array(), $task->context_options, $mode);
+    $output = drush_backend_invoke_args('provision-named-context-save', array('@' . $task->ref->hosting_name), $task->context_options, $mode);
   }
 
-  // Run the actual command.
-  $output = array_merge_recursive($output, drush_backend_invoke_args('provision-' . $task->task_type, $task->args, $task->options, $mode));
+  // Run the actual command. Adding alias here to work aorund Drush API.
+  $output = array_merge_recursive($output, drush_backend_invoke_args('@' . $task->ref->hosting_name . ' provision-' . $task->task_type, $task->args, $task->options, $mode));
   drush_set_context('HOSTING_DRUSH_OUTPUT', $output);
   $code = drush_get_error();
   // We return 0 on success, so anything else is an error.

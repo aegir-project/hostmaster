@@ -204,9 +204,8 @@ class hostingService_server_base extends hostingService {
    * this service in provision.
    */
   public function context_options($task_type, $ref_type, &$task) {
-    $task->context_options['provision-host'] = $this->server->title;
-    $task->context_options['provision-user'] = $this->script_user;
-
+    $task->context_options['remote_host'] = $this->server->title;
+    $task->context_options['script_user'] = $this->script_user;
     $task->context_options['config_path'] = $this->config_path;
     $task->context_options['backup_path'] = $this->backup_path;
   }
