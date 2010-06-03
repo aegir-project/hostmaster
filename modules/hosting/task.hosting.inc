@@ -13,7 +13,7 @@ function _hosting_task_log($entry) {
   }
 }
 
-function drush_hosting_hosting_task_validate($task) {
+function drush_hosting_task_validate($task) {
   drush_set_option('user', 1);
   drush_bootstrap(DRUSH_BOOTSTRAP_DRUPAL_LOGIN);
   if (is_numeric($task)) {
@@ -45,7 +45,7 @@ function drush_hosting_hosting_task_validate($task) {
   }
 }
 
-function drush_hosting_hosting_task() {
+function drush_hosting_task() {
   $task =& drush_get_context('HOSTING_TASK');
   $output = array();
   $mode = drush_get_option('debug', FALSE) ? 'GET' : 'POST';
