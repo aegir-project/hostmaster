@@ -34,6 +34,7 @@ function drush_hosting_hosting_task_validate($task) {
     // remove the task from the queue at the start of execution
     // this is to avoid concurrent task runs
     $task->task_status = HOSTING_TASK_PROCESSING;
+    $task->revision = TRUE;
     node_save($task);
     drush_set_context('HOSTING_TASK', $task);
     drush_set_context('DRUSH_LOG_CALLBACK', '_hosting_task_log');
