@@ -771,7 +771,7 @@ function hosting_context_register($nid, $name) {
  */
 function hosting_context_name($nid) {
   $node = node_load($nid);
-  return $node->hosting_name;
+  return '@' . $node->hosting_name;
 }
 
 function hosting_context_node_types() {

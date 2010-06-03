@@ -21,10 +21,12 @@ function drush_hosting_hosting_task_validate($task) {
   }
   if ($task->type == 'task') {
     $task->ref = node_load($task->rid);
-    $task->options = array();
+    $task->options = array('root' => null, 'uri' => null);
     $task->context_options = array(
       'context_type' => $task->ref->type,
       'master_url' => url('', array('absolute' => TRUE)),
+      'root' => null,
+      'uri' => null
     );
     $task->args = array();
     $task->changed = mktime();
