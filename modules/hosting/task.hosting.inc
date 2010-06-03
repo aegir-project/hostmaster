@@ -57,9 +57,9 @@ function drush_hosting_hosting_task() {
     module_invoke('hosting_' . $task->ref->type, 'context_options', $task);
     $output = drush_backend_invoke_args('provision-named-context-save', array('@' . $task->ref->hosting_name), $task->context_options, $mode);
   }
-
   // Run the actual command. Adding alias here to work aorund Drush API.
-  $output = array_merge_recursive($output, drush_backend_invoke_args('@' . $task->ref->hosting_name . ' provision-' . $task->task_type, $task->args, $task->options, $mode));
+  $output = drush_backend_invoke_args('@' . $task->ref->hosting_name . ' provision-' . $task->task_type, $task->args, $task->options, $mode);
+
   drush_set_context('HOSTING_DRUSH_OUTPUT', $output);
   $code = drush_get_error();
   // We return 0 on success, so anything else is an error.
