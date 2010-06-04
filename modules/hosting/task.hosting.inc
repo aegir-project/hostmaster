@@ -28,9 +28,6 @@ function drush_hosting_task_validate($task) {
       'root' => null,
       'uri' => null,
     );
-    if (!drush_is_local_host($task->ref->title)) {
-      $task->context_options['file_service_type'] = 'remote';
-    }
     $task->args = array();
     $task->changed = mktime();
     $task->executed = mktime();
