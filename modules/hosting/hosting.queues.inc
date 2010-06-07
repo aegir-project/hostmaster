@@ -152,13 +152,7 @@ function _hosting_queues_clean_output($return) {
 
 
 function _hosting_dispatch_cmd() {
-
-  $cmd = sprintf("%s hosting-dispatch --root=%s", DRUSH_COMMAND, escapeshellarg(drush_get_option(array("r", "root"), $_SERVER['PWD'])));
-  if (function_exists('drush_get_option')) {
-    if ($uri = drush_get_option('uri')) {
-      $cmd .= ' --uri=' . escapeshellarg($uri);
-    }
-  }
+  $cmd = sprintf("%s %s hosting-dispatch ", DRUSH_COMMAND, escapeshellarg(d()->name));
   return $cmd;
 }
 

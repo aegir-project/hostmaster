@@ -424,7 +424,7 @@ function hosting_domain_allowed($url, $params = array()) {
  * Runs the 'hosting-dispatch' command, and 
  * move on to setting up the crontab
  */ 
-function hosting_setup() {
+function drush_hosting_setup() {
   if (drush_confirm("This command will replace your crontab for this user. continue?")) {
     variable_set('hosting_dispatch_enabled', FALSE);
     // attempt to run the dispatch command, to make sure it runs without the queue being enabled.
@@ -757,6 +757,7 @@ function hosting_context_load($name) {
   if ($obj = db_fetch_object($result)) {
     return node_load($obj->nid);
   }
+  return false;
 }
 
 /**

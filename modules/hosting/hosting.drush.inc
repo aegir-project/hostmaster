@@ -8,7 +8,6 @@ function hosting_drush_command() {
   );
 
   $items['hosting-setup'] = array(
-    'callback' => 'hosting_setup',
     'description' => dt('Set up initial configuration settings such as the cron entry for the queue dispatcher and more.'),
   );
 

@@ -10,6 +10,9 @@ function hosting_site_context_options(&$task) {
   $task->context_options['site_port'] = $task->ref->port;
   $task->context_options['site_id'] = $task->ref->nid;
   $task->context_options['language'] = $task->ref->site_language;
+
+  $profile = node_load($task->ref->profile);
+  $task->context_options['profile'] = $profile->short_name;
 }
 
 /**
