@@ -176,16 +176,18 @@ function hostmaster_form($form) {
 
   // only validate when next is pressed
   // also inherit the whole form's validate callback
-  $button['#validate'] = $form['#validate'];
+  if (isset($form['#validate'])) {
+    $button['#validate'] = $form['#validate'];
+  }
   $button['#validate'][] = 'hostmaster_form_validate';
   unset($form['#validate']);
 
   $button['#submit'] = array();
-  if ($form['#node']) {
+  if (isset($form['#node'])) {
     $button['#submit'][] = 'node_form_submit';
   }
   // hook the regular form submit hooks on the wizard submit hook
-  if ($form['#submit']) {
+  if (isset($form['#submit'])) {
     $button['#submit'] = array_merge($button['#submit'], $form['#submit']);
   }
   $button['#submit'][] = 'hostmaster_form_next';
@@ -219,6 +221,7 @@ function hostmaster_bootstrap() {
   $node->type = 'client';
   $node->email = $user->mail;
   $node->client_name = $user->name;
+  $node->organization = '';
   $node->status = 1;
   node_save($node);
   variable_set('hosting_default_client', $node->nid);  
@@ -236,7 +239,10 @@ function hostmaster_bootstrap() {
   $node->status = 1;
   $node->services = array();
 
-
+  // FIXME: These statements seem problematic because:
+  // hosting_services_new_object() -> -> hostingService::__construct() ->
+  // hostingService::save() which doesn't seem to happy being called on unsaved
+  // nodes.
   hosting_services_add($node, "server", array(
     'script_user' => HOSTING_DEFAULT_SCRIPT_USER,
     'available' => 1,
@@ -245,7 +251,6 @@ function hostmaster_bootstrap() {
    'web_group' => HOSTING_DEFAULT_WEB_GROUP,
     'available' => 1,
   ));
-
   node_save($node);
   variable_set('hosting_default_web_server', $node->nid);
   variable_set('hosting_own_web_server', $node->nid);
@@ -260,6 +265,10 @@ function hostmaster_bootstrap() {
     $node->services = array();
   }
 
+  // FIXME: This statement seems problematic because:
+  // hosting_services_new_object() -> -> hostingService::__construct() ->
+  // hostingService::save() which doesn't seem to happy being called on unsaved
+  // nodes.
   hosting_services_add($node, "db", array(
     'db_type' => $url['scheme'],
     'available' => 1,
