@@ -482,6 +482,11 @@ input.form-submit {
   -webkit-border-radius: 3px;
   }
 
+  body.page-admin input.form-submit,
+  body.page-admin #views-ajax-pad .form-submit {
+    padding: 0 4px;
+    }
+
   div.reverse input.form-submit { background:#124; }
 
 form div.form-item {
@@ -502,6 +507,7 @@ form div.form-item {
     }
 
   /* Exceptions */
+  body.page-admin div.form-item,
   dl.multiselect div.form-item,
   div.sidebar form div.form-item,
   form#system-theme-settings div.form-item,
@@ -515,6 +521,7 @@ form div.form-item {
     border:0px;
     }
 
+  body.page-admin div.form-item label,
   dl.multiselect div.form-item label,
   div.sidebar form div.form-item label,
   form div.form-item label.option,
