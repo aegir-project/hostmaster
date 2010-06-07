@@ -21,7 +21,7 @@ function drush_hosting_task_validate($task) {
   }
   if ($task->type == 'task') {
     $task->ref = node_load($task->rid);
-    $task->options = array('root' => null, 'uri' => null);
+    $task->options = array();
     $task->context_options = array(
       'context_type' => $task->ref->type,
       'master_url' => url('', array('absolute' => TRUE)),
@@ -62,8 +62,7 @@ function drush_hosting_task() {
     $output = drush_backend_invoke_args('provision-save', array('@' . $task->ref->hosting_name), $task->context_options, $mode);
   }
   // Run the actual command. Adding alias here to work aorund Drush API.
-  $output = drush_backend_invoke_args('@' . $task->ref->hosting_name . ' provision-' . $task->task_type, $task->args, $task->options, $mode);
-
+  $output = provision_backend_invoke($task->ref->hosting_name, 'provision-' . $task->task_type, $task->args, $task->options, $mode);
   drush_set_context('HOSTING_DRUSH_OUTPUT', $output);
   $code = drush_get_error();
   // We return 0 on success, so anything else is an error.
@@ -71,7 +70,7 @@ function drush_hosting_task() {
 
   // On succesful delete, remove the named context.
   if ($task->task_type === 'delete' && $task->task_status === HOSTING_TASK_SUCCESS) {
-    $output = array_merge_recursive($output, drush_backend_invoke_args('provision-save', array(), $task->context_options + array('delete' => TRUE), $mode));
+    $output = drush_backend_invoke_args('provision-save', array(), $task->context_options + array('delete' => TRUE), $mode);
   }
 
   // New revision is created at the beginning of function.
