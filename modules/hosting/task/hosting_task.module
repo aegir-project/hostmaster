@@ -10,7 +10,7 @@ function hosting_task_menu() {
   $items = array();
   foreach (array('site', 'platform') as $type) {
     foreach (hosting_available_tasks($type) as $task => $info) {
-      if (!$info['hidden']) {
+      if (empty($info['hidden'])) {
         $path = sprintf("node/%%hosting_task_%s/%s_%s", $type, $type, $task);
         $items[$path] = array(
            'title' => $info['title'],
@@ -152,7 +152,7 @@ function hosting_task_node_info() {
     "type" => 'task', "name" => 'Task',
     "module" => 'hosting_task',
     "has_title" => FALSE, "title_label" => '', 
- #   "description" => hosting_node_help("task"),
+    "description" => hosting_node_help("task"),
     "has_body" => 0, "body_label" => '', "min_word_count" => 0);
 
   return $types;

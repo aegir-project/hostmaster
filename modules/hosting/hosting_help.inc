@@ -192,6 +192,11 @@ function hosting_node_help($type) {
                 If a task should fail, the administrator will be notified with an explanation of exactly what went wrong,
                 and how to fix it.");
       break;      
+    case 'package' :
+      return t("<strong>An installable component for a site.</strong>
+                Hostmaster keeps tracks of all the modules, themes and install profiles installed across your entire network.
+                These packages most commonly link to their project on drupal.org, but might not in the case of custom modules.
+                Users are not able to create nodes of this type, as they are generated automatically during verify and sync tasks.");
   }
 }
 

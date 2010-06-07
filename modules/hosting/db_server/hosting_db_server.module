@@ -56,7 +56,7 @@ function _hosting_get_db_servers() {
  * Implementation of hook_nodeapi() presave for server node type.
  */
 function hosting_db_server_nodeapi_server_presave(&$node) {
-  if (empty($node->db_passwd) && $node->nid) {
+  if (empty($node->db_passwd) && !empty($node->nid)) {
     $old = node_load($node->nid);
     $node->db_passwd = $old->db_passwd;
   }

@@ -134,7 +134,7 @@ function hosting_features_form_submit($form, &$form_state) {
 function hosting_get_features($refresh = FALSE) {
   $cache = cache_get('hosting_features');
 
-  if (!$cache->data || $refresh) {
+  if (empty($cache->data) || $refresh) {
     ## include any optional hosting.feature.*.inc files
     $files = drupal_system_listing("hosting\.feature\.[a-zA-Z_]*\.inc$", "modules");
     if (sizeof($files)) {
@@ -166,7 +166,7 @@ function hosting_feature_node_types($refresh = FALSE) {
   if (!is_array($types) || $refresh) {
     $features = hosting_get_features($refresh);
     foreach ($features as $feature => $info) {
-      if ($info['node']) {
+      if (!empty($info['node'])) {
         $types[$feature] = $info['node'];
       }
     }

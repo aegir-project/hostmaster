@@ -216,10 +216,10 @@ function hosting_client_validate(&$node) {
 }
 
 function hosting_client_set_title(&$node) {
-  if ($node->organization && $node->name) {
+  if ($node->organization && $node->client_name) {
     $node->title = $node->client_name . ' ('.$node->organization.')';
   }
-  elseif ($node->name) {
+  elseif ($node->client_name) {
     $node->title = $node->client_name . ' ('.$node->email.')';
   }
   elseif ($node->organization) {
@@ -245,9 +245,11 @@ function hosting_client_insert($node) {
     && !user_load(array('mail' => $node->email))) {
     hosting_client_register_user($node);
   }
-  if ($node->new_user) {
+  if (isset($node->new_user)) {
     $user = user_load(array('name' => $node->new_user));
-    db_query('INSERT INTO {hosting_client_user} (client, user, contact_type) VALUES (%d, %d, "%s")', $node->nid, $user->uid, '');
+    if ($user) {
+      db_query('INSERT INTO {hosting_client_user} (client, user, contact_type) VALUES (%d, %d, "%s")', $node->nid, $user->uid, '');
+    }
   }
 }
 

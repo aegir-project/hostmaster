@@ -21,6 +21,7 @@ function hosting_package_node_info() {
     "type" => 'package', "name" => 'Package',
     "module" => 'hosting_package',
     "has_title" => FALSE, "title_label" => '', 
+    "description" => hosting_node_help("package"),
     "has_body" => 0, "body_label" => '', "min_word_count" => 0);
 
   return $types;
@@ -29,8 +30,6 @@ function hosting_package_node_info() {
 function hosting_package_menu() {
   $items = array();
 
-
- 
   $items['node/%hosting_package_node/packages'] = array(
     'title' => 'Packages',
     'description' => 'List of packages available for this platform',
@@ -49,6 +48,7 @@ function hosting_package_menu() {
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -1, 
   );
+  $x = 0;
   foreach (_hosting_package_types() as $type => $description) {
     $items['node/%hosting_package_node/packages/' . $type] = array(
       'title' => $description,
