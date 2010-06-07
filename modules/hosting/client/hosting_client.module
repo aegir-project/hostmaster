@@ -623,7 +623,7 @@ function hosting_client_form_alter(&$form, $form_state, $form_id) {
   }
 }
 
-function hosting_nodeapi_platform_load(&$node) {
+function hosting_nodeapi_platform_load($node) {
   $result = db_query("SELECT cid FROM {hosting_platform_client_access} WHERE pid = %d", $node->nid);
 
   while ($record = db_fetch_object($result)) {
