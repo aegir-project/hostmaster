@@ -513,6 +513,9 @@ function hosting_site_update(&$node) {
   else {
     $client = hosting_get_client($node->client);
     $node->client = $client->nid;
+    if ($node->site_status == HOSTING_SITE_DELETED) {
+      $node->no_verify = TRUE;
+    }
     db_query("UPDATE {hosting_site} SET client = %d, db_server = %d, platform = %d, last_cron = %d, status = %d, profile = %d, language = '%s', verified = %d, port = %d, `ssl` = %d, ssl_redirect = %d WHERE vid=%d",
              $node->client, $node->db_server, $node->platform, $node->last_cron, $node->site_status, $node->profile, $node->site_language, $node->verified, $node->port, $node->ssl, $node->ssl_redirect, $node->vid);
   }
@@ -906,6 +909,13 @@ function hosting_site_menu() {
  */
 function _hosting_site_form_profile($platform = NULL) {
   $profiles = hosting_get_profiles($platform);
+  foreach($profiles as $id => $name) {
+    // Don't allow a site to be provisioned with hostslave or hostmaster profile
+    if (in_array($name, array('hostslave', 'hostmaster'))) {
+      unset($profiles[$id]);
+    }
+  }
+  reset($profiles);
   if (sizeof($profiles) >= 1) {
     $form['profile'] = array(
       '#type' => 'radios',
@@ -918,7 +928,7 @@ function _hosting_site_form_profile($platform = NULL) {
     );
   }
   else {
-    $form['profile'] = array('#type' => 'hidden', '#default_value' => key($profiles), '#attributes' => array('class' => "hosting-site-form-profile-options"));
+    $form['profile'] = array('#type' => 'hidden', '#value' => key($profiles), '#attributes' => array('class' => "hosting-site-form-profile-options"));
   }
   return $form['profile'];
 }

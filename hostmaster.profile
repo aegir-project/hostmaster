@@ -70,7 +70,6 @@ function hostmaster_bootstrap() {
   $node->status = 1;
   $node->services = array();
 
-
   hosting_services_add($node, 'server', 'base', array(
     'script_user' => drush_get_option('script_user'),
     'drush_path' => DRUSH_COMMAND,
@@ -85,6 +84,7 @@ function hostmaster_bootstrap() {
    'ports' => drush_get_option('web_port'),
    'available' => 1,
   ));
+
 
   node_save($node);
   variable_set('hosting_default_web_server', $node->nid);
@@ -111,8 +111,6 @@ function hostmaster_bootstrap() {
 
 
   // @todo - check if we need to create a separate server for the db service.
-
-
 
   $node = new stdClass();
   $node->uid = 1;
@@ -249,6 +247,5 @@ function hostmaster_task_finalize() {
   hostmaster_setup_modules();
 
   node_access_rebuild();
-
 }
 

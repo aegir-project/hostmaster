@@ -1,0 +1,6 @@
+name = Site rename
+description = Rename a site both in the frontend and in the backend filesystem.
+package = Hosting
+dependencies[] = hosting
+
+core = 6.x

@@ -36,22 +36,27 @@ function hosting_alias_help($path, $arg) {
  * separated list of aliases to the site
  */
 function hosting_alias_form_alter(&$form, $form_state, $form_id) {
+  if ($form_id == 'site_node_form') {
+      return hosting_alias_form_data($form);
+  }
+}
+
+function hosting_alias_form_data(&$form) {
   if (user_access('create site aliases')) {
-    if ($form_id == 'site_node_form') {
-      $form['aliases'] = array(
-        '#type' => 'textarea',
-        '#title' => t('Domain aliases'),
-        '#description' => t('Your site can also be accessed through these domain names. This field requires each domain alias to be on its own line'),
-        '#default_value' => implode("\n", (array) $form['#node']->aliases),
-        '#weight' => 10,
-      );
-      $form['redirection'] = array(
-        '#type' => 'checkbox',
-        '#title' => t('Redirection'),
-        '#description' => t('Aliases will all be redirected to the main domain if this is checked. Otherwise, all aliases will be accessible transparently.'),
-        '#default_value' => isset($form['#node']->redirection) ? $form['#node']->redirection : variable_get('hosting_alias_redirection', FALSE),
-      );
-    }
+    $form['aliases'] = array(
+      '#type' => 'textarea',
+      '#title' => t('Domain aliases'),
+      '#description' => t('Your site can also be accessed through these domain names. This field requires each domain alias to be on its own line'),
+      '#default_value' => implode("\n", (array) $form['#node']->aliases),
+      '#weight' => 10,
+    );
+    $form['redirection'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Redirection'),
+      '#description' => t('Aliases will all be redirected to the main domain if this is checked. Otherwise, all aliases will be accessible transparently.'),
+      '#default_value' => isset($form['#node']->redirection) ? $form['#node']->redirection : variable_get('hosting_alias_redirection', FALSE),
+    );
+    return $form;
   }
 }
 

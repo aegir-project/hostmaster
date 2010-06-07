@@ -10,7 +10,7 @@ function hosting_task_menu() {
   $items = array();
   foreach (array('site', 'platform', 'server') as $type) {
     foreach (hosting_available_tasks($type) as $task => $info) {
-      if (!$info['hidden']) {
+      if (empty($info['hidden'])) {
         $path = sprintf("node/%%hosting_task_%s/%s_%s", $type, $type, $task);
         $items[$path] = array(
            'title' => $info['title'],
@@ -171,7 +171,7 @@ function hosting_task_node_info() {
     "type" => 'task', "name" => 'Task',
     "module" => 'hosting_task',
     "has_title" => FALSE, "title_label" => '', 
- #   "description" => hosting_node_help("task"),
+    "description" => hosting_node_help("task"),
     "has_body" => 0, "body_label" => '', "min_word_count" => 0);
 
   return $types;
@@ -223,6 +223,7 @@ function hosting_task_hosting_queues() {
     'total_items' => hosting_task_count(),
     'singular' => t('task'),
     'plural' => t('tasks'),
+    'running_items' => hosting_task_count_running(),
   );
   return $queue;
 }
@@ -388,6 +389,13 @@ function hosting_task_outstanding($nid, $type) {
  */
 function hosting_task_count() {
   return db_result(db_query("SELECT COUNT(t.vid) FROM {hosting_task} t INNER JOIN {node} n ON t.vid = n.vid WHERE t.task_status = %d", HOSTING_TASK_QUEUED));
+}
+
+/**
+ * Return the amount of items running in the queue
+ */
+function hosting_task_count_running() {
+  return db_result(db_query("SELECT COUNT(t.nid) FROM {node} n INNER JOIN {hosting_task} t ON n.vid=t.vid WHERE type='task' AND t.task_status = '%d'", HOSTING_TASK_PROCESSING));
 }
 
 /**
@@ -895,8 +903,14 @@ function _hosting_task_list($filter_by, $filter_value, $count = 5, $element = 0,
    $headers[t('Task')] = '';
    foreach ($nodes as $node) {
      $row = array();
+
+     if ($field == 'title') {
+       $data = drupal_ucfirst($node->task_type) . ' ' . _hosting_node_link($node->rid);
+     } else {
+       $data = $node->{$field};
+     }
      $row['type'] = array(
-       'data' => $node->{$field},
+       'data' => $data,
        'class' => 'hosting-status'
      );
 

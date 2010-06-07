@@ -11,26 +11,34 @@
 function drush_hosting_dispatch() {
   $now = mktime();
   variable_set("hosting_dispatch_last_run", $now);
-  drush_log('hosting_dispatch', t("dispatching queues"));
+  drush_log(t("dispatching queues"));
   $platform = node_load(HOSTING_OWN_PLATFORM);
   $root = $platform->publish_path;
 
   if (variable_get('hosting_dispatch_enabled', false)) {
     $queues = hosting_get_queues();
     foreach ($queues as $queue => $info) {
-      if ($info['enabled']) {
-        if (($now - $info["last"]) >= $info["calc_frequency"] || drush_get_option('force', false)) {
-          drush_backend_fork("hosting-" . $queue, array('items' => $info['calc_items']));
-        } else {
-          drush_log(dt("too early for queue @queue", array('@queue' => $queue)));
-        }
+      if ($info['running']) {
+        drush_log(dt("queue @queue already running", array('@queue' => $queue)));
       } else {
-        drush_log(dt("queue @queue disabled", array('@queue' => $queue)));
+        if ($info['enabled']) {
+          if (($now - $info["last"]) >= $info["calc_frequency"] || drush_get_option('force', false)) {
+            $count = $info['calc_items'] - $info['running_items'];
+            if ($count <= 0) {
+              drush_log(dt("maximum number of tasks (@count) already running", array('@count' => $info['running_items'])));
+            } else {
+              drush_log(dt("found @running running tasks, starting @count out of @max items", array('@running' => $info['running_items'], '@count' => $count, '@max' => $info['calc_items'])));
+              drush_backend_fork("hosting-" . $queue, array('items' => $count));
+            }
+          } else {
+            drush_log(dt("too early for queue @queue", array('@queue' => $queue)));
+          }
+        } else {
+          drush_log(dt("queue @queue disabled", array('@queue' => $queue)));
+        }
       }
     }
   } else {
     drush_log(dt("dispatching disabled"));
   }
 }
-
-
