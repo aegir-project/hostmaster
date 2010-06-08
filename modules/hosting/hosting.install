@@ -219,6 +219,8 @@ function hosting_update_6008() {
 
   $records = array();
 
+  
+
   $result = db_query("SELECT n.nid, title FROM {node} n LEFT JOIN {hosting_site} s ON n.nid=s.nid WHERE s.status <> -2 AND n.type='site'");
   while ($object = db_fetch_object($result)) {
     $records[$object->nid] = $object->title;
@@ -233,6 +235,19 @@ function hosting_update_6008() {
   while ($object = db_fetch_object($result)) {
     $records[$object->nid] = 'platform_' . preg_replace("/[!\W]/", "", $object->title);
   }
+
+  // we want to enforce that the hostmaster site is always referred to as @hostmaster
+  $own_site = db_result(db_query("SELECT s.nid FROM {hosting_site} s LEFT JOIN {hosting_package} p ON s.profile=p.nid WHERE p.short_name='hostmaster'"));
+  $records[$own_site] = 'hostmaster';
+  
+  // We start with the web server because we assume that the main hostmaster site is installed locally.
+  $node = node_load($own_site);
+
+  $server = node_load($node->web_server);
+  $server->title = 'localhost';
+  node_save($server);
+
+  $records[$server->nid] = 'server_localhost';
 
   foreach ($records as $nid => $name) {
     db_query("INSERT INTO {hosting_context} (nid, name) VALUES (%d, '%s')", $nid, $name);

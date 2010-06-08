@@ -66,7 +66,7 @@ function hostmaster_bootstrap() {
   $node = new stdClass();
   $node->uid = 1;
   $node->type = 'server';
-  $node->title = $_SERVER['HTTP_HOST'];
+  $node->title = 'localhost';
   $node->status = 1;
   $node->services = array();
 
@@ -125,7 +125,7 @@ function hostmaster_bootstrap() {
   $node = new stdClass();
   $node->uid = 1;
   $node->type = 'platform';
-  $node->title = $_SERVER['HTTP_HOST'] . ' (Drupal ' . VERSION . ')';
+  $node->title = 'hostmaster';
   $node->publish_path = drush_locate_root(drush_get_option(array('r', 'root'), NULL));
   $node->web_server = variable_get('hosting_default_web_server', 3);
   $node->status = 1;

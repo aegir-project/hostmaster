@@ -46,12 +46,6 @@ function drush_hosting_hostmaster_resume() {
     db_query("UPDATE {hosting_context} SET name='%s' WHERE nid=%d", ltrim($new_platform, '@'), $platform_id);
   }
 
-  $server_id = $platform->web_server;
-   // fix the new platform alias name
-  if (hosting_context_name($server_id) != $server_name) {
-    db_query("UPDATE {hosting_context} SET name='%s' WHERE nid=%d", ltrim($server_name, '@'), $server_id);
-  }
-
 
   drush_log('fixing platform for site node');
   $node->verified = 0;
