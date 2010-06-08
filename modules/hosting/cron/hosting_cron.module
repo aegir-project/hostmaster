@@ -20,20 +20,9 @@ function hosting_cron_queue($count) {
   $sites = hosting_cron_get_sites($count);
 
   foreach ($sites as $site) {
-    $platform = node_load($site->platform);
-    $web_server = node_load($platform->web_server);
-    $data['uri'] = 'http://' . $site->title;
-    $data['root'] = $platform->publish_path;
-    $drush_path = $web_server->drush_path;
+    $site_name = hosting_context_name($site->nid);
 
-    $hostname = null;
-    $username = null;
-    if ($platform->web_server != HOSTING_OWN_WEB_SERVER) {
-      $hostname = $web_server->title;
-      $username = $web_server->script_user;
-    }
-
-    drush_backend_invoke("cron", $data, $drush_path, $hostname, $username);
+    provision_backend_invoke($site_name, "cron");
 
     $site->revision = false;
     $site->no_verify = true; // do not generate verify task
