@@ -5,10 +5,9 @@ function drush_hosting_migrate_pre_hosting_task($task) {
   $task =& drush_get_context('HOSTING_TASK');
   if ($task->ref->type == 'site' && $task->task_type == 'migrate') {
     $platform = node_load($task->task_args['target_platform']);
-    $task->args[2] = $platform->publish_path;
+    $task->args[2] = hosting_context_name($platform->nid);
 
     $profile_instance = _hosting_migrate_get_target_profile_name($task);
-
     if (sizeof($profile_instance)) {
       $task->options['profile'] = $profile_instance->short_name;
     }
