@@ -70,7 +70,7 @@ function drush_hosting_task() {
 
   // On succesful delete, remove the named context.
   if ($task->task_type === 'delete' && $task->task_status === HOSTING_TASK_SUCCESS) {
-    $output = drush_backend_invoke_args('provision-save', array(), $task->context_options + array('delete' => TRUE), $mode);
+    $output = drush_backend_invoke_args('provision-save', array('@' . $task->ref->hosting_name), array('delete' => TRUE), $mode);
   }
 
   // New revision is created at the beginning of function.
