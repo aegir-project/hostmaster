@@ -20,7 +20,7 @@ function hosting_db_server_hosting_service_type() {
 /**
  * Find the database server()
  */
-function hosting_get_db_server($hostname, $web_server = null) {
+function hosting_get_db_server($hostname) {
   if (_hosting_valid_ip($hostname)) {
     $ip = $hostname;
     $hostname = gethostbyaddr($hostname);
