@@ -80,7 +80,7 @@ function _hosting_signup_form() {
   foreach (module_implements('form_alter') as $module) {
     $function = $module .'_form_alter';
 
-    $function($form['site'], $state, 'client_node_form');
+    $function($form['client'], $state, 'client_node_form');
   }
 
   $form['new_client'] = array('#type' => 'value', '#value' => TRUE);
