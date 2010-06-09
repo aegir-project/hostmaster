@@ -77,7 +77,7 @@ function hostmaster_bootstrap() {
   hosting_services_add($node, 'http', 'apache', array(
    'web_group' => drush_get_option('web_group'),
    'restart_cmd' => drush_get_option('restart_cmd', _provision_default_restart_cmd()),
-   'ports' => drush_get_option('web_port'),
+   'ports' => drush_get_option('web_ports'),
    'available' => 1,
   ));
 
