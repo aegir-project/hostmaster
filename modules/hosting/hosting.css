@@ -190,3 +190,17 @@ div.hosting-wizard-glossary { padding: 0 2em; display: none; }
 
 div#hosting-task-list, div#hosting-task-queue-block { position: relative }
 div.modalframe-page-wrapper { background: white }
+
+
+/**
+ * Log in to site link
+ */
+
+a.hosting-goto-site-link {
+  background-image: url(images/icon-home-32.png);
+  background-repeat: no-repeat;
+  padding: 8px 0 15px 35px;
+  font-weight: bold;
+  display: block;
+}
+
