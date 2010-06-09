@@ -63,6 +63,6 @@ class hostingService_http_cluster extends hostingService_http {
   function context_options($task_type, $ref_type, &$task) {
     parent::context_options($task_type, $ref_type, $task);
 
-    $task->context_options['provision-http-cluster-web-servers'] = array_values(array_map('hosting_context_name', array_intersect_key($this->web_servers, hosting_get_servers('http'))));
+    $task->context_options['provision-http-cluster-web-servers'] = implode(',', array_values(array_map('hosting_context_name', array_intersect_key($this->web_servers, hosting_get_servers('http')))));
   }
 }
