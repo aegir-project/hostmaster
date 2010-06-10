@@ -244,6 +244,7 @@ function hosting_update_6008() {
 
   $server_id = variable_get('hosting_own_web_server', 2);
   db_query("UPDATE {node} SET title='localhost' WHERE nid=%d", $server_id);
+  db_query("UPDATE {node_revisions} SET title='localhost' WHERE nid=%d", $server_id);
 
   $records[$server_id] = 'server_localhost';
 
