@@ -58,6 +58,8 @@ function hostmaster_bootstrap() {
   variable_set('hosting_default_client', $node->nid);  
   variable_set('hosting_admin_client', $node->nid);
 
+  $client_id = $node->nid;
+
   /* Default server */
   $node = new stdClass();
   $node->uid = 1;
@@ -101,6 +103,7 @@ function hostmaster_bootstrap() {
   ));
 
   node_save($node);
+  $db_server = $node->nid;
   variable_set('hosting_default_db_server', $node->nid);
   variable_set('hosting_own_db_server', $node->nid);
 
@@ -122,6 +125,7 @@ function hostmaster_bootstrap() {
   $node->web_server = variable_get('hosting_default_web_server', 3);
   $node->status = 1;
   node_save($node);
+  $platform_id = $node->nid;
   variable_set('hosting_default_platform', $node->nid);
   variable_set('hosting_own_platform', $node->nid);
 
@@ -133,6 +137,29 @@ function hostmaster_bootstrap() {
   $instance->package_id = $package_id;
   $instance->status = 0;
   hosting_package_instance_save($instance);
+
+  // Create the hostmaster profile node
+  $node = new stdClass();
+  $node->uid = 1;
+  $node->title = 'hostmaster';
+  $node->type = 'package';
+  $node->package_type = 'profile';
+  $node->short_name = 'hostmaster';
+  $node->status = 1;
+  node_save($node);
+  $profile_id = $node->nid;
+
+  // Create the main Aegir site node
+  $node = new stdClass();
+  $node->uid = 1;
+  $node->type = 'site';
+  $node->title = d()->uri;
+  $node->platform = $platform_id;
+  $node->client = $client_id;
+  $node->db_server = $db_server;
+  $node->profile = $profile_id;
+  $node->status = 1;
+  node_save($node);
 
   variable_set('site_frontpage', 'hosting/sites');
 
