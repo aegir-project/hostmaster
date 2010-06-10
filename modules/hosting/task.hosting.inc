@@ -13,12 +13,19 @@ function _hosting_task_log($entry) {
   }
 }
 
-function drush_hosting_task_validate($task) {
+function drush_hosting_task_validate($id, $type = null) {
   drush_set_option('user', 1);
   drush_bootstrap(DRUSH_BOOTSTRAP_DRUPAL_LOGIN);
-  if (is_numeric($task)) {
-    $task = node_load($task);
+  if (is_numeric($id)) {
+    $task = node_load($id);
   }
+  elseif (is_string($id) && isset($type)) {
+    $ref = hosting_context_load($id);
+    if (!($task = hosting_get_most_recent_task($ref->nid, $type))) {
+      $task = hosting_add_task($ref->nid, $type); 
+    }
+  }
+
   if ($task->type == 'task') {
     $task->ref = node_load($task->rid);
     $task->options = array();
