@@ -53,6 +53,7 @@ function hosting_platform_post_hosting_verify_task($task, $data) {
         $site->title = $url;
         $site->platform = $node->nid;
         $site->client = HOSTING_DEFAULT_CLIENT;
+        $site->db_server = HOSTING_DEFAULT_DB_SERVER;
         node_save($site);
         drush_log(dt("Imported existing site !domain", array('!domain' => _hosting_node_link($site->nid))));
       }
