@@ -52,7 +52,8 @@ function hosting_migrate_post_hosting_migrate_task($task, $data) {
       $site->profile = $profile->package_id;
     }
 
-    $site->verified = 0;
+    $site->verified = mktime();
+    $site->no_verify = true;
     $site->platform = $target;
     node_save($site);
 
