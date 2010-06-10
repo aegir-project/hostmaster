@@ -107,15 +107,9 @@ class hostingService_server_base extends hostingService {
 
   function insert() {
     parent::insert();
-<<<<<<< HEAD:modules/hosting/server/hosting_server.service.inc
-    db_query("INSERT INTO {hosting_server} (vid, nid, script_user, config_path, backup_path, drush_path) 
-        VALUES (%d, %d, '%s', '%s', '%s', '%s', '%s')", 
-          $this->server->vid, $this->server->nid, $this->script_user, $this->config_path, $this->backup_path, $this->drush_path);
-=======
-    db_query("INSERT INTO {hosting_server} (vid, nid, ip_address, script_user, config_path) 
-        VALUES (%d, %d, '%s', '%s', '%s')", 
-          $this->server->vid, $this->server->nid, $this->ip_address, $this->script_user, $this->config_path);
->>>>>>> e558432322c318404aff55790d1c540b17b7b201:modules/hosting/server/hosting_server.service.inc
+    db_query("INSERT INTO {hosting_server} (vid, nid, script_user, config_path) 
+        VALUES (%d, %d, '%s', '%s')", 
+          $this->server->vid, $this->server->nid, $this->script_user, $this->config_path);
   }
 
   function delete_revision() {
@@ -130,30 +124,10 @@ class hostingService_server_base extends hostingService {
 
   function load() {
     parent::load();
-<<<<<<< HEAD:modules/hosting/server/hosting_server.service.inc
-    $this->mergeData('SELECT script_user, config_path, backup_path, drush_path FROM {hosting_server} WHERE vid = %d', $this->server->vid);
+    $this->mergeData('SELECT script_user, config_path FROM {hosting_server} WHERE vid = %d', $this->server->vid);
   }
 
   function view(&$render) {
-    $render['drush_path'] = array(
-      '#type' => 'item',
-      '#title' => t('Drush path'),
-      '#value' => filter_xss($this->drush_path),
-    );
-=======
-    $this->mergeData('SELECT ip_address, script_user, config_path FROM {hosting_server} WHERE vid = %d', $this->server->vid);
-  }
-
-  function view(&$render) {
-    if ($this->ip_address) {
-      $render['ip_address'] = array(
-        '#type' => 'item',
-        '#title' => t('IP address'),
-        '#value' => filter_xss($this->ip_address),
-      );    
-    }
->>>>>>> e558432322c318404aff55790d1c540b17b7b201:modules/hosting/server/hosting_server.service.inc
-
     $render['script_user'] = array(
       '#type' => 'item',
       '#title' => t('Script user'),
