@@ -1,9 +1,15 @@
 <?php
 
 function hosting_server_context_options(&$task) {
-  foreach ($task->ref->services as $service) {
-    if ($service->available) {
-      $service->context_options($task->task_type, $task->ref->type, $task);
+  foreach (hosting_server_services() as $type => $info) {
+    if (isset($task->ref->services[$type])) {
+      $service = $task->ref->services[$type];
+      if ($service->available) {
+        $service->context_options($task->task_type, $task->ref->type, $task);
+      }
+    }
+    else {
+      $task->context_options["{$type}_service_type"] = '0';
     }
   }
 }
