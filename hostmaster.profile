@@ -159,6 +159,7 @@ function hostmaster_bootstrap() {
   $node->db_server = $db_server;
   $node->profile = $profile_id;
   $node->import = true;
+  $node->hosting_name = 'hostmaster';
   $node->status = 1;
   node_save($node);
 
