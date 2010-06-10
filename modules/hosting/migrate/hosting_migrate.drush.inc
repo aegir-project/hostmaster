@@ -58,5 +58,11 @@ function hosting_migrate_post_hosting_migrate_task($task, $data) {
     node_save($site);
 
     $task->ref = $site;
+
+    //do the package synching
+    $context = $data['context'];
+    $packages = $context['packages'];
+    hosting_package_sync($packages);
+    hosting_package_instance_sync($task->ref->nid, $packages);
   }
 }
