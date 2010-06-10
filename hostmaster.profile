@@ -67,17 +67,15 @@ function hostmaster_bootstrap() {
   $node->services = array();
 
   hosting_services_add($node, 'server', 'base', array(
-    'script_user' => drush_get_option('script_user'),
-    'drush_path' => DRUSH_COMMAND,
-    'config_path' => drush_get_option('config_path'),
-    'backup_path' => drush_get_option('backup_path'),
+    'script_user' => d()->platform->server->script_user,
+    'config_path' => d()->platform->server->config_path,
     'available' => 1,
   ));
 
   hosting_services_add($node, 'http', 'apache', array(
-   'web_group' => drush_get_option('web_group'),
-   'restart_cmd' => drush_get_option('restart_cmd', _provision_default_restart_cmd()),
-   'ports' => drush_get_option('web_ports'),
+   'web_group' => d()->platform->server->web_group,
+   'restart_cmd' => d()->platform->server->restart_cmd,
+   'ports' => d()->platform->server->web_ports,
    'available' => 1,
   ));
 
@@ -85,8 +83,8 @@ function hostmaster_bootstrap() {
   variable_set('hosting_default_web_server', $node->nid);
   variable_set('hosting_own_web_server', $node->nid);
 
-  $master_db = parse_url(drush_get_option('master_db'));
-  if (!in_array($master_db['host'], array('localhost', '127.0.0.1', $_SERVER['HTTP_HOST']))) {
+  $master_db = parse_url(d()->platform->server->master_db);
+  if (!in_array($master_db['host'], array('localhost', '127.0.0.1'))) {
     $node = new stdClass();
     $node->uid = 1;
     $node->type = 'server';
@@ -120,7 +118,7 @@ function hostmaster_bootstrap() {
   $node->uid = 1;
   $node->type = 'platform';
   $node->title = 'hostmaster';
-  $node->publish_path = drush_locate_root(drush_get_option(array('r', 'root'), NULL));
+  $node->publish_path = d()->root;
   $node->web_server = variable_get('hosting_default_web_server', 3);
   $node->status = 1;
   node_save($node);
@@ -143,7 +141,6 @@ function hostmaster_bootstrap() {
 
   // This is saved because the config generation script is running via drush, and does not have access to this value
   variable_set('install_url' , $GLOBALS['base_url']);
-
 }
 
 

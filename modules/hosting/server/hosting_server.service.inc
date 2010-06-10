@@ -72,17 +72,6 @@ class hostingService_server_base extends hostingService {
   public $type = 'base';
 
   function form(&$form) {
-    $form['drush_path'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Drush path'),
-      '#required' => $this->available,
-      '#size' => 40,
-      '#default_value' => ($this->drush_path) ? $this->drush_path : HOSTING_DEFAULT_PARENT_PATH.'/drush/drush.php',
-      '#description' => t("The full path to the drush.php script on this server."),
-      '#maxlength' => 255,
-      '#weight' => -8,
-    );
-
     $form['script_user'] = array(
       '#type' => 'textfield',
       '#title' => t('System account'),
@@ -106,19 +95,6 @@ class hostingService_server_base extends hostingService {
       '#weight' => -4,
     
     );
-    
-    $form['backup_path'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Backup path'),
-      '#required' => $this->available,
-      '#size' => 40,
-      '#default_value' => ($this->backup_path) ? $this->backup_path : HOSTING_DEFAULT_BACKUP_PATH,
-      '#description' => t("The path on the server where backups will be stored.<br />
-          It is essential that this directory should not be accessible via a web browser."),
-      '#maxlength' => 255,
-      '#weight' => -3,
-    );
-
 
   }
 
@@ -131,9 +107,15 @@ class hostingService_server_base extends hostingService {
 
   function insert() {
     parent::insert();
+<<<<<<< HEAD:modules/hosting/server/hosting_server.service.inc
     db_query("INSERT INTO {hosting_server} (vid, nid, script_user, config_path, backup_path, drush_path) 
         VALUES (%d, %d, '%s', '%s', '%s', '%s', '%s')", 
           $this->server->vid, $this->server->nid, $this->script_user, $this->config_path, $this->backup_path, $this->drush_path);
+=======
+    db_query("INSERT INTO {hosting_server} (vid, nid, ip_address, script_user, config_path) 
+        VALUES (%d, %d, '%s', '%s', '%s')", 
+          $this->server->vid, $this->server->nid, $this->ip_address, $this->script_user, $this->config_path);
+>>>>>>> e558432322c318404aff55790d1c540b17b7b201:modules/hosting/server/hosting_server.service.inc
   }
 
   function delete_revision() {
@@ -148,6 +130,7 @@ class hostingService_server_base extends hostingService {
 
   function load() {
     parent::load();
+<<<<<<< HEAD:modules/hosting/server/hosting_server.service.inc
     $this->mergeData('SELECT script_user, config_path, backup_path, drush_path FROM {hosting_server} WHERE vid = %d', $this->server->vid);
   }
 
@@ -157,6 +140,19 @@ class hostingService_server_base extends hostingService {
       '#title' => t('Drush path'),
       '#value' => filter_xss($this->drush_path),
     );
+=======
+    $this->mergeData('SELECT ip_address, script_user, config_path FROM {hosting_server} WHERE vid = %d', $this->server->vid);
+  }
+
+  function view(&$render) {
+    if ($this->ip_address) {
+      $render['ip_address'] = array(
+        '#type' => 'item',
+        '#title' => t('IP address'),
+        '#value' => filter_xss($this->ip_address),
+      );    
+    }
+>>>>>>> e558432322c318404aff55790d1c540b17b7b201:modules/hosting/server/hosting_server.service.inc
 
     $render['script_user'] = array(
       '#type' => 'item',
@@ -169,11 +165,6 @@ class hostingService_server_base extends hostingService {
       '#title' => t('Configuration path'),
       '#value' => filter_xss($this->config_path),
     );
-    $render['backup_path'] = array(
-      '#type' => 'item',
-      '#title' => t('Backup path'),
-      '#value' => filter_xss($this->backup_path),
-    );
   }
 
   /**
@@ -184,7 +175,6 @@ class hostingService_server_base extends hostingService {
     $task->context_options['remote_host'] = $this->server->title;
     $task->context_options['script_user'] = $this->script_user;
     $task->context_options['config_path'] = $this->config_path;
-    $task->context_options['backup_path'] = $this->backup_path;
     if (!drush_is_local_host($task->context_options['remote_host'])) {
       $task->context_options['file_service_type'] = 'remote';
     }
