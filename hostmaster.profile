@@ -145,6 +145,7 @@ function hostmaster_bootstrap() {
   $node->type = 'package';
   $node->package_type = 'profile';
   $node->short_name = 'hostmaster';
+  $node->import = true;
   $node->status = 1;
   node_save($node);
   $profile_id = $node->nid;
