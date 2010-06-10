@@ -28,6 +28,7 @@ function drush_hosting_hostmaster_resume() {
      drush_log(dt('Platform not found for path %path, adding platform node', array('%path' => $platform_root)));
      // inherit settings from current platform node
      $platform = node_load($node->platform);
+     $platform->type = 'platform';
      unset($platform->nid);
      unset($platform->vid);
      $platform->publish_path = $platform_root;
