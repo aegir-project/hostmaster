@@ -237,13 +237,13 @@ function hosting_update_6008() {
   }
 
   // we want to enforce that the hostmaster site is always referred to as @hostmaster
-  $own_site = db_result(db_query("SELECT s.nid FROM {hosting_site} s LEFT JOIN {hosting_package} p ON s.profile=p.nid WHERE p.short_name='hostmaster'"));
+  list($own_site, $own_platform) = db_fetch_array(db_query("SELECT s.nid, s.platform FROM {hosting_site} s LEFT JOIN {hosting_package} p ON s.profile=p.nid WHERE p.short_name='hostmaster'"));
   $records[$own_site] = 'hostmaster';
   
   // We start with the web server because we assume that the main hostmaster site is installed locally.
-  $node = node_load($own_site);
 
-  $server = node_load($node->web_server);
+  $server_id = db_result(db_query("SELECT web_server FROM {hosting_platform} WHERE nid=%d", $own_platform));
+  $server = node_load($server_id);
   $server->title = 'localhost';
   node_save($server);
 
