@@ -35,16 +35,6 @@ function hosting_server_schema() {
         'size' => 'big',
         'not null' => FALSE,
       ),
-      'backup_path' => array(
-        'type' => 'text',
-        'size' => 'big',
-        'not null' => FALSE,
-      ),
-      'drush_path' => array(
-        'type' => 'text',
-        'size' => 'big',
-        'not null' => FALSE,
-      ),
     ),
     'primary key' => array('vid'),
   );
@@ -104,3 +94,16 @@ function hosting_server_update_6000() {
 
   return $return;
 }
+
+
+/**
+ * Drop the drush_path and backup_path columns which are no longer needed.
+ */
+function hosting_server_update_6001() {
+  $ret = array();
+
+  db_drop_field($ret, "hosting_server", "drush_path");
+  db_drop_field($ret, "hosting_server", "backup_path");
+  return $ret;
+}
+
