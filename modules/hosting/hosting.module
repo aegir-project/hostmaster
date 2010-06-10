@@ -765,9 +765,17 @@ function hosting_context_load($name) {
 
 /**
  * Add a node to the context lookup db.
- */ 
+ */
 function hosting_context_register($nid, $name) {
-  db_query("INSERT INTO {hosting_context} (nid, name) VALUES (%d, '%s')", $nid, $name);
+  // Check first to see if this nid exists in the system. If so, update its name
+  $result = db_query("SELECT nid FROM {hosting_context} WHERE nid=%d", $nid);
+  if ($obj = db_fetch_object($result)) {
+    db_query("UPDATE {hosting_context} SET name = '%s' WHERE nid = %d", $name, $nid);
+  }
+  else {
+    // It's a new item
+    db_query("INSERT INTO {hosting_context} (nid, name) VALUES (%d, '%s')", $nid, $name);
+  }
 }
 
 /**
