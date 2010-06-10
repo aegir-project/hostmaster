@@ -249,7 +249,7 @@ function hosting_update_6008() {
   $records[$server_id] = 'server_localhost';
 
   foreach ($records as $nid => $name) {
-    db_query("INSERT INTO {hosting_context} (nid, name) VALUES (%d, '%s')", $nid, $name);
+    hosting_context_register($nid, $name);
   }
   return $return;
 }

@@ -17,10 +17,7 @@ function drush_hosting_hostmaster_resume() {
 
   // fix the old platform first
   $platform_id = db_result(db_query('SELECT nid FROM {hosting_platform} WHERE publish_path = "%s"', d($old_platform)->root));
-  if (hosting_context_name($platform_id) != $old_platform) {
-    db_query("UPDATE {hosting_context} SET name='%s' WHERE nid=%d", ltrim($old_platform, '@'), $platform_id);
-  }
-
+  hosting_context_register($platform_id, ltrim($old_platform, '@'));
 
   // if the new platform doesn't exist, create it. 
   $platform_root = d()->root;
@@ -42,11 +39,7 @@ function drush_hosting_hostmaster_resume() {
     $platform = node_load($platform_id);
   }
 
-  // fix the new platform alias name
-  if (hosting_context_name($platform_id) != $new_platform) {
-    db_query("UPDATE {hosting_context} SET name='%s' WHERE nid=%d", ltrim($new_platform, '@'), $platform_id);
-  }
-
+  hosting_context_register($platform_id, ltrim($new_platform, '@'));
 
   drush_log('fixing platform for site node');
   $node->verified = 0;
