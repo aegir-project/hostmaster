@@ -20,11 +20,6 @@ function hosting_server_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
-      'ip_address' => array(
-        'type' => 'text',
-        'size' => 'big',
-        'not null' => FALSE,
-      ),
       'script_user' => array(
         'type' => 'text',
         'size' => 'big',

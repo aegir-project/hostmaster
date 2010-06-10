@@ -72,17 +72,6 @@ class hostingService_server_base extends hostingService {
   public $type = 'base';
 
   function form(&$form) {
-
-    $form['ip_address'] = array(
-      '#type' => 'textfield',
-      '#title' => t('IP address'),
-      '#default_value' => $this->ip_address,
-      '#size' => 15,
-      '#maxlength' => 15,
-      '#description' => t("The IP address the server can be accessed by. This will be used to create database grants, amongst other things.<br />If this is empty, Hostmaster will attempt to resolve the hostname to get the address.<br />If that fails, the hostname (ie. the node title) will be used instead."),
-      '#weight' => -9
-    );
-
     $form['drush_path'] = array(
       '#type' => 'textfield',
       '#title' => t('Drush path'),
@@ -138,18 +127,13 @@ class hostingService_server_base extends hostingService {
     if ($this->script_user == 'root') {
       form_set_error('script_user', t('For security reasons, you should not run drush commands as the root user. Please choose a different system account name.'));
     }
-    if ($this->ip_address) {
-      if (!_hosting_valid_ip($this->ip_address)) {
-        form_set_error('ip_address', t('Invalid IP address'));
-      }
-    }
   }
 
   function insert() {
     parent::insert();
-    db_query("INSERT INTO {hosting_server} (vid, nid, ip_address, script_user, config_path, backup_path, drush_path) 
+    db_query("INSERT INTO {hosting_server} (vid, nid, script_user, config_path, backup_path, drush_path) 
         VALUES (%d, %d, '%s', '%s', '%s', '%s', '%s')", 
-          $this->server->vid, $this->server->nid, $this->ip_address, $this->script_user, $this->config_path, $this->backup_path, $this->drush_path);
+          $this->server->vid, $this->server->nid, $this->script_user, $this->config_path, $this->backup_path, $this->drush_path);
   }
 
   function delete_revision() {
@@ -164,17 +148,10 @@ class hostingService_server_base extends hostingService {
 
   function load() {
     parent::load();
-    $this->mergeData('SELECT ip_address, script_user, config_path, backup_path, drush_path FROM {hosting_server} WHERE vid = %d', $this->server->vid);
+    $this->mergeData('SELECT script_user, config_path, backup_path, drush_path FROM {hosting_server} WHERE vid = %d', $this->server->vid);
   }
 
   function view(&$render) {
-    if ($this->ip_address) {
-      $render['ip_address'] = array(
-        '#type' => 'item',
-        '#title' => t('IP address'),
-        '#value' => filter_xss($this->ip_address),
-      );    
-    }
     $render['drush_path'] = array(
       '#type' => 'item',
       '#title' => t('Drush path'),

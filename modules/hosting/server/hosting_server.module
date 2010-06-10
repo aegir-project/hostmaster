@@ -237,18 +237,6 @@ function hosting_server_form(&$node) {
 
 function hosting_nodeapi_server_presave(&$node) {
   hosting_server_services_from_post($node);
-
-  if (!$node->services['server']->ip_address) {
-    $ip = gethostbyname($node->title);
-
-    // setup IP only if resolution succeeded
-    if ($ip != $node->title) {
-      $node->services['server']->ip_address = $ip; // required to fool the ip check below
-    }
-    else {
-      form_set_error('title', t('Could not resolve IP address of %name. Either set the server name to a FQDN (Fully Qualified Domain Name) or hardcode the IP here.', array('%name' => $node->title)));
-    }
-  }
 }
 
 /**

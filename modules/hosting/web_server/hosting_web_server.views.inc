@@ -35,14 +35,6 @@ function hosting_web_server_views_data() {
         ),
       ),
     ),
-    'ip_address' => array(
-      'title' => t('IP Address'),
-      'help' => t('IP address of the webserver.'),
-      'field' => array(
-        'handler' => 'views_handler_field',
-        'click sortable' => TRUE,
-      ),
-    ),
     'script_user' => array(
       'title' => t('Script User'),
       'help' => t('User.'),
