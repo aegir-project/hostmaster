@@ -72,7 +72,7 @@ function hosting_web_server_update_6000() {
   // THIS IS A MYSQL-ism, but we need it at this point.
   db_query("INSERT INTO {hosting_service} (nid, vid, service, type, available) SELECT nid, vid, 'server', 'base', 1 FROM {hosting_web_server}");
   db_query("INSERT INTO {hosting_service} (nid, vid, service, type, available) SELECT nid, vid, 'http', 'apache', 1 FROM {hosting_web_server}");
-  db_query("INSERT INTO {hosting_server} (nid, vid, script_user, backup_path, config_path, drush_path) SELECT nid, vid, script_user, backup_path, config_path, drush_path FROM {hosting_web_server}");
+  db_query("INSERT INTO {hosting_server} (nid, vid, script_user, config_path) SELECT nid, vid, script_user, config_path FROM {hosting_web_server}");
 
   db_query("UPDATE {node} SET type='server' WHERE type='web_server'");
 
