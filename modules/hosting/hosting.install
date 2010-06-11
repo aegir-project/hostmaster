@@ -94,6 +94,10 @@ function hosting_update_6001() {
 function hosting_update_6002() {
   include_once(drupal_get_path('module', 'hosting_task') .  '/hosting_task.module');
 
+  // Register context names for all the entities and create the context table.
+  // this is needed for the node_X functions to work.
+  hosting_update_6008();
+
   $ret = array();
    $result = db_query("SELECT nid FROM {node} WHERE type='platform' AND status=1");
   if ($platform = db_fetch_object($result)) {
@@ -197,59 +201,62 @@ function hosting_update_6007() {
 function hosting_update_6008() {
   $return = array();
 
-  db_create_table($return, 'hosting_context', array(
-    'fields' => array(
-      'nid' => array(
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
-      ),
-      'name' => array(
-        'type' => 'varchar',
-        'length' => 50,
-        'not null' => TRUE,
-      ),
-     ),
-    'primary key' => array('nid'),
-    'unique keys' => array(
-      'name'     => array('name')
-    ),    
-  ));
+  if (!variable_get('hosting_update_6008_run', false)) {
+    db_create_table($return, 'hosting_context', array(
+      'fields' => array(
+        'nid' => array(
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+        ),
+        'name' => array(
+          'type' => 'varchar',
+          'length' => 50,
+          'not null' => TRUE,
+        ),
+       ),
+      'primary key' => array('nid'),
+      'unique keys' => array(
+        'name'     => array('name')
+      ),    
+    ));
 
-  $records = array();
+    variable_set('hosting_update_6008_run', true);
 
-  
 
-  $result = db_query("SELECT n.nid, title FROM {node} n LEFT JOIN {hosting_site} s ON n.nid=s.nid WHERE s.status <> -2 AND n.type='site'");
-  while ($object = db_fetch_object($result)) {
-    $records[$object->nid] = $object->title;
-  }
+    $records = array();
 
-  $result =  db_query("SELECT n.nid, title FROM {node} n LEFT JOIN {hosting_server} s ON n.nid=s.nid WHERE n.status = 1 AND n.type='server'");
-  while ($object = db_fetch_object($result)) {
-    $records[$object->nid] = 'server_' . preg_replace("/[!\W\.\-]/", "", $object->title);
-  }
+    $result = db_query("SELECT n.nid, title FROM {node} n LEFT JOIN {hosting_site} s ON n.nid=s.nid WHERE s.status <> -2 AND n.type='site'");
+    while ($object = db_fetch_object($result)) {
+      $records[$object->nid] = $object->title;
+    }
 
-  $result = db_query("SELECT nid, title FROM {node} WHERE type='platform'");
-  while ($object = db_fetch_object($result)) {
-    $records[$object->nid] = 'platform_' . preg_replace("/[!\W]/", "", $object->title);
-  }
+    $result =  db_query("SELECT n.nid, title FROM {node} n LEFT JOIN {hosting_server} s ON n.nid=s.nid WHERE n.status = 1 AND n.type='server'");
+    while ($object = db_fetch_object($result)) {
+      $records[$object->nid] = 'server_' . preg_replace("/[!\W\.\-]/", "", $object->title);
+    }
 
-  // we want to enforce that the hostmaster site is always referred to as @hostmaster
-  $own_site = db_result(db_query("SELECT s.nid FROM {hosting_site} s LEFT JOIN {hosting_package} p ON s.profile=p.nid WHERE p.short_name='hostmaster'"));
-  $records[$own_site] = 'hostmaster';
-  
-  // We start with the web server because we assume that the main hostmaster site is installed locally.
+    $result = db_query("SELECT nid, title FROM {node} WHERE type='platform'");
+    while ($object = db_fetch_object($result)) {
+      $records[$object->nid] = 'platform_' . preg_replace("/[!\W]/", "", $object->title);
+    }
 
-  $server_id = variable_get('hosting_own_web_server', 2);
-  db_query("UPDATE {node} SET title='localhost' WHERE nid=%d", $server_id);
-  db_query("UPDATE {node_revisions} SET title='localhost' WHERE nid=%d", $server_id);
+    // we want to enforce that the hostmaster site is always referred to as @hostmaster
+    $own_site = db_result(db_query("SELECT s.nid FROM {hosting_site} s LEFT JOIN {hosting_package} p ON s.profile=p.nid WHERE p.short_name='hostmaster'"));
+    $records[$own_site] = 'hostmaster';
+    
+    // We start with the web server because we assume that the main hostmaster site is installed locally.
 
-  $records[$server_id] = 'server_localhost';
+    $server_id = variable_get('hosting_own_web_server', 2);
+    db_query("UPDATE {node} SET title='localhost' WHERE nid=%d", $server_id);
+    db_query("UPDATE {node_revisions} SET title='localhost' WHERE nid=%d", $server_id);
 
-  foreach ($records as $nid => $name) {
-    hosting_context_register($nid, $name);
+    $records[$server_id] = 'server_localhost';
+
+    foreach ($records as $nid => $name) {
+      hosting_context_register($nid, $name);
+    }
   }
   return $return;
 }
