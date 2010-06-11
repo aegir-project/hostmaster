@@ -47,10 +47,15 @@ function hosting_server_hosting_tasks() {
     'description' => t('Verify that the server is correctly installed and working.'),
     'weight' => 10,
   );
-  $tasks['server']['delete'] = array(
-    'title' => t('Delete'),
-    'description' => t('Delete the server.'),
-  );
+
+  /**
+   * @TODO: support various other tasks like Delete
+    $tasks['server']['delete'] = array(
+      'title' => t('Delete'),
+      'description' => t('Delete the server.'),
+    );
+   */
+
   return $tasks;
 }
 
