@@ -148,13 +148,5 @@ class hostingService_server_base extends hostingService {
   public function context_options($task_type, $ref_type, &$task) {
     $task->context_options['remote_host'] = $this->server->title;
     $task->context_options['script_user'] = $this->script_user;
-    $task->context_options['config_path'] = $this->config_path;
-    if (drush_is_local_host($task->context_options['remote_host'])) {
-      $task->context_options['config_path'] = $this->config_path;
-    }
-    else {
-      $task->context_options['config_path'] = $this->config_path . '--' . $this->server->title;
-      $task->context_options['file_service_type'] = 'remote';
-    }
   }
 }
