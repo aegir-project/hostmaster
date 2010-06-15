@@ -2,7 +2,8 @@
 // $Id$
 
 function hosting_platform_context_options(&$task) {
-  $task->context_options['web_server'] = $task->context_options['server'] = hosting_context_name($task->ref->web_server);
+  $task->context_options['server'] = '@server_localhost';
+  $task->context_options['web_server'] = hosting_context_name($task->ref->web_server);
   $task->context_options['root'] = $task->ref->publish_path;
 }
 
