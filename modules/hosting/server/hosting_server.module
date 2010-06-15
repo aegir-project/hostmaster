@@ -195,19 +195,20 @@ function hosting_server_form(&$node) {
       '#options' => array_merge(array('null' => 'None'), drupal_map_assoc(array_keys($service['types']))),
       '#default_value' => isset($node->services[$name]->available) && $node->services[$name]->available ? $node->services[$name]->type : 'null',
     );
-  }
 
-  foreach ($service['types'] as $type => $class) {
-    $form['services'][$name][$type] = array(
-      '#prefix' => '<div id="provision-service-settings-' . $name . '-' . $type . '" class="provision-service-settings-' . $name . '">',
-      '#suffix' => '</div>',
-    );
-    if (isset($node->services[$name]) && $node->services[$name]->type === $type) {
-      $node->services[$name]->form($form['services'][$name][$type]);
-    }
-    else {
-      $service_object = hosting_services_new_object($name, $type, $node);
-      $service_object->form($form['services'][$name][$type]);
+    // Service-specific configuration.
+    foreach ($service['types'] as $type => $class) {
+      $form['services'][$name][$type] = array(
+        '#prefix' => '<div id="provision-service-settings-' . $name . '-' . $type . '" class="provision-service-settings-' . $name . '">',
+        '#suffix' => '</div>',
+      );
+      if (isset($node->services[$name]) && $node->services[$name]->type === $type) {
+        $node->services[$name]->form($form['services'][$name][$type]);
+      }
+      else {
+        $service_object = hosting_services_new_object($name, $type, $node);
+        $service_object->form($form['services'][$name][$type]);
+      }
     }
   }
 
