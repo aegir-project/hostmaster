@@ -68,14 +68,8 @@ function hostmaster_bootstrap() {
   $node->status = 1;
   $node->services = array();
 
-  hosting_services_add($node, 'server', 'base', array(
-    'script_user' => d()->platform->server->script_user,
-    'config_path' => d()->platform->server->config_path,
-    'available' => 1,
-  ));
 
   hosting_services_add($node, 'http', 'apache', array(
-   'web_group' => d()->platform->server->web_group,
    'restart_cmd' => d()->platform->server->restart_cmd,
    'ports' => d()->platform->server->web_ports,
    'available' => 1,

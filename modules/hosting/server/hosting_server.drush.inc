@@ -1,6 +1,7 @@
 <?php
 
 function hosting_server_context_options(&$task) {
+  $task->context_options['remote_host'] = $task->ref->title;
   foreach (hosting_server_services() as $type => $info) {
     if (isset($task->ref->services[$type])) {
       $service = $task->ref->services[$type];

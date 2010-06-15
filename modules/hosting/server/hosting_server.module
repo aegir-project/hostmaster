@@ -88,24 +88,6 @@ function hosting_server_access($op, $node, $account) {
   }
 }
 
-/**
- * Implementation of hook_hosting_service()
- */
-function hosting_server_hosting_service() {
-  return array(
-    'server' => 'base',
-  );
-}
-
-function hosting_server_hosting_service_type() {
-  return array(
-    'server' => array(
-      'title' => t('Server configuration'),
-      'weight' => -20,
-    ),
-  );
-}
-
 function hosting_server_services() {
   static $services;
 
@@ -207,33 +189,25 @@ function hosting_server_form(&$node) {
       '#weight' => isset($service['weight']) ? $service['weight'] : 0,
     );
 
-    if ($name === 'server') {
-      $form['services'][$name]['type'] = array(
-        '#type' => 'value',
-        '#value' => 'base',
-      );
+    $form['services'][$name]['type'] = array(
+      '#type' => 'radios',
+      '#weight' => -99,
+      '#options' => array_merge(array('null' => 'None'), drupal_map_assoc(array_keys($service['types']))),
+      '#default_value' => isset($node->services[$name]->available) && $node->services[$name]->available ? $node->services[$name]->type : 'null',
+    );
+  }
+
+  foreach ($service['types'] as $type => $class) {
+    $form['services'][$name][$type] = array(
+      '#prefix' => '<div id="provision-service-settings-' . $name . '-' . $type . '" class="provision-service-settings-' . $name . '">',
+      '#suffix' => '</div>',
+    );
+    if (isset($node->services[$name]) && $node->services[$name]->type === $type) {
+      $node->services[$name]->form($form['services'][$name][$type]);
     }
     else {
-      $form['services'][$name]['type'] = array(
-        '#type' => 'radios',
-        '#weight' => -99,
-        '#options' => array_merge(array('null' => 'None'), drupal_map_assoc(array_keys($service['types']))),
-        '#default_value' => isset($node->services[$name]->available) && $node->services[$name]->available ? $node->services[$name]->type : 'null',
-      );
-    }
-
-    foreach ($service['types'] as $type => $class) {
-      $form['services'][$name][$type] = array(
-        '#prefix' => '<div id="provision-service-settings-' . $name . '-' . $type . '" class="provision-service-settings-' . $name . '">',
-        '#suffix' => '</div>',
-      );
-      if (isset($node->services[$name]) && $node->services[$name]->type === $type) {
-        $node->services[$name]->form($form['services'][$name][$type]);
-      }
-      else {
-        $service_object = hosting_services_new_object($name, $type, $node);
-        $service_object->form($form['services'][$name][$type]);
-      }
+      $service_object = hosting_services_new_object($name, $type, $node);
+      $service_object->form($form['services'][$name][$type]);
     }
   }
 
@@ -293,6 +267,10 @@ function hosting_server_insert($node) {
     hosting_context_register($node->nid, 'server_' . preg_replace("/[!\W\.\-]/", "", $node->title));
   }
 
+  db_query("INSERT INTO {hosting_server} (vid, nid) 
+        VALUES (%d, %d, '%s', '%s')", 
+        $node->vid, $node->nid);
+
   hosting_server_invoke_services($node, 'save', $node);
   hosting_server_invoke_services($node, 'insert', $node);
 
@@ -305,6 +283,7 @@ function hosting_server_insert($node) {
  * Implementation of hook_delete_revision().
  */
 function hosting_nodeapi_server_delete_revision(&$node) {
+  db_query('DELETE FROM {hosting_server} WHERE vid = %d', $node->vid);
   hosting_server_invoke_services($node, 'delete_revision');
 }
 
@@ -312,6 +291,7 @@ function hosting_nodeapi_server_delete_revision(&$node) {
  * Implementation of hook_delete().
  */
 function hosting_server_delete($node) {
+  db_query('DELETE FROM {hosting_server} WHERE nid = %d', $node->nid);
   hosting_server_invoke_services($node, 'delete_revision');
 }
 

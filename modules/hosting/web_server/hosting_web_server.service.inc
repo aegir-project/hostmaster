@@ -9,14 +9,14 @@ class hostingService_http_apache extends hostingService_http {
 
   public function load() {
     parent::load();
-    $this->mergeData('SELECT web_group, restart_cmd, ports FROM {hosting_web_server} WHERE vid = %d', $this->server->vid);
+    $this->mergeData('SELECT restart_cmd, ports FROM {hosting_web_server} WHERE vid = %d', $this->server->vid);
   }
 
   function insert() {
     parent::insert();
-    db_query("INSERT INTO {hosting_web_server} (vid, nid, web_group, restart_cmd, ports) 
-        VALUES (%d, %d, '%s', '%s', '%s')", 
-          $this->server->vid, $this->server->nid, $this->web_group, $this->restart_cmd, $this->ports);
+    db_query("INSERT INTO {hosting_web_server} (vid, nid, restart_cmd, ports) 
+        VALUES (%d, %d, '%s', '%s')", 
+          $this->server->vid, $this->server->nid, $this->restart_cmd, $this->ports);
   }
 
 
@@ -66,17 +66,6 @@ class hostingService_http_apache extends hostingService_http {
         '#maxlength' => 255,
         '#weight' => -7,
     );
-    
-    $form['web_group'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Web server group'),
-      '#required' => $this->available,
-      '#description' => t('The group that the hosted files will belong to.<br />This should be the group the web server is running as.'),
-      '#default_value' => ($this->web_group) ? $this->web_group : HOSTING_DEFAULT_WEB_GROUP,
-      '#size' => 20,
-      '#maxlength' => 75,
-      '#weight' => -5,
-    );
 
   }
 
@@ -89,11 +78,6 @@ class hostingService_http_apache extends hostingService_http {
         '#value' => filter_xss($this->ports),
       );
     }
-    $render['web_group'] = array(
-      '#type' => 'item',
-      '#title' => t('Web server group'),
-      '#value' => filter_xss($this->web_group),
-    );
     $render['restart_cmd'] = array(
       '#type' => 'item',
       '#title' => t('Restart command'),
@@ -131,7 +115,6 @@ class hostingService_http_apache extends hostingService_http {
       }
     }
 
-    $task->context_options['web_group'] = $this->web_group;
     $task->context_options['restart_cmd'] = $this->restart_cmd;
   }
 }
