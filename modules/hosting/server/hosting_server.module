@@ -268,7 +268,7 @@ function hosting_server_insert($node) {
   }
 
   db_query("INSERT INTO {hosting_server} (vid, nid) 
-        VALUES (%d, %d, '%s', '%s')", 
+        VALUES (%d, %d)", 
         $node->vid, $node->nid);
 
   hosting_server_invoke_services($node, 'save', $node);
