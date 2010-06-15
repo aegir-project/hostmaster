@@ -132,16 +132,14 @@ function hosting_task_migrate_form($node) {
           '!url' => url('hosting/migrate/compare/' . $node->nid . '/' . $profile_instance->iid))
         );
       $platform = node_load($profile_instance->rid);
-      if ($platform->web_server == $site_platform->web_server) {
 
-        $form[$platform->nid]['target_platform'] = array(
-          '#type' => 'radio',
-          '#title' => $platform->title,
-          '#parents' => array('parameters', 'target_platform'),
-          "#return_value" => $platform->nid,
-          '#description' => $description,
-        );
-      }
+      $form[$platform->nid]['target_platform'] = array(
+        '#type' => 'radio',
+        '#title' => $platform->title,
+        '#parents' => array('parameters', 'target_platform'),
+        "#return_value" => $platform->nid,
+        '#description' => $description,
+      );
       if ($status['error']) {
         $form[$platform->nid]['target_platform']['#disabled'] = TRUE;
       }
