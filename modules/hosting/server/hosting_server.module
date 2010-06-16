@@ -309,6 +309,24 @@ function hosting_server_load($node) {
 }
 
 /**
+ * Menu callback; loads a hosting_task_server node
+ *
+ * @arg $arg a numeric nid
+ */
+function hosting_server_node_load($arg) {
+  if (!is_numeric($arg)) {
+    return FALSE;
+  }
+  if ($node = node_load($arg)) {
+    if ($node->type === 'server') {
+      return $node;
+    }
+  }
+  return FALSE;
+}
+
+
+/**
  * Implementation of hook_view().
  */
 function hosting_server_view(&$node, $teaser = FALSE, $page = FALSE) {

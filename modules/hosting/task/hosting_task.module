@@ -11,7 +11,7 @@ function hosting_task_menu() {
   foreach (array('site', 'platform', 'server') as $type) {
     foreach (hosting_available_tasks($type) as $task => $info) {
       if (empty($info['hidden'])) {
-        $path = sprintf("node/%%hosting_task_%s/%s_%s", $type, $type, $task);
+        $path = sprintf("node/%%hosting_%s_node/%s_%s", $type, $type, $task);
         $items[$path] = array(
            'title' => $info['title'],
            'description' => $info['description'],
@@ -121,42 +121,6 @@ function hosting_task_menu_access($node, $task) {
       }
       // todo probably need more checks
       return TRUE;
-    }
-  }
-  return FALSE;
-}
-
-function hosting_task_site_load($arg) {
-  if (!is_numeric($arg)) {
-    return FALSE;
-  }
-  if ($node = node_load($arg)) {
-    if ($node->type == 'site') {
-      return $node;
-    }
-  }
-  return FALSE;
-}
-
-function hosting_task_platform_load($arg) {
-  if (!is_numeric($arg)) {
-    return FALSE;
-  }
-  if ($node = node_load($arg)) {
-    if ($node->type == 'platform') {
-      return $node;
-    }
-  }
-  return FALSE;
-}
-
-function hosting_task_server_load($arg) {
-  if (!is_numeric($arg)) {
-    return FALSE;
-  }
-  if ($node = node_load($arg)) {
-    if ($node->type === 'server') {
-      return $node;
     }
   }
   return FALSE;
