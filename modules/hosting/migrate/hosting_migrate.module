@@ -17,12 +17,11 @@ function hosting_migrate_menu() {
   $items['hosting/migrate/compare'] = array(
     'title' => 'Compare packages',
     'page callback' => 'hosting_migrate_comparison',
-
     'access arguments' => array('create migrate task'),
     'type' => MENU_CALLBACK
   );
 /*
-  $items['node/%hosting_task_platform/task_migrate'] = array(
+  $items['node/%hosting_platform_node/task_migrate'] = array(
     'title' => t('Migrate'),
     'description' => t('Migrate sites to a new platform'),
     'page callback' => 'drupal_get_form',

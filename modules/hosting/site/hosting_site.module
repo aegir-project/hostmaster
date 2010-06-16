@@ -528,10 +528,31 @@ function hosting_site_update(&$node) {
 
 /**
  * Implementation of hook_load().
+ *
+ * @param node
+ *    Node object
  */
 function hosting_site_load($node) {
   $additions = db_fetch_object(db_query('SELECT  client, db_server, platform, profile, language as site_language, last_cron, status AS site_status, verified, port, `ssl`, ssl_redirect FROM {hosting_site} WHERE vid = %d', $node->vid));
   return $additions;
+}
+
+/**
+ * Implementation of hook_load().
+ *
+ * @param arg
+ *    Node's numeric nid
+ */
+function hosting_site_node_load($arg) {
+ if (!is_numeric($arg)) {
+    return FALSE;
+  }
+  if ($node = node_load($arg)) {
+    if ($node->type == 'site') {
+      return $node;
+    }
+  }
+  return FALSE;
 }
 
 /**
@@ -895,7 +916,7 @@ function hosting_site_menu() {
     'access arguments' => array('access content'),
   );
 
-  $items['node/%hosting_task_site/goto_site'] = array(
+  $items['node/%hosting_site_node/goto_site'] = array(
     'page callback' => 'hosting_site_goto',
     'page arguments' => array(1),
     'access callback' => 'node_access',

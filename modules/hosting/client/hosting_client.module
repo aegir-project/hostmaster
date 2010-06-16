@@ -148,14 +148,13 @@ function hosting_client_form(&$node) {
   );
 
   if ($node->nid) {
-    // this should probably be factored out in a common function
-    $q = db_query("SELECT u.uid, u.name FROM {hosting_client_user} h INNER JOIN {users} u ON u.uid = h.user WHERE h.client = %d", $node->nid);
-    while ($result = db_fetch_array($q)) {
-      $form['user_edit']['name'][$result['uid']] = array('#type' => 'markup', '#value' => l($result['name'], 'user/' . $result['uid']));
-      $users[$result['uid']] = '';
+    $users = hosting_client_users($node);
+    foreach ($users as $uid => $uname) {
+      $form['user_edit']['name'][$uid] = array('#type' => 'markup', '#value' => l($uname, 'user/' . $uid));
+      $user_list[$uid] = '';
     }
     if (user_access('edit client users')) {
-      $form['user_edit']['users'] = array('#type' => 'checkboxes', '#options' => $users);
+      $form['user_edit']['users'] = array('#type' => 'checkboxes', '#options' => $user_list);
     }
     $form['user_edit']['header'] = array('#type' => 'value', '#value' => array(array('data' => t('Allowed users')), array('data' => t('Remove'))));
     if (user_access('edit client users')) {
@@ -346,10 +345,57 @@ function hosting_client_delete($node) {
 
 /**
  * Implementation of hook_load().
+ *
+ * @param node
+ *    Node object
  */
 function hosting_client_load($node) {
   $additions = db_fetch_object(db_query('SELECT name as client_name, organization, email FROM {hosting_client} WHERE vid = %d', $node->vid));
   return $additions;
+}
+
+/**
+ * Implementation of hook_load().
+ *
+ * @param arg
+ *    Node's numeric nid
+ */
+function hosting_client_node_load($arg) {
+ if (!is_numeric($arg)) {
+    return FALSE;
+  }
+  if ($node = node_load($arg)) {
+    if ($node->type == 'client') {
+      return $node;
+    }
+  }
+  return FALSE;
+}
+
+
+/**
+ * Return a list of users for a given client.
+ *
+ * @param node
+ *   Client node (as nid or node object)
+ * @return 
+ *   Array of user names indexed by uid
+ *
+ */
+function hosting_client_users($node) {
+  if (is_object($node)) {
+    $node = $node->nid;
+  }
+  elseif (!is_numeric($node)) {
+    return array();
+  }
+
+  $users = array();
+  $q = db_query("SELECT u.uid, u.name FROM {hosting_client_user} h INNER JOIN {users} u ON u.uid = h.user WHERE h.client = %d", $node);
+  while ($result = db_fetch_array($q)) {
+    $users[$result['uid']] = $result['name'];
+  }
+  return $users;
 }
 
 /**
@@ -383,30 +429,29 @@ function hosting_client_view($node, $teaser = FALSE, $page = FALSE) {
   if ($page) {
     $node->content['sites_view'] = array(
       '#type' => 'item',
-      '#value' => hosting_site_list("client", $node->nid), 
+      '#value' => hosting_site_list("client", $node->nid),
       '#prefix' => '<div id="hosting-site-list">',
-      '#suffix' => '</div>', 
+      '#suffix' => '</div>',
       '#weight' => 10
     );
 
-    // this should probably be factored out in a common function
-    $q = db_query("SELECT u.uid, u.name FROM {hosting_client_user} h INNER JOIN {users} u ON u.uid = h.user WHERE h.client = %d", $node->nid);
-    while ($result = db_fetch_array($q)) {
-      if (user_access('view users') || ($result['uid'] == $GLOBALS['user']->uid)) {
-        $rows[] = array(l($result['name'], 'user/' . $result['uid']));
+    $users = hosting_client_users($node);
+    foreach ($users as $uid => $uname) {
+      if (user_access('access user profiles') || ($uid == $GLOBALS['user']->uid)) {
+        $rows[] = array(l($uname, 'user/' . $uid));
       }
       else {
-        $rows[] = array($result['name']);
+        $rows[] = array($uname);
       }
-      
     }
+
     $header = array(t('Allowed users'));
     $node->content['users_view'] = array(
       '#type' => 'item',
       '#value' => theme('table', $header, $rows),
       '#class' => 'client',
       '#prefix' => '<div id="hosting-site-list">',
-      '#suffix' => '</div>', 
+      '#suffix' => '</div>',
       '#weight' => 11
     );
   }
