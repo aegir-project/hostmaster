@@ -232,6 +232,11 @@ function hosting_update_6008() {
       $records[$object->nid] = $object->title;
     }
 
+    // We start with the web server because we assume that the main hostmaster site is installed locally.
+    $server_id = variable_get('hosting_own_web_server', 2);
+    db_query("UPDATE {node} SET title='localhost' WHERE nid=%d", $server_id);
+    db_query("UPDATE {node_revisions} SET title='localhost' WHERE nid=%d", $server_id);
+
     $result =  db_query("SELECT n.nid, title FROM {node} n LEFT JOIN {hosting_server} s ON n.nid=s.nid WHERE n.status = 1 AND n.type='server'");
     while ($object = db_fetch_object($result)) {
       $records[$object->nid] = 'server_' . preg_replace("/[!\W\.\-]/", "", $object->title);
@@ -246,14 +251,6 @@ function hosting_update_6008() {
     $own_site = db_result(db_query("SELECT s.nid FROM {hosting_site} s LEFT JOIN {hosting_package} p ON s.profile=p.nid WHERE p.short_name='hostmaster'"));
     $records[$own_site] = 'hostmaster';
     
-    // We start with the web server because we assume that the main hostmaster site is installed locally.
-
-    $server_id = variable_get('hosting_own_web_server', 2);
-    db_query("UPDATE {node} SET title='localhost' WHERE nid=%d", $server_id);
-    db_query("UPDATE {node_revisions} SET title='localhost' WHERE nid=%d", $server_id);
-
-    $records[$server_id] = 'server_localhost';
-
     foreach ($records as $nid => $name) {
       hosting_context_register($nid, $name);
     }
