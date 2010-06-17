@@ -48,11 +48,11 @@ class hostingService {
   }
   
   public function delete() {
-    db_query("DELETE FROM {hosting_service} WHERE type = '%s' AND nid=%d", $this->type, $this->server->nid);
+    db_query("DELETE FROM {hosting_service} WHERE service = '%s' AND nid=%d", $this->service, $this->server->nid);
   }
 
   public function delete_revision() {
-    db_query("DELETE FROM {hosting_service} WHERE type = '%s' AND vid=%d", $this->type, $this->server->vid);
+    db_query("DELETE FROM {hosting_service} WHERE service = '%s' AND vid=%d", $this->service, $this->server->vid);
   }
 
   public function form(&$form) { }
