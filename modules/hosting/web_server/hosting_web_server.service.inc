@@ -1,6 +1,6 @@
 <?php
 class hostingService_http extends hostingService {
-  protected $service = 'http';
+  public $service = 'http';
 }
 
 

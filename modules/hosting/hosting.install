@@ -268,10 +268,10 @@ function hosting_update_6009() {
   db_query("UPDATE {hosting_context} SET name='server_master' WHERE name='server_localhost'");
 
   $server = hosting_context_load('@server_master');
-  $site = hosting_context_load('@hostmaster');
+  $uname = php_uname('n');
 
-  db_query("UPDATE {node} SET title='%s' WHERE nid=%d", $site->title, $server->nid);
-  db_query("UPDATE {node_revisions} SET title='%s' WHERE nid=%d", $site->title, $server->nid);
+  db_query("UPDATE {node} SET title='%s' WHERE nid=%d", $uname, $server->nid);
+  db_query("UPDATE {node_revisions} SET title='%s' WHERE nid=%d", $uname, $server->nid);
 
 
   hosting_add_task($server->nid, 'verify');
