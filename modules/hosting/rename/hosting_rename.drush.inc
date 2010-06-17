@@ -3,9 +3,9 @@
 function drush_hosting_rename_pre_hosting_task($task) {
   $task =& drush_get_context('HOSTING_TASK');
   if ($task->ref->type == 'site' && $task->task_type == 'rename') {
-    $task->args[2] = $task->task_args['new_name'];
+    $task->args[2] = '@' . $task->task_args['new_name'];
     $platform = node_load($task->task_args['platform']);
-    $task->args[3] = $platform->publish_path;
+    $task->args[3] = hosting_context_name($platform->nid);
     if (module_exists('hosting_alias')) {
       $task->options['aliases'] = str_replace("\n", ",", $task->task_args['aliases']);
       $task->options['redirection'] = $task->task_args['redirection'];
@@ -18,6 +18,9 @@ function hosting_rename_post_hosting_rename_task($task, $data) {
   if ($task->ref->type == 'site') {
     $node = $task->ref;
     $node->title = $task->task_args['new_name'];
+    hosting_context_register($node->nid, $task->task_args['new_name']);
+    $node->no_verify = TRUE;
+
     $node->aliases = $task->task_args['aliases'];
     $node->redirection = $task->task_args['redirection'];
     /* @TODO fix Hosting so that it handles revisionning properly -
