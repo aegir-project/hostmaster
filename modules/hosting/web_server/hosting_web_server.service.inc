@@ -1,6 +1,6 @@
 <?php
 class hostingService_http extends hostingService {
-  protected $service = 'http';
+  public $service = 'http';
 }
 
 
@@ -34,6 +34,7 @@ class hostingService_http_public extends hostingService {
   }
 
   public function form(&$form) {
+    parent::form($form);
     $form['restart_cmd'] = array('#type' => 'value', '#value' => null);
 
    if (hosting_feature('ports') == HOSTING_FEATURE_ENABLED) {
