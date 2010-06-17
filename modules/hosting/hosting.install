@@ -232,15 +232,15 @@ function hosting_update_6008() {
       $records[$object->nid] = $object->title;
     }
 
-    // We start with the web server because we assume that the main hostmaster site is installed locally.
-    $server_id = variable_get('hosting_own_web_server', 2);
-    db_query("UPDATE {node} SET title='localhost' WHERE nid=%d", $server_id);
-    db_query("UPDATE {node_revisions} SET title='localhost' WHERE nid=%d", $server_id);
-
     $result =  db_query("SELECT n.nid, title FROM {node} n LEFT JOIN {hosting_server} s ON n.nid=s.nid WHERE n.status = 1 AND n.type='server'");
     while ($object = db_fetch_object($result)) {
       $records[$object->nid] = 'server_' . preg_replace("/[!\W\.\-]/", "", $object->title);
     }
+
+    // We start with the web server because we assume that the main hostmaster site is installed locally.
+    $server_id = variable_get('hosting_own_web_server', 2);
+    $records[$server_id] = 'server_master';
+
 
     $result = db_query("SELECT nid, title FROM {node} WHERE type='platform'");
     while ($object = db_fetch_object($result)) {
@@ -256,5 +256,25 @@ function hosting_update_6008() {
     }
   }
   return $return;
+}
+
+/**
+ * Fix the reference to the master server so that it no longer points at localhost.
+ */
+function hosting_update_6009() {
+  // This undoes the change we made previously in update_6008, but can be run again.
+  $ret = array();
+
+  db_query("UPDATE {hosting_context} SET name='server_master' WHERE name='server_localhost'");
+
+  $server = hosting_context_load('@server_master');
+  $site = hosting_context_load('@hostmaster');
+
+  db_query("UPDATE {node} SET title='%s' WHERE nid=%d", $site->title, $server->nid);
+  db_query("UPDATE {node_revisions} SET title='%s' WHERE nid=%d", $site->title, $server->nid);
+
+
+  hosting_add_task($server->nid, 'verify');
+  return $ret;
 }
 

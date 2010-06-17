@@ -64,8 +64,9 @@ function hostmaster_bootstrap() {
   $node = new stdClass();
   $node->uid = 1;
   $node->type = 'server';
-  $node->title = 'localhost';
+  $node->title = d()->uri;
   $node->status = 1;
+  $node->hosting_name = 'server_master';
   $node->services = array();
 
 
