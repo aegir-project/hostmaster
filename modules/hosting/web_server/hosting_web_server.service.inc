@@ -1,12 +1,10 @@
 <?php
-
 class hostingService_http extends hostingService {
   protected $service = 'http';
 }
 
-class hostingService_http_apache extends hostingService_http {
-  public $type = 'apache';
 
+class hostingService_http_public extends hostingService {
   public function load() {
     parent::load();
     $this->mergeData('SELECT restart_cmd, ports FROM {hosting_web_server} WHERE vid = %d', $this->server->vid);
@@ -16,7 +14,7 @@ class hostingService_http_apache extends hostingService_http {
     parent::insert();
     db_query("INSERT INTO {hosting_web_server} (vid, nid, restart_cmd, ports) 
         VALUES (%d, %d, '%s', '%s')", 
-          $this->server->vid, $this->server->nid, $this->restart_cmd, $this->ports);
+          $this->server->vid, $this->server->nid, ($this->restart_cmd) ? $this->restart_cmd : null, $this->ports);
   }
 
 
@@ -36,9 +34,9 @@ class hostingService_http_apache extends hostingService_http {
   }
 
   public function form(&$form) {
-    parent::form($form);
+    $form['restart_cmd'] = array('#type' => 'value', '#value' => null);
 
-    if (hosting_feature('ports') == HOSTING_FEATURE_ENABLED) {
+   if (hosting_feature('ports') == HOSTING_FEATURE_ENABLED) {
       $form['ports'] = array(
         '#type' => 'textfield',
         '#title' => t('Ports'),
@@ -55,22 +53,11 @@ class hostingService_http_apache extends hostingService_http {
         '#value' => '80',
       );
     }
-    
-    $form['restart_cmd'] = array(
-        '#type' => 'textfield',
-        '#title' => t('Restart command'),
-        '#required' => $this->available,
-        '#description' => t('The command to run to restart the web server for new changes to take effect. This is required for the new site to become live'),
-        '#default_value' => ($this->restart_cmd) ? $this->restart_cmd : HOSTING_DEFAULT_RESTART_CMD,
-        '#size' => 40,
-        '#maxlength' => 255,
-        '#weight' => -7,
-    );
-
   }
 
   function view(&$render) {
     parent::view($render);
+
     if (hosting_feature('ports') == HOSTING_FEATURE_ENABLED) {
       $render['ports'] = array(
         '#type' => 'item',
@@ -78,12 +65,8 @@ class hostingService_http_apache extends hostingService_http {
         '#value' => filter_xss($this->ports),
       );
     }
-    $render['restart_cmd'] = array(
-      '#type' => 'item',
-      '#title' => t('Restart command'),
-      '#value' => filter_xss($this->restart_cmd),
-    );
   }
+
 
   function delete() {
     parent::delete();
@@ -102,7 +85,7 @@ class hostingService_http_apache extends hostingService_http {
       hosting_add_task($nid->nid, 'verify');
     }
   }
-
+  
   public function context_options($task_type, $ref_type, &$task) {
     parent::context_options($task_type, $ref_type, $task);
 
@@ -114,6 +97,41 @@ class hostingService_http_apache extends hostingService_http {
         unset($task->context_options['web_ports'][$key]);
       }
     }
+  }
+}
+
+class hostingService_http_apache extends hostingService_http_public {
+  public $type = 'apache';
+
+  public function form(&$form) {
+    parent::form($form);
+
+    $form['restart_cmd'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Restart command'),
+        '#required' => $this->available,
+        '#description' => t('The command to run to restart the web server for new changes to take effect. This is required for the new site to become live'),
+        '#default_value' => ($this->restart_cmd) ? $this->restart_cmd : HOSTING_DEFAULT_RESTART_CMD,
+        '#size' => 40,
+        '#maxlength' => 255,
+        '#weight' => -7,
+    );
+
+  }
+
+  function view(&$render) {
+    parent::view($render);
+
+    $render['restart_cmd'] = array(
+      '#type' => 'item',
+      '#title' => t('Restart command'),
+      '#value' => filter_xss($this->restart_cmd),
+    );
+  }
+
+
+  public function context_options($task_type, $ref_type, &$task) {
+    parent::context_options($task_type, $ref_type, $task);
 
     $task->context_options['restart_cmd'] = $this->restart_cmd;
   }
