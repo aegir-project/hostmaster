@@ -4,7 +4,7 @@ class hostingService_http extends hostingService {
 }
 
 
-class hostingService_http_public extends hostingService {
+class hostingService_http_public extends hostingService_http {
   public function load() {
     parent::load();
     $this->mergeData('SELECT restart_cmd, ports FROM {hosting_web_server} WHERE vid = %d', $this->server->vid);
@@ -14,7 +14,7 @@ class hostingService_http_public extends hostingService {
     parent::insert();
     db_query("INSERT INTO {hosting_web_server} (vid, nid, restart_cmd, ports) 
         VALUES (%d, %d, '%s', '%s')", 
-          $this->server->vid, $this->server->nid, ($this->restart_cmd) ? $this->restart_cmd : null, $this->ports);
+          $this->server->vid, $this->server->nid, ($this->restart_cmd) ? $this->restart_cmd : '', $this->ports);
   }
 
 
@@ -22,6 +22,7 @@ class hostingService_http_public extends hostingService {
    * Implementation of hook_validate().
    */
   function validate(&$node, &$form) {
+    parent::validate($node, $form);
     $ports = explode(",", $this->ports);
     if (count($ports) < 1) {
       form_set_error('ports', t('At least one port must be provided.'));
@@ -34,6 +35,7 @@ class hostingService_http_public extends hostingService {
   }
 
   public function form(&$form) {
+    parent::form($form);
     $form['restart_cmd'] = array('#type' => 'value', '#value' => null);
 
    if (hosting_feature('ports') == HOSTING_FEATURE_ENABLED) {
