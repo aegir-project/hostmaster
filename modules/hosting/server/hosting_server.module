@@ -118,7 +118,7 @@ function hosting_services_new_object($name, $type, $node, $values = null) {
 function hosting_services_add(&$node, $name, $type, $values = array()) {
   $values['available'] = (isset($values['available'])) ? $values['available'] : 1;
 
-  if ($service_object = hosting_services_new_object($name, $node, $values)) {
+  if ($service_object = hosting_services_new_object($name, $type, $node, $values)) {
     $node->services[$name] = $service_object;
   }
 }
@@ -276,7 +276,8 @@ function hosting_server_update($node) {
  */
 function hosting_server_insert($node) {
   if (!$node->old_vid) {
-    hosting_context_register($node->nid, 'server_' . preg_replace("/[!\W\.\-]/", "", $node->title));
+    $hosting_name = ($node->hosting_name) ? $node->hosting_name : 'server_' . preg_replace("/[!\W\.\-]/", "", $node->title);
+    hosting_context_register($node->nid, $hosting_name );
   }
 
   db_query("INSERT INTO {hosting_server} (vid, nid) 

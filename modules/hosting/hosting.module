@@ -776,6 +776,11 @@ function hosting_context_register($nid, $name) {
     // It's a new item
     db_query("INSERT INTO {hosting_context} (nid, name) VALUES (%d, '%s')", $nid, $name);
   }
+  // We include the file instead of enabling the module,
+  // because we do not want the overhead of having all the
+  // path UI stuff on nodes.
+  require_once("./modules/path/path.module");
+  path_set_alias("node/$nid", "hosting/c/$name");
 }
 
 /**

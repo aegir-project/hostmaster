@@ -72,7 +72,7 @@ function hostmaster_bootstrap() {
 
   hosting_services_add($node, 'http', 'apache', array(
    'restart_cmd' => d()->platform->server->restart_cmd,
-   'ports' => d()->platform->server->web_ports,
+   'ports' => implode(", ", d()->platform->server->web_ports),
    'available' => 1,
   ));
 
@@ -81,7 +81,7 @@ function hostmaster_bootstrap() {
   variable_set('hosting_own_web_server', $node->nid);
 
   $master_db = parse_url(d()->platform->server->master_db);
-  if (!in_array($master_db['host'], array('localhost', '127.0.0.1'))) {
+  if (!drush_is_local_host($master_db['host'])) {
     $node = new stdClass();
     $node->uid = 1;
     $node->type = 'server';
@@ -90,7 +90,7 @@ function hostmaster_bootstrap() {
     $node->services = array();
   }
 
-  hosting_services_add($node, 'db', $master_db['scheme'], array(
+  hosting_services_add($node, 'db', str_replace('mysqli', 'mysql', $master_db['scheme']), array(
     'db_type' => $master_db['scheme'],
     'db_user' => $master_db['user'],
     'db_passwd' => $master_db['pass'],
@@ -117,7 +117,7 @@ function hostmaster_bootstrap() {
   $node->type = 'platform';
   $node->title = 'hostmaster';
   $node->publish_path = d()->root;
-  $node->web_server = variable_get('hosting_default_web_server', 3);
+  $node->web_server = variable_get('hosting_default_web_server', 2);
   $node->status = 1;
   node_save($node);
   $platform_id = $node->nid;
@@ -142,6 +142,7 @@ function hostmaster_bootstrap() {
   $node->short_name = 'hostmaster';
   $node->status = 1;
   node_save($node);
+
   $profile_id = $node->nid;
 
   // Create the main Aegir site node
@@ -259,6 +260,7 @@ function hostmaster_task_finalize() {
   install_add_permissions(install_get_rid('aegir account manager'), array('create client', 'edit client users', 'view client'));
 
   drupal_set_message(st('Enabling optional, yet recommended modules'));
+
   hostmaster_setup_modules();
 
   node_access_rebuild();

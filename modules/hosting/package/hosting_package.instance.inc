@@ -243,5 +243,5 @@ function hosting_package_comparison($current, $target) {
 
 
 function _hosting_package_temporary_table($name, $ref) {
-  db_query("CREATE TEMPORARY TABLE %s AS SELECT nid, short_name, old_short_name, version_code, schema_version, version, status from hosting_package p left join hosting_package_instance i on p.nid = i.package_id where rid= %d", $name, $ref);
+  db_query("CREATE TEMPORARY TABLE %s AS SELECT nid, short_name, old_short_name, version_code, schema_version, version, status from {hosting_package} p left join {hosting_package_instance} i on p.nid = i.package_id where rid= %d", $name, $ref);
 }

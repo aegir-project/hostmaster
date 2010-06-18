@@ -202,6 +202,7 @@ function hosting_update_6008() {
   $return = array();
 
   if (!variable_get('hosting_update_6008_run', false)) {
+    
     db_create_table($return, 'hosting_context', array(
       'fields' => array(
         'nid' => array(
@@ -278,3 +279,22 @@ function hosting_update_6009() {
   return $ret;
 }
 
+/**
+ * Add url aliases for the context names that are registered.
+ */
+function hosting_update_6010() {
+  // We include the file instead of enabling the module,
+  // because we do not want the overhead of having all the
+  // path UI stuff on nodes.
+
+  require_once("./modules/path/path.module");
+  $ret = array();
+
+  $result = db_query("SELECT nid, name FROM {hosting_context}");
+
+  while ($obj = db_fetch_object($result)) {
+    path_set_alias("node/$obj->nid", "hosting/c/$obj->name");
+  }
+
+  return $ret;
+}
