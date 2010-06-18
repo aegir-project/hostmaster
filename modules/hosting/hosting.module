@@ -776,6 +776,7 @@ function hosting_context_register($nid, $name) {
     // It's a new item
     db_query("INSERT INTO {hosting_context} (nid, name) VALUES (%d, '%s')", $nid, $name);
   }
+  path_set_alias("node/$nid", "hosting/c/$name");
 }
 
 /**

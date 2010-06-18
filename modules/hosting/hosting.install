@@ -202,6 +202,8 @@ function hosting_update_6008() {
   $return = array();
 
   if (!variable_get('hosting_update_6008_run', false)) {
+    drupal_install_modules(array('path'));
+    
     db_create_table($return, 'hosting_context', array(
       'fields' => array(
         'nid' => array(
@@ -278,3 +280,18 @@ function hosting_update_6009() {
   return $ret;
 }
 
+/**
+ * Add url aliases for the context names that are registered.
+ */
+function hosting_update_6010() {
+  $ret = array();
+  drupal_install_modules(array('path'));
+
+  $result = db_query("SELECT nid, name FROM {hosting_context}");
+
+  while ($obj = db_fetch_object($result)) {
+    path_set_alias("node/$obj->nid", "hosting/c/$obj->name");
+  }
+
+  return $ret;
+}
