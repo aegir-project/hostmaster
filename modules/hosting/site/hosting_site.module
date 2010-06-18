@@ -461,7 +461,7 @@ function hosting_site_validate($node, &$form) {
  */
 function hosting_site_nodeapi(&$node, $op, $teaser, $page) {
   switch($op) {
-    case 'submit':
+    case 'presave':
       $node->title = strtolower(trim($node->title)); // domain names are case-insensitive
       break;
   }
