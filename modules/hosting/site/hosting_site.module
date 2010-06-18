@@ -369,7 +369,7 @@ function hosting_site_form($node) {
       '#title' => t('Port'),
       '#value' => $node->port,
      );
-    $form['port'] = _hosting_site_form_port();
+    $form['port'] = _hosting_site_form_port($node->platform, $node->port);
     $form['info']['profile'] = array(
        '#type' => 'item',
        '#title' => t('Install Profile'),
@@ -959,9 +959,9 @@ function _hosting_site_form_profile($platform = NULL) {
 /**
  * Generate hosting site node form element 'port'
  */
-function _hosting_site_form_port($platform = HOSTING_DEFAULT_PLATFORM) {
+function _hosting_site_form_port($platform = HOSTING_DEFAULT_PLATFORM, $default = null) {
   $showports = _hosting_site_allowed_ports($platform);
-  $defport = reset($showports);
+  $defport = ($default) ? $default : reset($showports);
   if (sizeof($showports) > 1 && user_access('change site port')) {
     $form['port'] = array(
       '#type' => 'radios',
