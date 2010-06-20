@@ -450,7 +450,9 @@ function hosting_site_validate($node, &$form) {
   if (!array_key_exists($node->profile, hosting_get_profiles($node->platform))) {
     form_set_error('profile', t('Please fill in a valid profile'));
   }
-  if (!array_key_exists($node->site_language, hosting_get_profile_languages($node->profile, $node->platform))) {
+
+  // Check that we are selecting a valid language for this profile, but only when a new site is created. 
+  if (!array_key_exists($node->site_language, hosting_get_profile_languages($node->profile, $node->platform)) && !$node->nid) {
     form_set_error('site_language', t('Please fill in a valid language'));
   }
 
