@@ -55,17 +55,33 @@ function hosting_migrate_hosting_tasks() {
 
 /**
  * Implementation of hook_validate()
+ *
+ * A site may be migrated if it's URL, Platform or DB server has changed.
+ * Only one of these needs to change for a valid migration to be possible.
  */
 function hosting_task_migrate_form_validate($form, &$form_state) {
-  // If no target platform has been set, or there are no valid platforms to migrate to
-  if (!$form_state['values']['parameters']['target_platform'] || $form_state['values']['parameters']['hidden']) {  
-    form_set_error('parameters][target_platform', t('Please select a valid platform to migrate to.'));
+  $migrate_possible = false;
+
+  $site = $form['parameters']['#node'];
+
+  $url = strtolower($form_state['values']['parameters']['new_uri']); // domain names are case-insensitive
+  if ($url != $site->title) {
+    $migrate_possible = TRUE;
+    if (!_hosting_valid_fqdn($url)) {
+      form_set_error('title', t("You have not specified a valid url for this site."));
+    }
+    if (hosting_site_exists($url)) {
+      form_set_error('title', t("The domain name you have specified is not unique."));
+    }
   }
-  // If the target platform is the current platform and this is a migrate task, we won't allow it
-  // (Alternatively this is a valid action when Cloning a site to the same platform)
-  $site = node_load($form_state['values']['nid']);
-  if ($form_state['values']['parameters']['target_platform'] == $site->platform && $form_state['values']['task'] == 'migrate') {
-    form_set_error('parameters][target_platform', t('You may not migrate a site to its current platform.'));
+
+  if ($form_state['values']['parameters']['target_platform'] != $site->platform) {
+    $migrate_possible = TRUE;
+  }
+
+
+  if (!$migrate_possible) {
+    form_set_error('parameters][target_platform', t("To migrate a site you need to modify at least one of the following fields: Domain name, Platform or Database server"));
   }
 }
 
@@ -85,6 +101,14 @@ function hosting_migrate_theme($existing, $type, $theme, $path) {
  */
 function hosting_task_migrate_form($node) {
 
+  $form['new_uri'] = array (
+    '#title' => t('Domain name'),
+    '#type' => 'textfield',
+    '#weight' => '-1',
+    '#default_value' => $node->title
+  );
+
+
   drupal_add_js(drupal_get_path('module','hosting_migrate') . '/hosting_migrate.js');
   $packages = array();
 
@@ -99,14 +123,6 @@ function hosting_task_migrate_form($node) {
   $profile_platform_instances = array_merge($profile_platform_instances, hosting_package_instances_load(
     array('r.type' => 'platform', 'p.old_short_name' => $site_profile->short_name)));
 
-  if (sizeof($profile_platform_instances) <= 1) {
-    $form['no_targets'] = array(
-      '#type' => 'item',
-      '#description' => t('There are no platforms that can meet the dependencies for this site.'));
-    $form['hidden'] = array(
-      '#type' => 'hidden',
-      '#value' => t('no_targets')); 
-  }
   $site_platform = node_load($node->platform);
   // Don't show the current platform if it's locked
   if (!_hosting_platform_is_locked($node->platform)) {
