@@ -80,6 +80,12 @@ function hosting_task_migrate_form_validate($form, &$form_state) {
   }
 
 
+  if ($form_state['values']['parameters']['new_db_server'] != $site->db_server) {
+    $migrate_possible = TRUE;
+  }
+
+
+
   if (!$migrate_possible) {
     form_set_error('parameters][target_platform', t("To migrate a site you need to modify at least one of the following fields: Domain name, Platform or Database server"));
   }
@@ -104,9 +110,25 @@ function hosting_task_migrate_form($node) {
   $form['new_uri'] = array (
     '#title' => t('Domain name'),
     '#type' => 'textfield',
+    '#required' => TRUE,
     '#weight' => '-1',
     '#default_value' => $node->title
   );
+
+  $db_servers = hosting_get_servers('db');
+  if (sizeof($db_servers) > 1) {
+    $form['new_db_server'] = array(
+      '#type' => 'radios',
+      '#title' => t('Database server'),
+      '#required' => TRUE,
+      '#description' => t('The database server the site will use to host it\'s content.'),
+      '#options' => $db_servers,
+      '#default_value' => $node->db_server,
+    );
+  }
+  else {
+    $form['new_db_server'] = array('#type' => 'hidden', '#value' => $node->db_server);
+  } 
 
 
   drupal_add_js(drupal_get_path('module','hosting_migrate') . '/hosting_migrate.js');
