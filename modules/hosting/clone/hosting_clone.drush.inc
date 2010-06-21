@@ -4,10 +4,9 @@
 function drush_hosting_clone_pre_hosting_task($task) {
   $task =& drush_get_context('HOSTING_TASK');
   if ($task->ref->type == 'site' && $task->task_type == 'clone') {
-    $task->args[2] = '@' . $task->task_args['new_name'];
+    $task->args[2] = '@' . $task->task_args['new_uri'];
     $platform = node_load($task->task_args['target_platform']);
     $task->args[3] = hosting_context_name($platform->nid);
-
 
     $profile_instance = _hosting_migrate_get_target_profile_name($task);
 
@@ -34,7 +33,8 @@ function hosting_clone_post_hosting_clone_task($task, $data) {
     foreach (array('type', 'status', 'uid', 'comment', 'promote', 'moderate', 'sticky', 'name', 'format', 'client', 'db_server', 'profile', 'site_status', 'port') as $field) {
       $clone->$field = $task->ref->$field;
     }
-    $clone->title = $task->task_args['new_name'];
+    $clone->title = $task->task_args['new_uri'];
+    $clone->hosting_name = $clone->title;
     $clone->platform = $target;
     $clone->import = 1; # make sure the site doesn't reinstall...
     $clone->verified = 0; # ... and it does verify

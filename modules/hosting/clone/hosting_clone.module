@@ -18,25 +18,14 @@ function hosting_clone_perm() {
 }
 
 function hosting_task_clone_form_validate($form, &$form_state) {
-  if (!$form_state['values']['parameters']['hidden'] && !$form_state['values']['parameters']['target_platform']) {
-    form_set_error('parameters][target_platform', t('You need to select a valid platform to migrate your site to.'));
+  $site = $form['parameters']['#node'];
+
+  $url = strtolower($form_state['values']['parameters']['new_uri']); // domain names are case-insensitive
+  if ($url == $site->title) {
+    form_set_error('new_uri', t("To clone a site you need to specify a new Domain name to clone it to."));
   }
-  $url = strtolower($form_state['values']['parameters']['new_name']); // domain names are case-insensitive
-  if (!_hosting_valid_fqdn($url)) {
-    form_set_error('title', t("You have not specified a valid url for this site."));
-  }
-  if (hosting_site_exists($url)) {
-    form_set_error('title', t("The domain name you have specified is not unique."));
-  }
-  if ($form_state['values']['parameters']['aliases']) {
-    $aliases = explode("\n", $form_state['values']['parameters']['aliases']);
-    foreach ($aliases as $alias) {
-      if ($alias = trim($alias)) {
-        if (!hosting_domain_allowed($alias, (array) $node)) {
-          form_set_error('aliases', t('The domain name @alias is already in use', array('@alias' => $alias)));
-        }
-      }
-    }
+  else {
+    hosting_task_migrate_form_validate($form, $form_state);
   }
 }
 
@@ -46,28 +35,6 @@ function hosting_clone_theme($existing, $type, $theme, $path) {
 
 function hosting_task_clone_form($node) {
   $form = hosting_task_migrate_form($node);
-  // Don't show the current platform if it's locked
-  if (!_hosting_platform_is_locked($node->platform)) {
-    // A profile package dependency check on a target platform is not relevant
-    // in the case of a clone, as the target may be the current platform
-    unset($form['no_targets']); 
-    $form['new_name'] = array (
-      '#title' => t('New site name'),
-      '#type' => 'textfield',
-      '#weight' => '-1',
-      '#required' => TRUE,
-      '#default_value' => $node->title
-    );
-    if (module_exists('hosting_alias')) {
-      hosting_alias_form_data($form);
-    }
-  }
-  else {
-    $form['no_targets'] = array (
-      '#type' => 'item',
-      '#description' => t('There are no valid platforms to clone this site to. Please add or unlock a valid platform.'),
-    );
-  }
   return $form;
 }
 
