@@ -17,6 +17,10 @@ function drush_hosting_clone_pre_hosting_task($task) {
       drush_set_error("HOSTING_NO_VALID_PROFILE", dt("There are no valid install profiles on the target platform to migrate to"));
     }
 
+    if ($site->db_server != $task->task_args['new_db_server']) {
+      $task->options['new_db_server'] = hosting_context_name($task->task_args['new_db_server']);
+    }
+
     if (module_exists('hosting_alias')) {
       $task->options['aliases'] = str_replace("\n", ",", $task->task_args['aliases']);
       $task->options['redirection'] = $task->task_args['redirection'];
@@ -40,6 +44,11 @@ function hosting_clone_post_hosting_clone_task($task, $data) {
     $clone->verified = 0; # ... and it does verify
     $clone->aliases = $task->task_args['aliases'];
     $clone->redirection = $task->task_args['redirection'];
+    
+    if ($clone->db_server != $task->task_args['new_db_server']) {
+      $clone->db_server = $task->task_args['new_db_server'];
+    }
+
 
     $profile = hosting_package_instance_load(array(
       'rid' => $target,
