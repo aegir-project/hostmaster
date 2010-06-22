@@ -1,7 +1,0 @@
-name = SSL
-description = Allow Aegir to manage SSL certificates and sites.
-package = Hosting
-dependencies[] = hosting
-dependencies[] = hosting_site
-
-core = 6.x

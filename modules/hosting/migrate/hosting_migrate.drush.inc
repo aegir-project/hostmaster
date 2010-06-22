@@ -7,6 +7,17 @@ function drush_hosting_migrate_pre_hosting_task($task) {
     $platform = node_load($task->task_args['target_platform']);
     $task->args[2] = hosting_context_name($platform->nid);
 
+    $site = $task->ref;
+
+    if ($site->title != $task->task_args['new_uri']) {
+      $task->args[3] = '@' . $task->task_args['new_uri'];
+    }
+
+    if ($site->db_server != $task->task_args['new_db_server']) {
+      $task->options['new_db_server'] = hosting_context_name($task->task_args['new_db_server']);
+    }
+
+
     $profile_instance = _hosting_migrate_get_target_profile_name($task);
     if (sizeof($profile_instance)) {
       $task->options['profile'] = $profile_instance->short_name;
@@ -43,6 +54,15 @@ function hosting_migrate_post_hosting_migrate_task($task, $data) {
   if ($task->ref->type == 'site') {
     $target = $task->task_args['target_platform'];
     $site = $task->ref;
+
+    if ($site->title != $task->task_args['new_uri']) {
+      $site->title = $task->task_args['new_uri'];
+      hosting_context_register($site->nid, $task->task_args['new_uri']);
+    }
+
+    if ($site->db_server != $task->task_args['new_db_server']) {
+      $site->db_server = $task->task_args['new_db_server'];
+    }
 
     $profile = hosting_package_instance_load(array(
       'rid' => $target,
