@@ -531,7 +531,7 @@ function hosting_client_site_form($form, $node) {
 
 function hosting_client_menu_access($perm, $node) {
   if ($node->type == 'client') {
-    return user_access($perm, $node);
+    return user_access($perm);
   } else {
     return false;
   }

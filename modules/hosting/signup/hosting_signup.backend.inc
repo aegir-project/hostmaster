@@ -169,6 +169,7 @@ function _hosting_signup_form_submit($form, &$form_state) {
   $site->type = 'site';
   $site->status = 1;
   $site->client = $client->nid;
+  $site->uid = $client->uid;
   node_save($site);
   hosting_signup_singleton(array('client' => $client, 'site' => $site));
 }
