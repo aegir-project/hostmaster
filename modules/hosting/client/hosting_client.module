@@ -476,6 +476,7 @@ function hosting_import_client($email, $name = '', $organization = '') {
   if (!$client) {
     $client = new stdClass();
     $client->type = 'client';
+    $client->uid = 1;
     $client->email = $email;
     $client->client_name = trim($name);
     $client->organization = $organization;

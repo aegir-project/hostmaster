@@ -298,3 +298,14 @@ function hosting_update_6010() {
 
   return $ret;
 }
+
+/**
+ * Clients and packages were imported as belonging to the anonymous user. Reassign them to the admin user.
+ */
+function hosting_update_6011() {
+  $ret = array();
+
+  db_query("UPDATE {node} SET uid=1 WHERE uid=0 AND type IN ('client', 'package')");
+
+  return $ret;
+}

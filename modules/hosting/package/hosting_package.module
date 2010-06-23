@@ -315,6 +315,7 @@ function hosting_package_sync(&$data) {
         // Create a new package.
         $package = new stdClass();
         $package->type = 'package';
+        $package->uid = 1;
         $package->title = $name;
         $package->package_type = $type;
         $package->short_name = $short_name;
