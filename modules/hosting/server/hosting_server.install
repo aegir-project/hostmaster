@@ -20,6 +20,8 @@ function hosting_server_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+
+
     ),
     'primary key' => array('vid'),
   );
@@ -47,6 +49,17 @@ function hosting_server_schema() {
         'type' => 'text',
         'size' => 'small',
         'not null' => TRUE,
+      ),
+      'restart_cmd' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+      ),
+      'port' => array(
+        'type' => 'int',
+        'default' => 0,
+        'unsigned' => TRUE,
+        'not null' => FALSE,
       ),
       'available' => array(
         'type' => 'int',
@@ -105,3 +118,23 @@ function hosting_server_update_6002() {
   return $ret;
 }
 
+
+/**
+ * Bring the port and restart command from hosting_web_server into hosting_service.
+ */
+function hosting_server_update_6003() {
+  db_add_field($ret, 'hosting_service', 'port', array(
+    'type' => 'int',
+    'default' => 0,
+    'unsigned' => TRUE,
+    'not null' => FALSE
+  ));
+
+  db_add_field($ret, 'hosting_service', 'restart_cmd',array(
+    'type' => 'text',
+    'size' => 'big',
+    'not null' => FALSE,
+  ));
+
+  return $ret;
+}

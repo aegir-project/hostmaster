@@ -7,9 +7,7 @@ if (Drupal.jsEnabled) {
     $('div.hosting-site-form-site-language-options').parent().hide();
     $('input[@name=platform]').change(function() {
       hostingSitePopulate('profile');
-      hostingSitePopulate('port');
       $('div.hosting-site-form-site-language-options').parent().hide();
-      $('div.hosting-site-form-site-port-options').parent().hide();
     });
     $('input[@name=profile]').change(function() {
       hostingSitePopulate('site_language');
@@ -22,7 +20,7 @@ if (Drupal.jsEnabled) {
  */
 function hostingSitePopulate(option) {
   // initialize variables
-  parent_field = ((option == 'profile' || option == 'port') ? 'platform' : 'profile');
+  parent_field = (option == 'profile') ? 'platform' : 'profile');
   obj = _hostingSiteField(parent_field); 
   value = $('input[@name=' + option + ']:checked').val();
   
@@ -66,7 +64,7 @@ function hostingSitePopulate(option) {
     $('div#hm-processing').remove();
   }
   // prepare url params
-  params = (option == 'profile' || option == 'port') ? $(obj).val() : ($(obj).val() + '/' + $(_hostingSiteField('platform')).val());
+  params = (option == 'profile') ? $(obj).val() : ($(obj).val() + '/' + $(_hostingSiteField('platform')).val());
   $.get('/hosting/hosting_site_form_populate/' + option + '/' + params, null, resultOptions);
 }
 

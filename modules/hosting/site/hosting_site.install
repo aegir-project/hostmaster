@@ -61,11 +61,6 @@ function hosting_site_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
-      'port' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => 0,
-      ),
       'ssl' => array(
         'type' => 'int',
         'not null' => TRUE,
@@ -204,8 +199,7 @@ function hosting_site_update_5() {
 
 function hosting_site_update_6() {
   $ret = array();
-  $ret[] = update_sql("ALTER TABLE {hosting_site} ADD COLUMN port int(10) NOT NULL default '0'");
-  db_query("UPDATE {hosting_site} SET port=80");
+  db_add_field($ret, 'hosting_site', 'port', array('type' => 'int', 'not null' => TRUE, 'default' => 0));
   return $ret;
 }
 
@@ -224,12 +218,7 @@ function hosting_site_update_6002() {
 // Update imported sites that have port 0 in the db. See #588072
 function hosting_site_update_6003() {
   $ret = array();
-  $sites = db_query("SELECT nid, platform FROM {hosting_site} WHERE port = 0");
-  while ($obj = db_fetch_object($sites)) {
-    $showports = _hosting_site_allowed_ports($obj->platform);
-    $defport = reset($showports);
-    $result = db_query("UPDATE {hosting_site} SET port = '%s' WHERE nid = %d AND port = 0", $defport, $obj->nid);
-  }
+  // this is now irrelevant as the ports have been refactored completely.
   return $ret;
 }
 
@@ -243,3 +232,11 @@ function hosting_site_update_6004() {
   return array();
 }
 
+/**
+ * Port is no longer configured per site.
+ */
+function hosting_site_update_6005() {
+  $ret = array();
+  db_drop_field($ret, "hosting_site", "port");
+  return $ret;
+}

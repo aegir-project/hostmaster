@@ -84,7 +84,7 @@ function hosting_site_hosting_tasks() {
  * Implementation of hook_perm
  */
 function hosting_site_perm() {
-  return array('create site', 'view site', 'edit site', 'delete site', 'administer site', 'change site port');
+  return array('create site', 'view site', 'edit site', 'delete site', 'administer site');
 }
 
 /**
@@ -168,11 +168,6 @@ function hosting_import_site($site_id, $data, $platform = HOSTING_DEFAULT_PLATFO
   $db_server = hosting_get_db_server($data['db_id']);
   $site->db_server = ($db_server) ? $db_server->nid : HOSTING_DEFAULT_DB_SERVER;
   $site->site_language = $data['language'] ? $data['language'] : 'en';
-  // Try and find a default port from the web server and use that for the imported site.
-  // Needs to be improved (one vhost > many ports, and a proper 'default port' feature
-  $showports = _hosting_site_allowed_ports($platform);
-  $defport = reset($showports);
-  $site->port = $defport;
 
   // Drupal 6 introduced a language field on nodes
   unset($data['language']);
@@ -349,7 +344,6 @@ function hosting_site_form($node) {
         drupal_set_message(t('You have no enabled platforms! Please add or unlock a platform before attempting to create a site.'), 'error');
       }
 
-      $form['port'] = _hosting_site_form_port();
       $form['profile'] = _hosting_site_form_profile();
       $form['site_language'] = _hosting_site_form_site_language();
     }
@@ -364,12 +358,6 @@ function hosting_site_form($node) {
       '#value' => _hosting_node_link($node->platform),
      );
     $form['platform'] = array('#type' => 'hidden', '#value' => $node->platform);
-    $form['info']['port'] = array(
-      '#type' => 'item',
-      '#title' => t('Port'),
-      '#value' => $node->port,
-     );
-    $form['port'] = _hosting_site_form_port($node->platform, $node->port);
     $form['info']['profile'] = array(
        '#type' => 'item',
        '#title' => t('Install Profile'),
@@ -424,14 +412,7 @@ function hosting_site_validate($node, &$form) {
   if (!_hosting_valid_fqdn($url)) {
     form_set_error('title', t("You have not specified a valid url for this site."));
   }
-  
-  if ($node->port < 1 || $node->port > 65536) {
-    form_set_error('title', t("You have not specified a valid port for this site."));
-  }
-  if (!array_key_exists($node->port, _hosting_site_allowed_ports($node->platform))) {
-    form_set_error('title', t("This port is forbidden by the administrators."));
-  }
-  
+   
   if (!$node->new_client) {
     $client = hosting_get_client($node->client);
     if (!$node->client || !$client) {
@@ -477,8 +458,8 @@ function hosting_site_insert(&$node) {
   $node->client = $client->nid;
   $node->site_language = ($node->site_language) ? $node->site_language : 'en';
 
-  db_query("INSERT INTO {hosting_site} (vid, nid, client, db_server, platform, profile, language, last_cron, status, verified, port, `ssl`, ssl_redirect) VALUES (%d, %d, %d, %d, %d, %d, '%s', %d, %d, %d, %d, %d, %d)",
-           $node->vid, $node->nid, $node->client, $node->db_server, $node->platform, $node->profile, $node->site_language, $node->last_cron, $node->site_status, $node->verified, $node->port, $node->ssl, $node->ssl_redirect);
+  db_query("INSERT INTO {hosting_site} (vid, nid, client, db_server, platform, profile, language, last_cron, status, verified, `ssl`, ssl_redirect) VALUES (%d, %d, %d, %d, %d, %d, '%s', %d, %d, %d, %d, %d)",
+           $node->vid, $node->nid, $node->client, $node->db_server, $node->platform, $node->profile, $node->site_language, $node->last_cron, $node->site_status, $node->verified, $node->ssl, $node->ssl_redirect);
   if ((!$node->old_vid)) {
     hosting_context_register($node->nid, ($node->hosting_name) ? $node->hosting_name : $node->title);
     if ($node->import) {
@@ -488,22 +469,6 @@ function hosting_site_insert(&$node) {
       hosting_add_task($node->nid, 'install');
     }
   }
-}
-
-/**
- * Helper function to retrieve an array of allowed ports
- */
-function _hosting_site_allowed_ports($platform) {
-  $ports = db_result(db_query("SELECT ports FROM {hosting_platform} p JOIN {hosting_web_server} w ON p.web_server = w.nid WHERE p.nid = %d", $platform));
-  $ports = explode(",", $ports);
-  $ret = array();
-  foreach($ports as $p) {
-    $p = trim($p);
-    if(is_numeric($p)) {
-      $ret[$p] = $p;
-    }
-  }
-  return $ret;
 }
 
 /**
@@ -520,8 +485,8 @@ function hosting_site_update(&$node) {
     if ($node->site_status == HOSTING_SITE_DELETED) {
       $node->no_verify = TRUE;
     }
-    db_query("UPDATE {hosting_site} SET client = %d, db_server = %d, platform = %d, last_cron = %d, status = %d, profile = %d, language = '%s', verified = %d, port = %d, `ssl` = %d, ssl_redirect = %d WHERE vid=%d",
-             $node->client, $node->db_server, $node->platform, $node->last_cron, $node->site_status, $node->profile, $node->site_language, $node->verified, $node->port, $node->ssl, $node->ssl_redirect, $node->vid);
+    db_query("UPDATE {hosting_site} SET client = %d, db_server = %d, platform = %d, last_cron = %d, status = %d, profile = %d, language = '%s', verified = %d, `ssl` = %d, ssl_redirect = %d WHERE vid=%d",
+             $node->client, $node->db_server, $node->platform, $node->last_cron, $node->site_status, $node->profile, $node->site_language, $node->verified, $node->ssl, $node->ssl_redirect, $node->vid);
   }
   if (!$node->no_verify) {
     hosting_add_task($node->nid, 'verify');
@@ -535,7 +500,7 @@ function hosting_site_update(&$node) {
  *    Node object
  */
 function hosting_site_load($node) {
-  $additions = db_fetch_object(db_query('SELECT  client, db_server, platform, profile, language as site_language, last_cron, status AS site_status, verified, port, `ssl`, ssl_redirect FROM {hosting_site} WHERE vid = %d', $node->vid));
+  $additions = db_fetch_object(db_query('SELECT  client, db_server, platform, profile, language as site_language, last_cron, status AS site_status, verified, `ssl`, ssl_redirect FROM {hosting_site} WHERE vid = %d', $node->vid));
   return $additions;
 }
 
@@ -605,12 +570,6 @@ function hosting_site_view(&$node, $teaser = false) {
     '#value' => hosting_format_interval($node->verified),
   );
   
-  $node->content['info']['port'] = array(
-    '#type' => 'item',
-    '#title' => t('Port'),
-    '#value' => $node->port,
-  );
-
   $node->content['info']['platform'] = array(
     '#type' => 'item',
     '#title' => t('Platform'),
@@ -745,8 +704,8 @@ function hosting_site_form_alter(&$form, &$form_state, $form_id) {
  * @see hosting_domain_allowed()
  * @deprecated
  */
-function hosting_site_exists($url, $port = null, $nid = null) {
-  return !hosting_domain_allowed($url, array('port' => $port, 'nid' => $nid));
+function hosting_site_exists($url, $nid = null) {
+  return !hosting_domain_allowed($url, array('nid' => $nid));
 }
 
 /**
@@ -762,22 +721,8 @@ function hosting_site_allow_domain($url, $params = array()) {
   $args[] = HOSTING_SITE_DELETED;
   
   if (isset($params['client'])) {
-    if (isset($params['port'])) {
-      $query .= ' AND ( h.client <> %d OR h.port = %d )';
-      $args[] = $params['client'];
-      $args[] = $params['port'];
-    }
-    else {
-      $query .= ' AND h.client <> %d';
-      $args[] = $params['client'];
-    }
-  }
-  // check for ports only if we have no client provided
-  else {
-    if (isset($params['port'])) {
-      $query .= ' AND h.port = %d';
-      $args[] = $params['port'];
-    }
+    $query .= ' AND h.client <> %d';
+    $args[] = $params['client'];
   }
 
   if (isset($params['nid'])) {
@@ -786,29 +731,6 @@ function hosting_site_allow_domain($url, $params = array()) {
   }
   $result = !db_result(db_query($query, $args));
   return $result;
-}
-
-/**
- * Count the number of sites with a specific url, ignoring deleted sites
- */
-function hosting_site_count_sites($url, $params = array()) {
-  $query = "SELECT COUNT(n.nid) FROM 
-    {node} n JOIN {hosting_site} h 
-    ON n.nid = h.nid WHERE type='site'
-    AND title='%s' AND h.status <> %d";
-  $args[] = $url;
-  $args[] = HOSTING_SITE_DELETED;
-  
-  if (isset($params['port'])) {
-    $query .= ' AND h.port = %d';
-    $args[] = $params['port'];
-  }
-
-  if (isset($params['nid'])) {
-    $query .= ' AND n.nid <> %d';
-    $args[] = $params['nid'];
-  }
-  return db_result(db_query($query, $args));
 }
 
 function hosting_site_task_status($nid) {
@@ -959,28 +881,6 @@ function _hosting_site_form_profile($platform = NULL) {
 }
 
 /**
- * Generate hosting site node form element 'port'
- */
-function _hosting_site_form_port($platform = HOSTING_DEFAULT_PLATFORM, $default = null) {
-  $showports = _hosting_site_allowed_ports($platform);
-  $defport = ($default) ? $default : reset($showports);
-  if (sizeof($showports) > 1 && user_access('change site port')) {
-    $form['port'] = array(
-      '#type' => 'radios',
-      '#title' => t('Port'),
-      '#required' => TRUE,
-      '#default_value' => $defport,
-      '#options' => $showports,
-      '#weight' => 5,
-      '#attributes' => array('class' => "hosting-site-form-port-options"),
-     );
-  } else {
-      $form['port'] = array('#type' => 'hidden', '#default_value' => $defport, '#attributes' => array('class' => "hosting-site-form-port-options"));
-  }
-  return $form['port'];
-}
-
-/**
  * Generate hosting site node form element 'language'
  */
 function _hosting_site_form_site_language($profile = NULL, $platform = null) {
@@ -1053,7 +953,11 @@ function hosting_site_goto($node) {
     cache_clear_all($cid, 'cache');
   }
   else {
-    $title = t("Go to !url" , array('!url' => $node->title));
+    $theurl = 'http://' . $node->title;
+
+    # TODO - get the right port from the service.
+
+    /*
     switch($node->port) {
       case 80:
       $theurl = 'http://' . $node->title;
@@ -1064,6 +968,7 @@ function hosting_site_goto($node) {
       default:
       $theurl = 'http://' . $node->title . ':' . $node->port;
     }
+     */
   }
 
   drupal_goto($theurl);

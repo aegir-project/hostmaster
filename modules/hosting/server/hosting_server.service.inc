@@ -5,13 +5,16 @@ class hostingService {
 
   public $server;
 
+  protected $has_restart_cmd = FALSE;
+  protected $has_port = FALSE;
+
   function __construct($node, $values = null) {
     self::save($node);
     self::setValues($values);
   }
 
   public function load() {
-    $this->mergeData("SELECT available FROM {hosting_service} WHERE vid = %d AND type = '%s'", $this->server->vid, $this->type);
+    $this->mergeData("SELECT port, restart_cmd, available FROM {hosting_service} WHERE vid = %d AND type = '%s'", $this->server->vid, $this->type);
   }
 
   protected function mergeData($query) {
@@ -36,10 +39,19 @@ class hostingService {
     $this->server->title = $node->title;
   }
 
-  
+
+
+  public function default_restart_cmd() {
+    return '';
+  }
+
+  public function default_port() {
+    return 0;
+  }
+
   public function insert() {
-    db_query("INSERT INTO {hosting_service} (nid, vid, service, type, available) VALUES (%d, %d, '%s', '%s', %d)",
-      $this->server->nid, $this->server->vid, $this->service, $this->type, $this->available);
+    db_query("INSERT INTO {hosting_service} (nid, vid, service, type, port, restart_cmd available) VALUES (%d, %d, '%s', '%s', %d, '%s', %d)",
+      $this->server->nid, $this->server->vid, $this->service, $this->type, $this->port, $this->restart_cmd, $this->available);
   }
 
   public function update() {
@@ -55,14 +67,86 @@ class hostingService {
     db_query("DELETE FROM {hosting_service} WHERE service = '%s' AND vid=%d", $this->service, $this->server->vid);
   }
 
-  public function form(&$form) { }
-  public function view(&$render) { }
+  public function form(&$form) {
+    if ($this->has_restart_cmd) {
+      $form['restart_cmd'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Restart command'),
+          '#required' => $this->available,
+          '#description' => t('The command to run to restart this service.'),
+          '#default_value' => (!is_null($this->restart_cmd)) ? $this->restart_cmd : $this->default_restart_cmd(),
+          '#size' => 40,
+          '#maxlength' => 255,
+          '#weight' => -7,
+      );
+    }
+    else {
+      $form['restart_cmd'] = array('#type' => 'value', '#value' => null);
+    }
+ 
+
+    if ($this->has_port) {
+     $form['port'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Port'),
+        '#required' => $this->available,
+        '#size' => 40,
+        '#default_value' => (!is_null($this->port)) ? $this->port : $this->default_port(),
+        '#description' => t("The port that this service is listening on."),
+        '#maxlength' => 255,
+        '#weight' => -8,
+      );
+    }
+    else {
+      $form['port'] = array(
+        '#type' => 'value',
+        '#value' => '0',
+      );
+    } 
+ 
+  }
+
+
+
+  public function view(&$render) {
+    if ($this->has_restart_cmd) {
+      $render['restart_cmd'] = array(
+        '#type' => 'item',
+        '#title' => t('Restart command'),
+        '#value' => filter_xss($this->restart_cmd),
+      );
+
+    } 
+   
+    if ($this->has_port) {
+      $render['port'] = array(
+        '#type' => 'item',
+        '#title' => t('Port'),
+        '#value' => filter_xss($this->port),
+      );
+    } 
+  }
+
+
 
   public function validate(&$node, &$form) {
+    if ($this->has_port) {
+      if (!is_int($this->port)) {
+        form_set_error('port', t("The port you specify must be a number."));
+      }
+    }
   }
 
   public function context_options($task_type, $ref_type, &$task) {
     $task->context_options[$this->service . '_service_type'] = $this->type;
+
+    if ($this->has_restart_cmd) {
+      $task->context_options[$this->service . '_restart_cmd'] = $this->restart_cmd;
+    }
+
+    if ($this->has_port) {
+      $task->context_options[$this->service . '_port'] = $this->port;
+    }
   }
 }
 
