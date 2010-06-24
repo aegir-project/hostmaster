@@ -953,26 +953,30 @@ function hosting_site_goto($node) {
     cache_clear_all($cid, 'cache');
   }
   else {
-    $theurl = 'http://' . $node->title;
+    $port = hosting_site_get_port($node);
 
-    # TODO - get the right port from the service.
 
-    /*
     switch($node->port) {
+      case 0 :
       case 80:
-      $theurl = 'http://' . $node->title;
+        $theurl = 'http://' . $node->title;
       break;
       case 443:
-      $theurl = 'https://' . $node->title;
+        $theurl = 'https://' . $node->title;
       break;
       default:
-      $theurl = 'http://' . $node->title . ':' . $node->port;
+       $theurl = 'http://' . $node->title . ':' . $port;
     }
-     */
   }
 
   drupal_goto($theurl);
   exit();
+}
+
+function hosting_site_get_port($node) {
+  $platform = node_load($node->platform);
+  $server = node_load($platform->web_server);
+  return $server->services['http']->port;
 }
 
 /**

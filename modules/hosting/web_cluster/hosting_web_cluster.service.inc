@@ -40,7 +40,6 @@ class hostingService_http_cluster extends hostingService_http {
 
   function insert() {
     parent::insert();
-    $ports = array();
     foreach (array_filter($this->web_servers) as $web_server) {
       $record = array(
         'nid' => $this->server->nid,

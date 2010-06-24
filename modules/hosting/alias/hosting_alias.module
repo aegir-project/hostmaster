@@ -260,22 +260,8 @@ function hosting_alias_allow_domain($url, $params = array()) {
   $args[] = HOSTING_SITE_DELETED;
   
   if (isset($params['client'])) {
-    if (isset($params['port'])) {
-      $query .= ' AND ( h.client <> %d OR h.port = %d )';
-      $args[] = $params['client'];
-      $args[] = $params['port'];
-    }
-    else {
-      $query .= ' AND h.client <> %d';
-      $args[] = $params['client'];
-    }
-  }
-  // check for ports only if we have no client provided
-  else {
-    if (isset($params['port'])) {
-      $query .= ' AND h.port = %d';
-      $args[] = $params['port'];
-    }
+    $query .= ' AND h.client <> %d';
+    $args[] = $params['client'];
   }
 
   if (isset($params['nid'])) {
@@ -297,11 +283,6 @@ function hosting_alias_count_sites($url, $params = array()) {
   $args[] = $url;
   $args[] = HOSTING_SITE_DELETED;
 
-  if (isset($params['port'])) {
-    $query .= ' AND h.port = %d';
-    $args[] = $params['port'];
-  }
-  
   if (isset($params['nid'])) {
     $query .= ' AND n.nid <> %d';
     $args[] = $params['nid'];

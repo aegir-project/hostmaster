@@ -248,8 +248,6 @@ function hosting_server_validate(&$node, &$form) {
  *
  * As an existing node is being updated in the database, we need to do our own
  * database updates.
- *
- * This will fire up a verify task if the webserver ports have changed.
  */
 function hosting_server_update($node) {
   // if this is a new node or we're adding a new revision,
