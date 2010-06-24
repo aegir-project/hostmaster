@@ -973,6 +973,9 @@ function hosting_site_goto($node) {
   exit();
 }
 
+/**
+ * Retrieve the port the site will be available on, so we can redirect.
+ */
 function hosting_site_get_port($node) {
   $platform = node_load($node->platform);
   $server = node_load($platform->web_server);
