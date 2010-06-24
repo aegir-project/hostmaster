@@ -249,7 +249,7 @@ function hosting_add_task($nid, $type, $args = null, $status = HOSTING_TASK_QUEU
 /**
  * Implementation of hook_form().
  */
-function hosting_task_confirm_form($form_state, &$node, $task) {
+function hosting_task_confirm_form($form_state, $node, $task) {
   drupal_add_js(drupal_get_path('module','hosting_task') . '/hosting_task.js');
   $tasks = hosting_available_tasks($node->type);
   $form['help'] = array('#value' => $tasks[$task]['description']); 
