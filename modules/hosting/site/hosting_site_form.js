@@ -20,7 +20,7 @@ if (Drupal.jsEnabled) {
  */
 function hostingSitePopulate(option) {
   // initialize variables
-  parent_field = (option == 'profile') ? 'platform' : 'profile');
+  parent_field = (option == 'profile') ? 'platform' : 'profile';
   obj = _hostingSiteField(parent_field); 
   value = $('input[@name=' + option + ']:checked').val();
   
