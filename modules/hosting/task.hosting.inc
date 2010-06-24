@@ -21,8 +21,10 @@ function drush_hosting_task_validate($id, $type = null) {
   }
   elseif (is_string($id) && isset($type)) {
     $ref = hosting_context_load($id);
-    if (!($task = hosting_get_most_recent_task($ref->nid, $type))) {
-      $task = hosting_add_task($ref->nid, $type); 
+    if ($ref->nid) {
+      if (!($task = hosting_get_most_recent_task($ref->nid, $type))) {
+        $task = hosting_add_task($ref->nid, $type); 
+      }
     }
   }
 
