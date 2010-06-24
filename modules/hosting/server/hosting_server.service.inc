@@ -50,7 +50,7 @@ class hostingService {
   }
 
   public function insert() {
-    db_query("INSERT INTO {hosting_service} (nid, vid, service, type, port, restart_cmd available) VALUES (%d, %d, '%s', '%s', %d, '%s', %d)",
+    db_query("INSERT INTO {hosting_service} (nid, vid, service, type, port, restart_cmd, available) VALUES (%d, %d, '%s', '%s', %d, '%s', %d)",
       $this->server->nid, $this->server->vid, $this->service, $this->type, $this->port, $this->restart_cmd, $this->available);
   }
 
@@ -91,7 +91,7 @@ class hostingService {
         '#title' => t('Port'),
         '#required' => $this->available,
         '#size' => 40,
-        '#default_value' => (!is_null($this->port)) ? $this->port : $this->default_port(),
+        '#default_value' => ($this->port) ? $this->port : $this->default_port(),
         '#description' => t("The port that this service is listening on."),
         '#maxlength' => 255,
         '#weight' => -8,
@@ -131,7 +131,7 @@ class hostingService {
 
   public function validate(&$node, &$form) {
     if ($this->has_port) {
-      if (!is_int($this->port)) {
+      if ((int) $this->port <= 0) {
         form_set_error('port', t("The port you specify must be a number."));
       }
     }

@@ -1,12 +1,18 @@
 <?php
+class hostingService_db extends hostingService {
+  public $service = 'db';
+}
 
-class hostingService_db_mysql extends hostingService {
-  protected $service = 'db';
+class hostingService_db_mysql extends hostingService_db {
   public $type = 'mysql';
+  public $has_port = TRUE;
+
+  function default_port() {
+    return 3306;
+  }
 
   function form(&$form) {
-    $node = $form['#node'];
-
+    parent::form($form);
     $form['db_user'] = array(
       '#type' => 'textfield',
       '#required' => $this->available,
@@ -64,6 +70,8 @@ class hostingService_db_mysql extends hostingService {
   }
 
   function view(&$render) {
+    parent::view($render);
+
     $render['db_user'] = array(
       '#type' => 'item',
       '#title' => t('Database user'),
