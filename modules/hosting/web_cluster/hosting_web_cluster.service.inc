@@ -48,33 +48,22 @@ class hostingService_http_cluster extends hostingService_http {
         'web_server_nid' => $web_server,
       );
       drupal_write_record('hosting_web_cluster', $record);
-      $node = node_load($web_server);
-      $ports[] = explode(',', $node->services['http']->ports);
     }
-    $record = array(
-      'nid' => $this->server->nid,
-      'vid' => $this->server->vid,
-      'ports' => implode(',', call_user_func_array('array_intersect', $ports)),
-    );
-    drupal_write_record('hosting_web_server', $record);
   }
 
   function delete() {
     parent::delete();
     db_query('DELETE FROM {hosting_web_cluster} WHERE nid = %d', $this->server->nid);
-    db_query('DELETE FROM {hosting_web_server} WHERE nid = %d', $this->server->nid);
   }
 
   function delete_revision() {
     parent::delete_revision();
     db_query('DELETE FROM {hosting_web_cluster} WHERE vid = %d', $this->server->vid);
-    db_query('DELETE FROM {hosting_web_server} WHERE vid = %d', $this->server->vid);
   }
 
   function context_options($task_type, $ref_type, &$task) {
     parent::context_options($task_type, $ref_type, $task);
 
     $task->context_options['cluster_web_servers'] = implode(',', array_values(array_map('hosting_context_name', array_intersect_key($this->web_servers, hosting_get_servers('http')))));
-    $task->context_options['file_service_type'] = 'cluster';
   }
 }
