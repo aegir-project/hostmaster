@@ -58,36 +58,11 @@ class hostingService {
   public function form(&$form) { }
   public function view(&$render) { }
 
-  public function validate(&$node, &$form) {}
+  public function validate(&$node, &$form) {
+  }
 
   public function context_options($task_type, $ref_type, &$task) {
     $task->context_options[$this->service . '_service_type'] = $this->type;
   }
 }
 
-class hostingService_server_base extends hostingService {
-  protected $service = 'server';
-  public $type = 'base';
-
-  function insert() {
-    parent::insert();
-
-  }
-
-  function delete_revision() {
-    parent::delete_revision();
-  }
-
-  function delete() {
-    parent::delete();
-    db_query('DELETE FROM {hosting_server} WHERE nid = %d', $this->server->nid);
-  }
-
-  /**
-   * Override hostingService::options() because we don't want to initialize
-   * this service in provision.
-   */
-  public function context_options($task_type, $ref_type, &$task) {
-    $task->context_options['remote_host'] = $this->server->title;
-  }
-}
