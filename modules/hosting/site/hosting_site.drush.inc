@@ -12,6 +12,9 @@ function hosting_site_context_options(&$task) {
 
   $profile = node_load($task->ref->profile);
   $task->context_options['profile'] = $profile->short_name;
+
+  $client = node_load($task->ref->client);
+  $task->context_options['client_email'] = $client->email;
 }
 
 /**
