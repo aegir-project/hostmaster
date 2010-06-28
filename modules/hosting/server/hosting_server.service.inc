@@ -106,8 +106,6 @@ class hostingService {
  
   }
 
-
-
   public function view(&$render) {
     if ($this->has_restart_cmd) {
       $render['restart_cmd'] = array(
