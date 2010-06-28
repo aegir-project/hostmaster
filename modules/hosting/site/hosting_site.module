@@ -683,7 +683,7 @@ function hosting_site_backup_list($site) {
   $result = db_query("SELECT bid, description, timestamp FROM {hosting_site_backups} WHERE site=%d ORDER BY timestamp DESC", $site);
   while ($object = db_fetch_object($result)) {
     #needs to be cleaned up. but i am NOT generating a theme func for this right now.
-    $backups[$object->bid] = '<strong>' . format_date($object->timestamp) . '</strong> - ' . $object->description;
+    $backups[$object->bid] = '<strong>' . format_date($object->timestamp) . '</strong> - ' . filter_xss($object->description);
   }
   return $backups;
 }
@@ -753,6 +753,20 @@ function hosting_site_allow_domain($url, $params = array()) {
 function hosting_site_task_status($nid) {
   return hosting_task_status_output('nid', $nid, 'install');
 }
+
+
+function hosting_task_backup_form($node) {
+  $form['description'] = array (
+    '#title' => t('Description'),
+    '#type' => 'textfield',
+    '#required' => FALSE,
+    '#weight' => '-1',
+    '#description' => "Describe the reasons for creating this backup."
+  );  
+
+  return $form;
+}
+
 
 /**
  * Display a list of created sites on the front page

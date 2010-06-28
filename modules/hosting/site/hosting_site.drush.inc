@@ -126,7 +126,10 @@ function hosting_site_post_hosting_delete_task($task, $data) {
 function hosting_site_post_hosting_backup_task($task, $data) {
   if ($data['context']['backup_file'] && $task->ref->type == 'site') {
     $platform = node_load($task->ref->platform);
-    hosting_site_add_backup($task->ref->nid, $platform->web_server, $data['context']['backup_file'], t('Generated on request'));
+
+    $desc = $task->task_args['description'];
+    $desc = ($desc) ? $desc : t('Generated on request');
+    hosting_site_add_backup($task->ref->nid, $platform->web_server, $data['context']['backup_file'], $desc);
   }
 }
 
