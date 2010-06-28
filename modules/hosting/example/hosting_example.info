@@ -1,0 +1,6 @@
+name = Hosting example
+description = Contains example implementations of the Hosting API.
+package = Hosting
+dependencies[] = hosting
+
+core = 6.x
