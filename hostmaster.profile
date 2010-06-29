@@ -71,8 +71,8 @@ function hostmaster_bootstrap() {
 
 
   hosting_services_add($node, 'http', 'apache', array(
-   'restart_cmd' => d()->platform->server->restart_cmd,
-   'ports' => implode(", ", d()->platform->server->web_ports),
+   'restart_cmd' => d()->platform->server->http_restart_cmd,
+   'port' => 80,
    'available' => 1,
   ));
 
