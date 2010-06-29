@@ -52,7 +52,7 @@ function hosting_example_hosting_service_type() {
  * file, or create a new file, containing the implementation of your service.
  */
 function hosting_example_hosting_service() {
-  return array('example' => 'basic');
+  return array('basic' => 'example');
 }
 
 /**
