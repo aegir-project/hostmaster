@@ -28,5 +28,5 @@ function hosting_site_hosting_quota_get_usage ($client, $resource, $start = NULL
  * Implement hook_hosting_quota_resource_render
  */
 function hosting_site_hosting_quota_resource_render ($resource, $usage) {
-  return $usage . ' sites';
+  return t('@usage sites', '@usage' => $usage);
 }
