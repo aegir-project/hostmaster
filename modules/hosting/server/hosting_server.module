@@ -303,6 +303,7 @@ function hosting_nodeapi_server_delete_revision(&$node) {
  */
 function hosting_server_delete($node) {
   db_query('DELETE FROM {hosting_server} WHERE nid = %d', $node->nid);
+  hosting_context_delete($node->nid);
   hosting_server_invoke_services($node, 'delete_revision');
 }
 

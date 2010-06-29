@@ -285,6 +285,8 @@ function hosting_nodeapi_platform_delete_revision(&$node) {
 function hosting_platform_delete($node) {
   db_query('DELETE FROM {hosting_platform} WHERE nid = %d', $node->nid);
   db_query('DELETE FROM {hosting_package_instance} WHERE rid=%d', $node->nid);
+
+  hosting_context_delete($node->nid);
   $result = db_query("SELECT distinct nid FROM {hosting_task} WHERE rid=%d", $node->nid);
   while ($nid = db_fetch_object($result)) {
     node_delete($nid->nid);
