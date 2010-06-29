@@ -71,17 +71,6 @@ function hosting_platform_hosting_tasks() {
   return $tasks;
 }
 
-/**
- * Implementation of hook_hosting_feature()
- */
-function hosting_platform_hosting_feature() {
-  $features['platform'] = array(
-      'title' => t('Platforms'), 
-      'description' => t('Allow for management of multiple platforms.'),
-      'status' => HOSTING_FEATURE_ENABLED,
-      'node' => 'platform');
-  return $features;
-}
 
 /**
  * Implementation of hook_perm()
@@ -94,10 +83,6 @@ function hosting_platform_perm() {
  * Implementation of hook_access()
  */
 function hosting_platform_access($op, $node, $account) {
-  if (!hosting_feature('platform')) {
-    return FALSE;
-  }
-
   switch ($op) {
     case 'create':
       return user_access('create platform', $account);
