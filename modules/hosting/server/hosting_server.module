@@ -183,7 +183,15 @@ function hosting_server_form(&$node) {
     '#description' => t('The host name of the server. This is the address that will be used by Hostmaster to connect to the server to issue commands.<br /><strong>Be careful when changing the node title, it is used to create the SQL users if the IP address, below, is not set.</strong>'),
     '#weight' => -10
   );
- 
+
+  $form['ip_addresses'] = array(
+      '#type' => 'textarea',
+      '#title' => t('Ip addresses'),
+      '#description' => t('A list of IP addresses this server is publicly available under, one per line.'),
+      '#default_value' => implode("\n", _hosting_server_ip_list($node->ip_addresses)),
+      '#weight' => -9,
+    );
+
 
   $form['services'] = array('#weight' => -5, '#tree' => TRUE);
 
@@ -234,6 +242,14 @@ function hosting_nodeapi_server_presave(&$node) {
  * Implementation of hook_validate().
   */
 function hosting_server_validate(&$node, &$form) {
+  
+  foreach (_hosting_server_ip_list($node->ip_addresses) as $ip) {
+    if (!_hosting_valid_ip($ip)) {
+      form_set_error('ip_addresses', t('Invalid IP address.'));
+      break;
+    }
+  }
+
   if (!_hosting_valid_fqdn($node->title)) {
     form_set_error('title', t('Invalid domain name. Use a proper domain name or an IP address.'));
   }
@@ -241,6 +257,24 @@ function hosting_server_validate(&$node, &$form) {
   hosting_server_services_from_post($node);
 
   hosting_server_invoke_services($node, 'validate', $node, $form);
+}
+
+
+/**
+ * Get an array from the text ip address list.
+ */
+function _hosting_server_ip_list($addresses) {
+  $return = array();
+  $ip_list = is_array($addresses) ? $addresses : explode("\n", $addresses);
+  
+  foreach ($ip_list as $key => $ip) {
+    $ip = trim($ip);
+    if (!empty($ip)) {
+      $return[$key] = $ip;
+    }
+  }
+
+  return $return;
 }
 
 /**
@@ -264,6 +298,13 @@ function hosting_server_update($node) {
     }
   }
 
+  db_query("DELETE FROM {hosting_server_ip} WHERE vid=%d", $node->vid);
+  $ip_list = _hosting_server_ip_list($node->ip_addresses);
+
+  foreach ($ip_list as $ip) {
+    db_query("INSERT INTO {hosting_server_ip} (vid, nid, ip_address) VALUES (%d, %d, '%s')", $node->vid, $node->nid, $ip); 
+  }
+
   if (!$node->no_verify) {
     hosting_add_task($node->nid, 'verify');
   }
@@ -282,6 +323,12 @@ function hosting_server_insert($node) {
         VALUES (%d, %d)", 
         $node->vid, $node->nid);
 
+  $ip_list = _hosting_server_ip_list($node->ip_addresses);
+
+  foreach ($ip_list as $ip) {
+    db_query("INSERT INTO {hosting_server_ip} (vid, nid, ip_address) VALUES (%d, %d, '%s')", $node->vid, $node->nid, $ip); 
+  }
+
   hosting_server_invoke_services($node, 'save', $node);
   hosting_server_invoke_services($node, 'insert', $node);
 
@@ -295,6 +342,7 @@ function hosting_server_insert($node) {
  */
 function hosting_nodeapi_server_delete_revision(&$node) {
   db_query('DELETE FROM {hosting_server} WHERE vid = %d', $node->vid);
+  db_query("DELETE FROM {hosting_server_ip} WHERE vid=%d", $node->vid);
   hosting_server_invoke_services($node, 'delete_revision');
 }
 
@@ -303,6 +351,7 @@ function hosting_nodeapi_server_delete_revision(&$node) {
  */
 function hosting_server_delete($node) {
   db_query('DELETE FROM {hosting_server} WHERE nid = %d', $node->nid);
+  db_query("DELETE FROM {hosting_server_ip} WHERE nid=%d", $node->nid);
   hosting_context_delete($node->nid);
   hosting_server_invoke_services($node, 'delete_revision');
 }
@@ -315,6 +364,14 @@ function hosting_server_load($node) {
   hosting_server_invoke_services($node, 'load');
   $additions = new stdClass();
   $additions->services = $node->services;
+
+  $ip_list = array();
+  $result = db_query("SELECT ip_address FROM {hosting_server_ip} WHERE vid=%d", $node->vid);
+  while ($obj = db_fetch_object($result)) {
+    $ip_list[] = $obj->ip_address;
+  }
+
+  $additions->ip_addresses = $ip_list;
 
   return $additions;
 }
@@ -351,6 +408,17 @@ function hosting_server_view(&$node, $teaser = FALSE, $page = FALSE) {
     '#prefix' => '<div id="hosting-server-info">',
     '#suffix' => '</div>'
   );
+
+  $ip_list = _hosting_server_ip_list($node->ip_addresses);
+
+  if (sizeof($ip_list)) {
+    $node->content['info']['ip_addresses'] = array(
+      '#type' => 'item',
+      '#title' => t('IP addresses'),
+      '#value' => implode('<br />', $ip_list),
+      '#weight' => -30,
+    );  
+  }
 
   foreach ($node->services as $name => $service) {
     $node->content['info'][$name] = array(
