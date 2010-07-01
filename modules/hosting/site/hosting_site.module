@@ -27,6 +27,13 @@ function hosting_site_menu() {
     'access arguments' => array('create site') 
   );
 
+  $items['hosting/hosting_site_form_check'] = array(
+    'page callback' =>'_hosting_site_form_check',
+    'type' => MENU_CALLBACK,
+    'access arguments' => array('access content'),
+  );
+           
+
   $items['node/%hosting_site_node/goto_site'] = array(
     'page callback' => 'hosting_site_goto',
     'page arguments' => array(1),
@@ -36,6 +43,13 @@ function hosting_site_menu() {
   );
 
   return $items;
+}
+
+function _hosting_site_form_check() {
+  drupal_json(
+    hosting_site_available_options($_POST)
+  );
+  exit();
 }
 
 /**
