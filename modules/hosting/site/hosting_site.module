@@ -239,7 +239,6 @@ function hosting_site_form($node) {
     $form['info']['#suffix'] = '<br /></div>';
   }
 
-
   _hosting_site_form_element($form, $node, 'title', array(
       '#type' => 'textfield',
       '#title' => t('Domain name'),
@@ -248,54 +247,18 @@ function hosting_site_form($node) {
       '#weight' => -5
     ));
 
-  # find the right client
-  global $user;
-  $current_client_id = 0;
-
-  if ($user->uid) {
-    $client_ids = hosting_get_client_from_user($user->uid);
-    $clients = array();
-    foreach($client_ids as $client_id => $client_permissions) {
-      $client_id = $client_id ? $client_id : HOSTING_DEFAULT_CLIENT;
-      $client = node_load($client_id);
-      $clients[$client->title] = $client->title;
-      if ($node->client == $client_id || !$current_client_id) {
-        $current_client_id = $client_id;
-      }
-    }
-    if (!$current_client_id && !user_access('administer site')) {
-      form_set_error('client', t('Your user is not associated with any clients so you are not allowed to create new sites'));
-    }
-  }
-
-  if (!$current_client_id) {
-    $current_client_id = HOSTING_DEFAULT_CLIENT;
-  }
-
-  // allow admins to override
-  if ($node->client && user_access('administer site')) {
-    $current_client_id = $node->client;
-  }
-
-  $client = node_load($current_client_id);
-  if (!$client) {
-    # we give up, couldn't find a client, we're probably in a preview so
-    # just use the node client
-    $client = new stdClass();
-    $client->title = $node->client;
-  }
-
   $editable = ((!$node->client || $node->nid) || user_access('administer site')) && hosting_feature('client');
   _hosting_site_form_element($form, $node, 'client', array(
     '#type' => 'textfield',
     '#required' => TRUE,
     '#title' => t('Client'),
-    '#default_value' => $client->title,
+    '#default_value' => _hosting_client_site_default($node),
     '#description' => t('The client who this site belongs to.'),
     '#autocomplete_path' => 'hosting_client/autocomplete/client',
   ), 'filter_xss', $editable);
 
-  
+
+ // TODO : move this someplace more appropriate 
   $platforms = _hosting_get_platforms();
   $user = user_load($GLOBALS['user']->uid);
   if (sizeof($platforms)) {
@@ -317,7 +280,7 @@ function hosting_site_form($node) {
        '#required' => TRUE,
        '#description' => t('The platform you want the site to be hosted on.'),
        '#options' => $options,
-       '#default_value' => HOSTING_DEFAULT_PLATFORM,
+       '#default_value' => ($node->platform) ? $node->platform : HOSTING_DEFAULT_PLATFORM,
      ), '_hosting_node_link');
   }
   else {

@@ -519,6 +519,52 @@ function hosting_client_menu() {
   return $items;
 }
 
+
+/**
+ * Get the default value of the client field for a site node.
+ */
+function _hosting_client_site_default($node) {
+  # find the right client
+  global $user;
+  $current_client_id = 0;
+
+  if ($user->uid) {
+    $client_ids = hosting_get_client_from_user($user->uid);
+    $clients = array();
+    foreach($client_ids as $client_id => $client_permissions) {
+      $client_id = $client_id ? $client_id : HOSTING_DEFAULT_CLIENT;
+      $client = node_load($client_id);
+      $clients[$client->title] = $client->title;
+      if ($node->client == $client_id || !$current_client_id) {
+        $current_client_id = $client_id;
+      }
+    }
+    if (!$current_client_id && !user_access('administer site')) {
+      form_set_error('client', t('Your user is not associated with any clients so you are not allowed to create new sites'));
+    }
+  }
+
+  if (!$current_client_id) {
+    $current_client_id = HOSTING_DEFAULT_CLIENT;
+  }
+
+  // allow admins to override
+  if ($node->client && user_access('administer site')) {
+    $current_client_id = $node->client;
+  }
+
+  $client = node_load($current_client_id);
+  if (!$client) {
+    # we give up, couldn't find a client, we're probably in a preview so
+    # just use the node client
+    $client = new stdClass();
+    $client->title = $node->client;
+  }
+
+  return $client->title;
+}
+
+
 /**
  * wrapper around the regular site_node_form that passes a dummy site with a proper client
  */
