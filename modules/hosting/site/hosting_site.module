@@ -5,6 +5,7 @@ define('HOSTING_SITE_DISABLED', -1);
 define('HOSTING_SITE_QUEUED', 0);
 define('HOSTING_SITE_ENABLED', 1);
 
+include_once('hosting_site.nodeapi.inc');
 include_once('hosting_site.form.inc');
 include_once('hosting_site.backups.inc');
 
@@ -14,18 +15,118 @@ if (module_exists('hosting_quota')) {
 }
 
 /**
- * Implementation of hook_node_info
+ * Implementation of hook_menu()
  */
-function hosting_site_node_info() {
-  $types["site"] =  array(
-    "type" => 'site', "name" => 'Site',
-    "module" => 'hosting_site',
-    "has_title" => TRUE, "title_label" => 'Domain name', 
-    "description" => hosting_node_help("site"),
-    "has_body" => 0, "body_label" => '', "min_word_count" => 0);
-  return $types;
+function hosting_site_menu() {
+  $items = array();
+
+  $items['hosting/sites'] = array(
+    'title' => 'Sites',
+    'description' => 'Display a list of sites',
+    'page callback' => 'hosting_sites',
+    'access arguments' => array('create site') 
+  );
+
+  $items['node/%hosting_site_node/goto_site'] = array(
+    'page callback' => 'hosting_site_goto',
+    'page arguments' => array(1),
+    'access callback' => 'node_access',
+    'access arguments' => array('view', 1),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
 }
 
+/**
+ * Implementation of hook_load().
+ *
+ * @param arg
+ *    Node's numeric nid
+ */
+function hosting_site_node_load($arg) {
+ if (!is_numeric($arg)) {
+    return FALSE;
+  }
+  if ($node = node_load($arg)) {
+    if ($node->type == 'site') {
+      return $node;
+    }
+  }
+  return FALSE;
+}
+
+/**
+ * Page handler for displaying list of hosted sites on front page
+ */
+function hosting_sites() {
+  if ($list = hosting_site_list()) {
+    return $list;
+  }
+  $create_site_link = l(t('Create a site now?'), 'node/add/site');
+  return t("No sites have been created yet. !link", array(
+    '!link' => $create_site_link));
+}
+
+/**
+ * Generate a link allowing the user to log into their new site, or simply
+ * go to the site front page if the link has expired.
+ */
+function _hosting_site_goto_link($node) {
+  $cache = cache_get("hosting:site:" . $node->nid . ":login_link");
+  if (!is_null($cache) && (mktime() < $cache->data['expire'])) {
+    $title = t("Log in to !url" , array('!url' => $node->title));
+  }
+  else {
+    $title = t("Go to !url" , array('!url' => $node->title));
+  }
+  $options['attributes']['class'] = 'hosting-goto-site-link';
+  return l($title, "node/" . $node->nid . "/goto_site", $options); 
+}
+
+/**
+ * Menu callback to go to your site.
+ *
+ * This needs to be a callback because the link is only going to work once, 
+ * so this will remove the link from the cache and just redirect to the site
+ * not the login page.
+ */
+function hosting_site_goto($node) {
+  $cid = "hosting:site:" . $node->nid . ":login_link";
+  $cache = cache_get($cid);
+  if (!is_null($cache) && (mktime() < $cache->data['expire'])) {
+    $theurl = $cache->data['link'];
+    cache_clear_all($cid, 'cache');
+  }
+  else {
+    $port = hosting_site_get_port($node);
+
+
+    switch($node->port) {
+      case 0 :
+      case 80:
+        $theurl = 'http://' . $node->title;
+      break;
+      case 443:
+        $theurl = 'https://' . $node->title;
+      break;
+      default:
+       $theurl = 'http://' . $node->title . ':' . $port;
+    }
+  }
+
+  drupal_goto($theurl);
+  exit();
+}
+
+/**
+ * Retrieve the port the site will be available on, so we can redirect.
+ */
+function hosting_site_get_port($node) {
+  $platform = node_load($node->platform);
+  $server = node_load($platform->web_server);
+  return $server->services['http']->port;
+}
 
 /**
  * Implementation of hook_hosting_tasks
@@ -83,10 +184,8 @@ function hosting_site_hosting_tasks() {
     'hidden' => TRUE
   );
 
-
   return $tasks;
 }
-
 
 /**
  * Implementation of hook_perm
@@ -215,195 +314,6 @@ function hosting_import_site($site_id, $data, $platform = HOSTING_DEFAULT_PLATFO
 }
 
 /**
- * Implementation of hook_nodeapi().
- */
-function hosting_site_nodeapi(&$node, $op, $teaser, $page) {
-  switch($op) {
-    case 'presave':
-      $node->title = strtolower(trim($node->title)); // domain names are case-insensitive
-      break;
-  }
-}
-
-/**
- * Implementation of hook_insert().
- */
-function hosting_site_insert(&$node) {
-  $client = hosting_get_client($node->client);
-  $node->client = $client->nid;
-  $node->site_language = ($node->site_language) ? $node->site_language : 'en';
-
-  db_query("INSERT INTO {hosting_site} (vid, nid, client, db_server, platform, profile, language, last_cron, status, verified, `ssl`, ssl_redirect) VALUES (%d, %d, %d, %d, %d, %d, '%s', %d, %d, %d, %d, %d)",
-           $node->vid, $node->nid, $node->client, $node->db_server, $node->platform, $node->profile, $node->site_language, $node->last_cron, $node->site_status, $node->verified, $node->ssl, $node->ssl_redirect);
-  if ((!$node->old_vid)) {
-    hosting_context_register($node->nid, ($node->hosting_name) ? $node->hosting_name : $node->title);
-    if ($node->import) {
-      hosting_add_task($node->nid, 'import');
-    }
-    else {
-      hosting_add_task($node->nid, 'install');
-    }
-  }
-}
-
-/**
- * Implementation of hook_update().
- */
-function hosting_site_update(&$node) {
-  // if this is a new node or we're adding a new revision,
-  if ($node->revision) {
-    hosting_site_insert($node);
-  }
-  else {
-    $client = hosting_get_client($node->client);
-    $node->client = $client->nid;
-    if ($node->site_status == HOSTING_SITE_DELETED) {
-      $node->no_verify = TRUE;
-    }
-    db_query("UPDATE {hosting_site} SET client = %d, db_server = %d, platform = %d, last_cron = %d, status = %d, profile = %d, language = '%s', verified = %d, `ssl` = %d, ssl_redirect = %d WHERE vid=%d",
-             $node->client, $node->db_server, $node->platform, $node->last_cron, $node->site_status, $node->profile, $node->site_language, $node->verified, $node->ssl, $node->ssl_redirect, $node->vid);
-  }
-  if (!$node->no_verify) {
-    hosting_add_task($node->nid, 'verify');
-  }
-}
-
-/**
- * Implementation of hook_load().
- *
- * @param node
- *    Node object
- */
-function hosting_site_load($node) {
-  $additions = db_fetch_object(db_query('SELECT  client, db_server, platform, profile, language as site_language, last_cron, status AS site_status, verified, `ssl`, ssl_redirect FROM {hosting_site} WHERE vid = %d', $node->vid));
-  return $additions;
-}
-
-/**
- * Implementation of hook_load().
- *
- * @param arg
- *    Node's numeric nid
- */
-function hosting_site_node_load($arg) {
- if (!is_numeric($arg)) {
-    return FALSE;
-  }
-  if ($node = node_load($arg)) {
-    if ($node->type == 'site') {
-      return $node;
-    }
-  }
-  return FALSE;
-}
-
-/**
- * Implementation of hook_nodeapi_delete_revision().
- */
-function hosting_nodeapi_site_delete_revision(&$node) {
-  db_query('DELETE FROM {hosting_site} WHERE vid = %d', $node->vid);
-}
-
-/**
- * Implementation of hook_delete().
- */
-function hosting_site_delete($node) {
-  db_query('DELETE FROM {hosting_site} WHERE nid = %d', $node->nid);
-  db_query('DELETE FROM {hosting_package_instance} WHERE rid=%d', $node->nid);
-  hosting_context_delete($node->nid);
-  $result = db_query("SELECT distinct nid FROM {hosting_task} WHERE rid=%d", $node->nid);
-  while ($nid = db_fetch_object($result)) {
-    node_delete($nid->nid);
-  }
-}
-
-/**
- * Implementation of hook_view().
- */
-function hosting_site_view(&$node, $teaser = false) {
-  hosting_set_breadcrumb($node);
-  modalframe_parent_js();
-  $node->content['info']['#prefix'] = '<div id="hosting-site-info">';
-  if ($node->site_status == HOSTING_SITE_ENABLED) {
-    $node->content['info']['link'] = array(
-      '#value' => _hosting_site_goto_link($node),
-      '#weight' => -10
-    );
-  }
-
-  if (is_numeric($node->client)) {
-    $node->content['info']['client'] = array(
-      '#type' => 'item',
-      '#title' => t('Client'),
-      '#value' => _hosting_node_link($node->client),
-      '#weight' => 5
-    );
-  }
-
-  $node->content['info']['verified'] = array(
-    '#type' => 'item',
-    '#title' => t('Verified'),
-    '#value' => hosting_format_interval($node->verified),
-  );
-  
-  $node->content['info']['platform'] = array(
-    '#type' => 'item',
-    '#title' => t('Platform'),
-    '#value' => _hosting_node_link($node->platform),
-  );
-
-  if ($node->profile) {
-    $node->content['info']['profile'] = array(
-      '#type' => 'item',
-      '#title' => t('Install profile'),
-      '#value' => _hosting_node_link($node->profile),
-    );
-  }
-  if ($node->site_language) {
-    $node->content['info']['site_language'] = array(
-      '#type' => 'item',
-      '#title' => t('Language'),
-      '#value' => _hosting_language_name($node->site_language),
-    );
-  }
-  if ($node->db_server) {
-    $node->content['info']['db_server'] = array(
-      '#type' => 'item',
-      '#title' => t('Database server'),
-      '#value' => _hosting_node_link($node->db_server),
-    );
-  }
-
-  if ($node->nid) { 
-    $node->content['info']['status'] = array(
-      '#type' => 'item',
-      '#title' => t('Status'),
-      '#value' => _hosting_site_status($node),
-    );
-  }
-
-  $node->content['info']['#suffix'] = '</div>';
-
-  if ($node->nid) { 
-    $node->content['tasks_view'] = array(
-      '#type' => 'item',
-      '#value' => hosting_task_table($node),
-      '#prefix' => '<div id="hosting-task-list">',
-      '#suffix' => '</div>', 
-      '#weight' => 10
-    );
-    $settings['hostingTaskRefresh'] = array(
-      'nid' => $node->nid,
-      'changed' => $node->changed,
-    );
-    drupal_add_js($settings, 'setting');
-
-    drupal_add_js(drupal_get_path('module','hosting_task') . '/hosting_task.js');
-  }
-  return $node;
-}
-
-/**
  * Define the status types of a site
  */
 function _hosting_site_status($node) {
@@ -415,9 +325,6 @@ function _hosting_site_status($node) {
   );
   return $labels[$node->site_status];
 }
-
-
-
 
 /**
  * Check if a site exists in a somehow wrong way
@@ -540,103 +447,6 @@ function _hosting_site_list_class($node) {
   }
 
   return $classes[$node->site_status];
-}
-
-/**
- * Page handler for displaying list of hosted sites on front page
- */
-function hosting_sites() {
-  if ($list = hosting_site_list()) {
-    return $list;
-  }
-  $create_site_link = l(t('Create a site now?'), 'node/add/site');
-  return t("No sites have been created yet. !link", array(
-    '!link' => $create_site_link));
-}
-
-/**
- * Implementation of hook_menu()
- */
-function hosting_site_menu() {
-  $items = array();
-
-  $items['hosting/sites'] = array(
-    'title' => 'Sites',
-    'description' => 'Display a list of sites',
-    'page callback' => 'hosting_sites',
-    'access arguments' => array('create site') 
-  );
-
-  $items['node/%hosting_site_node/goto_site'] = array(
-    'page callback' => 'hosting_site_goto',
-    'page arguments' => array(1),
-    'access callback' => 'node_access',
-    'access arguments' => array('view', 1),
-    'type' => MENU_CALLBACK,
-  );
-
-  return $items;
-}
-
-
-/**
- * Generate a link allowing the user to log into their new site, or simply
- * go to the site front page if the link has expired.
- */
-function _hosting_site_goto_link($node) {
-  $cache = cache_get("hosting:site:" . $node->nid . ":login_link");
-  if (!is_null($cache) && (mktime() < $cache->data['expire'])) {
-    $title = t("Log in to !url" , array('!url' => $node->title));
-  }
-  else {
-    $title = t("Go to !url" , array('!url' => $node->title));
-  }
-  $options['attributes']['class'] = 'hosting-goto-site-link';
-  return l($title, "node/" . $node->nid . "/goto_site", $options); 
-}
-
-/**
- * Menu callback to go to your site.
- *
- * This needs to be a callback because the link is only going to work once, 
- * so this will remove the link from the cache and just redirect to the site
- * not the login page.
- */
-function hosting_site_goto($node) {
-  $cid = "hosting:site:" . $node->nid . ":login_link";
-  $cache = cache_get($cid);
-  if (!is_null($cache) && (mktime() < $cache->data['expire'])) {
-    $theurl = $cache->data['link'];
-    cache_clear_all($cid, 'cache');
-  }
-  else {
-    $port = hosting_site_get_port($node);
-
-
-    switch($node->port) {
-      case 0 :
-      case 80:
-        $theurl = 'http://' . $node->title;
-      break;
-      case 443:
-        $theurl = 'https://' . $node->title;
-      break;
-      default:
-       $theurl = 'http://' . $node->title . ':' . $port;
-    }
-  }
-
-  drupal_goto($theurl);
-  exit();
-}
-
-/**
- * Retrieve the port the site will be available on, so we can redirect.
- */
-function hosting_site_get_port($node) {
-  $platform = node_load($node->platform);
-  $server = node_load($platform->web_server);
-  return $server->services['http']->port;
 }
 
 /**
