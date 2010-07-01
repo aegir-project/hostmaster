@@ -217,10 +217,12 @@ function hosting_import_site($site_id, $data, $platform = HOSTING_DEFAULT_PLATFO
  * Add the needed .js and .css files to render the form correctly before printing it
  */
 function _hosting_site_form_pre_render($elements) {
-  drupal_add_js(drupal_get_path('module', 'hosting_site') . '/hosting_site_form.js');
-  drupal_add_css(drupal_get_path('module', 'hosting_site') . '/hosting_site_form.css');
+  #drupal_add_js(drupal_get_path('module', 'hosting_site') . '/hosting_site_form.js');
+  #drupal_add_css(drupal_get_path('module', 'hosting_site') . '/hosting_site_form.css');
   return $elements;
 }
+
+include_once('hosting_site.form.inc');
 
 /**
  * Implementation of hook_form
@@ -236,27 +238,15 @@ function hosting_site_form($node) {
     $form['info']['#prefix'] = '<div class="clear-block" id="hosting-site-edit-info">';
     $form['info']['#suffix'] = '<br /></div>';
   }
-  // We need to define form elements for the node's title and body.
-  if (!$node->nid) {
-    $form['title'] = array(
+
+
+  _hosting_site_form_element($form, $node, 'title', array(
       '#type' => 'textfield',
       '#title' => t('Domain name'),
       '#required' => TRUE,
       '#default_value' => $node->title,
       '#weight' => -5
-    );
-  }
-  else {
-    $form['info']['title'] = array(
-      '#type' => 'item',
-      '#title' => t('Domain name'),
-      '#value' => $node->title,
-      '#weight' => -5
-    );
-
-    $form['title'] = array('#type' => 'hidden', '#value' => $node->title);
-  }
-
+    ));
 
   # find the right client
   global $user;
@@ -295,113 +285,85 @@ function hosting_site_form($node) {
     $client->title = $node->client;
   }
 
-  // If the user is an admin or if it's a new site, they can edit who the client of the site is
-  if (((!$node->client || $node->nid) || user_access('administer site')) && hosting_feature('client')) {
-    $form['client'] = array(
-      '#type' => 'textfield',
-      '#required' => TRUE,
-      '#title' => t('Client'),
-      '#default_value' => $client->title,
-      '#description' => t('The client who this site belongs to.'),
-      '#autocomplete_path' => 'hosting_client/autocomplete/client',
-    );
-  }
-  // If the user is a client, they cannot choose who the client is
-  else {
-    $form['client'] = array('#type' => 'hidden', '#value' => $client->title);
-    $form['info']['client'] = array(
-      '#type' => 'item',
-      '#title' => t('Client'),
-      '#value' => $client->title,
-    );
-  }
-  if (!$node->nid) {
-    /* If Client module exists, non-admin user sees only accessible platforms
-     * Otherwise, use enabled platforms
-     * Admin user isn't restricted to only accessible platforms for the client
-    */
-    $platforms = _hosting_get_platforms();
-    $user = user_load($GLOBALS['user']->uid);
-    if (sizeof($platforms)) {
-      foreach ($platforms as $nid => $title) {
-        $platform = node_load($nid);
+  $editable = ((!$node->client || $node->nid) || user_access('administer site')) && hosting_feature('client');
+  _hosting_site_form_element($form, $node, 'client', array(
+    '#type' => 'textfield',
+    '#required' => TRUE,
+    '#title' => t('Client'),
+    '#default_value' => $client->title,
+    '#description' => t('The client who this site belongs to.'),
+    '#autocomplete_path' => 'hosting_client/autocomplete/client',
+  ), 'filter_xss', $editable);
 
-        if ($platform->platform_status != HOSTING_PLATFORM_LOCKED) {
-          if (!isset($platform->clients) || sizeof(array_intersect(array_keys($user->client_id), $platform->clients)) || $user->uid == 1) {
-            $options[$nid] = $title;
-          }
+  
+  $platforms = _hosting_get_platforms();
+  $user = user_load($GLOBALS['user']->uid);
+  if (sizeof($platforms)) {
+    foreach ($platforms as $nid => $title) {
+      $platform = node_load($nid);
+
+      if ($platform->platform_status != HOSTING_PLATFORM_LOCKED) {
+        if (!isset($platform->clients) || sizeof(array_intersect(array_keys($user->client_id), $platform->clients)) || $user->uid == 1) {
+          $options[$nid] = $title;
         }
       }
-
-      if (sizeof($options) > 1) {
-        $form['platform'] = array(
-          '#type' => 'radios',
-          '#title' => t('Platform'),
-          '#required' => TRUE,
-          '#description' => t('The platform you want the site to be hosted on.'),
-          '#options' => $options,
-          '#default_value' => HOSTING_DEFAULT_PLATFORM,
-        );
-      }
-      elseif (sizeof($options) == 1) {
-        $form['platform'] = array('#type' => 'hidden', '#value' => key($options));
-      }
-      else { 
-        drupal_set_message(t('You have no enabled platforms! Please add or unlock a platform before attempting to create a site.'), 'error');
-      }
-
-      $form['profile'] = _hosting_site_form_profile();
-      $form['site_language'] = _hosting_site_form_site_language();
     }
-    else {
-      drupal_set_message(t('You have no enabled platforms! Please add or unlock a platform before attempting to create a site.'), 'error');
-    }
+  }
+
+  if (sizeof($options) > 0) {
+    _hosting_site_form_element($form, $node, 'platform', array(
+       '#type' => 'radios',
+       '#title' => t('Platform'),
+       '#required' => TRUE,
+       '#description' => t('The platform you want the site to be hosted on.'),
+       '#options' => $options,
+       '#default_value' => HOSTING_DEFAULT_PLATFORM,
+     ), '_hosting_node_link');
   }
   else {
-    $form['info']['platform'] = array(
-      '#type' => 'item',
-      '#title' => t('Platform'),
-      '#value' => _hosting_node_link($node->platform),
-     );
-    $form['platform'] = array('#type' => 'hidden', '#value' => $node->platform);
-    $form['info']['profile'] = array(
-       '#type' => 'item',
-       '#title' => t('Install Profile'),
-       '#value' => _hosting_node_link($node->profile),
-    );
-    $form['profile'] = array('#type' => 'hidden', '#value' => $node->profile);
-    $form['info']['site_language'] = array(
-      '#type' => 'item',
-      '#title' => t('Language'),
-      '#value' => _hosting_language_name($node->site_language),
-    );
-    $form['site_language'] = array('#type' => 'hidden', '#value' => $node->site_language);
+    drupal_set_message(t('You have no enabled platforms! Please add or unlock a platform before attempting to create a site.'), 'error');
   }
 
-  if (!$node->nid) {
-    $db_servers = hosting_get_servers('db');
-    if (sizeof($db_servers) > 1) {
-      $form['db_server'] = array(
+  // Install profiles 
+  $profiles = hosting_get_profiles();
+  foreach($profiles as $id => $name) {
+    // Don't allow a site to be provisioned with hostslave or hostmaster profile
+    if (in_array($name, array('hostslave', 'hostmaster'))) {
+      unset($profiles[$id]);
+    }
+  }
+  reset($profiles);
+
+  _hosting_site_form_element($form, $node, 'profile', array(
+      '#type' => 'radios',
+      '#title' => t('Install profile'),
+      '#description' => t('The type of site to install.'),
+      '#options' => $profiles,
+      '#default_value' => $node->profile ? $node->profile : key($profiles),
+      '#required' => TRUE,
+      '#attributes' => array('class' => "hosting-site-form-profile-options"),
+    ), '_hosting_node_link');
+
+  _hosting_site_form_element($form, $node, 'site_language', array(
+      '#type' => 'radios',
+      '#title' => t('Language'),
+      '#description' => t('The type of site to install.'),
+      '#options' => hosting_get_profile_languages(),
+      '#required' => TRUE,
+      '#default_value' => $node->site_language ? $node->site_language : 'en',
+      '#attributes' => array('class' => "hosting-site-form-site-language-options"),
+    ), '_hosting_language_name');
+
+
+  _hosting_site_form_element($form, $node, 'db_server', array(
         '#type' => 'radios',
         '#title' => t('Database server'),
         '#required' => TRUE,
         '#description' => t('The database server the site will use to host it\'s content.'),
-        '#options' => $db_servers,
+        '#options' => hosting_get_servers('db'),
         '#default_value' => $node->db_server,
-      );
-    }
-    else {
-      $form['db_server'] = array('#type' => 'hidden', '#value' => key($db_servers));
-    } 
-  }
-  else {
-    $form['info']['db_server'] = array(
-      '#type' => 'item',
-      '#title' => t('Database Server'),
-      '#value' => _hosting_node_link($node->db_server),
-    );
-    $form['db_server'] = array('#type' => 'hidden', '#value' => $node->db_server);
-  }
+      ), '_hosting_node_link');
+
   foreach(array('verified', 'last_cron', 'site_status') as $extra_attribute) {
     $form["$extra_attribute"] = array('#type' => 'value', '#value' => $node->$extra_attribute);
   }
@@ -884,56 +846,6 @@ function hosting_site_menu() {
   return $items;
 }
 
-/**
- * Generate hosting site node form element 'profile'
- */
-function _hosting_site_form_profile($platform = NULL) {
-  $profiles = hosting_get_profiles($platform);
-  foreach($profiles as $id => $name) {
-    // Don't allow a site to be provisioned with hostslave or hostmaster profile
-    if (in_array($name, array('hostslave', 'hostmaster'))) {
-      unset($profiles[$id]);
-    }
-  }
-  reset($profiles);
-  if (sizeof($profiles) >= 1) {
-    $form['profile'] = array(
-      '#type' => 'radios',
-      '#title' => t('Install profile'),
-      '#description' => t('The type of site to install.'),
-      '#options' => $profiles,
-      '#default_value' => key($profiles),
-      '#required' => TRUE,
-      '#attributes' => array('class' => "hosting-site-form-profile-options"),
-    );
-  }
-  else {
-    $form['profile'] = array('#type' => 'hidden', '#value' => key($profiles), '#attributes' => array('class' => "hosting-site-form-profile-options"));
-  }
-  return $form['profile'];
-}
-
-/**
- * Generate hosting site node form element 'language'
- */
-function _hosting_site_form_site_language($profile = NULL, $platform = null) {
-  $languages = hosting_get_profile_languages($profile, $platform);
-  if (sizeof($languages) > 1) {
-    $form['site_language'] = array(
-      '#type' => 'radios',
-      '#title' => t('Language'),
-      '#description' => t('The type of site to install.'),
-      '#options' => $languages,
-      '#required' => TRUE,
-      '#default_value' => 'en',
-      '#attributes' => array('class' => "hosting-site-form-site-language-options"),
-    );
-  }
-  else {
-    $form['site_language'] = array('#type' => 'hidden', '#default_value' => 'en', '#attributes' => array('class' => "hosting-site-form-site-language-options"));
-  }
-  return $form['site_language'];
-}
 
 /**
  * Populate hosting site node form element with specified arguments
