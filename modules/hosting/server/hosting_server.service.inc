@@ -23,7 +23,6 @@ class hostingService {
     $this->setValues($result);
   }
 
-
   public function setValues($values = null) {
     if (is_array($values)) {
       foreach ($values as $key => $value) {
