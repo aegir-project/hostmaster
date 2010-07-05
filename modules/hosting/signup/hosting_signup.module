@@ -3,9 +3,6 @@
  * @file Provides a signup form that can be run on remote sites
  */
 
-require_once('hosting_signup.frontend.inc');
-require_once('hosting_signup.backend.inc');
-
 /**
  * Implementation of hook_menu
  */
@@ -17,33 +14,6 @@ function hosting_signup_menu() {
     'page arguments' => array('hosting_signup_form'),
     'access arguments' => array('access hosting signup form'),
   );
-  $items['admin/hosting/signup'] = array(
-    'title' => 'Signup form',
-    'description' => 'Configure the behaviour of the simplified hosting signup form',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('hosting_signup_settings'),
-    'access arguments' => array('administer hosting signup form'),
-    'type' => MENU_LOCAL_TASK,
-  );
-  $items['hosting/signup/get_form'] = array(
-    'title' => 'Sign up for a site',
-    'description' => 'Create your own hosted site',
-    'page callback' => 'hosting_signup_get_form',
-    'type' => MENU_CALLBACK,
-    'access arguments' => array('access content')
-  );
-
-  $items['hosting/signup/form_populate'] = array(
-    'page callback' =>'_hosting_signup_form_populate',
-    'type' => MENU_CALLBACK,
-    'access arguments' => array('access content'),
-  );
-
-  $items['hosting/signup/thanks'] = array(
-    'page callback' =>'hosting_signup_thanks',
-    'type' => MENU_CALLBACK,
-    'access arguments' => array('access content'),
-  );
 
   return $items; 
 }
@@ -52,42 +22,83 @@ function hosting_signup_menu() {
  * Implementation of hook_perm
  */
 function hosting_signup_perm() {
-  return array('administer hosting signup form', 'access hosting signup form');
+  return array('access hosting signup form');
 }
 
 /**
- * Menu callback for settings page
+ * Form definition
+ *
+ * This is a mixture of the client form and node form, 
+ * and in the future we will be able to configure which
+ * forms we want to be present.
  */
-function hosting_signup_settings() {
-  $form['hosting_signup_uri'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Server URI'),
-    '#description' => t('The address of the hostmaster system, in the format http://masterdomain.com'),
-    '#default_value' => variable_get('hosting_signup_uri', 'http://' . $_SERVER['HTTP_HOST']),
+function hosting_signup_form() {
+  $node = new stdClass();
+  $form['site'] = hosting_site_form($node);
+  unset($form['site']['client']);
+  $form['site']['platform'] = array(
+    '#type' => 'hidden',
+    '#value' => HOSTING_DEFAULT_PLATFORM
   );
-  $form['hosting_signup_server_key'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Server key'),
-    '#description' => t('A unique identifier used when communicating with the server'),
-    '#default_value' => variable_get('hosting_signup_server_key', ''),
+  $state = array(); 
+  foreach (module_implements('form_alter') as $module) {
+    $function = $module .'_form_alter';
+    $function($form['site'], $state, 'site_node_form');
+  }
+  unset($form['site']['info']['client']);
+
+  $form['client'] = hosting_client_form($node);
+  
+  foreach (module_implements('form_alter') as $module) {
+    $function = $module .'_form_alter';
+
+    $function($form['client'], $state, 'client_node_form');
+  }
+
+  $form['new_client'] = array('#type' => 'value', '#value' => TRUE);
+  unset($form['client']['title']);
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t("Sign up"),
   );
-  return system_settings_form($form);
+  return $form;
 }
 
 
 /**
- * Small helper function to provide a clean default URL
+ * Form validation
+ *
+ * This is the validation that the form does.
  */
-function _hosting_signup_get_url($path = '/xmlrpc.php') {
-  $url = variable_get('hosting_signup_uri', 'http://' . $_SERVER['HTTP_HOST']);
-  $url .= $path;
-  return $url;
-}
+function hosting_signup_form_validate($form, &$form_state) {
+  $client = (object) $form_state['values'];
+  $client->type = 'client';
+  $client->title = '';
+  node_validate($client);
+
+  $site = (object) $form_state['values'];
+  $site->type = 'site';
+  node_validate($site);
+} 
+
 
 /**
- * Small helper function to get the key
+ * Form submission
+ *
+ * Generates the nodes and saves them.
  */
-function _hosting_signup_get_key() {
-  return variable_get('hosting_signup_server_key', '');
-}
+function hosting_signup_form_submit($form, &$form_state) {
+  $client = (object) $form_state['values'];
+  $client->type = 'client';
+  $client->title = '';
+  $client->status = 1;
+  node_save($client, 'submit');
 
+  $site = (object) $form_state['values'];
+  $site->type = 'site';
+  $site->status = 1;
+  $site->client = $client->nid;
+  $site->uid = $client->uid;
+  node_save($site);
+}
