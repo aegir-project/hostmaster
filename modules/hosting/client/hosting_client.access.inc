@@ -205,6 +205,7 @@ function hosting_client_node_access_records($node) {
       break;
     case 'package' :
       $base_grant['grant_update'] = FALSE;
+      break;
     case 'task' :
     case 'server' :
       // The rest of the node types are configuration, so only admin should see them. 
