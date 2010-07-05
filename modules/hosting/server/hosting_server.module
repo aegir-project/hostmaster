@@ -278,6 +278,25 @@ function _hosting_server_ip_list($addresses) {
 }
 
 /**
+ * Implementation of hook_presave()
+ *
+ * We resolve the server name to IP addresses if none has been given
+ * by the operator.
+ */
+function hosting_server_presave(&$node) {
+  if (empty($node->ip_addresses)) {
+    // this returns an array or FALSE
+    $ips = gethostbynamel($node->title);
+    if ($ips) {
+      drupal_set_message(t('Initialized the webserver IP to %ip based on hostname %name. This will be used to create database grants so make sure it is the right address, as seen from the database server.', array('%ip' => $ips, '%name' => $node->title)), 'message');
+      $node->ip_addresses = $ips;
+    } else {
+      drupal_set_message(t("Could not resolve IP address of server %name, not automatically setting IP address. DNS may fail."));
+    }
+  }
+}
+
+/**
  * Implementation of hook_update().
  *
  * As an existing node is being updated in the database, we need to do our own
