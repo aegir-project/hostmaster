@@ -15,6 +15,11 @@ function hosting_signup_menu() {
     'access arguments' => array('access hosting signup form'),
   );
 
+  $items['hosting/signup/thanks'] = array(
+    'page callback' =>'hosting_signup_thanks',
+    'type' => MENU_CALLBACK,
+    'access arguments' => array('access hosting signup form'),
+  );
   return $items; 
 }
 
@@ -24,6 +29,15 @@ function hosting_signup_menu() {
 function hosting_signup_perm() {
   return array('access hosting signup form');
 }
+
+/**
+ * Thank you page callback
+ */
+function hosting_signup_thanks($url = '', $email = '', $name = '') {
+  return t("<h3>Thank you @name</h3>
+    Your site (@url) has been requested, and the moment it is ready you will receive a mail at @email
+ with instructions on how to log into it.", array("@name" => $name, "@url" => $url, "@email" => $email));
+} 
 
 /**
  * Form definition
@@ -101,4 +115,6 @@ function hosting_signup_form_submit($form, &$form_state) {
   $site->client = $client->nid;
   $site->uid = $client->uid;
   node_save($site);
+
+  $form_state['redirect'] = sprintf("hosting/signup/thanks/%s/%s/%s", $site->title, $client->email, $client->client_name);
 }
