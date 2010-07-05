@@ -7,7 +7,6 @@ if (Drupal.jsEnabled) {
 
 hostingSiteToggleOptions  = function() {
   // iterate through the visible options
-  
   settings = Drupal.settings.hostingSiteAvailableOptions;
 
   for (var key in settings) {
@@ -17,6 +16,11 @@ hostingSiteToggleOptions  = function() {
       $('div#hosting-site-field-' + css_key + ' div.form-radios div.form-item').hide();
       for (var option in settings[key]) {
         $('div#hosting-site-field-' + css_key + ' div.form-radios div#edit-' + css_key + '-' + settings[key][option] +'-wrapper').show();
+      }
+
+      if (settings[key].length == 1) {
+        //it's the only option, select it.
+        $('input[@name=' + key + '][@value=' + settings[key][option] +']').attr("checked", "checked");
       }
     }
     else {

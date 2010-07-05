@@ -70,6 +70,14 @@ function _hosting_site_form_pre_render($elements) {
   return $elements;
 }
 
+
+/**
+ * Pass in a site node and return an array of valid options for it's fields.
+ *
+ * Modules can define the hook_hosting_site_options_alter function to modify which
+ * fields are available for selection.
+ *
+ */
 function hosting_site_available_options($node) {
   // cast to object if it's an array.
   $node = (is_array($node)) ? (object) $node : $node;
@@ -91,13 +99,20 @@ function hosting_site_available_options($node) {
     reset($profiles);
     $return['profile'] = array_keys($profiles);
 
+    if (sizeof($return['profile']) == 1) {
+      $node->profile = next($return['profile']);
+    }
+
     if (isset($node->profile) && in_array($node->profile, $return['profile'])) {
-      $return['site_language'] = array_keys(hosting_get_profile_languages($node->profile, $node->platform));
+      $return['site_language'] = array_keys((array) hosting_get_profile_languages($node->profile, $node->platform));
     }
   }
 
+  drupal_alter('hosting_site_options', $return, $node);
   return $return;
 }
+
+
 
 /**
  * Implementation of hook_form
@@ -195,7 +210,7 @@ function hosting_site_form($node) {
         '#required' => TRUE,
         '#description' => t('The database server the site will use to host it\'s content.'),
         '#options' => hosting_get_servers('db'),
-        '#default_value' => $node->db_server,
+        '#default_value' => $node->db_server ? $node->db_server : HOSTING_DEFAULT_DB_SERVER,
       ), '_hosting_node_link');
 
   foreach(array('verified', 'last_cron', 'site_status') as $extra_attribute) {
