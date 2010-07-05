@@ -288,7 +288,7 @@ function hosting_server_presave(&$node) {
     // this returns an array or FALSE
     $ips = gethostbynamel($node->title);
     if ($ips) {
-      drupal_set_message(t('Initialized the webserver IP to %ip based on hostname %name. This will be used to create database grants so make sure it is the right address, as seen from the database server.', array('%ip' => $ips, '%name' => $node->title)), 'message');
+      drupal_set_message(t('Initialized the webserver IP to %ip based on hostname %name. This will be used to create database grants so make sure it is the right address, as seen from the database server.', array('%ip' => join(',', $ips), '%name' => $node->title)), 'message');
       $node->ip_addresses = $ips;
     } else {
       drupal_set_message(t("Could not resolve IP address of server %name, not automatically setting IP address. DNS may fail."));
