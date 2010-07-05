@@ -180,14 +180,14 @@ function hosting_server_form(&$node) {
     '#title' => t('Server hostname'),
     '#required' => TRUE,
     '#default_value' => $node->title,
-    '#description' => t('The host name of the server. This is the address that will be used by Hostmaster to connect to the server to issue commands.<br /><strong>Be careful when changing the node title, it is used to create the SQL users if the IP address, below, is not set.</strong>'),
+    '#description' => t('The host name of the server. This is the address that will be used by Hostmaster to connect to the server to issue commands. It is to resolve to the internal network, if you have such a separation.<br /><strong>Be careful when changing the node title, it is used to create the SQL users if the IP address, below, is not set.</strong>'),
     '#weight' => -10
   );
 
   $form['ip_addresses'] = array(
       '#type' => 'textarea',
       '#title' => t('Ip addresses'),
-      '#description' => t('A list of IP addresses this server is publicly available under, one per line.'),
+      '#description' => t('A list of IP addresses this server is publicly available under, one per line. If none is specified, a DNS lookup will be performed based on the server hostname above. <br /><strong>This should point to the public network, if you have such a separation.</strong>'),
       '#default_value' => implode("\n", _hosting_server_ip_list($node->ip_addresses)),
       '#weight' => -9,
     );
