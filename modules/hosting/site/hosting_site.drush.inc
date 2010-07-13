@@ -8,11 +8,13 @@ function hosting_site_context_options(&$task) {
 
   $task->context_options['uri'] = $task->ref->title;
   $task->context_options['site_port'] = $task->ref->port;
-  $task->context_options['site_id'] = $task->ref->nid;
   $task->context_options['language'] = $task->ref->site_language;
 
   $profile = node_load($task->ref->profile);
   $task->context_options['profile'] = $profile->short_name;
+
+  $client = node_load($task->ref->client);
+  $task->context_options['client_email'] = $client->email;
 }
 
 /**
@@ -124,7 +126,10 @@ function hosting_site_post_hosting_delete_task($task, $data) {
 function hosting_site_post_hosting_backup_task($task, $data) {
   if ($data['context']['backup_file'] && $task->ref->type == 'site') {
     $platform = node_load($task->ref->platform);
-    hosting_site_add_backup($task->ref->nid, $platform->web_server, $data['context']['backup_file'], t('Generated on request'));
+
+    $desc = $task->task_args['description'];
+    $desc = ($desc) ? $desc : t('Generated on request');
+    hosting_site_add_backup($task->ref->nid, $platform->web_server, $data['context']['backup_file'], $desc);
   }
 }
 

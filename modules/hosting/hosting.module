@@ -236,31 +236,6 @@ function hosting_init() {
   define('HOSTING_OWN_PLATFORM', variable_get('hosting_own_platform', 6)); 
 
 
-  // These defaults could be temporary.
-  $info = posix_getgrgid(posix_getgid());
-  define('HOSTING_DEFAULT_WEB_GROUP', $info['name']);
-  $user = get_current_user();
-  if ($user == 'root') {
-    $user = 'aegir'; # a better default than root
-  }
-  define('HOSTING_DEFAULT_SCRIPT_USER', $user);
-
-  $userdata = posix_getpwnam($user);
-  $userhome = $userdata['dir'];
-
-  define('HOSTING_DEFAULT_SCRIPT_USER_HOME', $userhome);
-
-  define('HOSTING_DEFAULT_RESTART_CMD', _hosting_default_restart_cmd());
-
-  $path =  ($_SERVER['PWD']) ? $_SERVER['PWD'] : $_SERVER['DOCUMENT_ROOT'];
-
-  $parts = explode("/", rtrim($path, '/'));
-  array_pop($parts);
-  define('HOSTING_DEFAULT_PARENT_PATH', rtrim(implode("/" , $parts), '/'));
-  define('HOSTING_DEFAULT_BACKUP_PATH', HOSTING_DEFAULT_PARENT_PATH . '/backups');
-  define('HOSTING_DEFAULT_CONFIG_PATH', HOSTING_DEFAULT_PARENT_PATH .'/config');
-  define('HOSTING_DEFAULT_VHOST_PATH', HOSTING_DEFAULT_CONFIG_PATH .'/vhost.d');
-
   /** 
    * Find the base URL, this is used by the initial 'hosting-setup' drush command
    * This gets defined in the bootstrap, so just using the global definition.
@@ -272,29 +247,7 @@ function hosting_init() {
 }
 
 
-/**
- * This function should not have to be duplicated between hosting/provision
- */
-function _hosting_default_restart_cmd() {
-  $command = '/usr/sbin/apachectl'; # a proper default for most of the world
-  foreach (explode(':', $_SERVER['PATH']) as $path) {
-    $options[] = "$path/apache2ctl";
-    $options[] = "$path/apachectl";
-  }
-  # try to detect the apache restart command
-  $options[] = '/usr/local/sbin/apachectl'; # freebsd
-  $options[] = '/usr/sbin/apache2ctl'; # debian + apache2
-  $options[] = $command;
 
-  foreach ($options as $test) {
-    if (is_executable($test)) {
-      $command = $test;
-      break;
-    }
-  }
-
-  return "sudo $command graceful";
-}
 
 /**
  * Implementation of hook_theme().
@@ -782,6 +735,15 @@ function hosting_context_register($nid, $name) {
   require_once("./modules/path/path.module");
   path_set_alias("node/$nid", "hosting/c/$name");
 }
+
+/**
+ * Delete an alias from the context lookup table.
+ */
+function hosting_context_delete($nid) {
+  db_query("DELETE FROM {url_alias} WHERE src='node/%d'", $nid);
+  db_query("DELETE FROM {hosting_context} WHERE nid=%d", $nid);
+}
+
 
 /**
  * Return the hosting context name for a node.

@@ -15,10 +15,16 @@ function hosting_client_user($op, &$edit, &$user, $category = NULL) {
     break;
 
   case 'view':
-    return hosting_client_user_view($user);
+    if (hosting_feature('client')) {
+      return hosting_client_user_view($user);
+    }
+    break;
 
   case 'form':
-    return hosting_client_user_form($edit, $user, $category);
+    if (hosting_feature('client')) {
+      return hosting_client_user_form($edit, $user, $category);
+    }
+    break;
 
   case 'validate':
     return hosting_client_user_form_validate($edit);
@@ -199,6 +205,7 @@ function hosting_client_node_access_records($node) {
       break;
     case 'package' :
       $base_grant['grant_update'] = FALSE;
+      break;
     case 'task' :
     case 'server' :
       // The rest of the node types are configuration, so only admin should see them. 

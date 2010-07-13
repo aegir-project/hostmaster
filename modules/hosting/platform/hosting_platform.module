@@ -71,17 +71,6 @@ function hosting_platform_hosting_tasks() {
   return $tasks;
 }
 
-/**
- * Implementation of hook_hosting_feature()
- */
-function hosting_platform_hosting_feature() {
-  $features['platform'] = array(
-      'title' => t('Platforms'), 
-      'description' => t('Allow for management of multiple platforms.'),
-      'status' => HOSTING_FEATURE_ENABLED,
-      'node' => 'platform');
-  return $features;
-}
 
 /**
  * Implementation of hook_perm()
@@ -94,10 +83,6 @@ function hosting_platform_perm() {
  * Implementation of hook_access()
  */
 function hosting_platform_access($op, $node, $account) {
-  if (!hosting_feature('platform')) {
-    return FALSE;
-  }
-
   switch ($op) {
     case 'create':
       return user_access('create platform', $account);
@@ -285,6 +270,8 @@ function hosting_nodeapi_platform_delete_revision(&$node) {
 function hosting_platform_delete($node) {
   db_query('DELETE FROM {hosting_platform} WHERE nid = %d', $node->nid);
   db_query('DELETE FROM {hosting_package_instance} WHERE rid=%d', $node->nid);
+
+  hosting_context_delete($node->nid);
   $result = db_query("SELECT distinct nid FROM {hosting_task} WHERE rid=%d", $node->nid);
   while ($nid = db_fetch_object($result)) {
     node_delete($nid->nid);

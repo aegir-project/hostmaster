@@ -20,8 +20,36 @@ function hosting_server_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+
+
     ),
     'primary key' => array('vid'),
+  );
+
+  $schema['hosting_server_ip'] = array(
+   'fields' => array(
+      'vid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'ip_address' => array(
+        'type' => 'text',
+        'size' => 'small',
+        'not null' => TRUE,
+      ),
+    ),
+    'indexes' => array(
+      'vid' => array('vid'),
+    ),
+
   );
 
   $schema['hosting_service'] = array(
@@ -47,6 +75,17 @@ function hosting_server_schema() {
         'type' => 'text',
         'size' => 'small',
         'not null' => TRUE,
+      ),
+      'restart_cmd' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+      ),
+      'port' => array(
+        'type' => 'int',
+        'default' => 0,
+        'unsigned' => TRUE,
+        'not null' => FALSE,
       ),
       'available' => array(
         'type' => 'int',
@@ -105,3 +144,35 @@ function hosting_server_update_6002() {
   return $ret;
 }
 
+
+/**
+ * Bring the port and restart command from hosting_web_server into hosting_service.
+ */
+function hosting_server_update_6003() {
+  db_add_field($ret, 'hosting_service', 'port', array(
+    'type' => 'int',
+    'default' => 0,
+    'unsigned' => TRUE,
+    'not null' => FALSE
+  ));
+
+  db_add_field($ret, 'hosting_service', 'restart_cmd',array(
+    'type' => 'text',
+    'size' => 'big',
+    'not null' => FALSE,
+  ));
+
+  return $ret;
+}
+
+/**
+ * Add the IP address table.
+ */
+function hosting_server_update_6004() {
+
+  $return = array();
+  $schema = hosting_server_schema();
+  db_create_table($return, 'hosting_server_ip', $schema['hosting_server_ip']);
+
+  return $return;
+}

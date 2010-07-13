@@ -4,7 +4,8 @@
 function hosting_platform_context_options(&$task) {
   $task->context_options['server'] = '@server_master';
   $task->context_options['web_server'] = hosting_context_name($task->ref->web_server);
-  $task->context_options['root'] = $task->ref->publish_path;
+  // Trim the path so we dont pass extra spaces.
+  $task->context_options['root'] = trim($task->ref->publish_path, " ");
 }
 
 /**

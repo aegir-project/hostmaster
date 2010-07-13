@@ -20,11 +20,6 @@ function hosting_db_server_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
-      'db_type' => array(
-        'type' => 'text',
-        'size' => 'big',
-        'not null' => TRUE,
-      ),
       'db_user' => array(
         'type' => 'text',
         'size' => 'big',
@@ -67,8 +62,8 @@ function hosting_db_server_update_6000() {
       while ($web_server = db_fetch_object($web_result)) {
         db_query("INSERT INTO {hosting_service} (nid, vid, service, type, available) VALUES (%d, %d, 'db', 'mysql', 1)", 
           $web_server->nid, $web_server->vid);
-        db_query("INSERT INTO {hosting_db_server} (nid, vid, db_type, db_user, db_passwd) VALUES (%d, %d, '%s', '%s', '%s')", 
-          $web_server->nid, $web_server->vid, $db_server->db_type, $db_server->db_user, $db_server->db_passwd);
+        db_query("INSERT INTO {hosting_db_server} (nid, vid, db_user, db_passwd) VALUES (%d, %d, '%s', '%s', '%s')", 
+          $web_server->nid, $web_server->vid, $db_server->db_user, $db_server->db_passwd);
 
         db_query("UPDATE {hosting_site} SET db_server = %d WHERE db_server=%d", $web_server->nid, $record->nid);
       }
@@ -83,5 +78,14 @@ function hosting_db_server_update_6000() {
 
   db_query("DELETE FROM {node} WHERE type='db_server'");
 
+  return $ret;
+}
+
+/**
+ * Get rid of the db type value, it duplicates the service info
+ */
+function hosting_db_server_update_6001() {
+  $ret = array();
+  db_drop_field($ret, 'hosting_db_server', 'db_type');
   return $ret;
 }

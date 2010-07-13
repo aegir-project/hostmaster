@@ -249,7 +249,7 @@ function hosting_add_task($nid, $type, $args = null, $status = HOSTING_TASK_QUEU
 /**
  * Implementation of hook_form().
  */
-function hosting_task_confirm_form($form_state, &$node, $task) {
+function hosting_task_confirm_form($form_state, $node, $task) {
   drupal_add_js(drupal_get_path('module','hosting_task') . '/hosting_task.js');
   $tasks = hosting_available_tasks($node->type);
   $form['help'] = array('#value' => $tasks[$task]['description']); 
@@ -780,7 +780,7 @@ function hosting_task_queue_block() {
     );
 
 
-    $log_button = _hosting_task_button(t('View'), 'node/' . $node->nid, t("Display the task log"), 'hosting-button-log', isset($node->nid));
+    $log_button = _hosting_task_button(t('View'), 'node/' . $node->nid, t("Display the task log"), 'hosting-button-log', isset($node->nid) &&  user_access('access task logs'));
 
     $row['actions'] = array(
       'data' => $log_button,
@@ -816,7 +816,7 @@ function hosting_task_table($node) {
 
     $actions = array();
 
-    $actions['log'] = _hosting_task_button(t('View'), 'node/' . $info['nid'], t("Display the task log"), 'hosting-button-log', isset($info['nid']));
+    $actions['log'] = _hosting_task_button(t('View'), 'node/' . $info['nid'], t("Display the task log"), 'hosting-button-log', isset($info['nid']) &&  user_access('access task logs'));
     $actions['run'] = _hosting_task_button(t('Run'), sprintf("node/%d/%s_%s", $node->nid, $node->type, $task), $info['description'], 'hosting-button-run', $info['task_permitted']);
      
      $row['actions'] = array(
@@ -831,7 +831,7 @@ function hosting_task_table($node) {
 }
 
 function _hosting_task_button($title, $link, $description, $class = '', $status = TRUE) {
-  if ($status && user_access('access task logs')) {
+  if ($status) {
     return l($title, $link, array(
         'attributes' => array(
           'title' => $description,

@@ -25,6 +25,10 @@ function hosting_drush_command() {
 
   $items['hosting-task'] = array(
     'description' => 'execute a specific queue item',
+    'arguments' => array(
+      '@context_name' => 'Context to work on',
+      'command' => 'provision-[command] to invoke',
+    ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL
   );
 

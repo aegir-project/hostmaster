@@ -1,0 +1,43 @@
+<?php
+// $Id:$
+
+/**
+ * Implementation of hook_schema().
+ */
+function hosting_quota_schema() {
+  $schema['hosting_client_quota'] = array(
+    'fields' => array(
+      'client' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'resource' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'value' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+    ),
+    'primary key' => array('client', 'resource'),
+  );
+
+  return $schema;
+}
+
+function hosting_quota_install() {
+  // Create tables.
+  drupal_install_schema('hosting_quota');
+}
+
+function hosting_quota_uninstall() {
+  // Create tables.
+  drupal_uninstall_schema('hosting_quota');
+}

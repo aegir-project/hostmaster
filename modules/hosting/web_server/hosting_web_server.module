@@ -8,7 +8,7 @@
  */
 function hosting_web_server_hosting_service() {
   return array(
-    'http' => 'apache', 
+    'apache' => 'http',
   );
 }
 
@@ -20,16 +20,3 @@ function hosting_web_server_hosting_service_type() {
   );
 }
 
-/**
- * "Feature" definition
- *
- * @see hosting.features.inc
- */
-function hosting_web_server_hosting_feature() {
-  $features['ports'] = array(
-    'title' => t('Ports'),
-    'description' => t('Allow configuration of multiple ports per server and non-default ports for sites.'),
-    'status' => HOSTING_FEATURE_ENABLED,
-  );
-  return $features;
-}

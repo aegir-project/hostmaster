@@ -5,101 +5,10 @@ class hostingService_http extends hostingService {
 
 
 class hostingService_http_public extends hostingService_http {
-  public function load() {
-    parent::load();
-    $this->mergeData('SELECT restart_cmd, ports FROM {hosting_web_server} WHERE vid = %d', $this->server->vid);
-  }
+  protected $has_port = TRUE;
 
-  function default_restart_cmd() {
-    return '';
-  }
-
-  function insert() {
-    parent::insert();
-    db_query("INSERT INTO {hosting_web_server} (vid, nid, restart_cmd, ports) 
-        VALUES (%d, %d, '%s', '%s')", 
-          $this->server->vid, $this->server->nid, ($this->restart_cmd) ? $this->restart_cmd : '', $this->ports);
-  }
-
-
-  /**
-   * Implementation of hook_validate().
-   */
-  function validate(&$node, &$form) {
-    parent::validate($node, $form);
-    $ports = explode(",", $this->ports);
-    if (count($ports) < 1) {
-      form_set_error('ports', t('At least one port must be provided.'));
-    }
-    foreach($ports as $port) {
-      if ($port < 1) {
-        form_set_error('ports', t('Invalid port specified'));
-      }
-    }
-  }
-
-  public function form(&$form) {
-    parent::form($form);
-
-    $form['restart_cmd'] = array(
-        '#type' => 'textfield',
-        '#title' => t('Restart command'),
-        '#required' => $this->available,
-        '#description' => t('The command to run to restart the web server for new changes to take effect. This is required for the new site to become live'),
-        '#default_value' => ($this->restart_cmd) ? $this->restart_cmd : $this->default_restart_cmd(),
-        '#size' => 40,
-        '#maxlength' => 255,
-        '#weight' => -7,
-    );
-
-   if (hosting_feature('ports') == HOSTING_FEATURE_ENABLED) {
-      $form['ports'] = array(
-        '#type' => 'textfield',
-        '#title' => t('Ports'),
-        '#required' => $this->available,
-        '#size' => 40,
-        '#default_value' => ($this->ports) ? $this->ports : '80',
-        '#description' => t("All the ports enabled on this server, comma separated. Port 80 is the default http, 443 is https."),
-        '#maxlength' => 255,
-        '#weight' => -8,
-      );
-    } else {
-      $form['ports'] = array(
-        '#type' => 'value',
-        '#value' => '80',
-      );
-    }
-  }
-
-  function view(&$render) {
-    parent::view($render);
-
-    if (hosting_feature('ports') == HOSTING_FEATURE_ENABLED) {
-      $render['ports'] = array(
-        '#type' => 'item',
-        '#title' => t('Ports'),
-        '#value' => filter_xss($this->ports),
-      );
-    }
-
-    
-    $render['restart_cmd'] = array(
-      '#type' => 'item',
-      '#title' => t('Restart command'),
-      '#value' => filter_xss($this->restart_cmd),
-    );
-
-  }
-
-
-  function delete() {
-    parent::delete();
-    db_query('DELETE FROM {hosting_web_server} WHERE nid = %d', $this->server->nid);
-  }
-
-  function delete_revision() {
-    parent::delete_revision();
-    db_query('DELETE FROM {hosting_web_server} WHERE vid = %d', $this->server->vid);
+  function default_port() {
+    return 80;
   }
 
   function update() {
@@ -112,24 +21,32 @@ class hostingService_http_public extends hostingService_http {
   
   public function context_options($task_type, $ref_type, &$task) {
     parent::context_options($task_type, $ref_type, $task);
-
-    $task->context_options['web_ports'] = explode(",", $this->ports);
-    foreach($task->context_options['web_ports'] as $key => $val) {
-      $val = trim($val);
-      $task->context_options['web_ports'][$key] = $val;
-      if(!is_numeric($val)) {
-        unset($task->context_options['web_ports'][$key]);
-      }
-    }
-    
-    $task->context_options['restart_cmd'] = $this->restart_cmd;
   }
 }
 
 class hostingService_http_apache extends hostingService_http_public {
   public $type = 'apache';
 
+  protected $has_restart_cmd = TRUE;
+
   function default_restart_cmd() {
-    return  HOSTING_DEFAULT_RESTART_CMD;
+    $command = '/usr/sbin/apachectl'; # a proper default for most of the world
+    foreach (explode(':', $_SERVER['PATH']) as $path) {
+      $options[] = "$path/apache2ctl";
+      $options[] = "$path/apachectl";
+    }
+    # try to detect the apache restart command
+    $options[] = '/usr/local/sbin/apachectl'; # freebsd
+    $options[] = '/usr/sbin/apache2ctl'; # debian + apache2
+    $options[] = $command;
+
+    foreach ($options as $test) {
+      if (is_executable($test)) {
+        $command = $test;
+        break;
+      }
+    }
+
+    return "sudo $command graceful";
   }
 }

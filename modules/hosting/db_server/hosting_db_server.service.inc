@@ -1,16 +1,18 @@
 <?php
+class hostingService_db extends hostingService {
+  public $service = 'db';
+}
 
-class hostingService_db_mysql extends hostingService {
-  protected $service = 'db';
+class hostingService_db_mysql extends hostingService_db {
   public $type = 'mysql';
+  public $has_port = TRUE;
+
+  function default_port() {
+    return 3306;
+  }
 
   function form(&$form) {
-    $node = $form['#node'];
-
-    $form['db_type'] = array(
-      '#type' => 'value',
-      '#value' => ($this->db_type) ? $this->db_type : 'mysqli'
-    );
+    parent::form($form);
     $form['db_user'] = array(
       '#type' => 'textfield',
       '#required' => $this->available,
@@ -35,9 +37,9 @@ class hostingService_db_mysql extends hostingService {
 
   function insert() {
     parent::insert();
-    db_query("INSERT INTO {hosting_db_server} (vid, nid, db_type, db_user, db_passwd) 
-      VALUES (%d, %d, '%s', '%s', '%s')", 
-      $this->server->vid, $this->server->nid, $this->db_type, $this->db_user, $this->db_passwd);
+    db_query("INSERT INTO {hosting_db_server} (vid, nid, db_user, db_passwd) 
+      VALUES (%d, %d, '%s', '%s')", 
+      $this->server->vid, $this->server->nid, $this->db_user, $this->db_passwd);
   }
 
   function update() {
@@ -64,15 +66,12 @@ class hostingService_db_mysql extends hostingService {
 
   function load() {
     parent::load();
-    $this->mergeData('SELECT db_type, db_user, db_passwd FROM {hosting_db_server} WHERE vid = %d', $this->server->vid);
+    $this->mergeData('SELECT db_user, db_passwd FROM {hosting_db_server} WHERE vid = %d', $this->server->vid);
   }
 
   function view(&$render) {
-    $render['db_type'] = array(
-      '#type' => 'item',
-      '#title' => t('Database type'),
-      '#value' => filter_xss($this->db_type),
-    );
+    parent::view($render);
+
     $render['db_user'] = array(
       '#type' => 'item',
       '#title' => t('Database user'),
@@ -85,6 +84,6 @@ class hostingService_db_mysql extends hostingService {
     parent::context_options($task_type, $ref_type, $task);
 
     // Provide context_options for verification and writing out to an alias
-    $task->context_options['master_db'] = $this->db_type . '://' . $this->db_user . ':' . $this->db_passwd . '@' . $this->server->title;
+    $task->context_options['master_db'] = 'mysql' . '://' . $this->db_user . ':' . $this->db_passwd . '@' . $this->server->title;
   }
 }
