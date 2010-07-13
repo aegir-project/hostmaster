@@ -678,6 +678,20 @@ function hosting_form_alter(&$form, &$form_state, $form_id) {
       '#weight' => '-10'
     );
   }
+
+  // Remove additional UI added by core modules, that conflict with the hosting UI.
+  $node_types = array('site', 'platform', 'server', 'client');
+  foreach ($node_types as $type) {
+    if ($form_id == $type . '_node_form') {
+      unset($form['options']);
+      unset($form['menu']);
+      unset($form['revision_information']);
+      unset($form['author']);
+
+      // because these aren't really posts, 'preview' doesnt make sense in this context.
+      unset($form['buttons']['preview']);
+    }
+  }
 }
 
 /**

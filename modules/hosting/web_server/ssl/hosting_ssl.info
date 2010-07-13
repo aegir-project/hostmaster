@@ -1,0 +1,7 @@
+name = SSL support
+description = Allow hostmaster to configure web servers with SSL support
+package = Hosting
+dependencies[] = hosting
+dependencies[] = hosting_web_server
+
+core = 6.x

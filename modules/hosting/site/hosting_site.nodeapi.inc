@@ -143,8 +143,8 @@ function hosting_site_insert(&$node) {
   $node->client = $client->nid;
   $node->site_language = ($node->site_language) ? $node->site_language : 'en';
 
-  db_query("INSERT INTO {hosting_site} (vid, nid, client, db_server, platform, profile, language, last_cron, status, verified, `ssl`, ssl_redirect) VALUES (%d, %d, %d, %d, %d, %d, '%s', %d, %d, %d, %d, %d)",
-           $node->vid, $node->nid, $node->client, $node->db_server, $node->platform, $node->profile, $node->site_language, $node->last_cron, $node->site_status, $node->verified, $node->ssl, $node->ssl_redirect);
+  db_query("INSERT INTO {hosting_site} (vid, nid, client, db_server, platform, profile, language, last_cron, status, verified) VALUES (%d, %d, %d, %d, %d, %d, '%s', %d, %d, %d)",
+           $node->vid, $node->nid, $node->client, $node->db_server, $node->platform, $node->profile, $node->site_language, $node->last_cron, $node->site_status, $node->verified);
   if ((!$node->old_vid)) {
     hosting_context_register($node->nid, ($node->hosting_name) ? $node->hosting_name : $node->title);
     if ($node->import) {
@@ -170,8 +170,8 @@ function hosting_site_update(&$node) {
     if ($node->site_status == HOSTING_SITE_DELETED) {
       $node->no_verify = TRUE;
     }
-    db_query("UPDATE {hosting_site} SET client = %d, db_server = %d, platform = %d, last_cron = %d, status = %d, profile = %d, language = '%s', verified = %d, `ssl` = %d, ssl_redirect = %d WHERE vid=%d",
-             $node->client, $node->db_server, $node->platform, $node->last_cron, $node->site_status, $node->profile, $node->site_language, $node->verified, $node->ssl, $node->ssl_redirect, $node->vid);
+    db_query("UPDATE {hosting_site} SET client = %d, db_server = %d, platform = %d, last_cron = %d, status = %d, profile = %d, language = '%s', verified = %d WHERE vid=%d",
+             $node->client, $node->db_server, $node->platform, $node->last_cron, $node->site_status, $node->profile, $node->site_language, $node->verified, $node->vid);
   }
   if (!$node->no_verify) {
     hosting_add_task($node->nid, 'verify');
@@ -185,6 +185,6 @@ function hosting_site_update(&$node) {
  *    Node object
  */
 function hosting_site_load($node) {
-  $additions = db_fetch_object(db_query('SELECT  client, db_server, platform, profile, language as site_language, last_cron, status AS site_status, verified, `ssl`, ssl_redirect FROM {hosting_site} WHERE vid = %d', $node->vid));
+  $additions = db_fetch_object(db_query('SELECT  client, db_server, platform, profile, language as site_language, last_cron, status AS site_status, verified FROM {hosting_site} WHERE vid = %d', $node->vid));
   return $additions;
 }

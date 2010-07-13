@@ -107,20 +107,6 @@ function hosting_site_views_data() {
         'click sortable' => TRUE,
       ),
     ),
-    'ssl' => array(
-      'title' => t('SSL'),
-      'help' => t(''),
-      'field' => array(
-        'handler' => 'views_handler_field',
-      ),
-    ),
-    'ssl_redirect' => array(
-      'title' => t('SSL Redirect'),
-      'help' => t(''),
-      'field' => array(
-        'handler' => 'views_handler_field',
-      ),
-    ),
   );
 
   return $data;

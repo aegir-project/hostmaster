@@ -18,6 +18,20 @@ function _hosting_site_field(&$form, $node, $item, $element, $filter_display ='f
     else {
       $form[$item] = $element;
     }
+
+    // the text to display when there are no valid options to select
+    $form[$item . '_description'] = array(
+      '#prefix' => "<div class='hosting-site-field-description' id='hosting-site-field-{$css_id}-description'>",
+      '#suffix' => '</div>',
+      '#type' => 'item',
+      '#title' => $element['#title'],
+      '#value' => "<div class='placeholder'>" . $filter_display($element['#default_value']) . "</div>",
+    );
+    
+    if (isset($element['#weight'])) {
+      $form[$item . '_description']['#weight'] = $element['#weight'];
+    }
+
   }
   else {
     // display it
@@ -108,7 +122,28 @@ function hosting_site_available_options($node) {
     }
   }
 
+  // filter the available platforms based on which clients the user has access to.
+  $user = user_load($GLOBALS['user']->uid);
+
+  $options = array();
+  $platforms = _hosting_get_platforms();
+  
+  if (sizeof($platforms)) {
+    foreach ($platforms as $nid => $title) {
+      $platform = node_load($nid);
+
+      if ($platform->platform_status != HOSTING_PLATFORM_LOCKED) {
+        if (!isset($platform->clients) || sizeof(array_intersect(array_keys($user->client_id), $platform->clients)) || $user->uid == 1) {
+          $options[] = $nid;
+        }
+      }
+    }
+
+    $return['platform'] = $options;
+  }
+
   drupal_alter('hosting_site_options', $return, $node);
+
   return $return;
 }
 
@@ -119,10 +154,14 @@ function hosting_site_available_options($node) {
  */
 function hosting_site_form($node) {
   $form['#pre_render'][] = '_hosting_site_form_pre_render';
+  $form['#node'] = $node;
 
   if ($node->nid) {
-    $form['info']['#prefix'] = '<div class="clear-block" id="hosting-site-edit-info">';
-    $form['info']['#suffix'] = '<br /></div>';
+    $form['info'] = array(
+      '#prefix' => '<div class="clear-block" id="hosting-site-edit-info">',
+      '#suffix' => '<br /></div>',
+      '#weight' => -10,
+    );
   }
 
   _hosting_site_field($form, $node, 'title', array(
@@ -130,7 +169,7 @@ function hosting_site_form($node) {
       '#title' => t('Domain name'),
       '#required' => TRUE,
       '#default_value' => $node->title,
-      '#weight' => -5
+      '#weight' => -10
     ));
 
   $editable = ((!$node->client || $node->nid) || user_access('administer site')) && hosting_feature('client');
@@ -144,34 +183,14 @@ function hosting_site_form($node) {
   ), 'filter_xss', $editable);
 
 
- // TODO : move this someplace more appropriate 
-  $platforms = _hosting_get_platforms();
-  $user = user_load($GLOBALS['user']->uid);
-  if (sizeof($platforms)) {
-    foreach ($platforms as $nid => $title) {
-      $platform = node_load($nid);
-
-      if ($platform->platform_status != HOSTING_PLATFORM_LOCKED) {
-        if (!isset($platform->clients) || sizeof(array_intersect(array_keys($user->client_id), $platform->clients)) || $user->uid == 1) {
-          $options[$nid] = $title;
-        }
-      }
-    }
-  }
-
-  if (sizeof($options) > 0) {
-    _hosting_site_field($form, $node, 'platform', array(
-       '#type' => 'radios',
-       '#title' => t('Platform'),
-       '#required' => TRUE,
-       '#description' => t('The platform you want the site to be hosted on.'),
-       '#options' => $options,
-       '#default_value' => ($node->platform) ? $node->platform : HOSTING_DEFAULT_PLATFORM,
-     ), '_hosting_node_link');
-  }
-  else {
-    drupal_set_message(t('You have no enabled platforms! Please add or unlock a platform before attempting to create a site.'), 'error');
-  }
+  _hosting_site_field($form, $node, 'platform', array(
+     '#type' => 'radios',
+     '#title' => t('Platform'),
+     '#required' => TRUE,
+     '#description' => t('The platform you want the site to be hosted on.'),
+     '#options' => _hosting_get_platforms(),
+     '#default_value' => ($node->platform) ? $node->platform : HOSTING_DEFAULT_PLATFORM,
+   ), '_hosting_node_link');
 
   // Install profiles 
   $profiles = hosting_get_profiles();
