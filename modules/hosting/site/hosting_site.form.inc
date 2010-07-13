@@ -246,9 +246,6 @@ function hosting_site_form($node) {
   return $form;
 }
 
-
-
-
 /**
  * Implementation of hook_validate().
  */
@@ -257,8 +254,6 @@ function hosting_site_validate($node, &$form) {
 
   $valid_options = hosting_site_available_options($node);
  
-  $form['#valid_site_options'] = $valid_options;
-
   $url = strtolower(trim($node->title)); // domain names are case-insensitive
   if (!_hosting_valid_fqdn($url)) {
     form_set_error('title', t("You have not specified a valid url for this site."));

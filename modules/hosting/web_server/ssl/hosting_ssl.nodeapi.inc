@@ -34,7 +34,7 @@ function hosting_ssl_site_form(&$form, &$form_state, $form_id) {
       '#required' => TRUE,
       '#default_value' => ($node->ssl_key) ? $node->ssl_key : HOSTING_SSL_CUSTOM_KEY,
       '#weight' => -8
-    ), 'filter_xss', $ssl_available);
+    ), 'hosting_ssl_output_key', $ssl_available);
 
   _hosting_site_field($form, $node, 'ssl_key_new', array(
       '#type' => 'textfield',
@@ -98,7 +98,7 @@ function hosting_ssl_nodeapi_site_view(&$node, $teaser = false) {
   );
 
   if ($node->ssl_enabled != 0) {
-    $path = sprintf("/var/aegir/config/ssl.d/%s/", hosting_ssl_get_key($node->ssl_key));
+    $path = sprintf("config/ssl.d/%s/", hosting_ssl_get_key($node->ssl_key));
     $node->content['info']['ssl_key'] = array(
       '#type' => 'item',
       '#title' => t('Encryption key'),
@@ -151,7 +151,9 @@ function hosting_ssl_filter_key($key) {
 
 function hosting_ssl_nodeapi_site_validate($node, &$form) {
   if ($node->ssl_enabled) {
-    $valid_options = $form['#valid_site_options'];
+    // TODO: find a way to avoid calling this function multiple times in hook_validate
+    $valid_options = hosting_site_available_options($node);
+
     if ($node->ssl_key == HOSTING_SSL_CUSTOM_KEY) {
       if (!$node->ssl_key_new) {
         form_set_error('ssl_key_new', t("The encryption key field is required to enable us to generate a new SSL certificate for your site."));
@@ -186,7 +188,7 @@ function hosting_ssl_nodeapi_site_insert($node) {
 
 function hosting_ssl_nodeapi_site_update($node) {
   // check if an existing record is there
-  $result = db_query("SELECT ssl_enabled FROM {hosting_ssl_site} WHERE vid=%d");
+  $result = db_query("SELECT ssl_enabled FROM {hosting_ssl_site} WHERE vid=%d", $node->vid);
   if (!($obj = db_fetch_object($result))) {
     hosting_ssl_nodeapi_site_insert($node);
   }
@@ -215,14 +217,14 @@ function hosting_ssl_nodeapi_site_delete_revision($node) {
  */
 function hosting_ssl_save_key($key, $client = null) {
   // we only save the new key if it's a string
-  if (is_string($key)) {
+  if (!is_numeric($key)) {
     $result = db_query("SELECT * FROM {hosting_ssl_cert} WHERE ssl_key = '%s'", $key);
     if ($obj = db_fetch_object($result)) {
       // update
       if ($client != null) {
         $obj->client = $client;
       }
-      $record = drupal_write_record("hosting_ssl_cert", $obj, array('cid'));
+      drupal_write_record("hosting_ssl_cert", $obj, 'cid');
     }
     else {
       // insert
@@ -230,10 +232,10 @@ function hosting_ssl_save_key($key, $client = null) {
       $obj->ssl_key = $key;
       $obj->client = $client;
       $obj->status = 0;
-      $record = drupal_write_record("hosting_ssl_cert", $obj);
+      drupal_write_record("hosting_ssl_cert", $obj);
     }
 
-    return $record->cid;
+    return $obj->cid;
   }
 
   return $key;
