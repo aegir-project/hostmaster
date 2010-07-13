@@ -67,7 +67,7 @@ function drush_hosting_task() {
 
   // On install/verify, save the named context
   if ($task->task_type === 'install' || $task->task_type === 'verify' || $task->task_type === 'import') {
-    module_invoke('hosting_' . $task->ref->type, 'context_options', $task);
+    module_invoke_all('hosting_' . $task->ref->type . '_context_options', $task);
     $output = drush_backend_invoke_args('provision-save', array('@' . $task->ref->hosting_name), $task->context_options, $mode);
   }
   // Run the actual command. Adding alias here to work aorund Drush API.

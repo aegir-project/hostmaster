@@ -1,7 +1,7 @@
 <?php
 // $Id$
 
-function hosting_platform_context_options(&$task) {
+function hosting_hosting_platform_context_options(&$task) {
   $task->context_options['server'] = '@server_master';
   $task->context_options['web_server'] = hosting_context_name($task->ref->web_server);
   // Trim the path so we dont pass extra spaces.
