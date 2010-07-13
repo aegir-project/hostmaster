@@ -27,7 +27,12 @@ function hosting_ssl_schema() {
     );
 
   $schema['hosting_ssl_cert'] = array(
-     'fields' => array(
+    'fields' => array(
+      'cid' => array(
+        'type' => 'serial',
+        'not_null' => TRUE,
+        'unsigned' => TRUE,
+      ), 
         'ssl_key' => array(
           'type' => 'text',
           'size' => 'medium',
@@ -46,6 +51,7 @@ function hosting_ssl_schema() {
           'default' => 0,
         ),
       ),
+      'primary key' => array('cid'),
       'indexes' => array('ssl_key' => array(array('ssl_key', 50)))
     );
 
@@ -71,9 +77,10 @@ function hosting_ssl_schema() {
           'default' => 0,
         ),
         'ssl_key' => array(
-          'type' => 'text',
+          'type' => 'int',
+          'unsigned' => TRUE,
           'not null' => TRUE,
-          'default' => '',
+          'default' => 0,
         ),
       ),
       'primary key' => array('vid', 'nid'),
@@ -83,5 +90,9 @@ function hosting_ssl_schema() {
 
 function hosting_ssl_install() {
   drupal_install_schema('hosting_ssl');
+}
 
+function hosting_ssl_uninstall() {
+  db_query("DELETE FROM {hosting_service} WHERE service='http' and type='apache_ssl'");
+  drupal_uninstall_schema('hosting_ssl');
 }

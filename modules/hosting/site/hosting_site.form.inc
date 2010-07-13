@@ -9,7 +9,9 @@
 /**
  * Helper function to generate form elements for the site form.
  */
-function _hosting_site_field(&$form, $node, $item, $element, $filter_display ='filter_xss', $editable = FALSE) {
+function _hosting_site_field(&$form, $node, $item, $element, $filter_display ='filter_xss', $editable = FALSE, $show_desc = TRUE) {
+  $css_id = str_replace("_", "-", $item);
+
   if (!$node->nid || $editable) {
     // create it
     if (($element['#type'] == 'radios') && !sizeof($element['#options'])) {
@@ -19,19 +21,20 @@ function _hosting_site_field(&$form, $node, $item, $element, $filter_display ='f
       $form[$item] = $element;
     }
 
-    // the text to display when there are no valid options to select
-    $form[$item . '_description'] = array(
-      '#prefix' => "<div class='hosting-site-field-description' id='hosting-site-field-{$css_id}-description'>",
-      '#suffix' => '</div>',
-      '#type' => 'item',
-      '#title' => $element['#title'],
-      '#value' => "<div class='placeholder'>" . $filter_display($element['#default_value']) . "</div>",
-    );
-    
-    if (isset($element['#weight'])) {
-      $form[$item . '_description']['#weight'] = $element['#weight'];
+    if ($show_desc) {
+      // the text to display when there are no valid options to select
+      $form[$item . '_description'] = array(
+        '#prefix' => "<div class='hosting-site-field-description' id='hosting-site-field-{$css_id}-description'>",
+        '#suffix' => '</div>',
+        '#type' => 'item',
+        '#title' => $element['#title'],
+        '#description' => $element['#description'],
+        '#value' => "<div class='placeholder'>" . $filter_display($element['#default_value']) . "</div>",
+      );
+      if (isset($element['#weight'])) {
+        $form[$item . '_description']['#weight'] = $element['#weight'];
+      }
     }
-
   }
   else {
     // display it
@@ -49,7 +52,6 @@ function _hosting_site_field(&$form, $node, $item, $element, $filter_display ='f
     $form[$item] = array('#type' => 'hidden', '#value' => $element['#default_value']);
   }
 
-  $css_id = str_replace("_", "-", $item);
   $form[$item]['#hosting_site_field'] = $item;
   $form[$item]['#hosting_site_field_value'] = $element['#default_value'];
   $form[$item]['#prefix'] = "<div class='hosting-site-field hosting-site-field-{$element['#type']}' id='hosting-site-field-{$css_id}'>";
@@ -94,12 +96,19 @@ function _hosting_site_form_pre_render($elements) {
  */
 function hosting_site_available_options($node) {
   // cast to object if it's an array.
-  $node = (is_array($node)) ? (object) $node : $node;
+  $node = (is_array($node)) ? (object) $node : clone $node;
 
   $return = array();
 
   $return['profile'] = array();
   $return['site_language'] = array();
+
+  if (!hosting_feature('client')) {
+    // Setting the return value of a text field to null, 
+    // will signal to the front end that the field needs to
+    // be displayed, but is not editable.
+    $return['client'] = null;
+  }
 
   if (isset($node->platform)) {
     // Install profiles 
@@ -114,9 +123,8 @@ function hosting_site_available_options($node) {
     $return['profile'] = array_keys($profiles);
 
     if (sizeof($return['profile']) == 1) {
-      $node->profile = next($return['profile']);
+      $node->profile = $return['profile'][0];
     }
-
     if (isset($node->profile) && in_array($node->profile, $return['profile'])) {
       $return['site_language'] = array_keys((array) hosting_get_profile_languages($node->profile, $node->platform));
     }
@@ -222,7 +230,6 @@ function hosting_site_form($node) {
       '#attributes' => array('class' => "hosting-site-form-site-language-options"),
     ), '_hosting_language_name');
 
-
   _hosting_site_field($form, $node, 'db_server', array(
         '#type' => 'radios',
         '#title' => t('Database server'),
@@ -247,6 +254,11 @@ function hosting_site_form($node) {
  */
 function hosting_site_validate($node, &$form) {
   global $user;
+
+  $valid_options = hosting_site_available_options($node);
+ 
+  $form['#valid_site_options'] = $valid_options;
+
   $url = strtolower(trim($node->title)); // domain names are case-insensitive
   if (!_hosting_valid_fqdn($url)) {
     form_set_error('title', t("You have not specified a valid url for this site."));
@@ -262,17 +274,22 @@ function hosting_site_validate($node, &$form) {
     }
     $node->client = $client->nid;
   }
+
   # TODO: maybe we should allow creation of sites that conflict with HOSTING_SITE_DISABLED (which would then need to be renamed before being re-enabled)
   if (!hosting_domain_allowed($url, (array) $node)) {
     form_set_error('title', t("The domain name you have specified is already in use."));
   }
 
-  if (!array_key_exists($node->profile, hosting_get_profiles($node->platform))) {
-    form_set_error('profile', t('Please fill in a valid profile'));
+  if (!in_array($node->profile, $valid_options['profile'])) {
+    form_set_error('profile', t('Please choose a valid profile'));
+  }
+
+  if (!in_array($node->platform, $valid_options['platform'])) {
+    form_set_error('platform', t('Please choose a valid profile'));
   }
 
   // Check that we are selecting a valid language for this profile, but only when a new site is created. 
-  if (!array_key_exists($node->site_language, hosting_get_profile_languages($node->profile, $node->platform)) && !$node->nid) {
+  if (!in_array($node->site_language, $valid_options['site_language']) && !$node->nid) {
     form_set_error('site_language', t('Please fill in a valid language'));
   }
 

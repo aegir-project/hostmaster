@@ -2,7 +2,7 @@
 
 define('HOSTING_SSL_DISABLED', 0);
 define('HOSTING_SSL_ENABLED', 1);
-define('HOSTING_SSL_ONLY', 2);
+define('HOSTING_SSL_REQUIRED', 2);
 
 include_once('hosting_ssl.nodeapi.inc');
 

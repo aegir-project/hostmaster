@@ -9,55 +9,80 @@ if (Drupal.jsEnabled) {
 hostingSiteToggleOptions  = function() {
   // iterate through the visible options
   settings = Drupal.settings.hostingSiteAvailableOptions;
+  console.log(settings);
 
-  css_regex = /_/g;
-  console.log(settings)
   for (var key in settings) {
-    css_key = key.replace(css_regex, '-');
-    
+    css_key = key.replace(/_/g, '-');
+    desc_id = 'div#hosting-site-field-' + css_key + '-description';
+
     // generate an css id to retrieve the value, based on the field type.
     var id = 'div#hosting-site-field-' + css_key;
     if ($(id).hasClass('hosting-site-field-radios')) { 
       // show and hide the visible radio options.
-      if (settings[key].length) {
+      if (settings[key].length > 1) {
+        // There is more than one possible option, so we display the radio dialogs.
+        $(desc_id).hide()
         $(id).show();
         $(id + ' div.form-radios div.form-item').hide();
         for (var option in settings[key]) {
           // modify the definition to get the right css id
           option_css_key = settings[key][option].toString().replace(/[\]\[\ _]/g, '-')
-
-            $(id + ' div.form-radios div#edit-' + css_key + '-' + option_css_key +'-wrapper').show();
-          if (settings[key].length == 1) {
-            //it's the only option, select it.
-            $('input[@name=' + key + '][@value=' + settings[key][option] + ']').attr("checked", "checked");
-            //$('div#hosting-site-field-' + css_key + '-description').show();
-
-          }
-          else {
-
-          }
+          input_id = 'input[@name=' + key + '][@value=' + settings[key][option] + ']'
+          $(id + ' div.form-radios div#edit-' + css_key + '-' + option_css_key +'-wrapper').show();
         }
 
       }
+      else if (settings[key].length == 1) {
+        // There is only one valid option, so we select it and display it as text.
+        input_id = 'input[@name=' + key + '][@value=' + settings[key][0] + ']'
+        $(input_id).attr("checked", "checked");
+        $(id).hide();
+
+
+        // we have a special case for radios that do not want their description
+        // shown. These options have the index value 'null'.
+        if (settings[key][0] != 'null') {
+          $(desc_id).show()
+            .find('div.placeholder')
+            .contents().
+            replaceWith($(input_id).parent().text().trim());
+        }
+      }
       else {
+        $(desc_id).hide();
         $(id).hide();
       }
     }
-    else if ($(id).hasClass('hosting-site-field-textfield')) {
-      // show and hide the visible radio options.
-      if (settings[key].length || (settings[key] == true)) {
+    else if ($(id).hasClass('hosting-site-field-textfield') || $(id).hasClass('hosting-site-field-textarea')) {
+      input_id = 'input[@name=' + key + ']'
+
+      if (settings[key] == null) {
+        // we do not want the user to be able to manipulate this value,
+        // but we need to display the default value to the user.
+        $(id).hide();
+        if ($(input_id).val().length) {
+          $(desc_id).show()
+            .find('div.placeholder')
+            .contents().
+            replaceWith($(input_id).val().trim());
+        }
+      }
+      else if ((settings[key].toString().length || (settings[key] == true)) && (settings[key] != false)) {
         $(id).show();
+        $(desc_id).hide();
 
         // if the field does not have a value yet
-        if (!$('input[@name=' + key + ']').val().length) {
+        if (!$(input_id).val().length) {
           // we were given a default value by the server
           if (settings[key].length) {
             // set the textfield to the provided default
-            $('input[@name=' + key + ']').val(settings[key])
+            $(input_id).val(settings[key])
           }
         }
       }
       else {
+        // hide the whole field and description
+        $(desc_id).hide();
         $(id).hide();
       }
     }
@@ -69,7 +94,7 @@ hostingSiteCheck = function() {
 
    $('div.hosting-site-field').each( function() {
      // get the field name for this field.
-     var field = $(this).attr('id').replace('hosting-site-field-', '').replace('-','_');
+     var field = $(this).attr('id').replace('hosting-site-field-', '').replace(/-/g,'_');
 
      // generate an css id to retrieve the value, based on the field type.
      var id = 'input[@name=' + field + ']';
@@ -80,7 +105,7 @@ hostingSiteCheck = function() {
      // Update the record with the right values.
      record[field] = $(id, this).val();
   });
-
+   console.log(record)
   var resultOptions = function(data) {
     Drupal.settings.hostingSiteAvailableOptions = data
     hostingSiteToggleOptions();
