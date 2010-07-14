@@ -2,6 +2,6 @@
 
 function hosting_nginx_hosting_service() {
   return array(
-    'http' => 'nginx',
+    'nginx' => 'http',
   );
 }
