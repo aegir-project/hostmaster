@@ -1,0 +1,34 @@
+<?php
+
+define('HOSTING_SSL_DISABLED', 0);
+define('HOSTING_SSL_ENABLED', 1);
+define('HOSTING_SSL_REQUIRED', 2);
+
+include_once('hosting_ssl.nodeapi.inc');
+
+function hosting_ssl_hosting_service() {
+  return array(
+     'apache_ssl' => 'http',
+   );
+}
+
+/**
+ * Return a list of servers which have SSL enabled web services.
+ */
+function hosting_ssl_get_servers() {
+  $servers = hosting_get_servers('http');
+  $ssl_servers = array();
+  foreach ($servers as $nid => $title) {
+    $node = node_load($nid);
+    if ($node->services['http']->ssl_enabled) {
+      $ssl_servers[] = $nid;
+    }
+  }
+  return $ssl_servers;
+}
+
+function hosting_ssl_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'site_node_form') {
+    hosting_ssl_site_form($form, $form_state, $form_id);
+  }
+}

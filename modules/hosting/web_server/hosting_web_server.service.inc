@@ -1,6 +1,7 @@
 <?php
 class hostingService_http extends hostingService {
   public $service = 'http';
+  public $ssl_enabled = FALSE;
 }
 
 

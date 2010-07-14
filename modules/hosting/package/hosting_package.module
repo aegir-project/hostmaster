@@ -123,7 +123,6 @@ function hosting_get_profiles($platform = NULL) {
 }
 
 function hosting_get_profile_languages($profile = NULL, $platform = NULL) {
-  $languages = array('en' => 'en');
   if ($profile && $platform) {
     $instance = hosting_package_instance_load(array(
       'rid' => $platform, 'package_id' => $profile));
@@ -134,8 +133,8 @@ function hosting_get_profile_languages($profile = NULL, $platform = NULL) {
     while ($lang = db_fetch_object($result)) {
       $languages[$lang->language] = _hosting_language_name($lang->language);
     }
-
   }
+  $languages['en'] = _hosting_language_name('en');
   return $languages;
 }
 

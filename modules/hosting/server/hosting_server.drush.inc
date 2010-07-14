@@ -1,6 +1,6 @@
 <?php
 
-function hosting_server_context_options(&$task) {
+function hosting_hosting_server_context_options(&$task) {
   $task->context_options['remote_host'] = $task->ref->title;
   $ip_list = _hosting_server_ip_list($task->ref->ip_addresses);
   $task->context_options['ip_addresses'] = sizeof($ip_list) ? implode(',', $ip_list) : 'null';

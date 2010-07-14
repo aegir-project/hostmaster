@@ -2,7 +2,7 @@
 
 // $Id$
 
-function hosting_site_context_options(&$task) {
+function hosting_hosting_site_context_options(&$task) {
   $task->context_options['db_server'] = hosting_context_name($task->ref->db_server);
   $task->context_options['platform'] = hosting_context_name($task->ref->platform);
 

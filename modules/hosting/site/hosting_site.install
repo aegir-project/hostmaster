@@ -61,14 +61,6 @@ function hosting_site_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
-      'ssl' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-      ),
-      'ssl_redirect' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-      ),
     ),
     'primary key' => array('vid'),
   );
@@ -238,5 +230,15 @@ function hosting_site_update_6004() {
 function hosting_site_update_6005() {
   $ret = array();
   db_drop_field($ret, "hosting_site", "port");
+  return $ret;
+}
+
+/**
+ * Remove the ssl configuration which should be in a separate table.
+ */
+function hosting_site_update_6006() {
+  $ret = array();
+  db_drop_field($ret, "hosting_site", "ssl");
+  db_drop_field($ret, "hosting_site", "ssl_redirect");
   return $ret;
 }
