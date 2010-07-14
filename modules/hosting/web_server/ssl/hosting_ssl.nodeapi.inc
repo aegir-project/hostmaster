@@ -34,7 +34,7 @@ function hosting_ssl_site_form(&$form, &$form_state, $form_id) {
       '#required' => TRUE,
       '#default_value' => ($node->ssl_key) ? $node->ssl_key : HOSTING_SSL_CUSTOM_KEY,
       '#weight' => -8
-    ), 'hosting_ssl_output_key', $ssl_available);
+    ), 'hosting_ssl_output_key', $ssl_available, !$node->nid);
 
   _hosting_site_field($form, $node, 'ssl_key_new', array(
       '#type' => 'textfield',
@@ -93,7 +93,7 @@ function hosting_ssl_nodeapi_site_view(&$node, $teaser = false) {
   $node->content['info']['ssl_enabled'] = array(
     '#type' => 'item',
     '#title' => t('Encryption'),
-    '#value' => hosting_ssl_status_options($node->ssl_enabled),
+    '#value' => hosting_ssl_status_options((!is_null($node->ssl_enabled)) ? $node->ssl_enabled : HOSTING_SSL_DISABLED),
     '#weight' => 6
   );
 

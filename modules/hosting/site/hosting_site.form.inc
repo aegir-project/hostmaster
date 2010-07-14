@@ -37,16 +37,18 @@ function _hosting_site_field(&$form, $node, $item, $element, $filter_display ='f
     }
   }
   else {
-    // display it
-    $form['info'][$item] = array(
-      '#type' => 'item',
-      '#title' => $element['#title'],
-      '#value' => $filter_display($element['#default_value']),
-      '#required' => FALSE,
-    );
+    if ($show_desc) {
+      // display it
+      $form['info'][$item] = array(
+        '#type' => 'item',
+        '#title' => $element['#title'],
+        '#value' => $filter_display($element['#default_value']),
+        '#required' => FALSE,
+      );
 
-    if (isset($element['#weight'])) {
-      $form['info'][$item]['#weight'] = $element['#weight'];
+      if (isset($element['#weight'])) {
+        $form['info'][$item]['#weight'] = $element['#weight'];
+      }
     }
 
     $form[$item] = array('#type' => 'hidden', '#value' => $element['#default_value']);
