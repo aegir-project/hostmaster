@@ -103,7 +103,7 @@ function hosting_ssl_nodeapi_site_view(&$node, $teaser = false) {
       '#type' => 'item',
       '#title' => t('Encryption key'),
       '#value' => hosting_ssl_output_key($node->ssl_key),
-      '#description' => t("This site is using the SSL certificate and SSL key located at %crt_file and %key_file.", array('%crt_file' => $path . 'ssl.crt', '%key_file' => $path . 'ssl.key')),
+      '#description' => t("This site is using the SSL certificate and SSL key located at %crt_file and %key_file.", array('%crt_file' => $path . 'openssl.crt', '%key_file' => $path . 'openssl.key')),
       '#weight' => 7
     );
   }
