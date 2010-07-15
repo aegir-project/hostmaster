@@ -828,6 +828,15 @@ div.hosting-queue-frequency select {
   font-size:10px;
   }
 
+/* Radio Buttons in Forms */
+body.aegir #page div.node div.content div.form-radios div.form-item label {
+  width: auto;
+}
+
+body.aegir #page div.node div.content div.form-radios div.form-item {
+  border-bottom: none;
+  padding-bottom: 1.5em;
+}
 
 /* Task buttons */
 a.hosting-button-enabled,
