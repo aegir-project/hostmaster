@@ -251,7 +251,6 @@ function hosting_quota_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
   if ($node->type == 'client') {
     switch ($op) {
       case 'insert':
-        break;
       case 'update':
         if (user_access('edit all quotas')) {
           foreach ($node as $field => $value) {
@@ -288,7 +287,7 @@ function hosting_quota_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
  *
  */
 function hosting_quota_form_alter(&$form, $form_state, $form_id) {
-  if (isset($form['type']) && isset($form['#node']) && 'client_node_form' == $form_id) {
+  if (user_access('edit all quotas') && isset($form['type']) && isset($form['#node']) && 'client_node_form' == $form_id) {
     $node = $form['#node'];
 
     if (!$quota_info = $node->quota) {
