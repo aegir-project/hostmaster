@@ -238,7 +238,7 @@ function hosting_site_update_6005() {
  */
 function hosting_site_update_6006() {
   $ret = array();
-  db_drop_field($ret, "hosting_site", "ssl");
+  db_drop_field($ret, "hosting_site", "`ssl`");
   db_drop_field($ret, "hosting_site", "ssl_redirect");
   return $ret;
 }
