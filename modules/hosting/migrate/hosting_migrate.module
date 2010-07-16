@@ -122,7 +122,7 @@ function hosting_task_migrate_form($node) {
       '#type' => 'radios',
       '#title' => t('Database server'),
       '#required' => TRUE,
-      '#description' => t('The database server the site will use to host it\'s content.'),
+      '#description' => t('The database server the site will use to host its content.'),
       '#options' => $db_servers,
       '#default_value' => $node->db_server,
     );

@@ -236,7 +236,7 @@ function hosting_site_form($node) {
         '#type' => 'radios',
         '#title' => t('Database server'),
         '#required' => TRUE,
-        '#description' => t('The database server the site will use to host it\'s content.'),
+        '#description' => t('The database server the site will use to host its content.'),
         '#options' => hosting_get_servers('db'),
         '#default_value' => $node->db_server ? $node->db_server : HOSTING_DEFAULT_DB_SERVER,
       ), '_hosting_node_link');
