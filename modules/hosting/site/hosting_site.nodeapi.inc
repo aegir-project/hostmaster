@@ -83,6 +83,8 @@ function hosting_site_view(&$node, $teaser = false) {
     );
   }
 
+  hosting_ip_view($node);
+
   $node->content['info']['#suffix'] = '</div>';
 
   if ($node->nid) { 
@@ -108,6 +110,7 @@ function hosting_site_view(&$node, $teaser = false) {
  * Implementation of hook_nodeapi_delete_revision().
  */
 function hosting_nodeapi_site_delete_revision(&$node) {
+  hosting_ip_delete_revision($node);
   db_query('DELETE FROM {hosting_site} WHERE vid = %d', $node->vid);
 }
 
@@ -115,6 +118,7 @@ function hosting_nodeapi_site_delete_revision(&$node) {
  * Implementation of hook_delete().
  */
 function hosting_site_delete($node) {
+  hosting_ip_delete($node);
   db_query('DELETE FROM {hosting_site} WHERE nid = %d', $node->nid);
   db_query('DELETE FROM {hosting_package_instance} WHERE rid=%d', $node->nid);
   hosting_context_delete($node->nid);
@@ -143,6 +147,8 @@ function hosting_site_insert(&$node) {
   $node->client = $client->nid;
   $node->site_language = ($node->site_language) ? $node->site_language : 'en';
 
+  hosting_ip_save($node, FALSE);
+
   db_query("INSERT INTO {hosting_site} (vid, nid, client, db_server, platform, profile, language, last_cron, status, verified) VALUES (%d, %d, %d, %d, %d, %d, '%s', %d, %d, %d)",
            $node->vid, $node->nid, $node->client, $node->db_server, $node->platform, $node->profile, $node->site_language, $node->last_cron, $node->site_status, $node->verified);
   if ((!$node->old_vid)) {
@@ -170,6 +176,8 @@ function hosting_site_update(&$node) {
     if ($node->site_status == HOSTING_SITE_DELETED) {
       $node->no_verify = TRUE;
     }
+    hosting_ip_save($node, TRUE);
+
     db_query("UPDATE {hosting_site} SET client = %d, db_server = %d, platform = %d, last_cron = %d, status = %d, profile = %d, language = '%s', verified = %d WHERE vid=%d",
              $node->client, $node->db_server, $node->platform, $node->last_cron, $node->site_status, $node->profile, $node->site_language, $node->verified, $node->vid);
   }
@@ -186,5 +194,6 @@ function hosting_site_update(&$node) {
  */
 function hosting_site_load($node) {
   $additions = db_fetch_object(db_query('SELECT  client, db_server, platform, profile, language as site_language, last_cron, status AS site_status, verified FROM {hosting_site} WHERE vid = %d', $node->vid));
+  $additions->ip_addresses = hosting_ip_load($node);
   return $additions;
 }
