@@ -15,7 +15,6 @@ function hostmaster_profile_modules() {
   );
 }
 
-
 /**
  * Return a description of the profile for the initial installation screen.
  *
@@ -32,6 +31,11 @@ function hostmaster_profile_details() {
 function hostmaster_profile_tasks(&$task, $url) {
   // Install dependencies
   install_include(hostmaster_profile_modules());
+  
+  // add support for nginx
+  if (d()->platform->server->http_service_type === 'nginx') {
+    drupal_install_modules(array('hosting_nginx','hosting_ssl'));
+  }
 
   // Bootstrap and create all the initial nodes
   hostmaster_bootstrap();
@@ -69,8 +73,8 @@ function hostmaster_bootstrap() {
   $node->hosting_name = 'server_master';
   $node->services = array();
 
-
-  hosting_services_add($node, 'http', 'apache', array(
+  /* Make it compatible with more than apache and nginx */
+  hosting_services_add($node, 'http', d()->platform->server->http_service_type, array(
    'restart_cmd' => d()->platform->server->http_restart_cmd,
    'port' => 80,
    'available' => 1,

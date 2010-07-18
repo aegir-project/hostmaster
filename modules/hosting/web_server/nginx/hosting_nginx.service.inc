@@ -7,6 +7,6 @@ class hostingService_http_nginx extends hostingService_http_public {
   public $has_restart_cmd = TRUE;
 
   function default_restart_cmd() {
-    return 'sudo /etc/init.d/nginx restart';
+    return 'sudo /etc/init.d/nginx reload';
   }
 }

@@ -94,5 +94,6 @@ function hosting_ssl_install() {
 
 function hosting_ssl_uninstall() {
   db_query("DELETE FROM {hosting_service} WHERE service='http' and type='apache_ssl'");
+  db_query("DELETE FROM {hosting_service} WHERE service='http' and type='nginx_ssl'");
   drupal_uninstall_schema('hosting_ssl');
 }
