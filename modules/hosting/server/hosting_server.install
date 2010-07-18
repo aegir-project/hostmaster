@@ -26,7 +26,7 @@ function hosting_server_schema() {
     'primary key' => array('vid'),
   );
 
-  $schema['hosting_server_ip'] = array(
+  $schema['hosting_ip_addresses'] = array(
    'fields' => array(
       'vid' => array(
         'type' => 'int',
@@ -175,4 +175,13 @@ function hosting_server_update_6004() {
   db_create_table($return, 'hosting_server_ip', $schema['hosting_server_ip']);
 
   return $return;
+}
+
+/**
+ * Rename the IP address table so that sites can also use it.
+ */
+function hosting_server_update_6005() {
+  $ret = array();
+  db_rename_table($ret, 'hosting_server_ip', 'hosting_ip_addresses');
+  return $ret;
 }

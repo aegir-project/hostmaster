@@ -1,6 +1,10 @@
 <?php
 include_once("hosting_server.service.inc");
+include_once("hosting.ip.inc");
 
+/**
+ * Implementation of hook_node_info().
+ */
 function hosting_server_node_info() {
   $types["server"] =  array(
     "type" => 'server', "name" => 'Server',
@@ -27,6 +31,9 @@ function hosting_server_menu() {
   return $items;
 }
 
+/**
+ * Implementation of hook_hosting_feature().
+ */
 function hosting_server_hosting_feature() {
   $features['server'] = array(
     'title' => t('Server administration'),
@@ -88,6 +95,9 @@ function hosting_server_access($op, $node, $account) {
   }
 }
 
+/**
+ * Return an associative array of services enabled on this system.
+ */
 function hosting_server_services() {
   static $services;
 
@@ -104,6 +114,9 @@ function hosting_server_services() {
   return $services;
 }
 
+/**
+ * Factory method for generating new instance of a service class.
+ */
 function hosting_services_new_object($name, $type, $node, $values = null) {
   $services = hosting_server_services();
 
@@ -115,6 +128,9 @@ function hosting_services_new_object($name, $type, $node, $values = null) {
   return new $class($node, $values);
 }
 
+/**
+ * Add a service to an existing server node.
+ */
 function hosting_services_add(&$node, $name, $type, $values = array()) {
   $values['available'] = (isset($values['available'])) ? $values['available'] : 1;
 
@@ -123,6 +139,9 @@ function hosting_services_add(&$node, $name, $type, $values = array()) {
   }
 }
 
+/**
+ * Initialize server objects assocated to the node object.
+ */
 function hosting_server_init_services(&$node) {
   $result = db_query("SELECT service, type FROM {hosting_service} WHERE vid=%d AND available=1", $node->vid);
   while ($record = db_fetch_object($result)) {
@@ -135,6 +154,8 @@ function hosting_server_init_services(&$node) {
   return $node;
 }
 
+/**
+ * Translate a server form submission into populated server objects on the node.*/
 function hosting_server_services_from_post(&$node) {
   if (is_array($node->services)) {
     foreach (hosting_server_services() as $name => $data) {
@@ -153,7 +174,9 @@ function hosting_server_services_from_post(&$node) {
   }
 }
 
-
+/**
+ * Invoke a method on all enabled services.
+ */
 function hosting_server_invoke_services(&$node, $method, &$arg1 = null, &$arg2 = null, &$arg3 = null, &$arg4 = null) {
   $return = array();
   foreach ($node->services as $name => $service) {
@@ -188,7 +211,7 @@ function hosting_server_form(&$node) {
       '#type' => 'textarea',
       '#title' => t('Ip addresses'),
       '#description' => t('A list of IP addresses this server is publicly available under, one per line. If none is specified, a DNS lookup will be performed based on the server hostname above. <br /><strong>This should point to the public network, if you have such a separation.</strong>'),
-      '#default_value' => implode("\n", _hosting_server_ip_list($node->ip_addresses)),
+      '#default_value' => implode("\n", _hosting_ip_list($node->ip_addresses)),
       '#weight' => -9,
     );
 
@@ -258,14 +281,8 @@ function hosting_nodeapi_server_presave(&$node) {
  * Implementation of hook_validate().
   */
 function hosting_server_validate(&$node, &$form) {
-  
-  foreach (_hosting_server_ip_list($node->ip_addresses) as $ip) {
-    if (!_hosting_valid_ip($ip)) {
-      form_set_error('ip_addresses', t('Invalid IP address.'));
-      break;
-    }
-  }
 
+  hosting_ip_validate($node); 
   if (!_hosting_valid_fqdn($node->title)) {
     form_set_error('title', t('Invalid domain name. Use a proper domain name or an IP address.'));
   }
@@ -275,23 +292,6 @@ function hosting_server_validate(&$node, &$form) {
   hosting_server_invoke_services($node, 'validate', $node, $form);
 }
 
-
-/**
- * Get an array from the text ip address list.
- */
-function _hosting_server_ip_list($addresses) {
-  $return = array();
-  $ip_list = is_array($addresses) ? $addresses : explode("\n", $addresses);
-  
-  foreach ($ip_list as $key => $ip) {
-    $ip = trim($ip);
-    if (!empty($ip)) {
-      $return[$key] = $ip;
-    }
-  }
-
-  return $return;
-}
 
 /**
  * Implementation of hook_update().
@@ -314,12 +314,8 @@ function hosting_server_update($node) {
     }
   }
 
-  db_query("DELETE FROM {hosting_server_ip} WHERE vid=%d", $node->vid);
-  $ip_list = _hosting_server_ip_list($node->ip_addresses);
+  hosting_ip_save($node, TRUE);
 
-  foreach ($ip_list as $ip) {
-    db_query("INSERT INTO {hosting_server_ip} (vid, nid, ip_address) VALUES (%d, %d, '%s')", $node->vid, $node->nid, $ip); 
-  }
 
   if (!$node->no_verify) {
     hosting_add_task($node->nid, 'verify');
@@ -339,11 +335,7 @@ function hosting_server_insert($node) {
         VALUES (%d, %d)", 
         $node->vid, $node->nid);
 
-  $ip_list = _hosting_server_ip_list($node->ip_addresses);
-
-  foreach ($ip_list as $ip) {
-    db_query("INSERT INTO {hosting_server_ip} (vid, nid, ip_address) VALUES (%d, %d, '%s')", $node->vid, $node->nid, $ip); 
-  }
+  hosting_ip_save($node, FALSE);
 
   hosting_server_invoke_services($node, 'save', $node);
   hosting_server_invoke_services($node, 'insert', $node);
@@ -358,7 +350,7 @@ function hosting_server_insert($node) {
  */
 function hosting_nodeapi_server_delete_revision(&$node) {
   db_query('DELETE FROM {hosting_server} WHERE vid = %d', $node->vid);
-  db_query("DELETE FROM {hosting_server_ip} WHERE vid=%d", $node->vid);
+  hosting_ip_delete_revision($node);
   hosting_server_invoke_services($node, 'delete_revision');
 }
 
@@ -367,7 +359,7 @@ function hosting_nodeapi_server_delete_revision(&$node) {
  */
 function hosting_server_delete($node) {
   db_query('DELETE FROM {hosting_server} WHERE nid = %d', $node->nid);
-  db_query("DELETE FROM {hosting_server_ip} WHERE nid=%d", $node->nid);
+  hosting_ip_delete($node);
   hosting_context_delete($node->nid);
   hosting_server_invoke_services($node, 'delete_revision');
 }
@@ -380,14 +372,7 @@ function hosting_server_load($node) {
   hosting_server_invoke_services($node, 'load');
   $additions = new stdClass();
   $additions->services = $node->services;
-
-  $ip_list = array();
-  $result = db_query("SELECT ip_address FROM {hosting_server_ip} WHERE vid=%d", $node->vid);
-  while ($obj = db_fetch_object($result)) {
-    $ip_list[] = $obj->ip_address;
-  }
-
-  $additions->ip_addresses = $ip_list;
+  $additions->ip_addresses = hosting_ip_load($node);
 
   return $additions;
 }
@@ -425,16 +410,8 @@ function hosting_server_view(&$node, $teaser = FALSE, $page = FALSE) {
     '#suffix' => '</div>'
   );
 
-  $ip_list = _hosting_server_ip_list($node->ip_addresses);
-
-  if (sizeof($ip_list)) {
-    $node->content['info']['ip_addresses'] = array(
-      '#type' => 'item',
-      '#title' => t('IP addresses'),
-      '#value' => implode('<br />', $ip_list),
-      '#weight' => -30,
-    );  
-  }
+  hosting_ip_view($node);
+  $node->content->info->ip_addresses['#weight'] = -30;
 
   foreach ($node->services as $name => $service) {
     $node->content['info'][$name] = array(
@@ -477,9 +454,9 @@ function hosting_server_view(&$node, $teaser = FALSE, $page = FALSE) {
   return $node;
 }
 
-function hosting_server_nodeapi_server_prepare(&$node) {
-
-}
+/**
+ * Output a table of servers with their enabled services.
+ */
 
 function hosting_server_listing() {
   $services = hosting_server_services();

@@ -106,6 +106,7 @@ function hosting_migrate_theme($existing, $type, $theme, $path) {
  * Implementation of hook_form()
  */
 function hosting_task_migrate_form($node) {
+  $valid_options = hosting_site_available_options($node);
 
   $form['new_uri'] = array (
     '#title' => t('Domain name'),
@@ -121,7 +122,7 @@ function hosting_task_migrate_form($node) {
       '#type' => 'radios',
       '#title' => t('Database server'),
       '#required' => TRUE,
-      '#description' => t('The database server the site will use to host it\'s content.'),
+      '#description' => t('The database server the site will use to host its content.'),
       '#options' => $db_servers,
       '#default_value' => $node->db_server,
     );
@@ -158,7 +159,7 @@ function hosting_task_migrate_form($node) {
     );
   }
   foreach ($profile_platform_instances as $profile_instance) {
-    if ($profile_instance->rid != $node->platform) {
+    if (($profile_instance->rid != $node->platform) && (in_array($profile_instance->rid, $valid_options['platform']))) {
       $status = hosting_package_comparison($node->nid, $profile_instance->iid);
 
       $description = t("Upgrades: !upgrades, Warnings: !missing, Errors: !errors | <a href='!url' class='hosting-package-comparison-link'>Compare platforms</a>",

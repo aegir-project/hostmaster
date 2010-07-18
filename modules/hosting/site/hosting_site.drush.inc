@@ -40,6 +40,7 @@ function hosting_site_post_hosting_install_task($task, $data) {
     hosting_package_sync($packages);
     hosting_package_instance_sync($task->ref->nid, $packages);
     $task->ref->site_status = HOSTING_SITE_ENABLED;
+    $task->ref->ip_addresses = array_values($data['context']['site_ip_addresses']);
     $task->ref->no_verify = TRUE;
     $task->ref->verified = mktime();
     node_save($task->ref);
@@ -148,6 +149,7 @@ function hosting_site_post_hosting_verify_task($task, $data) {
   if ($task->ref->type == 'site') {
     $task->ref->verified = mktime();
     $task->ref->no_verify = TRUE;
+    $task->ref->ip_addresses = array_values($data['context']['site_ip_addresses']);
     node_save($task->ref);
 
     $context = $data['context'];
