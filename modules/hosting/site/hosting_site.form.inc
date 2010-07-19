@@ -133,7 +133,6 @@ function hosting_site_available_options($node) {
 
   $options = array();
   $platforms = hosting_get_profile_platforms($node->profile);
-  $return['other_plat'] = $platforms;
   if (sizeof($platforms)) {
     foreach ($platforms as $nid => $title) {
       $platform = node_load($nid);
@@ -153,7 +152,6 @@ function hosting_site_available_options($node) {
   }
 
   $return['site_language'] = array_keys((array) hosting_get_profile_languages($node->profile, $node->platform));
-
 
   drupal_alter('hosting_site_options', $return, $node);
 
