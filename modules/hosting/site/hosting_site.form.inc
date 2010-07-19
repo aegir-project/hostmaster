@@ -103,6 +103,7 @@ function hosting_site_available_options($node) {
   $return = array();
 
   $return['profile'] = array();
+  $return['platform'] = array();
   $return['site_language'] = array();
 
   if (!hosting_feature('client')) {
@@ -112,32 +113,26 @@ function hosting_site_available_options($node) {
     $return['client'] = null;
   }
 
-  if (isset($node->platform)) {
-    // Install profiles 
-    $profiles = hosting_get_profiles($node->platform);
-    foreach($profiles as $id => $name) {
-      // Don't allow a site to be provisioned with hostslave or hostmaster profile
-      if (in_array($name, array('hostslave', 'hostmaster'))) {
-        unset($profiles[$id]);
-      }
+  // Install profiles 
+  $profiles = hosting_get_profiles();
+  foreach($profiles as $id => $name) {
+    // Don't allow a site to be provisioned with hostslave or hostmaster profile
+    if (in_array($name, array('Hostslave', 'Hostmaster'))) {
+      unset($profiles[$id]);
     }
-    reset($profiles);
-    $return['profile'] = array_keys($profiles);
+  }
+  reset($profiles);
+  $return['profile'] = array_keys($profiles);
 
-    if (sizeof($return['profile']) == 1) {
-      $node->profile = $return['profile'][0];
-    }
-    if (isset($node->profile) && in_array($node->profile, $return['profile'])) {
-      $return['site_language'] = array_keys((array) hosting_get_profile_languages($node->profile, $node->platform));
-    }
+  if (!isset($node->profile)) {
+    $node->profile = hosting_get_default_profile($return['profile'][0]);
   }
 
   // filter the available platforms based on which clients the user has access to.
   $user = user_load($GLOBALS['user']->uid);
 
   $options = array();
-  $platforms = _hosting_get_platforms();
-  
+  $platforms = hosting_get_profile_platforms($node->profile);
   if (sizeof($platforms)) {
     foreach ($platforms as $nid => $title) {
       $platform = node_load($nid);
@@ -151,6 +146,12 @@ function hosting_site_available_options($node) {
 
     $return['platform'] = $options;
   }
+
+  if (!isset($node->platform) || !in_array($node->platform, $return['platform'])) {
+    $node->platform = $return['platform'][0];
+  }
+
+  $return['site_language'] = array_keys((array) hosting_get_profile_languages($node->profile, $node->platform));
 
   drupal_alter('hosting_site_options', $return, $node);
 
@@ -192,21 +193,11 @@ function hosting_site_form($node) {
     '#autocomplete_path' => 'hosting_client/autocomplete/client',
   ), 'filter_xss', $editable);
 
-
-  _hosting_site_field($form, $node, 'platform', array(
-     '#type' => 'radios',
-     '#title' => t('Platform'),
-     '#required' => TRUE,
-     '#description' => t('The platform you want the site to be hosted on.'),
-     '#options' => _hosting_get_platforms(),
-     '#default_value' => ($node->platform) ? $node->platform : HOSTING_DEFAULT_PLATFORM,
-   ), '_hosting_node_link');
-
   // Install profiles 
   $profiles = hosting_get_profiles();
   foreach($profiles as $id => $name) {
     // Don't allow a site to be provisioned with hostslave or hostmaster profile
-    if (in_array($name, array('hostslave', 'hostmaster'))) {
+    if (in_array($name, array('Hostslave', 'Hostmaster'))) {
       unset($profiles[$id]);
     }
   }
@@ -217,10 +208,21 @@ function hosting_site_form($node) {
       '#title' => t('Install profile'),
       '#description' => t('The type of site to install.'),
       '#options' => $profiles,
-      '#default_value' => $node->profile ? $node->profile : key($profiles),
+      '#default_value' => $node->profile ? $node->profile : hosting_get_default_profile(key($profiles)),
       '#required' => TRUE,
       '#attributes' => array('class' => "hosting-site-form-profile-options"),
     ), '_hosting_node_link');
+
+
+
+  _hosting_site_field($form, $node, 'platform', array(
+     '#type' => 'radios',
+     '#title' => t('Platform'),
+     '#required' => TRUE,
+     '#description' => t('The platform you want the site to be hosted on.'),
+     '#options' => _hosting_get_platforms(),
+     '#default_value' => ($node->platform) ? $node->platform : HOSTING_DEFAULT_PLATFORM,
+   ), '_hosting_node_link');
 
   _hosting_site_field($form, $node, 'site_language', array(
       '#type' => 'radios',

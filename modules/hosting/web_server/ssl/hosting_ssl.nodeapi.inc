@@ -52,6 +52,7 @@ function hosting_ssl_hosting_site_options_alter(&$return, $node) {
 
   // Test if ssl has been enabled.
   if ($node->ssl_enabled != 0) {
+
     $keys = hosting_ssl_get_keys($node->client, TRUE);
 
     // return the list of valid keys, including the special 'new key' option.
@@ -61,7 +62,6 @@ function hosting_ssl_hosting_site_options_alter(&$return, $node) {
     if (sizeof($return['ssl_key']) == 1) {
       $node->ssl_key = HOSTING_SSL_CUSTOM_KEY;
     }
-
     
     // the user has chosen to enter a new key
     if ($node->ssl_key == HOSTING_SSL_CUSTOM_KEY) {
@@ -70,21 +70,11 @@ function hosting_ssl_hosting_site_options_alter(&$return, $node) {
       $return['ssl_key_new'] = (!empty($default)) ? $default : true;
     }
 
-    // Only platforms that are SSL enabled can be chosen now.
-    $ssl_servers = hosting_ssl_get_servers();
-
-    // check all existing valid platforms and remove the ones we don't want.
-    foreach ($return['platform'] as $key => $nid) {
-      $platform = node_load($nid);
-      
-      if (!in_array($platform->web_server, $ssl_servers)) {
-        // Remove the platform from the list because SSL is not available for it.
-        unset($return['platform'][$key]);
-      } 
-    }
     // we need to ensure that the return value is properly indexed, otherwise it
     // gets interpreted as an object by jquery.
-    $return['platform'] = array_values($return['platform']);
+    $return['profile'] = array_values(array_intersect($return['profile'], hosting_ssl_get_profiles()));
+
+    $return['platform'] = array_values(array_intersect($return['platform'], hosting_ssl_get_platforms()));
   }
 }
 

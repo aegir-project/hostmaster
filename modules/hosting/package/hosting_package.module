@@ -101,7 +101,7 @@ function hosting_package_access($op, $node, $account) {
   }
 }
 
-function hosting_get_profiles($platform = NULL) {
+function hosting_get_profiles($platform = NULL, $field = 'title') {
   $profiles = array();
   if (!is_null($platform)) {
     $instances = hosting_package_instances_load(array(
@@ -109,24 +109,57 @@ function hosting_get_profiles($platform = NULL) {
       'n.status' => 1));
 
     foreach ($instances as $iid => $instance) {
-      $profiles[$instance->package_id] = $instance->title;
+      $profiles[$instance->package_id] = $instance->$field;
     }
   }
   else {
-    $result = db_query("SELECT n.nid, n.title FROM {node} n LEFT JOIN {hosting_package} p ON n.vid = p.vid WHERE p.package_type = 'profile'");
-    while ($profile = db_fetch_object($result)) {
-      $profiles[$profile->nid] = $profile->title;
+   $instances = hosting_package_instances_load(array(
+    'package_type' => 'profile', 
+    'n.status' => 1, 
+    'r.type' => 'platform'));
+
+    foreach ($instances as $iid => $instance) { 
+      $profiles[$instance->package_id] = $instance->$field;
     }
   }
 
   return $profiles;
 }
 
+
+function hosting_get_profile_platforms($profile) {
+  $defaults = array('default', 'standard', 'minimal');
+
+  $platforms = array();
+  $instances = hosting_package_instances_load(array(
+    'package_id' => $profile, 
+    'n.status' => 1,
+    'r.status' => 1, 
+    'r.type' => 'platform'));
+
+  foreach ($instances as $iid => $instance) {
+    $platform = node_load($instance->rid);
+    // this is one of the default profiles
+    if (in_array($instance->short_name, $defaults) &&
+      sizeof(array_diff(array_values($platform->profiles), $defaults)) &&
+      variable_get('hosting_ignore_default_profiles', TRUE)) {
+      // there are other profiles available on this platform. skip this.
+      continue;
+    }
+    if ($platform->platform_status != HOSTING_PLATFORM_DELETED) {
+      $platforms[$instance->rid] = $platform->title;
+    }
+  }
+
+  return $platforms;
+}
+
 function hosting_get_profile_languages($profile = NULL, $platform = NULL) {
+  $languages['en'] = _hosting_language_name('en');
   if ($profile && $platform) {
     $instance = hosting_package_instance_load(array(
       'rid' => $platform, 'package_id' => $profile));
-    $languages = $instance->languages;
+    $languages = array_merge($languages, $instance->languages);
   }
   else {
     $result = db_query("SELECT DISTINCT language FROM {hosting_package_languages}");
@@ -134,7 +167,6 @@ function hosting_get_profile_languages($profile = NULL, $platform = NULL) {
       $languages[$lang->language] = _hosting_language_name($lang->language);
     }
   }
-  $languages['en'] = _hosting_language_name('en');
   return $languages;
 }
 
@@ -177,6 +209,15 @@ function hosting_get_packages_by_type($type) {
   return false;
 }
 
+function hosting_get_default_profile($default = null) {
+ if ($p = hosting_get_package('default')) {
+   return $p->nid;
+ }
+ elseif ($p = hosting_get_package('standard')) {
+   return $p->nid;
+ }
+ return $default;
+}
 
 function hosting_get_package($short_name) {
   $result = db_query("SELECT nid FROM {hosting_package} WHERE short_name = '%s'", $short_name);
@@ -309,22 +350,29 @@ function hosting_package_sync(&$data) {
   foreach ($data as $plural => $packages) {
     $type = _hosting_package_plural_map($plural);
     foreach ($packages as $short_name => $file) {
-      $name = ($file['name']) ? $file['name'] : $short_name;
+      $name = ($file['info']['name']) ? $file['info']['name'] : $short_name;
       if (!($package = hosting_get_package($short_name))) {
         // Create a new package.
         $package = new stdClass();
         $package->type = 'package';
         $package->uid = 1;
-        $package->title = $name;
         $package->package_type = $type;
         $package->short_name = $short_name;
         $package->old_short_name = $file['info']['old_short_name'];
-        $package->description = $file['description'];
         $package->status = 1;
-        node_save($package);
       }
 
+      // we only call node save when the title, description changes
+      // or when it's a new package.
+      if (!$package->nid || 
+        ($package->title != $name) || 
+        ($package->description != $file['info']['description'])) {
 
+        $package->title = $name;
+        $package->description = $file['info']['description'];
+
+        node_save($package);
+      }
       $data[$plural][$short_name]['package_id'] = $package->nid;
     }
   }

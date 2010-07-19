@@ -30,11 +30,17 @@ class hostingService_http_cluster extends hostingService_http {
   function load() {
     parent::load();
 
+    $ssl_enabled = TRUE;
+
     $web_servers = array();
     $result = db_query('SELECT web_server_nid FROM {hosting_web_cluster} WHERE vid = %d', $this->server->vid);
     while ($web_server = db_fetch_object($result)) {
       $web_servers[] = $web_server->web_server_nid;
+      $server = node_load($web_server->web_server_nid);
+      $ssl_enabled = $ssl_enabled && $server->services['http']->ssl_enabled;
     }
+
+    $this->ssl_enabled = $ssl_enabled;
     $this->setValues(array('web_servers' => drupal_map_assoc($web_servers)));
   }
 

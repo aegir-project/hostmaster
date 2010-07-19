@@ -28,6 +28,40 @@ function hosting_ssl_get_servers() {
   return $ssl_servers;
 }
 
+/**
+ * Return a list of platforms on SSL enabled servers.
+ */
+function hosting_ssl_get_platforms() {
+  $servers = hosting_ssl_get_servers();
+  $ssl_platforms = array();
+
+  $platforms = _hosting_get_platforms();
+  foreach ($platforms as $nid => $title) {
+    $platform = node_load($nid);
+    if (in_array($platform->web_server, $servers)) {
+      $ssl_platforms[] = $nid;
+    }
+  }
+
+  return $ssl_platforms;
+}
+
+/**
+ * Return a list of profiles with SSL enabled platforms.
+ */
+function hosting_ssl_get_profiles() {
+  $platforms = hosting_ssl_get_platforms();
+
+  $ssl_profiles = array();
+  foreach ($platforms as $nid) {
+    $platform = node_load($nid);
+    $ssl_profiles = array_merge($ssl_profiles, array_keys($platform->profiles));
+  }
+
+  return array_unique($ssl_profiles);
+}
+
+
 function hosting_ssl_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'site_node_form') {
     hosting_ssl_site_form($form, $form_state, $form_id);
