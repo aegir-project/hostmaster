@@ -131,12 +131,8 @@ function hosting_site_delete($node) {
 /**
  * Implementation of hook_nodeapi().
  */
-function hosting_site_nodeapi(&$node, $op, $teaser, $page) {
-  switch($op) {
-    case 'presave':
-      $node->title = strtolower(trim($node->title)); // domain names are case-insensitive
-      break;
-  }
+function hosting_site_nodeapi_site_presave(&$node) {
+  $node->title = strtolower(trim($node->title)); // domain names are case-insensitive
 }
 
 /**

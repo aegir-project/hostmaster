@@ -197,7 +197,7 @@ function hosting_migrate_platform_batch($site_id, $target_platform, &$context) {
     $batch['form_state']['storage']['status'][$site->nid] = $status;
     $batch['form_state']['storage']['instance'][$site->nid] = $profile_instance->iid;
     // If there were no errors, this site passes and can be migrated
-    if (!$status['error'] && $profile->title != 'hostmaster') {   // The hostmaster site can not be upgraded via the interface.
+    if (!$status['error'] && $profile->short_name != 'hostmaster') {   // The hostmaster site can not be upgraded via the interface.
       $batch['form_state']['storage']['passed'][$site->nid] = $site->title;
       return true;
     }

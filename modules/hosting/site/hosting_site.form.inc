@@ -117,7 +117,7 @@ function hosting_site_available_options($node) {
   $profiles = hosting_get_profiles();
   foreach($profiles as $id => $name) {
     // Don't allow a site to be provisioned with hostslave or hostmaster profile
-    if (in_array($name, array('hostslave', 'hostmaster'))) {
+    if (in_array($name, array('Hostslave', 'Hostmaster'))) {
       unset($profiles[$id]);
     }
   }
@@ -199,7 +199,7 @@ function hosting_site_form($node) {
   $profiles = hosting_get_profiles();
   foreach($profiles as $id => $name) {
     // Don't allow a site to be provisioned with hostslave or hostmaster profile
-    if (in_array($name, array('hostslave', 'hostmaster'))) {
+    if (in_array($name, array('Hostslave', 'Hostmaster'))) {
       unset($profiles[$id]);
     }
   }

@@ -301,6 +301,7 @@ function hosting_platform_load($node) {
   $additions = db_fetch_object(db_query('SELECT publish_path, verified, web_server, status AS platform_status FROM {hosting_platform} WHERE vid = %d', $node->vid));
   $iid = db_result(db_query("SELECT iid FROM {hosting_package_instance} i left join {hosting_package} p on p.nid=i.package_id WHERE p.package_type='platform' AND i.rid=%d", $node->nid));
   $additions->release = hosting_package_instance_load($iid);
+  $additions->profiles = hosting_get_profiles($node->nid, 'short_name');
   return $additions;
 }
 
@@ -326,9 +327,8 @@ function hosting_platform_node_load($arg) {
  * Implementation of hook_view().
  */
 function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
-
-
   modalframe_parent_js();
+
   $node->content['info'] = array(
     '#prefix' => '<div id="hosting-platform-info">',
     '#suffix' => '</div>'

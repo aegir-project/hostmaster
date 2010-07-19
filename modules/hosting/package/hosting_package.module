@@ -101,7 +101,7 @@ function hosting_package_access($op, $node, $account) {
   }
 }
 
-function hosting_get_profiles($platform = NULL) {
+function hosting_get_profiles($platform = NULL, $field = 'title') {
   $profiles = array();
   if (!is_null($platform)) {
     $instances = hosting_package_instances_load(array(
@@ -109,7 +109,7 @@ function hosting_get_profiles($platform = NULL) {
       'n.status' => 1));
 
     foreach ($instances as $iid => $instance) {
-      $profiles[$instance->package_id] = $instance->title;
+      $profiles[$instance->package_id] = $instance->$field;
     }
   }
   else {
@@ -119,7 +119,7 @@ function hosting_get_profiles($platform = NULL) {
     'r.type' => 'platform'));
 
     foreach ($instances as $iid => $instance) { 
-      $profiles[$instance->package_id] = $instance->title;
+      $profiles[$instance->package_id] = $instance->$field;
     }
   }
 
@@ -128,6 +128,8 @@ function hosting_get_profiles($platform = NULL) {
 
 
 function hosting_get_profile_platforms($profile) {
+  $defaults = array('default', 'standard', 'minimal');
+
   $platforms = array();
   $instances = hosting_package_instances_load(array(
     'package_id' => $profile, 
@@ -137,6 +139,13 @@ function hosting_get_profile_platforms($profile) {
 
   foreach ($instances as $iid => $instance) {
     $platform = node_load($instance->rid);
+    // this is one of the default profiles
+    if (in_array($instance->short_name, $defaults) &&
+      sizeof(array_diff(array_values($platform->profiles), $defaults)) &&
+      variable_get('hosting_ignore_default_profiles', TRUE)) {
+      // there are other profiles available on this platform. skip this.
+      continue;
+    }
     if ($platform->platform_status != HOSTING_PLATFORM_DELETED) {
       $platforms[$instance->rid] = $platform->title;
     }
@@ -144,7 +153,6 @@ function hosting_get_profile_platforms($profile) {
 
   return $platforms;
 }
-
 
 function hosting_get_profile_languages($profile = NULL, $platform = NULL) {
   $languages['en'] = _hosting_language_name('en');
@@ -342,22 +350,29 @@ function hosting_package_sync(&$data) {
   foreach ($data as $plural => $packages) {
     $type = _hosting_package_plural_map($plural);
     foreach ($packages as $short_name => $file) {
-      $name = ($file['name']) ? $file['name'] : $short_name;
+      $name = ($file['info']['name']) ? $file['info']['name'] : $short_name;
       if (!($package = hosting_get_package($short_name))) {
         // Create a new package.
         $package = new stdClass();
         $package->type = 'package';
         $package->uid = 1;
-        $package->title = $name;
         $package->package_type = $type;
         $package->short_name = $short_name;
         $package->old_short_name = $file['info']['old_short_name'];
-        $package->description = $file['description'];
         $package->status = 1;
-        node_save($package);
       }
 
+      // we only call node save when the title, description changes
+      // or when it's a new package.
+      if (!$package->nid || 
+        ($package->title != $name) || 
+        ($package->description != $file['info']['description'])) {
 
+        $package->title = $name;
+        $package->description = $file['info']['description'];
+
+        node_save($package);
+      }
       $data[$plural][$short_name]['package_id'] = $package->nid;
     }
   }
