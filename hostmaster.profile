@@ -34,7 +34,7 @@ function hostmaster_profile_tasks(&$task, $url) {
   
   // add support for nginx
   if (d()->platform->server->http_service_type === 'nginx') {
-    drupal_install_modules(array('hosting_nginx','hosting_ssl'));
+    drupal_install_modules(array('hosting_nginx','hosting_ssl','hosting_nginx_ssl'));
   }
 
   // Bootstrap and create all the initial nodes
