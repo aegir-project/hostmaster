@@ -1,0 +1,6 @@
+name = DNS support
+description = Manage DNS records for your hosted sites.
+package = Hosting
+dependencies[] = hosting
+
+core = 6.x
