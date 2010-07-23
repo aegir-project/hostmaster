@@ -9,7 +9,6 @@ include_once('hosting_ssl.nodeapi.inc');
 function hosting_ssl_hosting_service() {
   return array(
      'apache_ssl' => 'http',
-     'nginx_ssl' => 'http',
    );
 }
 
