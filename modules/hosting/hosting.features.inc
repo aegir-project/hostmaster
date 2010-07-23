@@ -128,6 +128,10 @@ function hosting_features_form_submit($form, &$form_state) {
     }
     #print("$feature $current $value $module <br />");
   }
+  // Rebuild schema.
+  drupal_get_schema(NULL, TRUE);
+
+  // Rebuild menu.
   menu_rebuild();
 }
 
