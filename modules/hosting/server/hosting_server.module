@@ -122,7 +122,6 @@ function hosting_services_new_object($name, $type, $node, $values = null) {
 
   $class = $services[$name]['types'][$type];
   if (!$class) {
-    drupal_set_message(t("Can't create service object for service !name", array("!name" => $name)), "error");
     return;
   }
   return new $class($node, $values);

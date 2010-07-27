@@ -28,7 +28,6 @@ if (Drupal.jsEnabled) {
             input_id = 'input[@name=' + key + '][@value=' + settings[key][option] + ']'
             $(id + ' div.form-radios div#edit-' + css_key + '-' + option_css_key +'-wrapper').show();
           }
-
         }
         else if (settings[key].length == 1) {
           // There is only one valid option, so we select it and display it as text.
