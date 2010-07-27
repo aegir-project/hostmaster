@@ -142,7 +142,7 @@ function hosting_get_profile_platforms($profile) {
     // this is one of the default profiles
     if (in_array($instance->short_name, $defaults) &&
       sizeof(array_diff(array_values($platform->profiles), $defaults)) &&
-      variable_get('hosting_ignore_default_profiles', TRUE)) {
+      variable_get('hosting_ignore_default_profiles', FALSE)) {
       // there are other profiles available on this platform. skip this.
       continue;
     }
