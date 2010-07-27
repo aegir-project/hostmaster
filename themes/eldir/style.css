@@ -477,15 +477,24 @@ input.form-text {
 input.form-submit {
   font: bold 13px/20px "Helvetica Neue",Arial,sans-serif;
   border:0px;
-  padding:5px;
+  padding:5px 10px;
   color:#fff;
   background:#666;
+  float: right;
 
   cursor:pointer;
 
   -moz-border-radius:3px;
   -webkit-border-radius: 3px;
   }
+
+
+input.form-submit[disabled] {
+  color:#ddd;
+  background:#eee;
+  cursor: default;
+}
+
 
   body.page-admin input.form-submit,
   body.page-admin #views-ajax-pad .form-submit {

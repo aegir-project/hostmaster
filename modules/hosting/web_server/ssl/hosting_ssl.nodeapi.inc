@@ -47,7 +47,7 @@ function hosting_ssl_site_form(&$form, &$form_state, $form_id) {
 
 function hosting_ssl_hosting_site_options_alter(&$return, $node) {
   // Disable the ssl key fields by default.
-  $return['ssl_key'] = array();
+  $return['ssl_key'] = false;
   $return['ssl_key_new'] = false;
 
   // Test if ssl has been enabled.
