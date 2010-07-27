@@ -12,6 +12,8 @@
 function _hosting_site_field(&$form, $node, $item, $element, $filter_display ='filter_xss', $editable = FALSE, $show_desc = TRUE) {
   $css_id = str_replace("_", "-", $item);
 
+  $type = $element['#type'];
+
   if (!$node->nid || $editable) {
     // create it
     if (($element['#type'] == 'radios') && !sizeof($element['#options'])) {
@@ -37,6 +39,8 @@ function _hosting_site_field(&$form, $node, $item, $element, $filter_display ='f
     }
   }
   else {
+    $type = 'display';
+
     if ($show_desc) {
       // display it
       $form['info'][$item] = array(
@@ -56,7 +60,7 @@ function _hosting_site_field(&$form, $node, $item, $element, $filter_display ='f
 
   $form[$item]['#hosting_site_field'] = $item;
   $form[$item]['#hosting_site_field_value'] = $element['#default_value'];
-  $form[$item]['#prefix'] = "<div class='hosting-site-field hosting-site-field-{$element['#type']}' id='hosting-site-field-{$css_id}'>";
+  $form[$item]['#prefix'] = "<div class='hosting-site-field hosting-site-field-{$type}' id='hosting-site-field-{$css_id}'>";
   $form[$item]['#suffix'] = "</div>";
 }
 

@@ -47,6 +47,10 @@ function hosting_ssl_site_form(&$form, &$form_state, $form_id) {
 
 function hosting_ssl_hosting_site_options_alter(&$return, $node) {
   // Disable the ssl key fields by default.
+  if (!sizeof(hosting_ssl_get_servers())) {
+    $return['ssl_enabled'] = FALSE;
+  }
+
   $return['ssl_key'] = false;
   $return['ssl_key_new'] = false;
 
@@ -154,6 +158,11 @@ function hosting_ssl_nodeapi_site_validate($node, &$form) {
         if (($node->ssl_key_new != $key) || !strlen($key)) {
           form_set_error('ssl_key_new', t("The encryption key field should only contain lower case alpha-numeric and '_', '-' or '.' characters."));
         }
+
+        if (!ctype_alnum($key[0])) {
+          form_set_error('ssl_key_new', t("The encryption key field must start with an alpha-numeric character."));
+        }
+
         if ($key == HOSTING_SSL_CUSTOM_KEY) {
           form_set_error('ssl_key_new', t("This encryption key value is reserved for internal use, please choose another"));
         }
@@ -174,7 +183,7 @@ function hosting_ssl_nodeapi_site_presave(&$node) {
 }
 
 function hosting_ssl_nodeapi_site_insert($node) {
-  db_query("INSERT INTO {hosting_ssl_site} (vid, nid, ssl_enabled, ssl_key) VALUES (%d, %d, %d, %d)", $node->vid, $node->nid, $node->ssl_enabled, hosting_ssl_save_key($node->ssl_key, $node->client));
+  db_query("INSERT INTO {hosting_ssl_site} (vid, nid, ssl_enabled, ssl_key) VALUES (%d, %d, %d, %d)", $node->vid, $node->nid, $node->ssl_enabled, hosting_ssl_save_key($node->ssl_key, $node->ssl_enabled, $node->client));
 }
 
 function hosting_ssl_nodeapi_site_update($node) {
@@ -184,7 +193,7 @@ function hosting_ssl_nodeapi_site_update($node) {
     hosting_ssl_nodeapi_site_insert($node);
   }
   else {
-    db_query("UPDATE {hosting_ssl_site} SET ssl_enabled=%d, ssl_key=%d WHERE vid=%d", $node->ssl_enabled, hosting_ssl_save_key($node->ssl_key, $node->client), $node->vid);
+    db_query("UPDATE {hosting_ssl_site} SET ssl_enabled=%d, ssl_key=%d WHERE vid=%d", $node->ssl_enabled, hosting_ssl_save_key($node->ssl_key, $node->ssl_enabled, $node->client), $node->vid);
   }
 }
 
@@ -206,7 +215,11 @@ function hosting_ssl_nodeapi_site_delete_revision($node) {
 /**
  * Store the SSL Cert key in the database.
  */
-function hosting_ssl_save_key($key, $client = null) {
+function hosting_ssl_save_key($key, $ssl_enabled = TRUE, $client = null) {
+  if (!$ssl_enabled) {
+    return 0;
+  }
+
   // we only save the new key if it's a string
   if (!is_numeric($key)) {
     $result = db_query("SELECT * FROM {hosting_ssl_cert} WHERE ssl_key = '%s'", $key);
@@ -243,6 +256,10 @@ function hosting_ssl_save_key($key, $client = null) {
 function hosting_ssl_get_keys($client = null, $ask_custom = FALSE) {
   $keys = array();
 
+  if ($ask_custom == TRUE) {
+    $keys[HOSTING_SSL_CUSTOM_KEY] = t("Generate a new encryption key.");
+  }
+
   $args = array();
   $query = "SELECT cid, ssl_key FROM {hosting_ssl_cert}";
 
@@ -261,8 +278,5 @@ function hosting_ssl_get_keys($client = null, $ask_custom = FALSE) {
     }
   }
 
-  if ($ask_custom == TRUE) {
-    $keys[HOSTING_SSL_CUSTOM_KEY] = t("Generate a new encryption key.");
-  }
   return $keys;
 }

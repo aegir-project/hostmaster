@@ -687,6 +687,7 @@ function hosting_form_alter(&$form, &$form_state, $form_id) {
       unset($form['menu']);
       unset($form['revision_information']);
       unset($form['author']);
+      unset($form['comment_settings']);
 
       // because these aren't really posts, 'preview' doesnt make sense in this context.
       unset($form['buttons']['preview']);
