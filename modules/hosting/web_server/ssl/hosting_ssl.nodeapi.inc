@@ -145,12 +145,13 @@ function hosting_ssl_nodeapi_site_validate($node, &$form) {
     $valid_options = hosting_site_available_options($node);
 
     if ($node->ssl_key == HOSTING_SSL_CUSTOM_KEY) {
-      if (!$node->ssl_key_new) {
+      if (!strlen($node->ssl_key_new)) {
         form_set_error('ssl_key_new', t("The encryption key field is required to enable us to generate a new SSL certificate for your site."));
       }
       else {
         $key = hosting_ssl_filter_key($node->ssl_key_new);
-        if ($node->ssl_key_new != $key) {
+
+        if (($node->ssl_key_new != $key) || !strlen($key)) {
           form_set_error('ssl_key_new', t("The encryption key field should only contain lower case alpha-numeric and '_', '-' or '.' characters."));
         }
         if ($key == HOSTING_SSL_CUSTOM_KEY) {
