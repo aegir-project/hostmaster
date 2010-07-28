@@ -1,7 +1,7 @@
 if (Drupal.jsEnabled) {
   $(document).ready(function() {
      $('div.hosting-site-field-description').hide();
-     hostingSiteToggleOptions();
+     hostingSiteCheck();
      $('div.hosting-site-field input').change( hostingSiteCheck );
   });
 

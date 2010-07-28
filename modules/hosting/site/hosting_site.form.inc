@@ -70,23 +70,6 @@ function _hosting_site_field(&$form, $node, $item, $element, $filter_display ='f
  * Add the needed .js and .css files to render the form correctly before printing it
  */
 function _hosting_site_form_pre_render($elements) {
-  static $count = 0;
-
-  // TODO : I have absolutely _NO_ idea why this is being called twice =\
-  $count++;
-  if ($count == 1) {
-    $node = new stdClass();
-    
-    foreach (element_children($elements) as $key) {
-      if (isset($elements[$key]['#hosting_site_field'])) {
-
-        $node->$key = $elements[$key]['#hosting_site_field_value'];    
-      }
-    }
-
-    $settings['hostingSiteAvailableOptions'] = hosting_site_available_options($node);
-    drupal_add_js($settings, 'setting');
-  }
 
   drupal_add_js(drupal_get_path('module', 'hosting_site') . '/hosting_site.form.js');
   return $elements;
