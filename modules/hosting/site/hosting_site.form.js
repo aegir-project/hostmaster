@@ -11,7 +11,7 @@ if (Drupal.jsEnabled) {
 
     // Set the form to not be submittable
     $('#edit-submit').attr('disabled', 'disabled');
-    console.log(settings)
+
     var can_submit = true;
 
     for (var key in settings) {
