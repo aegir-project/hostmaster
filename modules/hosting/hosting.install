@@ -239,7 +239,7 @@ function hosting_update_6008() {
     }
 
     // We start with the web server because we assume that the main hostmaster site is installed locally.
-    $server_id = variable_get('hosting_own_web_server', 2);
+    $server_id = variable_get('hosting_default_web_server', 3);
     $records[$server_id] = 'server_master';
 
 
