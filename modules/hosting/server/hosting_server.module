@@ -325,7 +325,7 @@ function hosting_server_update($node) {
  * Implementation of hook_insert().
  */
 function hosting_server_insert($node) {
-  if (!$node->old_vid) {
+  if (!$node->revision) {
     $hosting_name = ($node->hosting_name) ? $node->hosting_name : 'server_' . preg_replace("/[!\W\.\-]/", "", $node->title);
     hosting_context_register($node->nid, $hosting_name );
   }
