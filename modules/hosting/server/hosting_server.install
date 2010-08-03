@@ -171,8 +171,32 @@ function hosting_server_update_6003() {
 function hosting_server_update_6004() {
 
   $return = array();
-  $schema = hosting_server_schema();
-  db_create_table($return, 'hosting_server_ip', $schema['hosting_server_ip']);
+  // create the table so we can rename it. 
+  // retarded, i know.
+  $schema = array(
+   'fields' => array(
+      'vid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'ip_address' => array(
+        'type' => 'text',
+        'size' => 'small',
+        'not null' => TRUE,
+      ),
+    ),
+    'indexes' => array(
+      'vid' => array('vid'),
+    ));
+  db_create_table($return, 'hosting_server_ip', $schema);
 
   return $return;
 }
