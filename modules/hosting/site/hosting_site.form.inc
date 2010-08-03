@@ -266,7 +266,7 @@ function hosting_site_validate($node, &$form) {
     form_set_error('title', t("The domain name you have specified is already in use."));
   }
 
-  if (!in_array($node->profile, $valid_options['profile'])) {
+  if (!in_array($node->profile, $valid_options['profile']) && !$node->nid) {
     form_set_error('profile', t('Please choose a valid profile'));
   }
 
