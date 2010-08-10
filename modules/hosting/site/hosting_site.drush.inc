@@ -113,9 +113,12 @@ function hosting_site_post_hosting_enable_task($task, $data) {
  * implementation of hook_hosting_post_DELETE
  */
 function hosting_site_post_hosting_delete_task($task, $data) {
-  $task->ref->site_status = HOSTING_SITE_DELETED;
-  $task->ref->no_verify = TRUE;
-  node_save($task->ref);
+  if ($task->ref->type == 'site') {
+    $task->ref->site_status = HOSTING_SITE_DELETED;
+    $task->ref->no_verify = TRUE;
+    hosting_context_delete($task->ref->nid);
+    node_save($task->ref);
+  }
 }
 
 /**
