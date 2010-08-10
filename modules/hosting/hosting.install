@@ -243,7 +243,7 @@ function hosting_update_6008() {
     $records[$server_id] = 'server_master';
 
 
-    $result = db_query("SELECT nid, title FROM {node} WHERE type='platform'");
+    $result = db_query("SELECT n.nid, n.title FROM {node} n LEFT JOIN {hosting_platform} p ON p.nid=n.nid WHERE p.status <> -2 AND n.type='platform'");
     while ($object = db_fetch_object($result)) {
       $records[$object->nid] = 'platform_' . preg_replace("/[!\W]/", "", $object->title);
     }
