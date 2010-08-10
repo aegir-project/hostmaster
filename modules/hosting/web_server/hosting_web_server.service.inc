@@ -14,7 +14,7 @@ class hostingService_http_public extends hostingService_http {
 
   function update() {
     parent::update();
-    $query = db_query("SELECT nid FROM {hosting_platform} WHERE web_server = %d", $this->server->nid);
+    $query = db_query("SELECT nid FROM {hosting_platform} WHERE status <> -2 AND web_server = %d", $this->server->nid);
     while($nid = db_fetch_object($query)) {
       hosting_add_task($nid->nid, 'verify');
     }
