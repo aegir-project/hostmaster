@@ -183,18 +183,6 @@ function hosting_platform_form(&$node) {
     $form['web_server'] = array('#type' => 'hidden', '#value' => key($servers));
   }
 
-  if ($node->nid != HOSTING_DEFAULT_PLATFORM) {
-    $form['default_platform'] = array(
-      '#type' => 'checkbox',
-      '#return_value' => 1,
-      '#title' => t('Make default platform for new sites'),
-    );
-  } else {
-    $form['default_platform'] = array(
-      '#type' => 'value', 
-      '#value' => 1
-    );
-  }
   foreach(array('verified', 'platform_status') as $extra_attribute) {
     $form["$extra_attribute"] = array('#type' => 'value', '#value' => $node->$extra_attribute);
   }
@@ -218,9 +206,6 @@ function hosting_platform_form_alter(&$form, &$form_state, $form_id) {
  * Implementation of hook_insert().
  */
 function hosting_platform_insert($node) {
-  if ($node->default_platform == 1) {
-    variable_set('hosting_default_platform', $node->nid);
-  }
   if (!isset($node->no_verify)) {
     hosting_add_task($node->nid, 'verify');
   }
@@ -243,9 +228,6 @@ function hosting_platform_update($node) {
     hosting_platform_insert($node);
   }
   else {
-    if ($node->default_platform == 1) {
-      variable_set('hosting_default_platform', $node->nid);
-    }
     if ($node->platform_status == HOSTING_PLATFORM_DELETED) {
       $node->no_verify = TRUE;
     }
@@ -370,13 +352,6 @@ function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
     );
   }
   
-  if ($node->nid == HOSTING_DEFAULT_PLATFORM) {
-    $node->content['info']['default_platform'] = array(
-      '#type' => 'item',
-      '#description' => t('This platform is the default platform for new sites'),
-    );
-  }
-
   if ($page) {
     $node->content['sites_view'] = array(
       '#type' => 'item',

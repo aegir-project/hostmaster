@@ -31,11 +31,20 @@ if (Drupal.jsEnabled) {
           $(desc_id).hide()
           $(id).show();
           $(id + ' div.form-radios div.form-item').hide();
+          checked = false
           for (var option in settings[key]) {
             // modify the definition to get the right css id
             option_css_key = settings[key][option].toString().replace(/[\]\[\ _]/g, '-')
             input_id = 'input[@name=' + key + '][@value=' + settings[key][option] + ']'
             $(id + ' div.form-radios div#edit-' + css_key + '-' + option_css_key +'-wrapper').show();
+
+            // one of the visible radio options has already been checked
+            if ($(input_id).attr('checked')) {
+              checked = true;
+            }
+          }
+          if (!checked) {
+            $('input[@name=' + key + ']:visible:first').attr('checked', 'checked');
           }
         }
         else if (settings[key].length == 1) {

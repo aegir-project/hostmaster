@@ -224,7 +224,6 @@ function hosting_init() {
   define('HOSTING_DEFAULT_CLIENT', variable_get('hosting_default_client', 1));
   define('HOSTING_DEFAULT_DB_SERVER', variable_get('hosting_default_db_server', 2));
   define('HOSTING_DEFAULT_WEB_SERVER', variable_get('hosting_default_web_server', 3));
-  define('HOSTING_DEFAULT_PLATFORM', variable_get('hosting_default_platform', 6)); 
 
   /**
    * This client has access to everything, see hosting_client.access.inc

@@ -50,10 +50,6 @@ function hosting_signup_form() {
   $node = new stdClass();
   $form['site'] = hosting_site_form($node);
   unset($form['site']['client']);
-  $form['site']['platform'] = array(
-    '#type' => 'hidden',
-    '#value' => HOSTING_DEFAULT_PLATFORM
-  );
   $state = array(); 
   foreach (module_implements('form_alter') as $module) {
     $function = $module .'_form_alter';

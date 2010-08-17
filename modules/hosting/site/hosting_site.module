@@ -269,7 +269,7 @@ function hosting_get_site_by_url($url) {
 /**
  * Helper function to generate new site node during import
  */
-function hosting_import_site($site_id, $data, $platform = HOSTING_DEFAULT_PLATFORM) {
+function hosting_import_site($site_id, $data, $platform) {
   global $user;
   $client = node_load(HOSTING_DEFAULT_CLIENT);
 
