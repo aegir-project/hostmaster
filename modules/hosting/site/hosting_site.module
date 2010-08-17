@@ -151,11 +151,13 @@ function hosting_site_hosting_tasks() {
   $tasks['site']['backup'] = array(
     'title' => t('Backup'),
     'description' => t('Generate a backup of this site that can be restored to at any time'),
+     'dialog' => TRUE,
    );
 
   $tasks['site']['restore'] = array(
     'title' => t('Restore'),
     'description' => t('Restore this site to a previous backup. A new backup will be created before this is attempted.'),
+    'dialog' => TRUE,
   );
 
   $tasks['site']['verify'] = array(
@@ -167,6 +169,7 @@ function hosting_site_hosting_tasks() {
     'title' =>  t('Disable'),
     'description' =>  t('Disabling this site will stop it from being accessible.
          It can be enabled again later.'),     
+    'dialog' => TRUE,
   );     
   $tasks['site']['enable'] = array(
     'title' => t('Enable'),
@@ -178,6 +181,7 @@ function hosting_site_hosting_tasks() {
     'description' => t('Deleting this site will completely remove it from the hosting system,
         but will keep the last backup available. This process can not be undone.
         Are you really sure you want to delete this site?'),
+    'dialog' => TRUE,
   );
 
   $tasks['site']['login_reset'] = array(

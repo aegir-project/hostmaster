@@ -43,12 +43,14 @@ function hosting_migrate_hosting_tasks() {
   $tasks['site']['migrate'] = array(
     'title' => t('Migrate'),
     'description' => t('Move the site to a new platform.'),
+    'dialog' => TRUE,
   );
 
   $tasks['platform']['migrate'] = array(
     'title' => t('Migrate'),
     'description' => t('Migrate sites to a new platform.'),
     'page arguments' => array('hosting_migrate_platform', 1),
+    'dialog' => TRUE,
   );
   return $tasks;
 }

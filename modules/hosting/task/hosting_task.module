@@ -274,6 +274,12 @@ function hosting_add_task($nid, $type, $args = null, $status = HOSTING_TASK_QUEU
 function hosting_task_confirm_form($form_state, $node, $task) {
   drupal_add_js(drupal_get_path('module','hosting_task') . '/hosting_task.js');
   $tasks = hosting_available_tasks($node->type);
+
+  if (!isset($tasks[$task]['dialog']) || !$tasks[$task]['dialog']) {
+    hosting_add_task($node->nid, $task);
+    drupal_goto('node/' . $node->nid);
+  }
+
   $form['help'] = array('#value' => $tasks[$task]['description']); 
   $form['nid'] = array('#type' => 'value', '#value' => $node->nid);
   $form['task'] = array('#type' => 'value', '#value' => $task); 
@@ -838,13 +844,13 @@ function hosting_task_table($node) {
     $actions = array();
 
     if (isset($info['task_status']) && ($info['task_status'] == 0)) {
-      $actions['stop'] = _hosting_task_button(t('Stop'), sprintf("hosting/tasks/%d/cancel", $info['nid']), t("Cancel the task and remove it from the queue"), 'hosting-button-stop', !$info['task_permitted']);
+      $actions['cancel'] = _hosting_task_button(t('Cancel'), sprintf("hosting/tasks/%d/cancel", $info['nid']), t("Cancel the task and remove it from the queue"), 'hosting-button-stop', !$info['task_permitted']);
     }
     else {
-      $actions['run'] = _hosting_task_button(t('Run'), sprintf("node/%d/%s_%s", $node->nid, $node->type, $task), $info['description'], 'hosting-button-run', $info['task_permitted']);
+      $actions['run'] = _hosting_task_button(t('Run'), sprintf("node/%d/%s_%s", $node->nid, $node->type, $task), $info['description'], 'hosting-button-run', $info['task_permitted'], $info['dialog']);
     }
      
-    $actions['log'] = _hosting_task_button(t('View'), 'node/' . $info['nid'], t("Display the task log"), 'hosting-button-log', isset($info['nid']) &&  user_access('access task logs'));
+    $actions['log'] = _hosting_task_button(t('View'), 'node/' . $info['nid'], t("Display the task log"), 'hosting-button-log', isset($info['nid']) &&  user_access('access task logs'), TRUE);
      $row['actions'] = array(
         'data' => implode('', $actions),
        'class' => 'hosting-actions'
@@ -856,12 +862,20 @@ function hosting_task_table($node) {
   return $output;
 }
 
-function _hosting_task_button($title, $link, $description, $class = '', $status = TRUE) {
+function _hosting_task_button($title, $link, $description, $class = '', $status = TRUE, $dialog = FALSE) {
   if ($status) {
+    $classes[] = 'hosting-button-enabled';
+    if (!empty($class)) {
+      $classes[] = $class;
+    }
+    if ($dialog) {
+      $classes[] = 'hosting-button-dialog';
+    }
+
     return l($title, $link, array(
         'attributes' => array(
           'title' => $description,
-          'class' => 'hosting-button-enabled' . (!empty($class) ? ' ' . $class : ''), 
+          'class' => implode(" ", $classes), 
         )));
   }
   else {
@@ -914,7 +928,7 @@ function _hosting_task_list($filter_by, $filter_value, $count = 5, $element = 0,
 
      $headers[t('Actions')] = '';
 
-     $actions['log'] = l(t('View'), 'node/' . $node->nid, array('attributes' => array('class' => 'hosting-button-enabled hosting-button-log')));
+     $actions['log'] = l(t('View'), 'node/' . $node->nid, array('attributes' => array('class' => 'hosting-button-dialog hosting-button-enabled hosting-button-log')));
 
      $row['actions'] = array(
        'data' => $actions['log'],
