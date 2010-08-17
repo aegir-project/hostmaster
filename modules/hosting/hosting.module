@@ -162,8 +162,23 @@ function hosting_nodeapi(&$node, $op, $arg1, $arg2) {
     }
   }
 
+
+  // We need to practically re-invent module_invoke_all here because
+  // we have to pass the node as a reference.
   $hook = "nodeapi_" . $node->type . "_" . str_replace(" ", "_", $op);
-  return array_merge($return, module_invoke_all($hook, $node, $arg1, $arg2));
+
+  foreach (module_implements($hook) as $module) {
+    $function = $module .'_'. $hook;
+    $result = $function($node, $arg1, $arg2);
+    if (isset($result) && is_array($result)) {
+      $return = array_merge_recursive($return, $result);
+    }
+    else if (isset($result)) {
+      $return[] = $result;
+    }
+  }
+
+  return $return;
 }
 
 /**
