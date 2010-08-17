@@ -51,6 +51,11 @@ td.hosting-actions {
   text-align: right;
 }
 
+td.hosting-actions a.hosting-button-enabled,
+td.hosting-actions .hosting-button-disabled {
+  float: right;
+}
+
 /**
  * Status icons, colors.
  */

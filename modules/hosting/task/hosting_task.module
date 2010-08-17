@@ -35,6 +35,18 @@ function hosting_task_menu() {
     'access arguments' => array('view', 2),
     'type' => MENU_CALLBACK
   );
+
+  
+  $items['hosting/tasks/%node/cancel'] = array(
+    'title' => t('Task list'),
+    'description' => t('Callback for stopping tasks'),
+    'page callback' => 'hosting_task_cancel',
+    'page arguments' => array(2),
+    'access callback' => 'node_access',
+    'access arguments' => array('view', 2),
+    'type' => MENU_CALLBACK
+  );
+
   
   $items['hosting/tasks/queue'] = array(
     'title' => t('Task list'),
@@ -59,6 +71,22 @@ function hosting_task_ajax_queue() {
   drupal_json($return);
   exit();
 }
+
+function hosting_task_cancel($node) {
+  if ($node->type == 'task') {
+    if ($node->task_status == 0) {
+      $ref = node_load($node->rid);
+
+      if (node_access('update', $node) && node_access('update', $ref)) {
+        hosting_add_task($node->rid, $node->task_type, array(), HOSTING_TASK_ERROR);
+        drupal_goto('node/' . $node->rid);
+      }
+    }
+  }
+
+  drupal_access_denied();
+}
+
 
 /**
  * Task access controls
@@ -217,7 +245,6 @@ function hosting_add_task($nid, $type, $args = null, $status = HOSTING_TASK_QUEU
 
  $task = hosting_get_most_recent_task($nid, $type);
 
- 
  $node = db_fetch_object(db_query("SELECT nid, title FROM {node} WHERE nid=%d", $nid));
  if (!$task) {
     $task = new stdClass();
@@ -230,8 +257,9 @@ function hosting_add_task($nid, $type, $args = null, $status = HOSTING_TASK_QUEU
  $task->uid = $user->uid;
  $task->status = 1;
  $task->task_status = $status;
- $task->revision = TRUE;
-
+ if ($status == HOSTING_TASK_QUEUED) {
+   $task->revision = TRUE;
+ }
  #arguments, such as which backup to restore.
  if (is_array($args)) {
    $task->task_args = $args;
@@ -807,12 +835,16 @@ function hosting_task_table($node) {
     $row = array();
 
     $row['type'] = array('data' => $info['title'], 'class' => 'hosting-status');
-
     $actions = array();
 
-    $actions['log'] = _hosting_task_button(t('View'), 'node/' . $info['nid'], t("Display the task log"), 'hosting-button-log', isset($info['nid']) &&  user_access('access task logs'));
-    $actions['run'] = _hosting_task_button(t('Run'), sprintf("node/%d/%s_%s", $node->nid, $node->type, $task), $info['description'], 'hosting-button-run', $info['task_permitted']);
+    if (isset($info['task_status']) && ($info['task_status'] == 0)) {
+      $actions['stop'] = _hosting_task_button(t('Stop'), sprintf("hosting/tasks/%d/cancel", $info['nid']), t("Cancel the task and remove it from the queue"), 'hosting-button-stop', !$info['task_permitted']);
+    }
+    else {
+      $actions['run'] = _hosting_task_button(t('Run'), sprintf("node/%d/%s_%s", $node->nid, $node->type, $task), $info['description'], 'hosting-button-run', $info['task_permitted']);
+    }
      
+    $actions['log'] = _hosting_task_button(t('View'), 'node/' . $info['nid'], t("Display the task log"), 'hosting-button-log', isset($info['nid']) &&  user_access('access task logs'));
      $row['actions'] = array(
         'data' => implode('', $actions),
        'class' => 'hosting-actions'

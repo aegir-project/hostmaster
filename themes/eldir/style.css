@@ -849,10 +849,14 @@ body.aegir #page div.node div.content div.form-radios div.form-item {
 /* Task buttons */
 a.hosting-button-enabled,
 .hosting-button-disabled {
-  padding: 4px 10px;
   margin: 0 4px;
   text-align: center;
   height: 20px;
+  width : 4em;
+
+  padding-top: 0.1em;
+  padding-bottom: 0.1em;
+
   -moz-border-radius:3px;
   -webkit-border-radius: 3px;
 }
@@ -871,6 +875,13 @@ a.hosting-button-enabled {
   background:#aaa;
 }
 
+a.hosting-button-stop {
+  background-color:#e66;
+}
+
+a.hosting-button-stop:hover {
+  background-color:#c44;
+}
 /**
  * CORE ADMIN =========================================================
  */
