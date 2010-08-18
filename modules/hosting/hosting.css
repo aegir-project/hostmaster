@@ -74,7 +74,17 @@ td.hosting-package-missing {
 
 span.hosting-status {
   background-position:5px 0px;
+  padding: 0px 0px 4px 0px;
 }
+
+table.hosting-table .views-field-status {
+  padding:0px;
+} 
+
+span.hosting-status-icon {
+  margin-right: -4px;
+}
+
 
 tr.hosting-warning,
 #hosting-package-comparison td.hosting-package-missing {

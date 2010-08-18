@@ -27,7 +27,7 @@ class views_handler_field_hosting_site_status extends views_handler_field {
     $output = _hosting_site_status($value);
 
     if ($this->options['status_icon'] == 1) {
-      $output = "<span class='hosting-status'>&nbsp;</span>";
+      $output = "<span class='hosting-status hosting-status-icon'></span>";
     }
     elseif ($this->options['status_icon'] == 2) {
       $output = "<span class='hosting-status'>{$output}</span>";
