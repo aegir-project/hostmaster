@@ -60,7 +60,7 @@ td.hosting-actions .hosting-button-disabled {
  * Status icons, colors.
  */
 
-td.hosting-status,
+.hosting-status,
 td.hosting-service-available,
 td.hosting-service-unavailable,
 td.hosting-package-upgrade,
@@ -70,6 +70,10 @@ td.hosting-package-missing {
   padding-left:25px !important;
   background-position:5px 7px;
   background-repeat:no-repeat;
+}
+
+span.hosting-status {
+  background-position:5px 0px;
 }
 
 tr.hosting-warning,
@@ -95,30 +99,30 @@ tr.hosting-success,
   background-color: #dfc !important;
 }
 
-tr.hosting-warning td.hosting-status,
+tr.hosting-warning .hosting-status,
 #hosting-package-comparison td.hosting-package-missing {  
   background-image: url(images/icon-warning.png);
 }
 
-tr.hosting-info td.hosting-status { background-image: url(images/icon-notice.png); }
+tr.hosting-info .hosting-status { background-image: url(images/icon-notice.png); }
 
-tr.hosting-queue td.hosting-status,
+tr.hosting-queue .hosting-status,
 td.hosting-package-same {
   background-image: url(images/icon-queue.png);
 }
 
-tr.hosting-processing td.hosting-status {
+tr.hosting-processing .hosting-status {
   background-image: url(images/loader.gif);
 }
 
 td.hosting-service-unavailable,
-tr.hosting-error td.hosting-status,
+tr.hosting-error .hosting-status,
 td.hosting-package-downgrade {
   background-image: url(images/icon-error.png);
 }
 
 td.hosting-service-available,
-tr.hosting-success td.hosting-status,
+tr.hosting-success .hosting-status,
 td.hosting-package-upgrade {
   background-image: url(images/icon-ok.png);
 }

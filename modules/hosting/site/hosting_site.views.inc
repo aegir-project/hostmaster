@@ -29,8 +29,8 @@ function hosting_site_views_data() {
       'field' => 'nid',
       'label' => t('client'),
     ),
-  )
-  ;
+  );
+
   $data['hosting_site']['db_server'] = array(
    'title' => t('Database Server'),
    'help' => t('Database where the site is installed.'),
@@ -67,7 +67,7 @@ function hosting_site_views_data() {
       'title' => t('Verified'),
       'help' => t('The last date verified task run on this site.'),
       'field' => array(
-        'handler' => 'views_handler_field_date',
+        'handler' => 'hosting_views_field_handler_interval',
         'click sortable' => TRUE,
       ),
     );
@@ -76,7 +76,7 @@ function hosting_site_views_data() {
       'title' => t('Last Cron Run'),
       'help' => t('The time the last cron run was executed on this site.'),
       'field' => array(
-        'handler' => 'views_handler_field_date',
+        'handler' => 'hosting_views_field_handler_interval',
         'click sortable' => TRUE,
       ),
     );
@@ -121,3 +121,26 @@ function hosting_site_views_handlers() {
     ),
   );
 }
+
+function hosting_site_views_plugins() {
+  return array(
+    'style' => array(
+      'hosting_site_list' => array(
+        'title' => t('Site listing'),
+        'help' => t('Displays sites in a table.'),
+        'handler' => 'views_plugin_style_site_table',
+        'theme' => 'views_view_table',
+        'parent' => 'table',
+        'path' => drupal_get_path('module', 'hosting_site'),
+        'uses row plugin' => FALSE,
+        'uses fields' => TRUE,
+        'uses options' => TRUE,
+        'type' => 'normal',
+      ),
+    )
+  );
+
+}
+
+
+

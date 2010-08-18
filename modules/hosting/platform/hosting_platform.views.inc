@@ -34,7 +34,20 @@ function hosting_platform_views_data() {
            'field' => 'vid',
         ),
       ),
+    )
+  );
+
+   $data['hosting_platform']['web_server'] = array(
+   'title' => t('Web Server'),
+   'help' => t('Relate a platform to the web server it is hosted on.'),
+   'relationship' => array(
+      'handler' => 'views_handler_relationship',
+      'base' => 'node',
+      'field' => 'nid',
+      'label' => t('web server'),
     ),
+  );
+/*
     'publish_path' => array(
       'title' => t('Publish Path'),
       'help' => t('The path on the server where this platform is installed.'),
@@ -76,7 +89,7 @@ function hosting_platform_views_data() {
       ),
     ),
   );
-
+ */
   return $data;
 }
 

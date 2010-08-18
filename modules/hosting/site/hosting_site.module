@@ -444,7 +444,7 @@ function hosting_site_list($filter_by = null, $filter_value = null) {
     if (sizeof($platforms) > 1) {
       $row[] = ($node->platform) ? _hosting_node_link($node->platform) : t('n/a');
     }
-    $rows[] = array('data' => $row, 'class' => _hosting_site_list_class($node));
+    $rows[] = array('data' => $row, 'class' => _hosting_site_list_class($node, $node->verified));
   }
   
   return theme('table',  $header, $rows, array('class' => 'hosting-table')) . theme('pager', null, 25, 1);
@@ -454,18 +454,19 @@ function hosting_site_list($filter_by = null, $filter_value = null) {
  * Define the classes that correspond to the site status.
  * @see _hosting_site_status()
  */
-function _hosting_site_list_class($node) {
+function _hosting_site_list_class($node, $verified = null) {
+  $status = (is_numeric($node)) ? $node : $node->site_status;
   static $classes = array(
     HOSTING_SITE_QUEUED => "hosting-queue",
     HOSTING_SITE_ENABLED => "hosting-success",
     HOSTING_SITE_DELETED => "hosting-error",
     HOSTING_SITE_DISABLED => "hosting-error",
   );
-  if (($node->site_status == HOSTING_SITE_ENABLED) && (!$node->verified)) {
+  if (($status == HOSTING_SITE_ENABLED) && (!$verified)) {
     return 'hosting-warning';
   }
 
-  return $classes[$node->site_status];
+  return $classes[$status];
 }
 
 /**
@@ -477,3 +478,18 @@ function hosting_site_views_api() {
     'path' => drupal_get_path('module', 'hosting_site'),
   );
 }
+
+
+function hosting_site_preprocess_views_view_table(&$variables) {
+  $view = $variables['view'];
+  if ($view->plugin_name == 'hosting_site_list') {
+    foreach ($view->result as $num => $result) {
+      if (isset($result->hosting_site_status) && isset($result->hosting_site_verified)) {
+        $variables['row_classes'][$num][] = _hosting_site_list_class($result->hosting_site_status, $result->hosting_site_verified);
+      }
+    }
+  }
+  $variables['class'] .= " hosting-table";
+}
+
+
