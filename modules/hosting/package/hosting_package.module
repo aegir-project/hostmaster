@@ -126,7 +126,6 @@ function hosting_get_profiles($platform = NULL, $field = 'title') {
   return $profiles;
 }
 
-
 function hosting_get_profile_platforms($profile) {
   $defaults = array('default', 'standard', 'minimal');
 

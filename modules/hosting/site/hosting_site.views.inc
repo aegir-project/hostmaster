@@ -3,27 +3,13 @@
  * @file Hosting site views integration.
  */
 
-/**
- * Implementation of hook_views_handlers() to register all of the basic handlers
- * views uses.
- */
-function hosting_site_views_handlers() {
-  return array(
-    'info' => array(
-      'path' => drupal_get_path('module', 'hosting_site'),
-      ),
-    'handlers' => array(
-      /* add handlers */
-    ),
-  );
-}
+
 
 /** 
  * Implements hook_views_data().
  */
 function hosting_site_views_data() {
-  $data['hosting_site'] = array(
-    'table' => array(
+  $data['hosting_site']['table'] = array(
       'group' => 'Hosting Site',
       'title' => 'Site',
       'join' => array(
@@ -32,84 +18,106 @@ function hosting_site_views_data() {
            'field' => 'vid',
         ),
       ),
+    );
+
+  $data['hosting_site']['client'] = array(
+   'title' => t('Client'),
+   'help' => t('Relate a node revision to the user who created the revision.'),
+   'relationship' => array(
+      'handler' => 'views_handler_relationship',
+      'base' => 'node',
+      'field' => 'nid',
+      'label' => t('client'),
     ),
-    'client' => array(
-      'title' => t('Client ID'),
-      'help' => t('The ID of the client for this site.'),
-      'field' => array(
-        'handler' => 'views_handler_field',
-        'click sortable' => TRUE,
-      ),
+  )
+  ;
+  $data['hosting_site']['db_server'] = array(
+   'title' => t('Database Server'),
+   'help' => t('Database where the site is installed.'),
+   'relationship' => array(
+      'handler' => 'views_handler_relationship',
+      'base' => 'node',
+      'field' => 'nid',
+      'label' => t('db server'),
     ),
-    'db_server' => array(
-      'title' => t('DB Server ID'),
-      'help' => t('The database server id.'),
-      'field' => array(
-        'handler' => 'views_handler_field',
-        'click sortable' => TRUE,
-      ),
+  );
+
+ $data['hosting_site']['profile'] = array(
+   'title' => t('Install Profile'),
+   'help' => t('Type of drupal site.'),
+   'relationship' => array(
+      'handler' => 'views_handler_relationship',
+      'base' => 'node',
+      'field' => 'nid',
+      'label' => t('profile'),
     ),
-    'platform' => array(
-      'title' => t('Platform ID'),
-      'help' => t('The ID of the platform this site is installed on.'),
-      'field' => array(
-        'handler' => 'views_handler_field',
-        'click sortable' => TRUE,
-      ),
+  );
+ $data['hosting_site']['platform'] = array(
+   'title' => t('Platform'),
+   'help' => t('Platform'),
+   'relationship' => array(
+      'handler' => 'views_handler_relationship',
+      'base' => 'node',
+      'field' => 'nid',
+      'label' => t('platform'),
     ),
-    'profile' => array(
-      'title' => t('Profile ID'),
-      'help' => t('The ID of the profile package installed on this site.'),
-      'field' => array(
-        'handler' => 'views_handler_field',
-        'click sortable' => TRUE,
-      ),
-    ),
-    'language' => array(
-      'title' => t('Language'),
-      'help' => t('The default language of this site.'),
-      'field' => array(
-        'handler' => 'views_handler_field',
-        'click sortable' => TRUE,
-      ),
-    ),
-    'last_cron' => array(
-      'title' => t('Last Cron Run'),
-      'help' => t('The time the last cron run was executed on this site.'),
-      'field' => array(
-        'handler' => 'views_handler_field_date',
-        'click sortable' => TRUE,
-      ),
-    ),
-    'verified' => array(
+  );
+
+  $data['hosting_site']['verified'] = array(
       'title' => t('Verified'),
       'help' => t('The last date verified task run on this site.'),
       'field' => array(
         'handler' => 'views_handler_field_date',
         'click sortable' => TRUE,
       ),
-    ),
-    'status' => array(
+    );
+
+  $data['hosting_site']['last_cron'] = array(
+      'title' => t('Last Cron Run'),
+      'help' => t('The time the last cron run was executed on this site.'),
+      'field' => array(
+        'handler' => 'views_handler_field_date',
+        'click sortable' => TRUE,
+      ),
+    );
+  $data['hosting_site']['language'] = array(
+      'title' => t('Language'),
+      'help' => t('The default language of this site.'),
+      'field' => array(
+        'handler' => 'views_handler_field_hosting_language',
+        'click sortable' => TRUE,
+      ),
+    );
+
+  $data['hosting_site']['status'] = array(
       'title' => t('Status'),
       'help' => t('The current state of this site.'),
       'field' => array(
-        'handler' => 'views_handler_field',
+        'handler' => 'views_handler_field_hosting_site_status',
       ),
       'filter' => array(
         'handler' => 'views_handler_filter_numeric',
       ),
-    ),
-    'port' => array(
-      'title' => t('Port'),
-      'help' => t('The HTTP port the site is running on.'),
-      'field' => array(
-        'handler' => 'views_handler_field_numeric',
-        'click sortable' => TRUE,
-      ),
-    ),
-  );
+    );
 
   return $data;
 }
 
+function hosting_site_views_handlers() {
+  return array(
+    'info' => array(
+      'path' => drupal_get_path('module', 'hosting_site'),
+    ),
+    'handlers' => array(
+      // field handlers
+      'views_handler_field_hosting_language' => array(
+        'parent' => 'views_handler_field',
+      ),
+      // field handlers
+      'views_handler_field_hosting_site_status' => array(
+        'parent' => 'views_handler_field',
+      ),
 
+    ),
+  );
+}

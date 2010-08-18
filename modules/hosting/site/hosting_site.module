@@ -335,13 +335,14 @@ function hosting_import_site($site_id, $data, $platform) {
  * Define the status types of a site
  */
 function _hosting_site_status($node) {
+  $status = (is_numeric($node)) ? $node : $node->site_status;
   static $labels = array(
     HOSTING_SITE_QUEUED => "Queued",
     HOSTING_SITE_ENABLED => "Enabled",
     HOSTING_SITE_DELETED => "Deleted",
     HOSTING_SITE_DISABLED => "Disabled",
   );
-  return $labels[$node->site_status];
+  return $labels[$status];
 }
 
 /**
