@@ -1,0 +1,7 @@
+<?php
+
+function hosting_nginx_hosting_service() {
+  return array(
+    'nginx' => 'http',
+  );
+}

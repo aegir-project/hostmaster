@@ -12,6 +12,8 @@
 function _hosting_site_field(&$form, $node, $item, $element, $filter_display ='filter_xss', $editable = FALSE, $show_desc = TRUE) {
   $css_id = str_replace("_", "-", $item);
 
+  $type = $element['#type'];
+
   if (!$node->nid || $editable) {
     // create it
     if (($element['#type'] == 'radios') && !sizeof($element['#options'])) {
@@ -37,6 +39,8 @@ function _hosting_site_field(&$form, $node, $item, $element, $filter_display ='f
     }
   }
   else {
+    $type = 'display';
+
     if ($show_desc) {
       // display it
       $form['info'][$item] = array(
@@ -56,7 +60,7 @@ function _hosting_site_field(&$form, $node, $item, $element, $filter_display ='f
 
   $form[$item]['#hosting_site_field'] = $item;
   $form[$item]['#hosting_site_field_value'] = $element['#default_value'];
-  $form[$item]['#prefix'] = "<div class='hosting-site-field hosting-site-field-{$element['#type']}' id='hosting-site-field-{$css_id}'>";
+  $form[$item]['#prefix'] = "<div class='hosting-site-field hosting-site-field-{$type}' id='hosting-site-field-{$css_id}'>";
   $form[$item]['#suffix'] = "</div>";
 }
 
@@ -66,23 +70,6 @@ function _hosting_site_field(&$form, $node, $item, $element, $filter_display ='f
  * Add the needed .js and .css files to render the form correctly before printing it
  */
 function _hosting_site_form_pre_render($elements) {
-  static $count = 0;
-
-  // TODO : I have absolutely _NO_ idea why this is being called twice =\
-  $count++;
-  if ($count == 1) {
-    $node = new stdClass();
-    
-    foreach (element_children($elements) as $key) {
-      if (isset($elements[$key]['#hosting_site_field'])) {
-
-        $node->$key = $elements[$key]['#hosting_site_field_value'];    
-      }
-    }
-
-    $settings['hostingSiteAvailableOptions'] = hosting_site_available_options($node);
-    drupal_add_js($settings, 'setting');
-  }
 
   drupal_add_js(drupal_get_path('module', 'hosting_site') . '/hosting_site.form.js');
   return $elements;
@@ -279,7 +266,7 @@ function hosting_site_validate($node, &$form) {
     form_set_error('title', t("The domain name you have specified is already in use."));
   }
 
-  if (!in_array($node->profile, $valid_options['profile'])) {
+  if (!in_array($node->profile, $valid_options['profile']) && !$node->nid) {
     form_set_error('profile', t('Please choose a valid profile'));
   }
 

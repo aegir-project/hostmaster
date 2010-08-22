@@ -1,7 +1,7 @@
 if (Drupal.jsEnabled) {
   $(document).ready(function() {
      $('div.hosting-site-field-description').hide();
-     hostingSiteToggleOptions();
+     hostingSiteCheck();
      $('div.hosting-site-field input').change( hostingSiteCheck );
   });
 
@@ -9,15 +9,24 @@ if (Drupal.jsEnabled) {
     // iterate through the visible options
     settings = Drupal.settings.hostingSiteAvailableOptions;
 
+    // Set the form to not be submittable
+    $('#edit-submit').attr('disabled', 'disabled');
+
+    var can_submit = true;
+
     for (var key in settings) {
       css_key = key.replace(/_/g, '-');
       desc_id = 'div#hosting-site-field-' + css_key + '-description';
 
       // generate an css id to retrieve the value, based on the field type.
       var id = 'div#hosting-site-field-' + css_key;
-      if ($(id).hasClass('hosting-site-field-radios')) { 
+      if ($(id).hasClass('hosting-site-field-radios')) {
         // show and hide the visible radio options.
-        if (settings[key].length > 1) {
+        if (typeof(settings[key]) != 'object') {
+          $(id).hide();
+          $(desc_id).hide(); 
+        }
+        else if (settings[key].length > 1) {
           // There is more than one possible option, so we display the radio dialogs.
           $(desc_id).hide()
           $(id).show();
@@ -28,7 +37,6 @@ if (Drupal.jsEnabled) {
             input_id = 'input[@name=' + key + '][@value=' + settings[key][option] + ']'
             $(id + ' div.form-radios div#edit-' + css_key + '-' + option_css_key +'-wrapper').show();
           }
-
         }
         else if (settings[key].length == 1) {
           // There is only one valid option, so we select it and display it as text.
@@ -42,13 +50,21 @@ if (Drupal.jsEnabled) {
           if (settings[key][0] != 'null') {
             $(desc_id).show()
               .find('div.placeholder')
-              .contents().
-              replaceWith($(input_id).parent().text().trim());
+              .removeClass('error')
+              .contents()
+              .replaceWith($(input_id).parent().text().trim())
           }
         }
         else {
-          $(desc_id).hide();
+          // If we have any errors, for the form submit not to be possible.
+          can_submit = false;
+
           $(id).hide();
+          $(desc_id).show()
+            .find('div.placeholder')
+            .addClass('error')
+            .contents()
+            .replaceWith('No valid choices')
         }
       }
       else if ($(id).hasClass('hosting-site-field-textfield') || $(id).hasClass('hosting-site-field-textarea')) {
@@ -84,6 +100,10 @@ if (Drupal.jsEnabled) {
           $(id).hide();
         }
       }
+    }
+
+    if (can_submit) {
+      $('#edit-submit').removeAttr('disabled');
     }
   }
 

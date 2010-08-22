@@ -51,7 +51,7 @@ function hosting_alias_form_data(&$form) {
       '#weight' => 10,
     );
     $form['redirection'] = array(
-      '#type' => 'checkbox',
+      '#type' => 'hidden',
       '#title' => t('Redirect domain aliases to main domain'),
       '#default_value' => isset($form['#node']->redirection) ? $form['#node']->redirection : variable_get('hosting_alias_redirection', FALSE),
       '#weight' => 11,
@@ -174,6 +174,7 @@ function hosting_alias_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
             '#value' => implode(', ', $links), 
             '#weight' => 10,
           );
+          /*
           $redirection = db_result(db_query("SELECT redirection FROM {hosting_site_alias} WHERE vid=%d", $node->vid));
           $node->content['info']['redirection'] = array(
             '#type' => 'item',
@@ -181,6 +182,7 @@ function hosting_alias_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
             '#value' => $redirection['redirection'] ? t('Yes') : t('No'), 
             '#weight' => 10,
           );
+           */
         }
         break;
     }

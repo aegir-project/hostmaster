@@ -1,0 +1,7 @@
+name = Nginx +SSL servers
+description = Allow hostmaster to configure NGINX web servers with SSL support.
+package = Hosting
+dependencies[] = hosting_web_server
+dependencies[] = hosting_ssl
+dependencies[] = hosting_nginx
+core = 6.x
