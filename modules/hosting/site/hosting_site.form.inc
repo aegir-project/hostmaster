@@ -119,7 +119,7 @@ function hosting_site_available_options($node) {
   $user = user_load($GLOBALS['user']->uid);
 
   $options = array();
-  $platforms = hosting_get_profile_platforms($node->profile);
+  $platforms = hosting_get_profile_platforms($node->profile, isset($node->check_profile_migrations) ? $node->check_profile_migrations : FALSE);
   if (sizeof($platforms)) {
     foreach ($platforms as $nid => $title) {
       $platform = node_load($nid);

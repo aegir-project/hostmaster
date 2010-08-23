@@ -108,6 +108,7 @@ function hosting_migrate_theme($existing, $type, $theme, $path) {
  * Implementation of hook_form()
  */
 function hosting_task_migrate_form($node) {
+  $node->check_profile_migrations =  TRUE;
   $valid_options = hosting_site_available_options($node);
 
   $form['new_uri'] = array (

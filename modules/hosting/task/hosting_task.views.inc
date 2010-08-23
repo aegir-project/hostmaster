@@ -47,11 +47,13 @@ function hosting_task_views_data() {
       ),
     ),
     'rid' => array(
-      'title' => t('RID'),
+      'title' => t('Reference'),
       'help' => t(''),
-      'field' => array(
-        'handler' => 'views_handler_field',
-        'click sortable' => TRUE,
+    'relationship' => array(
+        'handler' => 'views_handler_relationship',
+        'base' => 'node',
+        'field' => 'nid',
+        'label' => t('Reference'),
       ),
     ),
     'task_status' => array(

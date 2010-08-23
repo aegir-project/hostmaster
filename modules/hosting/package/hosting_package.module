@@ -126,7 +126,7 @@ function hosting_get_profiles($platform = NULL, $field = 'title') {
   return $profiles;
 }
 
-function hosting_get_profile_platforms($profile) {
+function hosting_get_profile_platforms($profile, $check_old_short_name = FALSE) {
   $defaults = array('default', 'standard', 'minimal');
 
   $platforms = array();
@@ -136,6 +136,13 @@ function hosting_get_profile_platforms($profile) {
     'r.status' => 1, 
     'r.type' => 'platform'));
 
+  if ($check_old_short_name) {
+    $instances = array_merge($instances, hosting_package_instances_load(array(
+    'p.old_short_name' => $instances[key($instances)]->short_name, 
+    'n.status' => 1,
+    'r.status' => 1, 
+    'r.type' => 'platform'))); 
+  }
   foreach ($instances as $iid => $instance) {
     $platform = node_load($instance->rid);
     // this is one of the default profiles
