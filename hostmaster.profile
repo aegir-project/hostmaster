@@ -125,7 +125,6 @@ function hostmaster_bootstrap() {
   $node->status = 1;
   node_save($node);
   $platform_id = $node->nid;
-  variable_set('hosting_default_platform', $node->nid);
   variable_set('hosting_own_platform', $node->nid);
 
 

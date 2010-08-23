@@ -126,7 +126,6 @@ function hosting_get_profiles($platform = NULL, $field = 'title') {
   return $profiles;
 }
 
-
 function hosting_get_profile_platforms($profile) {
   $defaults = array('default', 'standard', 'minimal');
 
@@ -210,7 +209,7 @@ function hosting_get_packages_by_type($type) {
 }
 
 function hosting_get_default_profile($default = null) {
- if ($p = hosting_get_package('default')) {
+ if ($p = hosting_get_package(variable_get('hosting_default_profile', 'default'))) {
    return $p->nid;
  }
  elseif ($p = hosting_get_package('standard')) {

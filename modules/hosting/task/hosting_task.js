@@ -60,7 +60,7 @@ $(document).ready(function() {
 });
 
 hostingTaskBindButtons = function(elem) {
-  $('.hosting-button-enabled', elem).filter('[href^="/node"]').click(function() {
+  $('.hosting-button-dialog', elem).click(function() {
       $(document).data('hostingOpenModalFrame', true)
      var options = {
         url : '/hosting/js' + $(this).attr('href'),

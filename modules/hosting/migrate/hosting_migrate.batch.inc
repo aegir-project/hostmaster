@@ -154,7 +154,12 @@ function hosting_migrate_platform_submit($form, &$form_state) {
       $task = hosting_add_task($current, 'migrate', array('target_platform' => $target), HOSTING_TASK_SUCCESS);
 
       foreach ($form_state['storage']['passed'] as $nid => $url) {
-        hosting_add_task($nid, 'migrate', array('target_platform' => $form_state['storage']['target_platform']));
+        $site = node_load($nid);
+        hosting_add_task($nid, 'migrate', array(
+          'target_platform' => $form_state['storage']['target_platform'],
+          'new_uri' => $url,
+          'new_db_server' => $site->db_server,
+        ));
         hosting_task_log($task->vid, 'success', t("Migrate task for !url created", array('!url' => $url)));
       }
       $form_state['redirect'] = 'node/' . $form_state['storage']['target_platform'];

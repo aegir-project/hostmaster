@@ -51,11 +51,16 @@ td.hosting-actions {
   text-align: right;
 }
 
+td.hosting-actions a.hosting-button-enabled,
+td.hosting-actions .hosting-button-disabled {
+  float: right;
+}
+
 /**
  * Status icons, colors.
  */
 
-td.hosting-status,
+.hosting-status,
 td.hosting-service-available,
 td.hosting-service-unavailable,
 td.hosting-package-upgrade,
@@ -66,6 +71,20 @@ td.hosting-package-missing {
   background-position:5px 7px;
   background-repeat:no-repeat;
 }
+
+span.hosting-status {
+  background-position:5px 0px;
+  padding: 0px 0px 4px 0px;
+}
+
+table.hosting-table .views-field-status {
+  padding:0px;
+} 
+
+span.hosting-status-icon {
+  margin-right: -4px;
+}
+
 
 tr.hosting-warning,
 #hosting-package-comparison td.hosting-package-missing {
@@ -90,30 +109,30 @@ tr.hosting-success,
   background-color: #dfc !important;
 }
 
-tr.hosting-warning td.hosting-status,
+tr.hosting-warning .hosting-status,
 #hosting-package-comparison td.hosting-package-missing {  
   background-image: url(images/icon-warning.png);
 }
 
-tr.hosting-info td.hosting-status { background-image: url(images/icon-notice.png); }
+tr.hosting-info .hosting-status { background-image: url(images/icon-notice.png); }
 
-tr.hosting-queue td.hosting-status,
+tr.hosting-queue .hosting-status,
 td.hosting-package-same {
   background-image: url(images/icon-queue.png);
 }
 
-tr.hosting-processing td.hosting-status {
+tr.hosting-processing .hosting-status {
   background-image: url(images/loader.gif);
 }
 
 td.hosting-service-unavailable,
-tr.hosting-error td.hosting-status,
+tr.hosting-error .hosting-status,
 td.hosting-package-downgrade {
   background-image: url(images/icon-error.png);
 }
 
 td.hosting-service-available,
-tr.hosting-success td.hosting-status,
+tr.hosting-success .hosting-status,
 td.hosting-package-upgrade {
   background-image: url(images/icon-ok.png);
 }

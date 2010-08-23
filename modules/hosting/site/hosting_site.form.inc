@@ -208,7 +208,7 @@ function hosting_site_form($node) {
      '#required' => TRUE,
      '#description' => t('The platform you want the site to be hosted on.'),
      '#options' => _hosting_get_platforms(),
-     '#default_value' => ($node->platform) ? $node->platform : HOSTING_DEFAULT_PLATFORM,
+     '#default_value' => ($node->platform) ? $node->platform : null,
    ), '_hosting_node_link');
 
   _hosting_site_field($form, $node, 'site_language', array(
