@@ -840,6 +840,11 @@ function hosting_task_table($node) {
   foreach ($tasklist as $task => $info) {
     $row = array();
 
+    if (!isset($info['nid']) && !$info['task_permitted']) {
+      // just don't show those tasks, since we'll not be able to run them
+      continue;
+    }
+
     $row['type'] = array('data' => $info['title'], 'class' => 'hosting-status');
     $actions = array();
 
