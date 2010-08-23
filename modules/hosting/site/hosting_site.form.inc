@@ -271,7 +271,7 @@ function hosting_site_validate($node, &$form) {
   }
 
   if (!in_array($node->platform, $valid_options['platform'])) {
-    form_set_error('platform', t('Please choose a valid profile'));
+    form_set_error('platform', t('Please choose a valid platform'));
   }
 
   // Check that we are selecting a valid language for this profile, but only when a new site is created. 
