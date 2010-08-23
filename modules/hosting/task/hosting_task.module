@@ -79,6 +79,8 @@ function hosting_task_cancel($node) {
 
       if (node_access('update', $node) && node_access('update', $ref)) {
         hosting_add_task($node->rid, $node->task_type, array(), HOSTING_TASK_ERROR);
+        // Log the cancellation
+        hosting_task_log($node->vid, 'error', t("Task was cancelled."));
         drupal_goto('node/' . $node->rid);
       }
     }
