@@ -53,6 +53,11 @@ p, blockquote {
   padding:0px;
   }
 
+ul, ol,
+.item-list ul, .item-list ol {
+  margin-left: 1em;
+}
+
 .block ul, .block ol, .block li {
   list-style:none;
   list-style-image:none;
