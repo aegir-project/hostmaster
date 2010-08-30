@@ -914,6 +914,20 @@ div.admin .left {
 /* Put some space between multiselect options. See admin/content/node */
 dl.multiselect div.form-item { margin:0px 0px 10px; }
 
+/* Override Garland-specific styling for the available updates table */
+.update table.version .version-links ul {
+  float: right;
+}
+
+.update table.version .version-links ul li {
+  float: none;
+  padding-left: 1em;
+}
+
+.update table.version .version-links ul li a {
+  float: none;
+}
+
 /**
  * ERROR PAGES ========================================================
  */
