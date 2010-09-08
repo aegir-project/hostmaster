@@ -25,6 +25,11 @@ function hosting_platform_schema() {
         'size' => 'big',
         'not null' => FALSE,
       ),
+      'makefile' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+      ),
       'web_server' => array(
         'type' => 'int',
         'not null' => TRUE,
@@ -111,3 +116,11 @@ function hosting_platform_update_6002() {
   return $ret;
 }
 
+/**
+ * Add the 'makefile' column.
+ */
+function hosting_platform_update_6003() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE {hosting_platform} ADD COLUMN makefile TEXT NOT NULL");
+  return $ret;
+}
