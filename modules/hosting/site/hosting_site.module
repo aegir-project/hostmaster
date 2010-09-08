@@ -113,20 +113,7 @@ function hosting_site_goto($node) {
     cache_clear_all($cid, 'cache');
   }
   else {
-    $port = hosting_site_get_port($node);
-
-
-    switch($node->port) {
-      case 0 :
-      case 80:
-        $theurl = 'http://' . $node->title;
-      break;
-      case 443:
-        $theurl = 'https://' . $node->title;
-      break;
-      default:
-       $theurl = 'http://' . $node->title . ':' . $port;
-    }
+    $theurl = _hosting_site_url($node);
   }
 
   drupal_goto($theurl);
@@ -140,6 +127,49 @@ function hosting_site_get_port($node) {
   $platform = node_load($node->platform);
   $server = node_load($platform->web_server);
   return $server->services['http']->port;
+}
+
+/**
+ * Get site's URL.
+ */
+function _hosting_site_url($node) {
+  $schema = 'http';
+  $port = null;
+
+  $url = $node->title;
+
+  $platform = node_load($node->platform);
+  $server = node_load($platform->web_server);
+
+
+  if ($server->services['http']->has_port()) { 
+    $port = $server->services['http']->port;
+    if ($port == 80) {
+      $port = null;
+    }
+  }
+
+  /**
+   * This is part of the ssl feature, but is better to implement here.
+   */
+  if (isset($node->ssl_enabled) && ($node->ssl_enabled == 2)) {
+    // this is a bit of a magic number, because we cant rely on the constant being available yet.
+    // 2 == Only SSL is enabled.
+    $schema = 'https';
+
+    if ($server->services['http']->has_port()) { 
+      $port = $server->services['http']->ssl_port;
+      if ($port == 443) {
+        $port = null;
+      }
+    }
+  }
+
+  if (is_numeric($port)) {
+    return "{$schema}://{$url}:{$port}";
+  }
+
+  return "{$schema}://{$url}";
 }
 
 /**

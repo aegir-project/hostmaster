@@ -13,6 +13,10 @@ class hostingService {
     self::setValues($values);
   }
 
+  public function has_port() {
+    return $this->has_port;
+  }
+
   public function load() {
     $this->mergeData("SELECT port, restart_cmd, available FROM {hosting_service} WHERE vid = %d AND type = '%s'", $this->server->vid, $this->type);
   }
