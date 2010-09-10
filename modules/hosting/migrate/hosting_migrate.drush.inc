@@ -65,8 +65,8 @@ function hosting_migrate_post_hosting_migrate_task($task, $data) {
     }
 
     $profile = hosting_package_instance_load(array(
-      'rid' => $target,
-      'short_name' => $data['context']['profile']
+      'i.rid' => $target,
+      'p.short_name' => $data['context']['profile']
     ));
     if ($profile) {
       $site->profile = $profile->package_id;

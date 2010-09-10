@@ -332,13 +332,13 @@ function hosting_import_site($site_id, $data, $platform) {
 
 
   $profile = hosting_package_instance_load(array(
-    'rid' => $platform,
-    'short_name' => $data['profile']
+    'i.rid' => $platform,
+    'p.short_name' => $data['profile']
   ));
   if (!$profile) {
     $profile = hosting_package_instance_load(array(
-       'rid' => $platform,
-       'short_name' => 'default'));
+       'i.rid' => $platform,
+       'p.short_name' => 'default'));
   }
   $site->profile = $profile->package_id;
 

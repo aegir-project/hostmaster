@@ -32,8 +32,8 @@ function hosting_package_instance_sync($rid) {
 
     foreach ($merged as $name => $package) {
       $instance = hosting_package_instance_load(array(
-        'rid' => $rid,
-        'package_id' => $package['package_id']));
+        'i.rid' => $rid,
+        'i.package_id' => $package['package_id']));
       if (!$instance) {
         $instance = new stdClass();
         $instance->rid = $rid;

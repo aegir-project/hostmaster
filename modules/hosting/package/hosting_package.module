@@ -164,7 +164,7 @@ function hosting_get_profile_languages($profile = NULL, $platform = NULL) {
   $languages['en'] = _hosting_language_name('en');
   if ($profile && $platform) {
     $instance = hosting_package_instance_load(array(
-      'rid' => $platform, 'package_id' => $profile));
+      'i.rid' => $platform, 'i.package_id' => $profile));
     $languages = array_merge($languages, $instance->languages);
   }
   else {
