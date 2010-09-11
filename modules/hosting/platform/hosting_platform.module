@@ -52,6 +52,7 @@ function hosting_platform_hosting_tasks() {
         running on this platform.
         Are you really sure you want to delete this platform?'),
     'weight' => 10,
+    'dialog' => TRUE,
   );
   $tasks['platform']['lock'] = array(
     'title' => t('Lock'),
