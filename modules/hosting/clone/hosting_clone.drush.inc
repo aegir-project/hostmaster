@@ -49,7 +49,6 @@ function hosting_clone_post_hosting_clone_task($task, $data) {
       $clone->db_server = $task->task_args['new_db_server'];
     }
 
-
     $profile = hosting_package_instance_load(array(
       'i.rid' => $target,
       'p.short_name' => $data['context']['profile']
