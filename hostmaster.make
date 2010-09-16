@@ -1,4 +1,5 @@
 core = 6.x
+api = 2
 
 ; Contrib modules
 projects[admin_menu][version] = "1.6"
