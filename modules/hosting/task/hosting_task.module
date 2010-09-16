@@ -810,7 +810,7 @@ function hosting_task_queue_block() {
     );
 
 
-    $log_button = _hosting_task_button(t('View'), 'node/' . $node->nid, t("Display the task log"), 'hosting-button-log', isset($node->nid) &&  user_access('access task logs'));
+    $log_button = _hosting_task_button(t('View'), 'node/' . $node->nid, t("Display the task log"), 'hosting-button-log', isset($node->nid) &&  user_access('access task logs'), true);
 
     $row['actions'] = array(
       'data' => $log_button,
