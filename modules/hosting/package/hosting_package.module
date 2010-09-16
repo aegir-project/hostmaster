@@ -105,7 +105,7 @@ function hosting_get_profiles($platform = NULL, $field = 'title') {
   $profiles = array();
   if (!is_null($platform)) {
     $instances = hosting_package_instances_load(array(
-      'rid' => $platform, 'package_type' => 'profile',
+      'i.rid' => $platform, 'p.package_type' => 'profile',
       'n.status' => 1));
 
     foreach ($instances as $iid => $instance) {
@@ -114,7 +114,7 @@ function hosting_get_profiles($platform = NULL, $field = 'title') {
   }
   else {
    $instances = hosting_package_instances_load(array(
-    'package_type' => 'profile', 
+    'p.package_type' => 'profile', 
     'n.status' => 1, 
     'r.type' => 'platform'));
 
@@ -131,7 +131,7 @@ function hosting_get_profile_platforms($profile, $check_old_short_name = FALSE) 
 
   $platforms = array();
   $instances = hosting_package_instances_load(array(
-    'package_id' => $profile, 
+    'i.package_id' => $profile, 
     'n.status' => 1,
     'r.status' => 1, 
     'r.type' => 'platform'));
