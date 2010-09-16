@@ -311,7 +311,7 @@ function hosting_import_site($site_id, $data, $platform) {
     $client = hosting_import_client($data['client_email'], $data['client_name'], $data['client_organization']);
   }
 
-  $site = new stdClass();
+  $site = node_load($site_id);
   $site->nid = $site_id;
   $site->uid = $client->uid;
   $site->status = 1;
@@ -323,8 +323,7 @@ function hosting_import_site($site_id, $data, $platform) {
   $site->ip_addresses = array_values($data['site_ip_addresses']);
 
   $site->aliases = ($data['aliases']) ? $data['aliases'] : array();
-  $db_server = hosting_get_db_server($data['db_id']);
-  $site->db_server = ($db_server) ? $db_server->nid : HOSTING_DEFAULT_DB_SERVER;
+  $site->db_server = ($site->db_server) ? $site->db_server : HOSTING_DEFAULT_DB_SERVER;
   $site->site_language = $data['language'] ? $data['language'] : 'en';
 
   // Drupal 6 introduced a language field on nodes
