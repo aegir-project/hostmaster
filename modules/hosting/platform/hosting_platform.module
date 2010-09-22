@@ -52,6 +52,7 @@ function hosting_platform_hosting_tasks() {
         running on this platform.
         Are you really sure you want to delete this platform?'),
     'weight' => 10,
+    'dialog' => TRUE,
   );
   $tasks['platform']['lock'] = array(
     'title' => t('Lock'),
@@ -163,9 +164,18 @@ function hosting_platform_form(&$node) {
     '#type' => 'textfield',
     '#title' => t('Publish path'),
     '#required' => TRUE,
-    '#description' => t('The path on the filesystem where the sites will be hosted. This needs to be created manually and initialized before your platform works properly. Use the following shell commands:<pre>%commands</pre>', array('%commands' => "cd /var/aegir\n./drush/drush.php dl drupal\n")),
+    '#description' => t('The path on the filesystem where the sites will be hosted. This needs to be created manually and initialized before your platform works properly. Use the following shell commands:<pre>%commands</pre>Alternatively, you can specify a makefile below, from which the platform will be created automatically, in case the directory specified here does not exist.', array('%commands' => "cd /var/aegir\n./drush/drush.php dl drupal\n")),
     '#size' => 40,
     '#default_value' => $node->publish_path,
+    '#maxlength' => 255,
+  );
+
+  $form['makefile'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Makefile'),
+    '#description' => t('The path on the filesystem to a makefile that will be used to create the platform. If the directory specified above already exists, this file will be ignored.'),
+    '#size' => 40,
+    '#default_value' => $node->makefile,
     '#maxlength' => 255,
   );
 
@@ -209,8 +219,8 @@ function hosting_platform_insert($node) {
   if (!isset($node->no_verify)) {
     hosting_add_task($node->nid, 'verify');
   }
-  db_query("INSERT INTO {hosting_platform} (vid, nid, publish_path, verified, web_server, status) VALUES (%d, %d, '%s', %d, %d, %d)",
-    $node->vid, $node->nid, $node->publish_path, $node->verified, $node->web_server, $node->platform_status);
+  db_query("INSERT INTO {hosting_platform} (vid, nid, publish_path, makefile, verified, web_server, status) VALUES (%d, %d, '%s', '%s', %d, %d, %d)",
+    $node->vid, $node->nid, $node->publish_path, $node->makefile, $node->verified, $node->web_server, $node->platform_status);
   if (!$node->old_vid) {
     hosting_context_register($node->nid, 'platform_' . preg_replace("/[!\W]/", "", $node->title));
   }
@@ -231,8 +241,8 @@ function hosting_platform_update($node) {
     if ($node->platform_status == HOSTING_PLATFORM_DELETED) {
       $node->no_verify = TRUE;
     }
-    db_query("UPDATE {hosting_platform} SET publish_path = '%s', web_server = %d, verified = %d, status= %d WHERE nid=%d",
-              $node->publish_path, $node->web_server, $node->verified, $node->platform_status, $node->nid);
+    db_query("UPDATE {hosting_platform} SET publish_path = '%s', makefile = '%s', web_server = %d, verified = %d, status= %d WHERE nid=%d",
+              $node->publish_path, $node->makefile, $node->web_server, $node->verified, $node->platform_status, $node->nid);
   }
   if (!$node->no_verify) {
     hosting_add_task($node->nid, 'verify');
@@ -280,7 +290,7 @@ function hosting_platform_validate($node, &$form) {
  *    Node object
  */
 function hosting_platform_load($node) {
-  $additions = db_fetch_object(db_query('SELECT publish_path, verified, web_server, status AS platform_status FROM {hosting_platform} WHERE vid = %d', $node->vid));
+  $additions = db_fetch_object(db_query('SELECT publish_path, makefile, verified, web_server, status AS platform_status FROM {hosting_platform} WHERE vid = %d', $node->vid));
   $iid = db_result(db_query("SELECT iid FROM {hosting_package_instance} i left join {hosting_package} p on p.nid=i.package_id WHERE p.package_type='platform' AND i.rid=%d", $node->nid));
   $additions->release = hosting_package_instance_load($iid);
   $additions->profiles = hosting_get_profiles($node->nid, 'short_name');
@@ -341,6 +351,14 @@ function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
     '#title' => t('Status'),
     '#value' => _hosting_platform_status($node),
   );
+
+  if ($node->makefile) {
+    $node->content['info']['makefile'] = array(
+      '#type' => 'item',
+      '#title' => t('Drush makefile'),
+      '#value' => filter_xss($node->makefile),
+    );
+  }
 
   if ($node->release) {
     $release = sprintf("%s %s", $node->release->title, $node->release->version);

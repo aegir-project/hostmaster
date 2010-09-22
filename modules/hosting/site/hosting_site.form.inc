@@ -119,7 +119,7 @@ function hosting_site_available_options($node) {
   $user = user_load($GLOBALS['user']->uid);
 
   $options = array();
-  $platforms = hosting_get_profile_platforms($node->profile);
+  $platforms = hosting_get_profile_platforms($node->profile, isset($node->check_profile_migrations) ? $node->check_profile_migrations : FALSE);
   if (sizeof($platforms)) {
     foreach ($platforms as $nid => $title) {
       $platform = node_load($nid);
@@ -271,7 +271,7 @@ function hosting_site_validate($node, &$form) {
   }
 
   if (!in_array($node->platform, $valid_options['platform'])) {
-    form_set_error('platform', t('Please choose a valid profile'));
+    form_set_error('platform', t('Please choose a valid platform'));
   }
 
   // Check that we are selecting a valid language for this profile, but only when a new site is created. 

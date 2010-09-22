@@ -6,6 +6,9 @@ function hosting_hosting_platform_context_options(&$task) {
   $task->context_options['web_server'] = hosting_context_name($task->ref->web_server);
   // Trim the path so we dont pass extra spaces.
   $task->context_options['root'] = trim($task->ref->publish_path, " ");
+  if ($task->ref->makefile) {
+    $task->context_options['makefile'] = $task->ref->makefile;
+  }
 }
 
 /**
@@ -39,7 +42,7 @@ function hosting_platform_post_hosting_verify_task($task, $data) {
     foreach ($context['profiles'] as $profile) {
       hosting_package_sync($packages['profiles'][$profile]);
       $instance = hosting_package_instance_load(
-        array('short_name' => $profile, 'rid' => $node->nid, 'package_type' => 'profile'));
+        array('p.short_name' => $profile, 'i.rid' => $node->nid, 'p.package_type' => 'profile'));
       hosting_package_instance_sync($instance->iid, $packages['base'], $packages['profiles'][$profile]);
 
       // @todo : package instances of modules to profiles.
@@ -71,6 +74,7 @@ function hosting_platform_post_hosting_delete_task($task, $data) {
   $task->ref->platform_status = HOSTING_PLATFORM_DELETED;
   $task->ref->no_verify = TRUE;
   node_save($task->ref);
+  hosting_context_delete($task->ref->nid);
   db_query("DELETE FROM {hosting_platform_client_access} WHERE pid = %d", $task->ref->nid);
 }
 

@@ -242,7 +242,9 @@ function hosting_client_insert($node) {
   hosting_client_set_title($node);
   if (variable_get('hosting_client_register_user', FALSE) 
     && !user_load(array('mail' => $node->email))) {
-    hosting_client_register_user($node);
+    $user = hosting_client_register_user($node);
+    db_query("UPDATE {node} SET uid = %d WHERE nid = %d", $user->uid, $node->nid);
+    db_query("UPDATE {node_revisions} SET uid = %d WHERE vid = %d", $user->uid, $node->vid);
   }
   if (isset($node->new_user)) {
     $user = user_load(array('name' => $node->new_user));
@@ -290,6 +292,7 @@ function hosting_client_register_user($node) {
     $language = user_preferred_language($user);
     drupal_mail('hosting_client', 'hosting-client-register-welcome', $to, $language, $params);
   }
+  return $user;
 }
 
 /**

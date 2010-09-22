@@ -113,20 +113,7 @@ function hosting_site_goto($node) {
     cache_clear_all($cid, 'cache');
   }
   else {
-    $port = hosting_site_get_port($node);
-
-
-    switch($node->port) {
-      case 0 :
-      case 80:
-        $theurl = 'http://' . $node->title;
-      break;
-      case 443:
-        $theurl = 'https://' . $node->title;
-      break;
-      default:
-       $theurl = 'http://' . $node->title . ':' . $port;
-    }
+    $theurl = _hosting_site_url($node);
   }
 
   drupal_goto($theurl);
@@ -140,6 +127,49 @@ function hosting_site_get_port($node) {
   $platform = node_load($node->platform);
   $server = node_load($platform->web_server);
   return $server->services['http']->port;
+}
+
+/**
+ * Get site's URL.
+ */
+function _hosting_site_url($node) {
+  $schema = 'http';
+  $port = null;
+
+  $url = $node->title;
+
+  $platform = node_load($node->platform);
+  $server = node_load($platform->web_server);
+
+
+  if ($server->services['http']->has_port()) { 
+    $port = $server->services['http']->port;
+    if ($port == 80) {
+      $port = null;
+    }
+  }
+
+  /**
+   * This is part of the ssl feature, but is better to implement here.
+   */
+  if (isset($node->ssl_enabled) && ($node->ssl_enabled == 2)) {
+    // this is a bit of a magic number, because we cant rely on the constant being available yet.
+    // 2 == Only SSL is enabled.
+    $schema = 'https';
+
+    if ($server->services['http']->has_port()) { 
+      $port = $server->services['http']->ssl_port;
+      if ($port == 443) {
+        $port = null;
+      }
+    }
+  }
+
+  if (is_numeric($port)) {
+    return "{$schema}://{$url}:{$port}";
+  }
+
+  return "{$schema}://{$url}";
 }
 
 /**
@@ -281,7 +311,7 @@ function hosting_import_site($site_id, $data, $platform) {
     $client = hosting_import_client($data['client_email'], $data['client_name'], $data['client_organization']);
   }
 
-  $site = new stdClass();
+  $site = node_load($site_id);
   $site->nid = $site_id;
   $site->uid = $client->uid;
   $site->status = 1;
@@ -293,8 +323,7 @@ function hosting_import_site($site_id, $data, $platform) {
   $site->ip_addresses = array_values($data['site_ip_addresses']);
 
   $site->aliases = ($data['aliases']) ? $data['aliases'] : array();
-  $db_server = hosting_get_db_server($data['db_id']);
-  $site->db_server = ($db_server) ? $db_server->nid : HOSTING_DEFAULT_DB_SERVER;
+  $site->db_server = ($site->db_server) ? $site->db_server : HOSTING_DEFAULT_DB_SERVER;
   $site->site_language = $data['language'] ? $data['language'] : 'en';
 
   // Drupal 6 introduced a language field on nodes
@@ -302,13 +331,13 @@ function hosting_import_site($site_id, $data, $platform) {
 
 
   $profile = hosting_package_instance_load(array(
-    'rid' => $platform,
-    'short_name' => $data['profile']
+    'i.rid' => $platform,
+    'p.short_name' => $data['profile']
   ));
   if (!$profile) {
     $profile = hosting_package_instance_load(array(
-       'rid' => $platform,
-       'short_name' => 'default'));
+       'i.rid' => $platform,
+       'p.short_name' => 'default'));
   }
   $site->profile = $profile->package_id;
 

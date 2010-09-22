@@ -105,7 +105,7 @@ function hosting_get_profiles($platform = NULL, $field = 'title') {
   $profiles = array();
   if (!is_null($platform)) {
     $instances = hosting_package_instances_load(array(
-      'rid' => $platform, 'package_type' => 'profile',
+      'i.rid' => $platform, 'p.package_type' => 'profile',
       'n.status' => 1));
 
     foreach ($instances as $iid => $instance) {
@@ -114,7 +114,7 @@ function hosting_get_profiles($platform = NULL, $field = 'title') {
   }
   else {
    $instances = hosting_package_instances_load(array(
-    'package_type' => 'profile', 
+    'p.package_type' => 'profile', 
     'n.status' => 1, 
     'r.type' => 'platform'));
 
@@ -126,16 +126,23 @@ function hosting_get_profiles($platform = NULL, $field = 'title') {
   return $profiles;
 }
 
-function hosting_get_profile_platforms($profile) {
+function hosting_get_profile_platforms($profile, $check_old_short_name = FALSE) {
   $defaults = array('default', 'standard', 'minimal');
 
   $platforms = array();
   $instances = hosting_package_instances_load(array(
-    'package_id' => $profile, 
+    'i.package_id' => $profile, 
     'n.status' => 1,
     'r.status' => 1, 
     'r.type' => 'platform'));
 
+  if ($check_old_short_name) {
+    $instances = array_merge($instances, hosting_package_instances_load(array(
+    'p.old_short_name' => $instances[key($instances)]->short_name, 
+    'n.status' => 1,
+    'r.status' => 1, 
+    'r.type' => 'platform'))); 
+  }
   foreach ($instances as $iid => $instance) {
     $platform = node_load($instance->rid);
     // this is one of the default profiles
@@ -157,7 +164,7 @@ function hosting_get_profile_languages($profile = NULL, $platform = NULL) {
   $languages['en'] = _hosting_language_name('en');
   if ($profile && $platform) {
     $instance = hosting_package_instance_load(array(
-      'rid' => $platform, 'package_id' => $profile));
+      'i.rid' => $platform, 'i.package_id' => $profile));
     $languages = array_merge($languages, $instance->languages);
   }
   else {

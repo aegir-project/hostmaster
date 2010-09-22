@@ -47,15 +47,17 @@ function hosting_platform_views_data() {
       'label' => t('web server'),
     ),
   );
-/*
-    'publish_path' => array(
+
+   $data['hosting_platform']['publish_path'] = array(
       'title' => t('Publish Path'),
       'help' => t('The path on the server where this platform is installed.'),
       'field' => array(
-        'handler' => 'views_handler_field',
+        'handler' => 'views_handler_field_xss',
         'click sortable' => TRUE,
       ),
-    ),
+    );
+/*
+
     'web_server' => array(
       'title' => t('Web Server'),
       'help' => t('The webserver this platform is installed on.'),

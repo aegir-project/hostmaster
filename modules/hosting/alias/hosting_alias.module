@@ -218,12 +218,13 @@ function hosting_alias_settings() {
     '#description' => t('If a domain name starts with www., automatically create an alias for domain.com?'),
     '#default_value' => variable_get('hosting_alias_automatic_no_www', FALSE)
   );
+  /*
   $form['hosting_alias_redirection'] = array(
     '#type' => 'checkbox',
     '#title' => t('Use redirects instead of aliases by default'),
     '#description' => t('By default, the aliasing system generates aliases in the webserver configuration and creates symlinks in the sites/ directory, point site aliases to the primary domain. The aliasing system can also redirect instead of aliasing, which means all site aliases will redirect the user to the primary domain instead of delivering the primary domain under a symlinked site alias. Note that this setting can be controlled per site. Setting this option here will make redirection the default behavior for site aliases.'),
     '#default_value' => variable_get('hosting_alias_redirection', FALSE)
-  );
+  );*/
   return system_settings_form($form);
 }
 

@@ -22,7 +22,13 @@ function hosting_cron_queue($count) {
   foreach ($sites as $site) {
     $site_name = hosting_context_name($site->nid);
 
-    provision_backend_invoke($site_name, "cron");
+    if (variable_get('hosting_cron_use_backend', TRUE)) {
+      provision_backend_invoke($site_name, "cron");
+    }
+    else {
+      $cmd = sprintf("wget -O - -q %  > /dev/null", escapeshellarg(_hosting_site_url($site) . '/cron.php'));
+      drush_shell_exec($cmd);
+    }
 
     // We are updating the site table here directly to avoid a possible race condition,
     // with the task queue. There exists a chance that they might both try to save the
