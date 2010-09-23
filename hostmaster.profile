@@ -80,28 +80,19 @@ function hostmaster_bootstrap() {
    'available' => 1,
   ));
 
-  node_save($node);
-  variable_set('hosting_default_web_server', $node->nid);
-  variable_set('hosting_own_web_server', $node->nid);
-
   $master_db = parse_url(d()->platform->server->master_db);
-  if (!drush_is_local_host($master_db['host'])) {
-    $node = new stdClass();
-    $node->uid = 1;
-    $node->type = 'server';
-    $node->title = $master_db['host'];
-    $node->status = 1;
-    $node->services = array();
-  }
-
-  hosting_services_add($node, 'db', str_replace('mysqli', 'mysql', $master_db['scheme']), array(
+  hosting_services_add($node, 'db', d()->platform->server->db_service_type, array(
     'db_type' => $master_db['scheme'],
     'db_user' => $master_db['user'],
     'db_passwd' => $master_db['pass'],
+    'port' => 3306,
     'available' => 1,
   ));
 
   node_save($node);
+  variable_set('hosting_default_web_server', $node->nid);
+  variable_set('hosting_own_web_server', $node->nid);
+
   $db_server = $node->nid;
   variable_set('hosting_default_db_server', $node->nid);
   variable_set('hosting_own_db_server', $node->nid);

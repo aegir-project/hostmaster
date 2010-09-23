@@ -410,7 +410,9 @@ function hosting_server_view(&$node, $teaser = FALSE, $page = FALSE) {
   );
 
   hosting_ip_view($node);
-  $node->content->info->ip_addresses['#weight'] = -30;
+  if (isset($node->content->info->ip_addresses['#weight'])) {
+    $node->content->info->ip_addresses['#weight'] = -30;
+  }
 
   foreach ($node->services as $name => $service) {
     $node->content['info'][$name] = array(
