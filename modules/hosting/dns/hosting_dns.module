@@ -12,7 +12,8 @@ function hosting_dns_hosting_service_type() {
   */
 function hosting_dns_hosting_service() {
   return array('dnsmasq' => 'dns',
-    'bind' => 'dns');
+    'bind' => 'dns',
+    'bind_slave' => 'dns');
 }
 
 

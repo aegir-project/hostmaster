@@ -32,3 +32,16 @@ class hostingService_dns_bind extends hostingService_dns {
     return "sudo /etc/init.d/bind restart";
   }
 }
+
+/**
+ * Slave-specific servers
+ */
+class hostingService_dns_bind_slave extends hostingService_dns {
+  public $type = 'bind_slave';
+
+  public $has_restart_cmd = TRUE;
+
+  function default_restart_cmd() {
+    return "sudo /etc/init.d/bind restart";
+  }
+}
