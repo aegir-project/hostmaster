@@ -58,10 +58,13 @@ p, blockquote {
   list-style-image:none;
 }
 
+body {
+  font: 13px/20px "Helvetica Neue",Arial,sans-serif;
+}
+
 body.aegir {
   color:#444;
   background:#fff;
-  font: 13px/20px "Helvetica Neue",Arial,sans-serif;
   margin:0px;
   padding:0px;
   min-width: 950px;
