@@ -1,0 +1,19 @@
+<?php
+// $Id$
+/**
+ * Expose a type of service to the Service API.
+ */
+function hosting_dns_hosting_service_type() {
+  return array('dns' => array('title' => t('DNS service')));
+}
+
+/**
+ * Expose a service implementation to the service API.
+  */
+function hosting_dns_hosting_service() {
+  return array('dnsmasq' => 'dns',
+    'bind' => 'dns',
+    'bind_slave' => 'dns');
+}
+
+
