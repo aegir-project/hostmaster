@@ -283,25 +283,26 @@ function hosting_package_load($node) {
  */
 function hosting_package_view($node, $teaser = FALSE, $page = FALSE) {
   hosting_set_breadcrumb($node);
-  $node->content['package_type'] = array(
+  $node->content['info']['#prefix'] = '<div id="hosting-package-info">';
+  $node->content['info']['package_type'] = array(
     '#type' => 'item',
     '#title' => t('Package Type'),
     '#value' => filter_xss($node->package_type),
   );
-  $node->content['short_name'] = array(
+  $node->content['info']['short_name'] = array(
     '#type' => 'item',
     '#title' => t('Project Name'),
     '#value' => filter_xss($node->short_name),
   );
 
   if (!empty($node->old_short_name)) {
-    $node->content['old_short_name'] = array(
+    $node->content['info']['old_short_name'] = array(
       '#type' => 'item',
       '#title' => t('Previous Project Name'),
       '#value' => filter_xss($node->old_short_name),
     );
   }
-
+  $node->content['info']['#suffix'] = '</div>';
   if ($node->package_type == 'profile') {
     $node->content['sites'] = array(
       '#type' => 'item',
@@ -311,6 +312,17 @@ function hosting_package_view($node, $teaser = FALSE, $page = FALSE) {
     );
   }
   return $node;
+}
+
+/**
+ * Implementation of hook_form().
+ */
+function hosting_package_form(&$node) {
+  $form = array();
+  foreach(array('package_type', 'short_name', 'old_short_name', 'description') as $extra_attribute) {
+    $form["$extra_attribute"] = array('#type' => 'value', '#value' => $node->$extra_attribute);
+  }
+  return $form;
 }
 
 /**

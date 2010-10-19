@@ -9,6 +9,7 @@
 #hosting-server-info, 
 #hosting-client-info, 
 #hosting-platform-info, 
+#hosting-package-info,
 #hosting-site-info, 
 #hosting-task-info, 
 #hosting-site-edit-info, 
@@ -19,6 +20,7 @@
 #hosting-server-info .form-item, 
 #hosting-client-info .form-item, 
 #hosting-platform-info .form-item, 
+#hosting-package-info .form-item,
 #hosting-site-info .form-item, 
 #hosting-task-info .form-item, 
 #hosting-site-edit-info .form-item {
@@ -33,6 +35,7 @@
 #hosting-client-info label, 
 #hosting-site-edit-info label, 
 #hosting-platform-info label, 
+#hosting-package-info label, 
 #hosting-site-info label, 
 #hosting-task-info label {
   display:inline;
