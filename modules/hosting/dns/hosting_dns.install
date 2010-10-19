@@ -1,0 +1,37 @@
+<?php
+
+function hosting_dns_schema() {
+  return array(
+    'hosting_dns_slaves' => array(
+      'fields' => array(
+        'master_vid' => array(
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+        ),
+        'master_nid' => array(
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+        ),
+        'slave_nid' => array(
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+        ),
+      ),
+      'primary key' => array('master_vid', 'master_nid'),
+    ),
+  );
+}
+
+function hosting_dns_install() {
+  drupal_install_schema('hosting_dns');
+}
+
+function hosting_dns_uninstall() {
+  drupal_uninstall_schema('hosting_dns');
+}
