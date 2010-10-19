@@ -303,11 +303,13 @@ function hosting_package_view($node, $teaser = FALSE, $page = FALSE) {
     );
   }
   $node->content['info']['#suffix'] = '</div>';
+
   if ($node->package_type == 'profile') {
-    $node->content['sites'] = array(
+    $node->content['sites_view'] = array(
       '#type' => 'item',
-      '#title' => t("Sites"),
-      '#value' => hosting_site_list("profile", $node->nid), 
+      '#value' => hosting_site_list("profile", $node->nid),
+      '#prefix' => '<div id="hosting-site-list">',
+      '#suffix' => '</div>',
       '#weight' => 10
     );
   }
