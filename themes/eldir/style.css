@@ -434,6 +434,13 @@ div#console div.messages {
     text-shadow:0px 0px 15px #0c6;
     }
 
+/* Exceptions */
+/* make sure devel module messages are readable */
+div.krumo-root, div.krumo-root a {
+  color: black;
+  text-shadow: none;
+}
+
 /**
  * FOOTER =============================================================
  */
