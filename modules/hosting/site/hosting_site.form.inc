@@ -266,6 +266,14 @@ function hosting_site_validate($node, &$form) {
     form_set_error('title', t("The domain name you have specified is already in use."));
   }
 
+  // If the quota module is loaded, check the site quota
+  if (function_exists('hosting_site_quota_exceeded')) {
+    $quota_error = hosting_site_quota_exceeded((array) $node);
+    if ($quota_error) {
+      form_set_error('title', $quota_error);
+    }
+  }
+
   if (!in_array($node->profile, $valid_options['profile']) && !$node->nid) {
     form_set_error('profile', t('Please choose a valid profile'));
   }

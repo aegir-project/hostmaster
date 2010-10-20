@@ -30,3 +30,16 @@ function hosting_site_hosting_quota_get_usage ($client, $resource, $start = NULL
 function hosting_site_hosting_quota_resource_render ($resource, $usage) {
   return t('@usage sites', array('@usage' => $usage));
 }
+
+/**
+ * Check for quotas and return an appropriate error message to the site creation form
+ */
+function hosting_site_quota_exceeded($node = array()) {
+  $client = node_load($node['client']);
+  $usage = hosting_site_hosting_quota_get_usage($node['client'], 'sites');
+  $limit = $client->quota['sites']['limit'];
+  if ($usage >= $limit && !empty($client->quota['sites']['limit'])) {
+    return t('@client has reached their site quota of @sites. No new sites can be added unless an existing site is deleted or the site quota is increased.', array('@client' => $client->title, '@sites' => $limit));
+  }
+  return FALSE;
+}
