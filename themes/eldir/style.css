@@ -845,14 +845,14 @@ div.hosting-queue-frequency select {
   font-size:10px;
   }
 
-/* Radio Buttons & Checkboxes in Forms */
-body.aegir #page div.node div.content div.form-radios div.form-item label,
-body.aegir #page div.node div.content div.form-checkboxes div.form-item label {
+/* Keep labels from being truncated */
+body.aegir #page div.node div.content div.form-item label {
   width: auto;
 }
 
 body.aegir #page div.node div.content div.form-radios div.form-item,
-body.aegir #page div.node div.content div.form-checkboxes div.form-item {
+body.aegir #page div.node div.content div.form-checkboxes div.form-item,
+body.aegir #page div.node div.content div.form-option {
   border-bottom: none;
   padding-bottom: 1.5em;
 }
