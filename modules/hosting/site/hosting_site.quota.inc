@@ -20,7 +20,7 @@ function hosting_site_hosting_quota_resource () {
  */
 function hosting_site_hosting_quota_get_usage ($client, $resource, $start = NULL, $end = NULL) {
   if (hosting_get_client($client) && $resource = 'sites') {
-    return db_result(db_query("SELECT count(*) FROM {hosting_site} WHERE client='%d'", $client));
+    return db_result(db_query("SELECT count(*) FROM {hosting_site} WHERE client='%d' AND status > -2", $client));
   }
 }
 
