@@ -38,7 +38,7 @@ function hosting_site_quota_exceeded($node = array()) {
   $client = node_load($node['client']);
   $usage = hosting_site_hosting_quota_get_usage($node['client'], 'sites');
   $limit = $client->quota['sites']['limit'];
-  if ($usage >= $limit && !empty($client->quota['sites']['limit'])) {
+  if ($usage >= $limit && !empty($limit)) {
     return t('@client has reached their site quota of @sites. No new sites can be added unless an existing site is deleted or the site quota is increased.', array('@client' => $client->title, '@sites' => $limit));
   }
   return FALSE;
