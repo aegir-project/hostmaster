@@ -304,6 +304,9 @@ function hosting_quota_form_alter(&$form, $form_state, $form_id) {
     );
 
     foreach ($quota_info as $resource => $quota) {
+      if (!$quota['limit']) {
+        $quota['limit'] = variable_get("hosting_quota_default_$resource", 0);
+      }
       $form['quota']['quota-'. $resource] = array(
         '#title' => $quota['title'],
         '#description' => $quota['description'],
