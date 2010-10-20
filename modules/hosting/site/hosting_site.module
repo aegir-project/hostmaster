@@ -405,8 +405,7 @@ function hosting_site_allow_domain($url, $params = array()) {
       $client = node_load($params['client']);
       $usage = hosting_site_hosting_quota_get_usage($params['client'], 'sites');
       $limit = $client->quota['sites']['limit'];
-
-      if ($usage > $limit && !empty($client->quota['sites']['#value'])) {
+      if ($usage > $limit && !empty($client->quota['sites']['limit'])) {
         drupal_set_message(t('@client has reached their site quota of @sites. No new sites can be added unless an existing site is deleted or the site quota is increased.', array('@client' => $client->title, '@sites' => $limit)), 'error');   
         return FALSE;
       }
