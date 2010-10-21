@@ -113,6 +113,7 @@ function hosting_task_migrate_form($node) {
 
   $form['new_uri'] = array (
     '#title' => t('Domain name'),
+    '#description' => t("Changing the domain name when migrating effectively 'renames' the site."),
     '#type' => 'textfield',
     '#required' => TRUE,
     '#weight' => '-1',

@@ -36,6 +36,7 @@ function hosting_clone_theme($existing, $type, $theme, $path) {
 
 function hosting_task_clone_form($node) {
   $form = hosting_task_migrate_form($node);
+  $form['new_uri']['#description'] = t('The new domain name of the clone site.');
   return $form;
 }
 
