@@ -7,7 +7,7 @@ function hosting_ssl_site_form(&$form, &$form_state, $form_id) {
 
   $ssl_available = FALSE;
   // Only allow the user to modify these values when the platform is SSL enabled.
-  if ($node->nid) {
+  if ($node->nid && user_access('administer ssl')) {
     $platform = node_load($node->platform);
     $server = node_load($platform->web_server);
 

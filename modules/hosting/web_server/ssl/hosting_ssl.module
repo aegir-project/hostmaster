@@ -13,6 +13,13 @@ function hosting_ssl_hosting_service() {
 }
 
 /**
+ * Implementation of hook_perm()
+ */
+function hosting_ssl_perm() {
+  return array('administer ssl');
+}
+
+/**
  * Return a list of servers which have SSL enabled web services.
  */
 function hosting_ssl_get_servers() {
