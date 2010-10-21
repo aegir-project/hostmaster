@@ -199,10 +199,8 @@ function theme_hosting_client_form($form) {
 function hosting_client_validate(&$node) {
 
   $nid = db_result(db_query("SELECT nid FROM {hosting_client} WHERE email='%s'", $node->email));
-  if ($nid) {
-    if ($node->nid != $nid) {
-      form_set_error('email', t("Email address already exists."));
-    }
+  if ($nid && $node->nid != $nid) {
+    form_set_error('email', t("Email address already exists."));
   }
   if (!$node->nid) {
     if ($node->email != $node->email_confirm) {
