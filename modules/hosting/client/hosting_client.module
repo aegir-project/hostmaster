@@ -202,10 +202,6 @@ function hosting_client_validate(&$node) {
   if ($nid && $node->nid != $nid) {
     form_set_error('email', t("Email address already exists."));
   }
-  $nid = db_result(db_query("SELECT nid FROM {node} WHERE title='%s' AND type='client'", $node->title));
-  if ($nid && $node->nid != $nid) {
-    form_set_error('title', t("Client name already exists."));
-  }
   if (!$node->nid) {
     if ($node->email != $node->email_confirm) {
       form_set_error('email_confirm', t("Email addresses do not match"));
