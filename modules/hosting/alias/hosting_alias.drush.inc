@@ -13,3 +13,11 @@ function drush_hosting_alias_pre_hosting_task() {
     }
   }
 }
+
+
+function hosting_alias_drush_context_import($context, &$node) {
+  if ($context->type == 'site') {
+    $node->aliases = $context->aliases;
+    $node->redirection = $context->redirection;
+  }
+}

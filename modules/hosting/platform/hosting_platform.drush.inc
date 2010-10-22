@@ -11,6 +11,15 @@ function hosting_hosting_platform_context_options(&$task) {
   }
 }
 
+function hosting_platform_drush_context_import($context, &$node) {
+  if ($context->type == 'platform') {
+    $node->title = str_replace('platform_', '', trim($context->name, '@'));
+    $node->web_server = hosting_drush_import($context->web_server);
+    $node->publish_path = $context->root;
+    $node->makefile = $context->makefile; 
+  }
+}
+
 /**
  * Implementation hook_post_verify
  *

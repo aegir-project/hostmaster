@@ -58,6 +58,12 @@ class hostingService_http_ssl extends hostingService_http_public {
     $task->context_options[$this->service . '_ssl_port'] = $this->ssl_port;
   }
 
+  public function context_import($context) {
+    parent::context_import($context);
+
+    $this->ssl_port = $context->http_ssl_port;
+  }
+
 }
 
 class hostingService_http_apache_ssl extends hostingService_http_ssl {

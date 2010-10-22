@@ -18,6 +18,24 @@ function hosting_hosting_server_context_options(&$task) {
   }
 }
 
+function hosting_server_drush_context_import($context, &$node) {
+  if ($context->type == 'server') {
+    $node->title = strtolower($context->remote_host);
+    $node->ip_addresses = implode("\n", $context->ip_addresses);
+    foreach (hosting_server_services() as $type => $info) {
+      if (isset($context->{$type . '_service_type'})) {
+        $service_type = $context->{$type . '_service_type'};
+        if (!isset($node->services[$type])) {
+          // only support the base configuration things for now.
+          hosting_services_add($node, $type, $service_type, $values); 
+        }
+
+        $node->services[$type]->context_import($context);
+      }
+    }
+  }
+}
+
 /**
  * Resave the target node to trigger reverifications.
  */

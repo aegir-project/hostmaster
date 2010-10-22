@@ -7,7 +7,6 @@ function hosting_hosting_site_context_options(&$task) {
   $task->context_options['platform'] = hosting_context_name($task->ref->platform);
 
   $task->context_options['uri'] = $task->ref->title;
-  $task->context_options['site_port'] = $task->ref->port;
   $task->context_options['language'] = $task->ref->site_language;
 
   $profile = node_load($task->ref->profile);
@@ -15,6 +14,34 @@ function hosting_hosting_site_context_options(&$task) {
 
   $client = node_load($task->ref->client);
   $task->context_options['client_email'] = $client->email;
+}
+
+function hosting_site_drush_context_import($context, &$node) {
+  if ($context->type == 'site') {
+    $node->title = $context->uri;
+    $node->site_language = $context->language;
+    $node->db_server = hosting_drush_import($context->db_server->name);
+    $node->platform = hosting_drush_import($context->platform->name);
+
+    // TODO: abstract this to remove duplication with import post hooks.
+    $profile = hosting_package_instance_load(array(
+      'i.rid' => $platform,
+      'p.short_name' => $context->profile
+    ));
+    if (!$profile) {
+      $profile = hosting_package_instance_load(array(
+         'i.rid' => $node->platform,
+         'p.short_name' => 'default'));
+    }
+    $node->profile = $profile->package_id;
+
+    $client = node_load(HOSTING_DEFAULT_CLIENT);
+    if ($context->client_email) {
+      $client = hosting_import_client($context->client_email);
+    }
+    $node->client = $client;
+  }
+
 }
 
 /**

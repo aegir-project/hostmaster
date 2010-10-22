@@ -149,5 +149,18 @@ class hostingService {
       $task->context_options[$this->service . '_port'] = $this->port;
     }
   }
+
+  public function context_import($context) {
+    $this->available = 1;
+
+    if ($this->has_port) {
+      $this->port = $context->{$this->service . '_port'};
+    }
+
+    if ($this->has_restart_cmd) {
+      $this->restart_cmd = $context->{$this->service . '_restart_cmd'};
+    }
+  }
+
 }
 
