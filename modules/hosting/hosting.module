@@ -815,7 +815,7 @@ function hosting_settings() {
   $form['hosting_ignore_default_profiles'] = array(
     '#type' => 'checkbox',
     '#title' => t('Hide platforms with non-default profiles'),
-    '#description' => t('When selecting the default Drupal profile, hide platforms that also contain other profiles (i.e intended as distributions). Warning: requires a platform other than the Hostmaster platform.'),
+    '#description' => t('When selecting a Drupal core profile, hide platforms that also contain other profiles (i.e intended as distributions). Warning: requires a platform other than the Hostmaster platform.'),
     '#default_value' => variable_get('hosting_ignore_default_profiles', FALSE),
   );
   $form['hosting_require_disable_before_delete'] = array(
