@@ -117,7 +117,7 @@ function hosting_task_menu_access($node, $task) {
       }
       $on_delete_task = ($task == 'enable' || $task == 'delete');
       $site_enabled = (hosting_task_outstanding($node->nid, 'enable') || ($node->site_status == HOSTING_SITE_ENABLED));
-      return (!$site_enabled && $on_delete_task) || ($site_enabled && !$on_delete_task);
+      return ((!$site_enabled || !variable_get('hosting_require_disable_before_delete', TRUE)) && $on_delete_task) || ($site_enabled && !$on_delete_task);
     }
     if ($node->type == 'platform') {
       // if the user can't edit this node, he can't create tasks on it

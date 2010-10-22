@@ -74,6 +74,14 @@ function hosting_menu() {
     'access arguments' => array('administer hosting queues'),
   );
 
+  $items['admin/hosting/settings'] = array(
+    'title' => 'Settings',
+    'description' => 'Configure general Hosting settings',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('hosting_settings'),
+    'type' => MENU_LOCAL_TASK,
+    'access arguments' => array('administer hosting settings'),
+  );
   
   $items['hosting/queues'] = array(
      'page callback' => 'hosting_queues',
@@ -795,4 +803,36 @@ function hosting_views_api() {
   );
 }
 
+
+function hosting_settings() {
+  $form['settings'] = array(
+    '#type' => 'item',
+    '#title' => t('General Hosting settings'),
+    '#value' => t('Here you may set various general settings that apply to site management or to the frontend system.'),
+    '#weight' => 0,
+  );
+
+  $form['hosting_ignore_default_profiles'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Hide platforms with non-default profiles'),
+    '#description' => t('When selecting the default Drupal profile, hide platforms that also contain other platforms (i.e intended as distributions). Warning: requires a platform other than the Hostmaster platform.'),
+    '#default_value' => variable_get('hosting_ignore_default_profiles', FALSE),
+  );
+  $form['hosting_require_disable_before_delete'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Require site to be disabled before deletion'),
+    '#description' => t('Check if you wish for users to run the Disable task on a site prior to running the Delete task.'),
+    '#default_value' => variable_get('hosting_require_disable_before_delete', TRUE),
+  );
+  if(hosting_feature('cron')) {
+    $form['hosting_cron_use_backend'] = array(
+      '#type' => 'radios',
+      '#title' => t('Cron method'),
+      '#description' => t('For running cron on a site. You can use the drush cron implementation or a traditional wget method.'),
+      '#options' => array('Wget', 'Drush'),
+      '#default_value' => variable_get('hosting_cron_use_backend', TRUE),
+    );
+  }
+  return system_settings_form($form);
+}
 
