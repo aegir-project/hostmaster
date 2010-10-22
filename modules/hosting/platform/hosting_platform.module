@@ -356,7 +356,7 @@ function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
     $node->content['info']['makefile'] = array(
       '#type' => 'item',
       '#title' => t('Drush makefile'),
-      '#value' => filter_xss($node->makefile),
+      '#value' => l('makefile', $node->makefile),
     );
   }
 
