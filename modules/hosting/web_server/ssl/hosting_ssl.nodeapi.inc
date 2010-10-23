@@ -7,7 +7,7 @@ function hosting_ssl_site_form(&$form, &$form_state, $form_id) {
 
   $ssl_available = FALSE;
   // Only allow the user to modify these values when the platform is SSL enabled.
-  if ($node->nid && user_access('administer ssl')) {
+  if ($node->nid) {
     $platform = node_load($node->platform);
     $server = node_load($platform->web_server);
 
@@ -23,6 +23,7 @@ function hosting_ssl_site_form(&$form, &$form_state, $form_id) {
       '#description' => t('Enabling encryption will publish your site on both HTTP and HTTPS ports, allowing you to redirect users to the more secure version for certain pages that require the additional security. Requiring encryption will automatically redirect all unencrypted traffic to your HTTPS site.'),
       '#required' => TRUE,
       '#default_value' => (isset($node->ssl_enabled)) ? $node->ssl_enabled : HOSTING_SSL_DISABLED,
+      '#access' => user_access('administer ssl'),
       '#weight' => -9
     ), 'hosting_ssl_status_options', $ssl_available);
 
@@ -33,6 +34,7 @@ function hosting_ssl_site_form(&$form, &$form_state, $form_id) {
       '#options' => hosting_ssl_get_keys(null, TRUE),
       '#required' => TRUE,
       '#default_value' => ($node->ssl_key) ? $node->ssl_key : HOSTING_SSL_CUSTOM_KEY,
+      '#access' => user_access('administer ssl'),
       '#weight' => -8
     ), 'hosting_ssl_output_key', $ssl_available, !$node->nid);
 
@@ -41,6 +43,7 @@ function hosting_ssl_site_form(&$form, &$form_state, $form_id) {
       '#title' => t('New encryption key'),
       '#description' => t("This field should only contain lower case alpha-numeric and '_', '-' or '.' characters. If the SSL certificate is not found, Aegir will automatically generate a self-signed certificate for you."),
       '#default_value' => '',
+      '#access' => user_access('administer ssl'),
       '#weight' => -7
     ), 'filter_xss', $ssl_available, FALSE);
 }
