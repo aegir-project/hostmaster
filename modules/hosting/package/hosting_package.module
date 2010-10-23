@@ -379,6 +379,7 @@ function hosting_package_sync(&$data) {
         $package->package_type = $type;
         $package->short_name = $short_name;
         $package->old_short_name = $file['info']['old_short_name'];
+drush_log("old short name" . $package->old_short_name);
         $package->status = 1;
       }
 
@@ -386,10 +387,12 @@ function hosting_package_sync(&$data) {
       // or when it's a new package.
       if (!$package->nid || 
         ($package->title != $name) || 
-        ($package->description != $file['info']['description'])) {
+        ($package->description != $file['info']['description']) ||
+	($pacakge->old_short_name != $file['info']['old_short_name'])) {
 
         $package->title = $name;
         $package->description = $file['info']['description'];
+        $package->old_short_name = $file['info']['old_short_name'];
 
         node_save($package);
       }
