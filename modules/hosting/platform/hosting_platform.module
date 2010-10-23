@@ -356,7 +356,7 @@ function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
     $node->content['info']['makefile'] = array(
       '#type' => 'item',
       '#title' => t('Drush makefile'),
-      '#value' => l('makefile', $node->makefile),
+      '#value' => (preg_match('/^http|^ftp/', $node->makefile)) ? l('makefile', $node->makefile) : filter_xss($node->makefile),
     );
   }
 
