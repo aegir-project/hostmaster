@@ -218,7 +218,8 @@ function hosting_site_form($node) {
   _hosting_site_field($form, $node, 'profile', array(
       '#type' => 'radios',
       '#title' => t('Install profile'),
-      '#description' => t('The type of site to install.'),
+      '#description' => t('The type of site to install.<br />
+                           The profile selected here determines the list of supported platforms below.'),
       '#options' => $profiles,
       '#default_value' => $node->profile ? $node->profile : hosting_get_default_profile(key($profiles)),
       '#required' => TRUE,
@@ -231,7 +232,9 @@ function hosting_site_form($node) {
      '#type' => 'radios',
      '#title' => t('Platform'),
      '#required' => TRUE,
-     '#description' => t('The platform you want the site to be hosted on.'),
+     '#description' => t('The platform you want the site to be hosted on.<br />
+                          Not seeing a certain platform? Platforms shown are those that support the profile above.
+                          If a different profile is selected, this list may change automatically.'),
      '#options' => _hosting_get_platforms(),
      '#default_value' => ($node->platform) ? $node->platform : null,
    ), '_hosting_node_link');
