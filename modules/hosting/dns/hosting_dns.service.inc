@@ -30,12 +30,20 @@ class hostingService_dns_master extends hostingService_dns {
     $servers = hosting_get_servers('dns');
     unset($servers[$this->server->nid]);
 
-    $form['slave_servers'] = array(
-      '#title' => t('Slave DNS servers'),
-      '#type' => 'checkboxes',
-      '#options' => $servers,
-      '#default_value' => isset($this->slave_servers) ? $this->slave_servers : array(),
-    );
+    if (sizeof($servers)) {
+      $form['slave_servers'] = array(
+        '#title' => t('Slave DNS servers'),
+        '#type' => 'checkboxes',
+        '#options' => $servers,
+        '#default_value' => isset($this->slave_servers) ? $this->slave_servers : array(),
+      );
+    }
+    else {
+      $form['slave_server'] = array(
+        '#type' => 'value',
+        '#value' => array(),
+      );
+    }
   }
 
   function load() {
@@ -52,13 +60,15 @@ class hostingService_dns_master extends hostingService_dns {
 
   function insert() {
     parent::insert();
-    foreach (array_filter($this->slave_servers) as $slave_server) {
-      $record = array(
-        'master_nid' => $this->server->nid,
-        'master_vid' => $this->server->vid,
-        'slave_nid' => $slave_server,
-      );
-      drupal_write_record('hosting_dns_slaves', $record);
+    if (is_array($this->slave_servers)) {
+      foreach (array_filter($this->slave_servers) as $slave_server) {
+        $record = array(
+          'master_nid' => $this->server->nid,
+          'master_vid' => $this->server->vid,
+          'slave_nid' => $slave_server,
+        );
+        drupal_write_record('hosting_dns_slaves', $record);
+      }
     }
   }
 
@@ -75,7 +85,9 @@ class hostingService_dns_master extends hostingService_dns {
   function context_options($task_type, $ref_type, &$task) {
     parent::context_options($task_type, $ref_type, $task);
 
-    $task->context_options['slave_servers'] = implode(',', array_values(array_map('hosting_context_name', array_intersect_key($this->slave_servers, hosting_get_servers('dns')))));
+    if (is_array($this->slave_servers) && sizeof($this->slave_servers)) {
+      $task->context_options['slave_servers'] = implode(',', array_values(array_map('hosting_context_name', array_intersect_key($this->slave_servers, hosting_get_servers('dns')))));
+    }
   }
 
 }
