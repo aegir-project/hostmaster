@@ -13,11 +13,15 @@ class hostingService_dns extends hostingService {
  */
 class hostingService_dns_master extends hostingService_dns {
   function view(&$render) {
-    $render['slave_servers'] = array(
-      '#type' => 'item',
-      '#title' => t('Slave servers'),
-      '#value' => theme('item_list', array_map('_hosting_node_link', array_intersect_key($this->slave_servers, hosting_get_servers('dns')))),
-    );
+    parent::view($render);
+
+    if (sizeof($this->slave_servers)) {
+      $render['slave_servers'] = array(
+        '#type' => 'item',
+        '#title' => t('Slave servers'),
+        '#value' => theme('item_list', array_map('_hosting_node_link', array_intersect_key($this->slave_servers, hosting_get_servers('dns')))),
+      );
+    }
   }
 
   function form(&$form) {
