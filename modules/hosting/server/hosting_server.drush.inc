@@ -25,7 +25,12 @@ function hosting_server_drush_context_import($context, &$node) {
     foreach (hosting_server_services() as $type => $info) {
       if (isset($context->{$type . '_service_type'})) {
         $service_type = $context->{$type . '_service_type'};
-        if (!isset($node->services[$type])) {
+        if (isset($node->services[$type])) {
+          if ($node->services[$type]->type != $service_type) {
+            unset($node->services[$type]);
+          }
+        }
+        else {
           // only support the base configuration things for now.
           hosting_services_add($node, $type, $service_type, $values); 
         }
