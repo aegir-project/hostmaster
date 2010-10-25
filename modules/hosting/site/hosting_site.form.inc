@@ -111,28 +111,29 @@ function hosting_site_available_options($node) {
     if (in_array($name, array('Hostslave', 'Hostmaster'))) {
       unset($profiles[$id]);
     }
-    else {
 
-      // Trim down the list of profiles to those that are available and the user has access to
-      // XXX This hack (next 22 lines) hides profiles that can't be accessed
-      // Eventually we should lighten up the content of this callback
-      $result = db_query("SELECT l.nid FROM hosting_package_instance i JOIN hosting_package p ON p.nid = i.package_id JOIN hosting_platform l ON l.nid = i.rid WHERE i.package_id = %d AND p.package_type = 'profile' AND l.status = %d;", $id, HOSTING_PLATFORM_ENABLED);
-      $allowed_plats = _hosting_get_allowed_platforms($user->uid);
-      $access_check = FALSE;
+    // Trim down the list of profiles to those that are available and the user has access to
+    // XXX This hack (next 22 lines) hides profiles that can't be accessed
+    // Eventually we should lighten up the content of this callback
+    $result = db_query("SELECT l.nid FROM hosting_package_instance i 
+                        JOIN hosting_package p ON p.nid = i.package_id 
+                        JOIN hosting_platform l ON l.nid = i.rid WHERE i.package_id = %d 
+                        AND p.package_type = 'profile' AND l.status = %d;", $id, HOSTING_PLATFORM_ENABLED);
+    $allowed_plats = _hosting_get_allowed_platforms($user->uid);
+    $access_check = FALSE;
 
-      while ($row = db_fetch_array($result)) {
-        if (array_key_exists($row['nid'], $allowed_plats)) {
-          $access_check = TRUE;
-        }
-        // open access if no platform access has been set
-        // @todo move this into _hosting_get_allowed_platforms
-        else if (!$unrestricted = db_result(db_query("SELECT cid FROM {hosting_platform_client_access} WHERE pid = '%d' LIMIT 1", $row['nid']))) {
-          $access_check = TRUE;
-        }
+    while ($row = db_fetch_array($result)) {
+      if (array_key_exists($row['nid'], $allowed_plats)) {
+        $access_check = TRUE;
       }
-      if (!$access_check) {
-        unset($profiles[$id]);
+      // open access if no platform access has been set
+      // @todo move this into _hosting_get_allowed_platforms
+      else if (!$unrestricted = db_result(db_query("SELECT cid FROM {hosting_platform_client_access} WHERE pid = '%d' LIMIT 1", $row['nid']))) {
+        $access_check = TRUE;
       }
+    }
+    if (!$access_check) {
+      unset($profiles[$id]);
     }
   }
   reset($profiles);
