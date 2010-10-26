@@ -30,7 +30,7 @@ function hosting_server_drush_context_import($context, &$node) {
             unset($node->services[$type]);
           }
         }
-        else {
+        if (!isset($node->services[$type])) {
           // only support the base configuration things for now.
           hosting_services_add($node, $type, $service_type, $values); 
         }
