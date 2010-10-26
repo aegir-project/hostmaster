@@ -317,17 +317,6 @@ function hosting_package_view($node, $teaser = FALSE, $page = FALSE) {
 }
 
 /**
- * Implementation of hook_form().
- */
-function hosting_package_form(&$node) {
-  $form = array();
-  foreach(array('package_type', 'short_name', 'old_short_name', 'description') as $extra_attribute) {
-    $form["$extra_attribute"] = array('#type' => 'value', '#value' => $node->$extra_attribute);
-  }
-  return $form;
-}
-
-/**
  * Return names of the languages available
  */
 

@@ -470,6 +470,10 @@ function _hosting_node_add($type = '') {
 
   $types = node_get_types();
   $type = ($type) ? str_replace('-', '_', $type) : NULL;
+
+  if ($type == 'package') {
+    drupal_access_denied();
+  }
   // If a node type has been specified, validate its existence.
   if (isset($types[$type]) && user_access('create ' .  $type) && (hosting_feature($type) !== HOSTING_FEATURE_DISABLED)) {
     // Initialize settings:
@@ -700,6 +704,11 @@ function hosting_form_alter(&$form, &$form_state, $form_id) {
       '#weight' => '-10'
     );
   }
+
+  if ($form_id == 'package_node_form') {
+    drupal_access_denied();
+  }
+
 
   // Remove additional UI added by core modules, that conflict with the hosting UI.
   $node_types = array('site', 'platform', 'server', 'client');
