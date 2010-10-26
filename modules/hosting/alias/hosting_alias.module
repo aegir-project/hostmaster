@@ -23,7 +23,7 @@ function hosting_alias_help($path, $arg) {
     case 'admin/hosting/aliases' :
       $output = t('Site aliases allow you to let sites be available through multiple domain addresses.<br /> The most common use of this functionality is to provide automatic aliasing for www.mysite.com and mysite.com variants of the domain name<br /> ');
       $output .= t('This module will also allow you to provide a "temporary url" that sites will always be accessible from, in case of DNS problems.<br />');
-      $output .= t('Settings made here do not take affect automatically for existing sites.<br />');
+      $output .= t('Settings made here do not take effect automatically for existing sites.<br />');
       break;
   }
   return $output;
