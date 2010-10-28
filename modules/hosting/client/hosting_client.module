@@ -779,9 +779,10 @@ function _hosting_get_allowed_platforms($uid = NULL) {
   }
   $return = array();
   $result = db_query("SELECT n.nid, n.title FROM {node} n LEFT JOIN {hosting_platform} h ON n.nid = h.nid 
-                      JOIN {hosting_platform_client_access} p ON n.nid = p.pid 
-                      JOIN {hosting_client_user} c ON c.client = p.cid
-                      WHERE n.type='platform' AND n.status=1 AND h.status > '%d' AND c.user= %d", HOSTING_PLATFORM_LOCKED, $uid);
+                      LEFT JOIN {hosting_platform_client_access} p ON n.nid = p.pid 
+                      LEFT JOIN {hosting_client_user} c ON c.client = p.cid
+                      WHERE n.type='platform' AND n.status=1 AND h.status > '%d' 
+                      AND (c.user= %d OR p.pid IS NULL)", HOSTING_PLATFORM_LOCKED, $uid);
   while($server = db_fetch_object($result)) {
     $return[$server->nid] = $server->title; 
   }
