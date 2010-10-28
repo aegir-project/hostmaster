@@ -276,12 +276,6 @@ function hosting_init() {
  */
 function hosting_theme() {
   return array(
-    'hosting_summary_block' => array(
-      'file' => 'hosting.module',
-      'arguments' => array(
-        'components' => NULL,
-      ),
-    ),
     'hosting_queues_configure' => array(
       'file' => 'hosting.module',
       'arguments' => array(
@@ -315,11 +309,6 @@ function hosting_block($op = 'list', $delta = 0, $edit = array()) {
       return $blocks;
     case 'view' : 
       switch ($delta) {
-      case 'hosting_summary':
-        return array(
-                     'title' => t('Summary'),
-                     'content' => hosting_summary_block());
-        break;
       case 'hosting_queues':
         return array('title' => t('Queues'),
                      'content' => hosting_queue_block());
@@ -370,17 +359,6 @@ function hosting_queue_block() {
     }
     return $output;
   }
-}
-
-function hosting_summary_block() {
-  return theme('hosting_summary_block', module_invoke_all('hosting_summary'));
-}
-
-function theme_hosting_summary_block($components) {
-  foreach ($components as $component) {
-    $output .= $component;
-  }
-  return $output;
 }
 
 /**

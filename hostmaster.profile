@@ -242,7 +242,6 @@ function hostmaster_task_finalize() {
 
   drupal_set_message(st('Adding default blocks'));
   install_add_block('hosting', 'hosting_queues', $theme, 1, 5, 'right', 1);
-  install_add_block('hosting', 'hosting_summary', $theme, 1, 10, 'right', 1);
 
   drupal_set_message(st('Setting up roles'));
   install_remove_permissions(install_get_rid('anonymous user'), array('access content', 'access all views'));

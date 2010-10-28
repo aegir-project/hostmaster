@@ -309,3 +309,18 @@ function hosting_update_6011() {
 
   return $ret;
 }
+
+/**
+ * Remove the hosting summary block
+ */
+function hosting_update_6012() {
+  $ret = array();
+  drupal_load('module', 'install_profile_api');
+  install_include(array('block'));
+
+  $theme = 'eldir';
+  install_disable_block('hosting', 'hosting_summary', $theme);
+
+  return $ret;
+}
+
