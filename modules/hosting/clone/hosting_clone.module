@@ -5,7 +5,7 @@ function hosting_clone_hosting_tasks() {
 
   $options['site']['clone'] = array(
     'title' => t('Clone'),
-    'description' => t('Copy the site to a new platform.'),
+    'description' => t('Make a copy of a site.'),
     'weight' => 5,
     'dialog' => TRUE
   );
