@@ -75,14 +75,6 @@ function _hosting_site_form_pre_render($elements) {
   return $elements;
 }
 
-
-/**
- * Pass in a site node and return an array of valid options for it's fields.
- *
- * Modules can define the hook_hosting_site_options_alter function to modify which
- * fields are available for selection.
- *
- */
 function hosting_site_available_options($node) {
   // cast to object if it's an array.
   $node = (is_array($node)) ? (object) $node : clone $node;
@@ -137,7 +129,8 @@ function hosting_site_available_options($node) {
     }
   }
   reset($profiles);
-  $return['profile'] = array_keys($profiles);
+  $return['form']['profile'] = $profiles;
+  $return['js']['profile'] = array_keys($profiles);
 
   if (!isset($node->profile)) {
     $node->profile = hosting_get_default_profile($return['profile'][0]);
@@ -154,24 +147,27 @@ function hosting_site_available_options($node) {
         if (!isset($platform->clients) || sizeof(array_intersect(array_keys($user->client_id), $platform->clients)) || $user->uid == 1) {
           $options[] = $nid;
         }
+        else {
+          unset($platforms[$nid]);
+        }
       }
     }
 
-    $return['platform'] = $options;
+    $return['form']['platform'] = $platforms;
+    $return['js']['platform'] = $options;
   }
 
   if (!isset($node->platform) || !in_array($node->platform, $return['platform'])) {
-    $node->platform = $return['platform'][0];
+    $node->platform = $return['js']['platform'][0];
   }
 
-  $return['site_language'] = array_keys((array) hosting_get_profile_languages($node->profile, $node->platform));
+  $return['form']['site_language'] = (array) hosting_get_profile_languages($node->profile, $node->platform);
+  $return['js']['site_language'] = array_keys($return['form']['site_language']);
 
   drupal_alter('hosting_site_options', $return, $node);
 
   return $return;
 }
-
-
 
 /**
  * Implementation of hook_form
@@ -179,6 +175,9 @@ function hosting_site_available_options($node) {
 function hosting_site_form($node) {
   $form['#pre_render'][] = '_hosting_site_form_pre_render';
   $form['#node'] = $node;
+
+  // We'll use these options to limit available options for the form
+  $options = hosting_site_available_options($node);
 
   if ($node->nid) {
     $form['info'] = array(
@@ -221,13 +220,11 @@ function hosting_site_form($node) {
       '#title' => t('Install profile'),
       '#description' => t('The type of site to install.<br />
                            The profile selected here determines the list of supported platforms below.'),
-      '#options' => $profiles,
+      '#options' => $options['form']['profile'],
       '#default_value' => $node->profile ? $node->profile : hosting_get_default_profile(key($profiles)),
       '#required' => TRUE,
       '#attributes' => array('class' => "hosting-site-form-profile-options"),
     ), '_hosting_node_link');
-
-
 
   _hosting_site_field($form, $node, 'platform', array(
      '#type' => 'radios',
@@ -236,7 +233,7 @@ function hosting_site_form($node) {
      '#description' => t('The platform you want the site to be hosted on.<br />
                           Not seeing a certain platform? Platforms shown are those that support the profile above.
                           If a different profile is selected, this list may change automatically.'),
-     '#options' => _hosting_get_platforms(),
+     '#options' => $options['form']['platform'],
      '#default_value' => ($node->platform) ? $node->platform : null,
    ), '_hosting_node_link');
 
@@ -244,7 +241,7 @@ function hosting_site_form($node) {
       '#type' => 'radios',
       '#title' => t('Language'),
       '#description' => t('The language of site being installed.'),
-      '#options' => hosting_get_profile_languages(),
+      '#options' => $options['form']['site_language'],
       '#required' => TRUE,
       '#default_value' => $node->site_language ? $node->site_language : 'en',
       '#attributes' => array('class' => "hosting-site-form-site-language-options"),
@@ -273,6 +270,7 @@ function hosting_site_validate($node, &$form) {
   global $user;
 
   $valid_options = hosting_site_available_options($node);
+  $valid_options = $valid_options['js'];
  
   $url = strtolower(trim($node->title)); // domain names are case-insensitive
   if (!_hosting_valid_fqdn($url)) {

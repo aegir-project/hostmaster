@@ -7,7 +7,7 @@ if (Drupal.jsEnabled) {
 
   hostingSiteToggleOptions  = function() {
     // iterate through the visible options
-    settings = Drupal.settings.hostingSiteAvailableOptions;
+    settings = Drupal.settings.hostingSiteAvailableOptions.js;
 
     // Set the form to not be submittable
     $('#edit-submit').attr('disabled', 'disabled');
