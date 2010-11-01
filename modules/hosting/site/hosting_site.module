@@ -395,11 +395,6 @@ function hosting_site_allow_domain($url, $params = array()) {
     WHERE type='site' AND title='%s' AND h.status <> %d ";
   $args[] = $url;
   $args[] = HOSTING_SITE_DELETED;
-  
-  if (isset($params['client'])) {
-    $query .= ' AND h.client <> %d';
-    $args[] = $params['client'];
-  }
 
   if (isset($params['nid'])) {
     $query .= ' AND n.nid <> %d';
