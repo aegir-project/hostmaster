@@ -21,7 +21,7 @@ function hosting_alias_menu() {
 function hosting_alias_help($path, $arg) {
   switch($path) {
     case 'admin/hosting/aliases' :
-      $output = t('Site aliases allow you to let sites be available through multiple domain addresses.<br /> The most common use of this functionality is to provide automatic aliasing for www.mysite.com and mysite.com variants of the domain name<br /> ');
+      $output = t('Site aliases allow you to let sites be available through multiple domain addresses.<br /> The most common use of this functionality is to provide automatic aliasing for www.mysite.com and mysite.com variants of the domain name.<br /> ');
       $output .= t('This module will also allow you to provide a "temporary url" that sites will always be accessible from, in case of DNS problems.<br />');
       $output .= t('Settings made here do not take effect automatically for existing sites.<br />');
       break;
@@ -202,13 +202,13 @@ function hosting_alias_settings() {
   $form['hosting_alias_subdomain'] = array(
     '#type' => 'textfield',
     '#title' => t('Domain used for automatic subdomain hosting'),
-    '#description' => t('To be able to provide a temporary url for your sites, you need to have configured a wild card dns entry<br /> resolving all calls to subdomains of your chosen domain, to point at your Drupal server'),
+    '#description' => t('To be able to provide a temporary url for your sites, you need to have configured a wild card dns entry<br /> resolving all calls to subdomains of your chosen domain, to point at your web server.'),
     '#default_value' => variable_get('hosting_alias_subdomain', ''),
   );
   $form['hosting_alias_automatic_www'] = array(
     '#type' => 'checkbox',
     '#title' => t('Generate www.domain.com alias automatically'),
-    '#description' => t('If a domain name does not start with www., automatically create an alias for www.hostname?'),
+    '#description' => t('If a domain name does not start with www., automatically create an alias for www.domain?'),
     '#default_value' => variable_get('hosting_alias_automatic_www', FALSE)
   );
   $form['hosting_alias_automatic_no_www'] = array(
@@ -221,7 +221,7 @@ function hosting_alias_settings() {
   $form['hosting_alias_redirection'] = array(
     '#type' => 'checkbox',
     '#title' => t('Use redirects instead of aliases by default'),
-    '#description' => t('By default, the aliasing system generates aliases in the webserver configuration and creates symlinks in the sites/ directory, point site aliases to the primary domain. The aliasing system can also redirect instead of aliasing, which means all site aliases will redirect the user to the primary domain instead of delivering the primary domain under a symlinked site alias. Note that this setting can be controlled per site. Setting this option here will make redirection the default behavior for site aliases.'),
+    '#description' => t('Instead of serving the primary domain under a symlinked site alias, this module can also redirect the user to the primary domain from an alias. This setting can be controlled per site. Setting this option here will make redirection the default behavior for site aliases.'),
     '#default_value' => variable_get('hosting_alias_redirection', FALSE)
   );
   return system_settings_form($form);
