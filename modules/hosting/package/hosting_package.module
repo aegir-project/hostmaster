@@ -368,7 +368,6 @@ function hosting_package_sync(&$data) {
         $package->package_type = $type;
         $package->short_name = $short_name;
         $package->old_short_name = $file['info']['old_short_name'];
-drush_log("old short name" . $package->old_short_name);
         $package->status = 1;
       }
 
