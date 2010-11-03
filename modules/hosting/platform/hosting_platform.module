@@ -164,7 +164,7 @@ function hosting_platform_form(&$node) {
     '#type' => 'textfield',
     '#title' => t('Publish path'),
     '#required' => TRUE,
-    '#description' => t('The path on the filesystem where the sites will be hosted. This needs to be created manually and initialized before your platform works properly. Use the following shell commands:<pre>%commands</pre>Alternatively, you can specify a makefile below, from which the platform will be created automatically, in case the directory specified here does not exist.', array('%commands' => "cd /var/aegir\n./drush/drush.php dl drupal\n")),
+    '#description' => t('The absolute path on the filesystem where the sites will be hosted. This needs to be created manually and initialized before your platform works properly.<br />For example, run the following shell commands:<pre>%commands</pre>Your publish path is the absolute path to the directory that gets created.<br />Alternatively, you can specify a makefile below, and the platform will be created automatically if the path specified here does not exist.<br />You are still required to enter the absolute path above, as it will be treated as the target directory by the makefile.', array('%commands' => "cd /var/aegir\n./drush/drush.php dl drupal\n")),
     '#size' => 40,
     '#default_value' => $node->publish_path,
     '#maxlength' => 255,
@@ -173,7 +173,7 @@ function hosting_platform_form(&$node) {
   $form['makefile'] = array(
     '#type' => 'textfield',
     '#title' => t('Makefile'),
-    '#description' => t('The path on the filesystem to a makefile that will be used to create the platform. If the directory specified above already exists, this file will be ignored.'),
+    '#description' => t('The absolute path on the filesystem to a makefile that will be used to create the platform in the directory specified above. If the directory already exists, this file will be ignored.'),
     '#size' => 40,
     '#default_value' => $node->makefile,
     '#maxlength' => 255,
