@@ -247,7 +247,7 @@ function hostmaster_task_finalize() {
   install_remove_permissions(install_get_rid('anonymous user'), array('access content', 'access all views'));
   install_remove_permissions(install_get_rid('authenticated user'), array('access content', 'access all views'));
   install_add_permissions(install_get_rid('anonymous user'), array('access disabled sites'));
-  install_add_permissions(install_get_rid('authenticated user'), array('access disabled sites'i));
+  install_add_permissions(install_get_rid('authenticated user'), array('access disabled sites'));
   install_add_role('aegir client');
   // @todo we may need to have a hook here to consider plugins
   install_add_permissions(install_get_rid('aegir client'), array('access content', 'access all views', 'edit own client', 'view client', 'create site', 'delete site', 'view site', 'create backup task', 'create delete task', 'create disable task', 'create enable task', 'create restore task', 'view own tasks', 'view task'));
