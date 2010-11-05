@@ -26,7 +26,7 @@ function hosting_menu() {
   $items['hosting/disabled'] = array(
     'title' => 'Site disabled',
     'page callback' => 'hosting_disabled_site',
-    'access arguments' => array('access content'),
+    'access arguments' => array('access disabled sites'),
     'type' => MENU_CALLBACK
   );
 
@@ -193,7 +193,7 @@ function hosting_nodeapi(&$node, $op, $arg1, $arg2) {
  * Implementation of hook_perm
  */
 function hosting_perm() {
-  return array('access hosting wizard', 'administer hosting queues', 'administer hosting features', 'administer hosting');
+  return array('access hosting wizard', 'administer hosting queues', 'administer hosting features', 'administer hosting', 'access disabled sites');
 }
 
 /**
