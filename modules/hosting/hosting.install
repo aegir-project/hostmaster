@@ -324,6 +324,10 @@ function hosting_update_6012() {
   return $ret;
 }
 
+/**
+ * Add a permission allowing users to view the 'site disabled' message, which got
+ * lost when 'access content' permission was revoked a while ago.
+ */
 function hosting_update_6013() {
   $ret = array();
   install_include(array('user'));
