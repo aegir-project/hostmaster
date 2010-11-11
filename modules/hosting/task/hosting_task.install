@@ -218,7 +218,10 @@ function hosting_task_update_6003() {
  */
 function hosting_task_update_6004() {
   $ret = array();
+  install_include(array('user'));
+
   install_add_permissions(install_get_rid('aegir client'), array('cancel own tasks'));
+  node_access_rebuild();
   return $ret;
 }
 
