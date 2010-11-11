@@ -250,7 +250,7 @@ function hostmaster_task_finalize() {
   install_add_permissions(install_get_rid('authenticated user'), array('access disabled sites'));
   install_add_role('aegir client');
   // @todo we may need to have a hook here to consider plugins
-  install_add_permissions(install_get_rid('aegir client'), array('access content', 'access all views', 'edit own client', 'view client', 'create site', 'delete site', 'view site', 'create backup task', 'create delete task', 'create disable task', 'create enable task', 'create restore task', 'view own tasks', 'view task'));
+  install_add_permissions(install_get_rid('aegir client'), array('access content', 'access all views', 'edit own client', 'view client', 'create site', 'delete site', 'view site', 'create backup task', 'create delete task', 'create disable task', 'create enable task', 'create restore task', 'view own tasks', 'view task', 'cancel own tasks'));
   install_add_role('aegir account manager');
   install_add_permissions(install_get_rid('aegir account manager'), array('create client', 'edit client users', 'view client'));
 

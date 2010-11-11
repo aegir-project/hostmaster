@@ -211,3 +211,14 @@ function hosting_task_update_6003() {
   db_query("UPDATE {hosting_task} SET task_status = -1 WHERE task_status = 4");
   return $ret;
 }
+
+
+/**
+ * Add 'cancel own task' permission to 'aegir client' role
+ */
+function hosting_task_update_6004() {
+  $ret = array();
+  install_add_permissions(install_get_rid('aegir client'), array('cancel own tasks'));
+  return $ret;
+}
+
