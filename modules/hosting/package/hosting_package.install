@@ -25,14 +25,14 @@ function hosting_package_schema() {
         'default' => '',
       ),
       'short_name' => array(
-        'type' => 'text',
-        'size' => 'big',
+        'type' => 'varchar',
+        'length' => 255,
         'not null' => TRUE,
         'default' => '',
       ),
       'old_short_name' => array(
-        'type' => 'text',
-        'size' => 'big',
+        'type' => 'varchar',
+        'length' => 255,
         'not null' => TRUE,
         'default' => '',
       ),
@@ -40,7 +40,6 @@ function hosting_package_schema() {
         'type' => 'text',
         'size' => 'big',
         'not null' => TRUE,
-        'default' => '',
       ),
     ),
     'primary key' => array('vid'),
@@ -63,8 +62,8 @@ function hosting_package_schema() {
         'default' => 0,
       ),
       'filename' => array(
-        'type' => 'text',
-        'size' => 'big',
+        'type' => 'varchar',
+        'length' => 255,
         'not null' => TRUE,
         'default' => '',
       ),
@@ -74,8 +73,8 @@ function hosting_package_schema() {
         'default' => 0,
       ),
       'version' => array(
-        'type' => 'text',
-        'size' => 'big',
+        'type' => 'varchar',
+        'length' => 255,
         'not null' => TRUE,
         'default' => '',
       ),
@@ -382,4 +381,30 @@ function hosting_package_update_6004() {
     }
     variable_set('hosting_package_update_6004_run', true);
   }
+}
+
+/**
+ * Remove DEFAULT value on a LONGTEXT fields and use VARCHAR on
+ * smaller fields to optimise queries.
+ * 
+ * This was breaking in MariaDB and preventing installation. On MySQL
+ * it was silently ignored, so the installation works, but the
+ * defaults are not in the table anyway.
+ *
+ * See #969326 and #934864
+ */
+function hosting_package_update_6005() {
+  $ret = array();
+  db_change_field($ret, 'hosting_package', 'short_name', 'short_name',
+                  array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => ''));
+  db_change_field($ret, 'hosting_package', 'old_short_name', 'old_short_name',
+                  array('type' => 'varchar', 'length' => 255, 'not null' => TRUE,  'default' => ''));
+  db_change_field($ret, 'hosting_package', 'description', 'description',
+                  array('type' => 'text', 'size' => 'big', 'not null' => TRUE));
+
+  db_change_field($ret, 'hosting_package_instance', 'filename', 'filename',
+                  array('type' => 'varchar', 'length' => 255, 'not null' => TRUE,  'default' => ''));
+  db_change_field($ret, 'hosting_package_instance', 'version', 'version',
+                  array('type' => 'varchar', 'length' => 255, 'not null' => TRUE,  'default' => ''));
+  return $ret;
 }

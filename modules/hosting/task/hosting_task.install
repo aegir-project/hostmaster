@@ -96,7 +96,6 @@ function hosting_task_schema() {
         'type' => 'text',
         'size' => 'big',
         'not null' => TRUE,
-        'default' => '',
       ),
       'timestamp' => array(
         'type' => 'int',
@@ -225,3 +224,19 @@ function hosting_task_update_6004() {
   return $ret;
 }
 
+
+/**
+ * Remove DEFAULT value on a LONGTEXT fields.
+ * 
+ * This was breaking in MariaDB and preventing installation. On MySQL
+ * it was silently ignored, so the installation works, but the
+ * defaults are not in the table anyway.
+ *
+ * See #969326
+ */
+function hosting_task_update_6005() {
+  $ret = array();
+  db_change_field($ret, 'hosting_task_log', 'error', 'error',
+                  array('type' => 'text', 'size' => 'big', 'not null' => TRUE));
+  return $ret;
+}
