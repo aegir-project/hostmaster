@@ -242,16 +242,6 @@ function hosting_update_6008() {
     $server_id = variable_get('hosting_default_web_server', 3);
     $records[$server_id] = 'server_master';
 
-
-    $result = db_query("SELECT n.nid, n.title FROM {node} n LEFT JOIN {hosting_platform} p ON p.nid=n.nid WHERE p.status <> -2 AND n.type='platform'");
-    while ($object = db_fetch_object($result)) {
-      $records[$object->nid] = 'platform_' . preg_replace("/[!\W]/", "", $object->title);
-    }
-
-    // we want to enforce that the hostmaster site is always referred to as @hostmaster
-    $own_site = db_result(db_query("SELECT s.nid FROM {hosting_site} s LEFT JOIN {hosting_package} p ON s.profile=p.nid WHERE p.short_name='hostmaster'"));
-    $records[$own_site] = 'hostmaster';
-    
     foreach ($records as $nid => $name) {
       hosting_context_register($nid, $name);
     }
