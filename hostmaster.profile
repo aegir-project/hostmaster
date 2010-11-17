@@ -74,14 +74,27 @@ function hostmaster_bootstrap() {
   $node->services = array();
 
   /* Make it compatible with more than apache and nginx */
-  hosting_services_add($node, 'http', d()->platform->server->http_service_type, array(
-   'restart_cmd' => d()->platform->server->http_restart_cmd,
+  $master_server = d()->platform->server;
+  hosting_services_add($node, 'http', $master_server->http_service_type, array(
+   'restart_cmd' => $master_server->http_restart_cmd,
    'port' => 80,
    'available' => 1,
   ));
 
+  $db_server = d()->db_server;
   $master_db = parse_url(d()->platform->server->master_db);
-  hosting_services_add($node, 'db', d()->platform->server->db_service_type, array(
+  if ($db_server->remote_host == $master_server->remote_host) {
+    $db_node = $node;
+  } else {
+    $db_node = new stdClass();
+    $db_node->uid = 1;
+    $db_node->type = 'server';
+    $db_node->title = $master_db['host'];
+    $db_node->status = 1;
+    $db_node->hosting_name = 'server_' . $db_server->remote_host;
+    $db_node->services = array();
+  }
+  hosting_services_add($db_node, 'db', d()->platform->server->db_service_type, array(
     'db_type' => $master_db['scheme'],
     'db_user' => $master_db['user'],
     'db_passwd' => $master_db['pass'],
@@ -90,6 +103,9 @@ function hostmaster_bootstrap() {
   ));
 
   node_save($node);
+  if ($db_server->remote_host != $master_server->remote_host) {
+    node_save($db_node);
+  }
   variable_set('hosting_default_web_server', $node->nid);
   variable_set('hosting_own_web_server', $node->nid);
 
