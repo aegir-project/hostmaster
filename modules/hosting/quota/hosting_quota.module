@@ -104,10 +104,11 @@ function hosting_quota_get_usage ($client, $resource, $start = NULL, $end = NULL
   if (!is_array($resource)) {
     $resource = hosting_quota_get($resource);
   }
-
+  $resource_name = key($resource);
+  $resource = $resource[$resource_name];
   // We're finally ready to fetch the usage info!
   if ($resource['module']) {
-    $quota_usage = module_invoke($resource['module'], 'hosting_quota_get_usage', $client, key($resource), $start, $end);
+    $quota_usage = module_invoke($resource['module'], 'hosting_quota_get_usage', $client, $resource_name, $start, $end);
   }
 
   return $quota_usage;
@@ -128,8 +129,10 @@ function hosting_quota_resource_render ($resource, $usage) {
   if (!is_array($resource)) {
     $resource = hosting_quota_get($resource);
   }
+  $resource_name = key($resource);
+  $resource = $resource[$resource_name];
   if ($resource['module']) {
-    $rendered_usage = module_invoke($resource['module'], 'hosting_quota_resource_render', key($resource), $usage);
+    $rendered_usage = module_invoke($resource['module'], 'hosting_quota_resource_render', $resource_name, $usage);
   }
 
   return $rendered_usage;
@@ -177,11 +180,12 @@ function hosting_quota_check ($client, $resource, $start = NULL, $end = NULL) {
   if(!is_array($resource)) {
     $resource = hosting_quota_get($resource);
   }
-
+  $resource_name = key($resource);
+  $resource = $resource[$resource_name];
   // Get usage and limit for the selected resource
   if ($resource['module']) {
     $resource_usage = module_invoke($resource['module'], 'hosting_quota_get_usage');
-    $resource_limit = db_result(db_query('SELECT value FROM {hosting_client_quota} WHERE client = %d AND resource = "%s"', $client, key($resource)));
+    $resource_limit = db_result(db_query('SELECT value FROM {hosting_client_quota} WHERE client = %d AND resource = "%s"', $client, $resource_name));
 
     // Return the appropriate values
     if ($resource_limit > $resource_usage) {
@@ -221,10 +225,14 @@ function hosting_quota_get_all_info ($client, $start = NULL, $end = NULL) {
 
     $all_resources = module_invoke_all('hosting_quota_resource');
 
-    foreach ($all_resources as $resource_name => $resource) {
+    foreach ($all_resources as $resource_name => $resource_data) {
 
       // First read in the info from the resource
-      $quota_info[$resource_name] = $resource;
+      $quota_info[$resource_name] = $resource_data;
+      // We have to format this way to to dependencies in quota imps
+      $resource = array(
+        $resource_name => $resource_data,
+      );
 
       // Get usage info
       $quota_info[$resource_name]['usage'] = hosting_quota_get_usage($client, $resource, $start, $end);
