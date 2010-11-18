@@ -10,7 +10,7 @@ function hosting_quota_admin_client_list() {
 
   while ($row = db_fetch_object($result)) {
 
-    $resource[$row->resource] = $all_resources[$row->resource];
+    $resource = array($row->resource => $all_resources[$row->resource]);
 
     // Pass in raw limit and usage
     $output[$row->client][$row->resource]['limit'] = $row->value;
