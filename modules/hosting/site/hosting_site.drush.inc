@@ -54,6 +54,16 @@ function drush_hosting_site_pre_hosting_task($task) {
     $backup = hosting_site_get_backup($task->task_args['bid']);
     $task->args[1] = $backup['filename'];
   }
+
+  if ($task->task_type == 'backup_delete') {
+    foreach ($task->task_args as $bid => $filename) {
+      if ($filename !== '0') {
+        $backups[] = $filename;
+      }
+    }
+    $task->args[1] = implode(',', $backups);
+  }
+
 }
 
 
@@ -229,6 +239,19 @@ function hosting_site_post_hosting_login_reset_task($task, $data) {
         'link' => $context['login_link'],
       );
       cache_set('hosting:site:' . $task->ref->nid . ':login_link', $cache, 'cache', $cache['expire'] );
+    }
+  }
+}
+
+/** 
+ * Implementation of the hosting_post_backup_delete hook
+ */
+function hosting_site_post_hosting_backup_delete_task($task, $data) {
+  if ($task->ref->type == 'site') {
+    foreach ($task->task_args as $bid => $filename) {
+      if ($filename !== '0') {
+        hosting_site_delete_backup($bid);
+      }
     }
   }
 }

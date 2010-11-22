@@ -220,6 +220,7 @@ function hosting_task_perm() {
     'create lock task',
     'create unlock task',
     'create login_reset task',
+    'create backup_delete task',
     'view own tasks',
     'view task',
     'access task logs',
@@ -359,6 +360,28 @@ function hosting_task_restore_form($node) {
       '#value' => t('There are no valid backups available.')
     );
   }
+  return $form;
+}
+
+function hosting_task_backup_delete_form($node) {
+  $list = hosting_site_backup_list($node->nid);
+  if (sizeof($list)) {
+    foreach ($list as $bid => $info) {
+      $backup = hosting_site_get_backup($bid);
+      $form[$bid] = array(
+        '#type' => 'checkbox',
+        '#title' => $info,
+        '#return_value' => $backup['filename'],
+      );
+    }
+  }
+  else {
+    $form['no_backups'] = array(
+      '#type' => 'item',
+      '#title' => t('Backups'),
+      '#value' => t('There are no valid backups available.')
+    );
+  }  
   return $form;
 }
 

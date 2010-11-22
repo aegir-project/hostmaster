@@ -219,6 +219,11 @@ function hosting_site_hosting_tasks() {
      'description' => t('Generate a one-time login reset url for this site.'),
   );
 
+  $tasks['site']['backup_delete'] = array(
+     'title' => t('Delete backups'),
+     'description' => t('Delete one or more backup files of a site.'),
+     'dialog' => TRUE,
+  );
 
   $tasks['site']['install'] = array(
     'title' => t('Install'), 
