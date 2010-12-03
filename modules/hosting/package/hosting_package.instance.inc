@@ -81,7 +81,7 @@ function hosting_package_instance_create(&$instance) {
    db_query("INSERT INTO {hosting_package_instance} (
       rid, package_id, filename,
       schema_version, version, version_code, status)
-      VALUES (%d, %d, '%s', %d, %f, '%s', %d)", 
+      VALUES (%d, %d, '%s', %d, %f, %d, %d)", 
       $instance->rid, $instance->package_id, $instance->filename, 
       $instance->schema_version, $instance->version, $instance->version_code, $instance->status);
    $instance->iid = db_last_insert_id('hosting_package_instance', 'iid');
