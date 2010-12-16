@@ -241,6 +241,7 @@ function hosting_client_insert($node) {
   if (variable_get('hosting_client_register_user', FALSE) 
     && !user_load(array('mail' => $node->email))) {
     $user = hosting_client_register_user($node);
+    $node->uid = $user->uid;
     db_query("UPDATE {node} SET uid = %d WHERE nid = %d", $user->uid, $node->nid);
     db_query("UPDATE {node_revisions} SET uid = %d WHERE vid = %d", $user->uid, $node->vid);
   }
