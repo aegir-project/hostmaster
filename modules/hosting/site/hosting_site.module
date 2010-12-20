@@ -136,7 +136,7 @@ function _hosting_site_url($node) {
   $schema = 'http';
   $port = null;
 
-  $url = $node->title;
+  $url = strtolower(trim($node->title));
 
   $platform = node_load($node->platform);
   $server = node_load($platform->web_server);

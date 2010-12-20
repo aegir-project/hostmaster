@@ -6,7 +6,7 @@ function hosting_hosting_site_context_options(&$task) {
   $task->context_options['db_server'] = hosting_context_name($task->ref->db_server);
   $task->context_options['platform'] = hosting_context_name($task->ref->platform);
 
-  $task->context_options['uri'] = $task->ref->title;
+  $task->context_options['uri'] = strtolower(trim($task->ref->title));
   $task->context_options['language'] = $task->ref->site_language;
 
   $profile = node_load($task->ref->profile);
