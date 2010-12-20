@@ -27,7 +27,7 @@ class hostingService_http_apache extends hostingService_http_public {
   protected $has_restart_cmd = TRUE;
 
   function default_restart_cmd() {
-    $command = '/usr/sbin/apachectl'; # a proper default for most of the world
+    $command = '/usr/sbin/apache2ctl'; # a proper default for most of the world
     foreach (explode(':', $_SERVER['PATH']) as $path) {
       $options[] = "$path/apache2ctl";
       $options[] = "$path/apachectl";
