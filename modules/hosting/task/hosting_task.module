@@ -1034,11 +1034,13 @@ function hosting_task_fetch_tasks($rid) {
       $return[$type] = array();
     }
 
+    $access_callback = !empty($hook_task['access callback']) ? $hook_task['access callback'] : 'hosting_task_menu_access';
+
     $task = array();
     $task = array_merge($return[$type], $hook_task);
 
     $allowed = (isset($task['exists']) && !in_array($task['task_status'], array(HOSTING_TASK_QUEUED, HOSTING_TASK_PROCESSING))) || !isset($task['exists']);
-    if ($allowed && !$task['hidden'] && hosting_task_menu_access($node, $type)) {
+    if ($allowed && !$task['hidden'] && $access_callback($node, $type)) {
       $task['task_permitted'] = TRUE;
     }
     $task['class'] = hosting_task_status_class($task['task_status']);
