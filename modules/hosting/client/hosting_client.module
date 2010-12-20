@@ -431,7 +431,7 @@ function hosting_client_view($node, $teaser = FALSE, $page = FALSE) {
   if ($page) {
     $node->content['sites_view'] = array(
       '#type' => 'item',
-      '#value' => hosting_site_list("client", $node->nid),
+      '#value' => drupal_get_form('hosting_site_list_form', 'client', $node->nid),
       '#prefix' => '<div id="hosting-site-list">',
       '#suffix' => '</div>',
       '#weight' => 10
