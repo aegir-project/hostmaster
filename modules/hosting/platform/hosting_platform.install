@@ -124,3 +124,17 @@ function hosting_platform_update_6003() {
   $ret[] = update_sql("ALTER TABLE {hosting_platform} ADD COLUMN makefile TEXT NOT NULL");
   return $ret;
 }
+
+function hosting_platform_update_6004() {
+  if (!variable_get('hosting_platform_update_6004_run', false)) {
+    $result = db_query("SELECT n.nid, n.title FROM {node} n LEFT JOIN {hosting_platform} p ON p.nid=n.nid WHERE p.status <> -2 AND n.type='platform'");
+    while ($object = db_fetch_object($result)) {
+      $records[$object->nid] = 'platform_' . preg_replace("/[!\W]/", "", $object->title);
+    }
+
+    foreach ($records as $nid => $name) {
+      hosting_context_register($nid, $name);
+    }
+    variable_set('hosting_platform_update_6004_run', true);
+  }
+}

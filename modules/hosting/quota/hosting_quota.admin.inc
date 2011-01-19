@@ -10,13 +10,15 @@ function hosting_quota_admin_client_list() {
 
   while ($row = db_fetch_object($result)) {
 
+    $resource = array($row->resource => $all_resources[$row->resource]);
+
     // Pass in raw limit and usage
     $output[$row->client][$row->resource]['limit'] = $row->value;
-    $output[$row->client][$row->resource]['usage'] = hosting_quota_get_usage($row->client, $all_resources[$row->resource]);
+    $output[$row->client][$row->resource]['usage'] = hosting_quota_get_usage($row->client, $resource);
 
     // Render limit and usage
-    $output[$row->client][$row->resource]['rendered usage'] = hosting_quota_resource_render($all_resources[$row->resource], $output[$row->client][$row->resource]['usage']);
-    $output[$row->client][$row->resource]['rendered limit'] = hosting_quota_resource_render($all_resources[$row->resource], $row->value);
+    $output[$row->client][$row->resource]['rendered usage'] = hosting_quota_resource_render($resource, $output[$row->client][$row->resource]['usage']);
+    $output[$row->client][$row->resource]['rendered limit'] = hosting_quota_resource_render($resource, $row->value);
 
     // Set client identifier, either e-mail or name
     if (!$output[$row->client]['name'] && $row->name) {

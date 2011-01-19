@@ -74,7 +74,7 @@ function hosting_site_node_load($arg) {
  * Page handler for displaying list of hosted sites on front page
  */
 function hosting_sites() {
-  if ($list = hosting_site_list()) {
+  if ($list = drupal_get_form('hosting_site_list_form')) {
     return $list;
   }
   $create_site_link = l(t('Create a site now?'), 'node/add/site');
@@ -136,7 +136,7 @@ function _hosting_site_url($node) {
   $schema = 'http';
   $port = null;
 
-  $url = $node->title;
+  $url = strtolower(trim($node->title));
 
   $platform = node_load($node->platform);
   $server = node_load($platform->web_server);
@@ -219,6 +219,11 @@ function hosting_site_hosting_tasks() {
      'description' => t('Generate a one-time login reset url for this site.'),
   );
 
+  $tasks['site']['backup_delete'] = array(
+     'title' => t('Delete backups'),
+     'description' => t('Delete one or more backup files of a site.'),
+     'dialog' => TRUE,
+  );
 
   $tasks['site']['install'] = array(
     'title' => t('Install'), 
@@ -409,58 +414,264 @@ function hosting_site_task_status($nid) {
 }
 
 /**
- * Display a list of created sites on the front page
+ * Create a form for building a list of sites.
  * @TODO Add ability to filter by additional fields
- * @TODO Add paging.
  */
-function hosting_site_list($filter_by = null, $filter_value = null) {
-  $args[] = 'site';
-  $cond = '';
+function hosting_site_list_form($form_state, $filter_by = NULL, $filter_value = NULL) {
+  $step = isset($form_state['storage']['step']) ? $form_state['storage']['step'] : 1;
 
-  if ($filter_by && $filter_value) {
-    if ($filter_by == 'status') {
-      $cond = ' AND s.' . $filter_by . ' & %d';
-    } else {
-      $cond = ' AND s.' . $filter_by . ' = %d';
+  // Step 1 - select sites
+  if ($step == 1) {
+    $args[] = 'site';
+    $cond = '';
+
+    if ($filter_by && $filter_value) {
+      if ($filter_by == 'status') {
+        $cond = ' AND s.' . $filter_by . ' & %d';
+      } else {
+        $cond = ' AND s.' . $filter_by . ' = %d';
+      }
+      $args[] = $filter_value;
     }
-    $args[] = $filter_value;
+
+    $header = array(
+      array('data' => t('Site'), 'field' => 'title'),
+      array('data' => t('Profile'), 'field' => 'profile'),
+      array('data' => t('Language'), 'field' => 'site_language'),
+      array('data' => t('Created'), 'field' => 'created', 'sort' => 'desc'),
+    );
+    $platforms = _hosting_get_platforms();
+    if (sizeof($platforms) > 1) {
+      $header[] = array('data' => t('Platform'), 'field' => 'platform');
+    }
+
+    $sql = "SELECT n.nid, n.title, n.created, s.status as site_status, profile, s.language as site_language, platform, verified FROM {node} n left join {hosting_site} s ON n.vid=s.vid WHERE type='%s' AND s.status != -2 " . $cond;
+    $sql .= tablesort_sql($header);
+
+    // @TODO hide deleted sites
+    $result = pager_query(db_rewrite_sql($sql), 25, 1, null, $args);
+
+    $form['options'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Site tasks'),
+      '#prefix' => '<div class="container-inline">',
+      '#suffix' => '</div>',
+    );
+    $options = array();
+
+    foreach (hosting_available_tasks('site') as $task => $array) {
+      // At this stage we only want to handle simple tasks, the presense of a
+      // specific task form means there are other options for this tasks.
+      $func = 'hosting_task_' . $task . '_form';
+      if (!function_exists($func) && user_access('create '. $task .' task')) {
+        $options[$task] = $array['title'];
+      }
+    }
+    $form['options']['task'] = array(
+      '#type' => 'select',
+      '#options' => $options,
+      '#default_value' => 'backup',
+    );
+    $form['options']['submit'] = array(
+      '#type' => 'submit',
+      '#value' => t('Add to queue'),
+      '#submit' => array('hosting_site_list_form_submit'),
+    );
+
+    $sites = array();
+    while ($node = db_fetch_object($result)) {
+      $sites[$node->nid] = '';
+      $form['site'][$node->nid] = array('#value' => l($node->title, 'node/' . $node->nid));
+      $form['profile'][$node->nid] =  array('#value' => ($node->profile) ? _hosting_node_link($node->profile) : t('n/a'));
+      $form['language'][$node->nid] = array('#value' => ($node->site_language) ? _hosting_language_name($node->site_language) : t('n/a'));
+      $form['created'][$node->nid] =  array('#value' => t("@interval ago", array('@interval' => format_interval(mktime() - $node->created, 1))));
+      if (sizeof($platforms) > 1) {
+        $form['platform'][$node->nid] = array('#value' => ($node->platform) ? _hosting_node_link($node->platform) : t('n/a'));
+      }
+      $form['site_class'][$node->nid] = array('#value' => _hosting_site_list_class($node, $node->verified));
+    }
+    $form['sites'] = array('#type' => 'checkboxes', '#options' => $sites);
+    $form['pager'] = array('#value' => theme('pager', NULL, 25, 1));
+    $form['#theme'] = 'hosting_site_list';
+    $form['#action'] = url('hosting/sites');
+    return $form;
+  }
+  elseif ($step == 2) {
+    $task = $form_state['values']['task'];
+    $tasks = hosting_available_tasks('site');
+
+    $title = array(
+      'passed' => t("The following sites will be processed"),
+      'failed' => t("The following sites failed validation checks and will not be processed")
+    );
+    foreach (array('passed', 'failed') as $type) {
+      if (sizeof($form_state['storage'][$type])) {
+        foreach ($form_state['storage'][$type] as $site_id => $url) {
+          $row = array(
+            'data' => array(
+              array('data' => l($url, 'node/'.$site_id), 'class' => 'hosting-status'),
+            ),
+            'class' => ($type == 'passed' ? 'hosting-success' : 'hosting-error'),
+          );
+          $rows[] = $row;
+        }
+      }
+    }
+
+    $header = array(t('Site'));
+    $form['sites_test'] = array(
+      '#value' => theme('table', $header, $rows)
+    );
+
+    if (sizeof($form_state['storage']['failed']) && sizeof($form_state['storage']['passed'])) {
+      drupal_set_message(t('The task @task is not able to be performed on all the sites selected, the sites below that failed will not be added to the queue.', array('@task' => $task)), 'warning');
+    }
+    elseif (sizeof($form_state['storage']['failed'])) {
+      drupal_set_message(t('The task @task is not able to be performed on any of the selected sites.', array('@task' => $task)), 'error');
+      $form['return_link'] = array('#value' => l('Return to site listing', 'hosting/sites'));
+      return $form;
+    }
+
+    $form['help'] = array('#value' => $tasks[$task]['description']);
+
+    $question = t("Are you sure you want to @task the following sites?", array('@task' => $task));
+    return confirm_form($form, $question, 'hosting/sites', '', $tasks[$task]['title']);
+  }
+}
+/**
+ * Validate hosting_site_list form submissions.
+ */
+function hosting_site_list_form_validate($form, &$form_state) {
+  if (isset($form_state['values']['sites'])) {
+    $sites = array_filter($form_state['values']['sites']);
+    if (count($sites) == 0) {
+      form_set_error('', t('No sites selected.'));
+    }
+  }
+}
+
+/**
+ * Process hosting_site_list form submissions.
+ */
+function hosting_site_list_form_submit($form, &$form_state) {
+  $step = isset($form_state['storage']['step']) ? $form_state['storage']['step'] : 1;
+
+  $task = $form_state['values']['task'];
+  switch ($step) {
+    case 1:
+      $form_state['storage']['task'] = $task;
+      // Verify tasks can be performed on each site.
+      $tasks = hosting_available_tasks('site');
+
+      // Filter out unchecked sites
+      $sites = array_filter($form_state['values']['sites']);
+
+      $operations = array();
+      foreach ($sites as $site) {
+        $operations[] = array('_hosting_sites_batch_process',
+          array($site, $task, $form_state));
+      }
+      if (sizeof($operations)) {
+        $batch = array(
+          'operations' => $operations,
+          'finished' => '_hosting_sites_batch_finished',
+          'title' => t('Processing'),
+          'progress_message' => t('Evaluated @current out of @total sites.'),
+          'error_message' => t('The update has encountered an error.'),
+        );
+        batch_set($batch);
+      }
+      break;
+    case 2:
+      $values = $form_state['values'];
+      foreach ($form_state['storage']['passed'] as $site_id => $url) {
+        hosting_add_task($site_id, $form_state['storage']['task'], $values['parameters']);
+      }
+      unset($form_state['storage']);
+      $step = 0;
+      drupal_set_message(t('The task @task will be applied to the selected sites and have been added to the task queue.', array('@task' => $form_state['storage']['task'])));
+      break;
+  }
+  $form_state['storage']['step'] = $step + 1;
+}
+
+function _hosting_sites_batch_process($site_id, $task, &$context) {
+  if (!isset($context['sandbox']['progress'])) {
+    $context['sandbox']['progress'] = 0;
   }
 
+  $site = node_load($site_id);
+  $batch =& batch_get();
+
+  if (hosting_task_menu_access($site, $task)) {
+    $batch['form_state']['storage']['passed'][$site->nid] = $site->title;
+  }
+  else {
+    $batch['form_state']['storage']['failed'][$site->nid] = $site->title;
+  }
+}
+
+/**
+ * Implementation of hook_theme().
+ */
+function hosting_site_theme() {
+  return array(
+    'hosting_site_list' => array(
+      'arguments' => array('form' => NULL),
+    ),
+  );
+}
+
+/**
+ * Build the site list form.
+ */
+function theme_hosting_site_list($form) {
+  // If there are rows in this form, then $form['site'] contains a list of
+  // the title form elements.
+  $has_posts = isset($form['site']) && is_array($form['site']);
+  $select_header = $has_posts ? theme('table_select_header_cell') : '';
   $header = array(
+    $select_header,
     array('data' => t('Site'), 'field' => 'title'),
     array('data' => t('Profile'), 'field' => 'profile'),
     array('data' => t('Language'), 'field' => 'site_language'),
     array('data' => t('Created'), 'field' => 'created', 'sort' => 'desc'),
   );
-  $platforms = _hosting_get_enabled_platforms();
-  if (sizeof($platforms) > 1) {
+  if (isset($form['platform'])) {
     $header[] = array('data' => t('Platform'), 'field' => 'platform');
   }
+  $output = '';
 
-  $sql = "SELECT n.nid, n.title, n.created, s.status as site_status, profile, s.language as site_language, platform, verified FROM {node} n left join {hosting_site} s ON n.vid=s.vid WHERE type='%s' AND s.status != -2 " . $cond;
-  $sql .= tablesort_sql($header);
-
-  // @TODO hide deleted sites
-  $result = pager_query(db_rewrite_sql($sql), 25, 1, null, $args);
-
-  if (!$result) {
-    return null;
-  }
-  $rows = array();
-  while ($node = db_fetch_object($result)) {
-    $row = array();
-    $row[] =  array('data' => l($node->title, 'node/' . $node->nid), 'class'=> 'hosting-status');
-    $row[] = ($node->profile) ? _hosting_node_link($node->profile) : t('n/a');
-    $row[] = ($node->site_language) ? _hosting_language_name($node->site_language) : t('n/a');
-    $row[] = t("@interval ago", array('@interval' => format_interval(mktime() - $node->created, 1)));
-    if (sizeof($platforms) > 1) {
-      $row[] = ($node->platform) ? _hosting_node_link($node->platform) : t('n/a');
+  $output .= drupal_render($form['options']);
+  if ($has_posts) {
+    foreach (element_children($form['site']) as $key) {
+      $row = array();
+      $row[] = drupal_render($form['sites'][$key]);
+      $row[] = array('data' => drupal_render($form['site'][$key]), 'class'=> 'hosting-status');
+      $row[] = drupal_render($form['profile'][$key]);
+      $row[] = drupal_render($form['language'][$key]);
+      $row[] = drupal_render($form['created'][$key]);
+      if (isset($form['platform'])) {
+        $row[] = drupal_render($form['platform'][$key]);
+      }
+      $rows[] = array('data' => $row, 'class' => drupal_render($form['site_class'][$key]));
     }
-    $rows[] = array('data' => $row, 'class' => _hosting_site_list_class($node, $node->verified));
+
   }
-  
-  return theme('table',  $header, $rows, array('class' => 'hosting-table')) . theme('pager', null, 25, 1);
+  else {
+    $rows[] = array(array('data' => t('No sites available.'), 'colspan' => sizeof($header)));
+  }
+
+  $output .= theme('table',  $header, $rows, array('class' => 'hosting-table'));
+  if ($form['pager']['#value']) {
+    $output .= drupal_render($form['pager']);
+  }
+
+  $output .= drupal_render($form);
+
+  return $output;
 }
+
 
 /**
  * Define the classes that correspond to the site status.

@@ -220,6 +220,7 @@ function hosting_task_perm() {
     'create lock task',
     'create unlock task',
     'create login_reset task',
+    'create backup_delete task',
     'view own tasks',
     'view task',
     'access task logs',
@@ -359,6 +360,28 @@ function hosting_task_restore_form($node) {
       '#value' => t('There are no valid backups available.')
     );
   }
+  return $form;
+}
+
+function hosting_task_backup_delete_form($node) {
+  $list = hosting_site_backup_list($node->nid);
+  if (sizeof($list)) {
+    foreach ($list as $bid => $info) {
+      $backup = hosting_site_get_backup($bid);
+      $form[$bid] = array(
+        '#type' => 'checkbox',
+        '#title' => $info,
+        '#return_value' => $backup['filename'],
+      );
+    }
+  }
+  else {
+    $form['no_backups'] = array(
+      '#type' => 'item',
+      '#title' => t('Backups'),
+      '#value' => t('There are no valid backups available.')
+    );
+  }  
   return $form;
 }
 
@@ -1011,11 +1034,13 @@ function hosting_task_fetch_tasks($rid) {
       $return[$type] = array();
     }
 
+    $access_callback = !empty($hook_task['access callback']) ? $hook_task['access callback'] : 'hosting_task_menu_access';
+
     $task = array();
     $task = array_merge($return[$type], $hook_task);
 
     $allowed = (isset($task['exists']) && !in_array($task['task_status'], array(HOSTING_TASK_QUEUED, HOSTING_TASK_PROCESSING))) || !isset($task['exists']);
-    if ($allowed && !$task['hidden'] && hosting_task_menu_access($node, $type)) {
+    if ($allowed && !$task['hidden'] && $access_callback($node, $type)) {
       $task['task_permitted'] = TRUE;
     }
     $task['class'] = hosting_task_status_class($task['task_status']);

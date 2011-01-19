@@ -74,17 +74,17 @@ function hosting_client_user_form($edit, $user, $category) {
     $fields[$category]['clients'] = array('#type' => 'checkboxes', '#options' => $clients);
   }
   
-  $fields[$category]['header'] = array('#type' => 'value', '#value' => array(array('data' => t('Accessible client')), array('data' => t('Remove'))));
+  $fields[$category]['header'] = array('#type' => 'value', '#value' => array(array('data' => t('Accessible clients')), array('data' => t('Remove'))));
   
   if (user_access('edit client users')) {
     $fields[$category]['hosting_client'] = array(
         '#type' => 'textfield',
-        '#title' => t('Associate a user to this Client'),
+        '#title' => t('Associate a client to this user'),
         '#weight' => 2,
-        '#autocomplete_path' => 'user/autocomplete',
-        '#description' => t('This field allows you to associate an existing system user to this Client. 
-                             It does not create a new system user, but allows an existing user 
-                             to manage sites belonging to the Client.'),
+        '#autocomplete_path' => 'hosting_client/autocomplete',
+        '#description' => t('This field allows you to associate an existing client to a user. 
+                             It does not create a new client, but allows this user
+                             to manage sites belonging to the given client.'),
         );
   }
   $fields[$category]['#theme'] = 'hosting_client_user_form';

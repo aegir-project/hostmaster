@@ -203,14 +203,14 @@ function hosting_migrate_platform_batch($site_id, $target_platform, &$context) {
     $batch['form_state']['storage']['instance'][$site->nid] = $profile_instance->iid;
     // If there were no errors, this site passes and can be migrated
     if (!$status['error'] && $profile->short_name != 'hostmaster') {   // The hostmaster site can not be upgraded via the interface.
-      $batch['form_state']['storage']['passed'][$site->nid] = $site->title;
+      $batch['form_state']['storage']['passed'][$site->nid] = strtolower(trim($site->title));
       return true;
     }
   }
   else {
     $batch['form_state']['storage']['status'][$site->nid] = array('error' => 1, 'missing' => 0, 'upgrade' => 0);
   }
-  $batch['form_state']['storage']['failed'][$site->nid] = $site->title;
+  $batch['form_state']['storage']['failed'][$site->nid] = strtolower(trim($site->title));
 }
 
 

@@ -37,7 +37,7 @@ function hosting_clone_post_hosting_clone_task($task, $data) {
     foreach (array('type', 'status', 'uid', 'comment', 'promote', 'moderate', 'sticky', 'name', 'format', 'client', 'db_server', 'profile', 'site_status', 'site_language') as $field) {
       $clone->$field = $task->ref->$field;
     }
-    $clone->title = $task->task_args['new_uri'];
+    $clone->title = strtolower(trim($task->task_args['new_uri']));
     $clone->hosting_name = $clone->title;
     $clone->platform = $target;
     $clone->import = 1; # make sure the site doesn't reinstall...
