@@ -426,8 +426,8 @@ function hosting_package_update_6005() {
  */
 function hosting_package_update_6006() {
   $ret = array();
-  db_add_unique_key($ret, 'hosting_package_instance', 'hosting_package_id_idx', array('package_id'));
-  db_add_unique_key($ret, 'hosting_package_instance', 'hosting_package_rid_idx', array('rid'));
-  db_add_unique_key($ret, 'hosting_package', 'hosting_package_nid_idx', array('nid'));
+  db_add_index_key($ret, 'hosting_package_instance', 'hosting_package_id_idx', array('package_id'));
+  db_add_index_key($ret, 'hosting_package_instance', 'hosting_package_rid_idx', array('rid'));
+  db_add_index_key($ret, 'hosting_package', 'hosting_package_nid_idx', array('nid'));
   return $ret;
 }
