@@ -408,3 +408,26 @@ function hosting_package_update_6005() {
                   array('type' => 'varchar', 'length' => 255, 'not null' => TRUE,  'default' => ''));
   return $ret;
 }
+
+/**
+ * #1033072 - Add indexes on package tables to improve performance
+ * with huge package sets
+ *
+ * When hosting_package_instance hits > 150k rows, the code in
+ * hosting_package.instance.inc degrades really badly, yielding
+ * queries of 10-20 seconds and yielding to frontend requests of 1 to
+ * 5 minutes for the migrate dialog.
+ *
+ * The indexes created here improves that performance notably, the
+ * queries going down to 0.1s and the requests down to < 10s.
+ *
+ * @see _hosting_package_temporary_table()
+ * @see hosting_package_comparison()
+ */
+function hosting_package_update_6006() {
+  $ret = array();
+  db_add_unique_key($ret, 'hosting_package_instance', 'hosting_package_id_idx', array('package_id'));
+  db_add_unique_key($ret, 'hosting_package_instance', 'hosting_package_rid_idx', array('rid'));
+  db_add_unique_key($ret, 'hosting_package', 'hosting_package_nid_idx', array('nid'));
+  return $ret;
+}
