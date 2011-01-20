@@ -43,6 +43,7 @@ function hosting_package_schema() {
       ),
     ),
     'primary key' => array('vid'),
+    'indexex' => array('hosting_package_nid_idx', array('nid')),
   );
 
   $schema['hosting_package_instance'] = array(
@@ -91,6 +92,7 @@ function hosting_package_schema() {
       ),
     ),
     'primary key' => array('iid'),
+    'indexes' => array('hosting_package_rid_idx' => array('rid'), 'hosting_package_id_idx' => array('package_id')),
   );
 
   $schema['hosting_package_languages'] = array(
