@@ -283,7 +283,11 @@ function hosting_server_validate(&$node, &$form) {
 
   hosting_ip_validate($node); 
   if (!_hosting_valid_fqdn($node->title)) {
-    form_set_error('title', t('Invalid domain name. Use a proper domain name or an IP address.'));
+    form_set_error('title', t('Invalid hostname. Use a proper hostname or an IP address.'));
+  }
+
+  if (!$node->nid && db_result(db_query("SELECT COUNT(nid) FROM {node} WHERE type='server' AND title='%s'", $node->title))) {
+    form_set_error('title', t("The hostname you have specified is already in use."));
   }
 
   hosting_server_services_from_post($node);
