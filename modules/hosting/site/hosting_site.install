@@ -91,6 +91,10 @@ function hosting_site_schema() {
         'size' => 'big',
         'not null' => FALSE,
       ),
+      'size' => array(
+        'type' => 'int',
+        'not null' => FALSE,
+      ),
       'timestamp' => array(
         'type' => 'int',
         'not null' => FALSE,
@@ -242,3 +246,13 @@ function hosting_site_update_6006() {
   db_drop_field($ret, "hosting_site", "ssl_redirect");
   return $ret;
 }
+
+/**
+ * Add backup size to hosting_site_backups table
+ */
+function hosting_site_update_6007() {
+  $ret = array();
+  $ret[] = update_sql("ALTER TABLE {hosting_site_backups} ADD COLUMN size INT");
+  return $ret;
+}
+
