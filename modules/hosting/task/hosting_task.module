@@ -860,7 +860,7 @@ function hosting_task_queue_block() {
   foreach ($nodes as $node) {
     $row = array();
     $row['type'] = array(
-      'data' => drupal_ucfirst($node->task_type) . ' ' . _hosting_node_link($node->rid),
+      'data' => drupal_ucfirst(str_replace('_', ' ', $node->task_type)) . ' ' . _hosting_node_link($node->rid),
       'class' => 'hosting-status'
     );
 
