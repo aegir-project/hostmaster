@@ -574,13 +574,12 @@ function hosting_site_list_form_submit($form, &$form_state) {
 
       $operations = array();
       foreach ($sites as $site) {
-        $operations[] = array('_hosting_sites_batch_process',
-          array($site, $task, $form_state));
+        $operations[] = array('hosting_sites_batch_process',
+          array($site, $task));
       }
       if (sizeof($operations)) {
         $batch = array(
           'operations' => $operations,
-          'finished' => '_hosting_sites_batch_finished',
           'title' => t('Processing'),
           'progress_message' => t('Evaluated @current out of @total sites.'),
           'error_message' => t('The update has encountered an error.'),
@@ -601,7 +600,7 @@ function hosting_site_list_form_submit($form, &$form_state) {
   $form_state['storage']['step'] = $step + 1;
 }
 
-function _hosting_sites_batch_process($site_id, $task, &$context) {
+function hosting_sites_batch_process($site_id, $task, &$context) {
   if (!isset($context['sandbox']['progress'])) {
     $context['sandbox']['progress'] = 0;
   }
