@@ -363,6 +363,27 @@ function hosting_task_restore_form($node) {
   return $form;
 }
 
+/**
+ * Implementation of hook_form_alter()
+ */
+function hosting_task_restore_form_validate($form, &$form_state) {
+  if ($form['parameters']['no_backups']) {
+    form_set_error('no_backups', t('There are no valid backups available.'));
+  }
+}
+
+/**
+ * Implementation of hook_form_alter()
+ */                               
+function hosting_task_backup_delete_form_validate($form, &$form_state) {
+  if ($form['parameters']['no_backups']) {
+    form_set_error('no_backups', t('There are no valid backups available.'));
+  }
+  if (!$form['parameters']['#post']['parameters']) {
+    form_set_error('no_backups', t('No backups were selected for deletion.'));
+  }
+}
+
 function hosting_task_backup_delete_form($node) {
   $list = hosting_site_backup_list($node->nid);
   if (sizeof($list)) {
