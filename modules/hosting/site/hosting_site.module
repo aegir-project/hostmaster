@@ -466,10 +466,24 @@ function hosting_site_list_form($form_state, $filter_by = NULL, $filter_value = 
     $options = array();
 
     foreach (hosting_available_tasks('site') as $task => $array) {
+      // skip hidden tasks
+      if ($array['hidden']) {
+        continue;
+      }
       // At this stage we only want to handle simple tasks, the presense of a
-      // specific task form means there are other options for this tasks.
+      // a form that requires input from the user means that this task cannot
+      // be done as a bulk operation.
       $func = 'hosting_task_' . $task . '_form';
-      if (!function_exists($func) && user_access('create '. $task .' task')) {
+      $func_required = FALSE;
+      if (function_exists($func)) {
+        $task_form = $func(new stdClass());
+        foreach (element_children($task_form) as $key) {
+          if (!isset($task_form[$key]['#required']) || $task_form[$key]['#required'] === TRUE) {
+            $func_required = TRUE;
+          }
+        }
+      }
+      if ($func_required === FALSE && user_access('create '. $task .' task')) {
         $options[$task] = $array['title'];
       }
     }
