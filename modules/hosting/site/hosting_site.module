@@ -474,16 +474,17 @@ function hosting_site_list_form($form_state, $filter_by = NULL, $filter_value = 
       // a form that requires input from the user means that this task cannot
       // be done as a bulk operation.
       $func = 'hosting_task_' . $task . '_form';
-      $func_required = FALSE;
+      $interactive = FALSE;
       if (function_exists($func)) {
+        // load the task form
         $task_form = $func(new stdClass());
         foreach (element_children($task_form) as $key) {
-          if (!isset($task_form[$key]['#required']) || $task_form[$key]['#required'] === TRUE) {
-            $func_required = TRUE;
+          if (!isset($task_form[$key]['#required']) || $task_form[$key]['#required']) {
+            $interactive = TRUE;
           }
         }
       }
-      if ($func_required === FALSE && user_access('create '. $task .' task')) {
+      if (!$interactive && user_access('create '. $task .' task')) {
         $options[$task] = $array['title'];
       }
     }
