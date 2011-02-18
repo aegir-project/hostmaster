@@ -53,6 +53,7 @@
   </div></div>
 
   <div id="footer" class='reverse'><div class='limiter clear-block'>
+    <?php print $footer; ?>
     <?php if ($secondary_links) print theme('links', $secondary_links, array('class' => 'links secondary-links')) ?>
     <div class='footer-message'><?php print $footer_message ?></div>
   </div></div>
