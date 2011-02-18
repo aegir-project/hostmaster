@@ -67,12 +67,12 @@ function drush_hosting_task() {
 
   // On install/verify, save the named context
   if ($task->task_type === 'install' || $task->task_type === 'verify' || $task->task_type === 'import') {
-    // we copy module_invoke_all() here because it doesn't pass by
+    // XXX: we copy module_invoke_all() here because it doesn't pass by
     // reference and it breaks under PHP 5.3
     $hook = 'hosting_' . $task->ref->type . '_context_options';
     foreach (module_implements($hook) as $module) {
       $function = $module . '_' . $hook;
-      call_user_func($function, &$task);
+      call_user_func($function, $task);
     }
 
     $output = drush_backend_invoke_args('provision-save', array('@' . $task->ref->hosting_name), $task->context_options, $mode);
