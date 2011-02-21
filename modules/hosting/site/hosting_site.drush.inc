@@ -119,7 +119,7 @@ function hosting_site_hosting_install_task_rollback($task, $data) {
 function hosting_site_post_hosting_disable_task($task, $data) {
   if ($data['context']['backup_file'] && $data->ref->type == 'site') {
     $platform = node_load($task->ref->platform);
-    hosting_site_add_backup($task->ref->nid, $platform->web_server, $data['context']['backup_file'], t('Generated before being disabled'));
+    hosting_site_add_backup($task->ref->nid, $platform->web_server, $data['context']['backup_file'], t('Generated before being disabled'), $data['context']['backup_file_size']);
   }
   $task->ref->site_status = HOSTING_SITE_DISABLED;
   $task->ref->no_verify = TRUE;
@@ -133,7 +133,7 @@ function hosting_site_post_hosting_disable_task($task, $data) {
 function hosting_site_post_hosting_restore_task($task, $data) {
   if ($data['context']['backup_file'] && $task->ref->type == 'site') {
     $platform = node_load($task->ref->platform);
-    hosting_site_add_backup($task->ref->nid, $platform->web_server, $data['context']['backup_file'], t('Generated before being restored to a previous version'));
+    hosting_site_add_backup($task->ref->nid, $platform->web_server, $data['context']['backup_file'], t('Generated before being restored to a previous version'), $data['context']['backup_file_size']);
   }
 }
 
@@ -170,7 +170,7 @@ function hosting_site_post_hosting_backup_task($task, $data) {
 
     $desc = $task->task_args['description'];
     $desc = ($desc) ? $desc : t('Generated on request');
-    hosting_site_add_backup($task->ref->nid, $platform->web_server, $data['context']['backup_file'], $desc);
+    hosting_site_add_backup($task->ref->nid, $platform->web_server, $data['context']['backup_file'], $desc, $data['context']['backup_file_size']);
   }
 }
 

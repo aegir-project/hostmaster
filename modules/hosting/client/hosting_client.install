@@ -84,6 +84,9 @@ function hosting_client_schema() {
 function hosting_client_install() {
   // Create tables.
   drupal_install_schema('hosting_client');
+  $ret = array();
+  $ret[] = update_sql("INSERT INTO {hosting_client_user} (user, client) VALUES (1, 1)");
+  return $ret;
 }
 
 /**
@@ -197,3 +200,15 @@ function hosting_client_update_8() {
   return $ret;
 }
 
+/**
+ * Add uid 1 with client 1 to the hosting_client_user table if it wasn't there already.
+ * Was not happening on fresh installs via hook_install()
+ */
+function hosting_client_update_9() {
+  $ret = array();
+  $result = db_query("SELECT user, client FROM {hosting_client_user} WHERE user = 1 AND client = 1");
+  if (!db_affected_rows($result)) {
+    $ret[] = update_sql("INSERT INTO {hosting_client_user} (user, client) VALUES (1, 1)");
+  }  
+  return $ret;
+}

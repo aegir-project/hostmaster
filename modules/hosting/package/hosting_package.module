@@ -307,7 +307,7 @@ function hosting_package_view($node, $teaser = FALSE, $page = FALSE) {
   if ($node->package_type == 'profile') {
     $node->content['sites_view'] = array(
       '#type' => 'item',
-      '#value' => hosting_site_list("profile", $node->nid),
+      '#value' => drupal_get_form('hosting_site_list_form', 'profile', $node->nid),
       '#prefix' => '<div id="hosting-site-list">',
       '#suffix' => '</div>',
       '#weight' => 10

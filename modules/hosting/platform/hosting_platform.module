@@ -154,21 +154,32 @@ function hosting_platform_form(&$node) {
     '#type' => 'textfield',
     '#title' => t('Name'),
     '#required' => TRUE,
-    '#description' => t('Choose a descriptive name for your platform. You very likely want this to be something like "Drupal 6.10".'),
+    '#description' => t('Choose a unique descriptive name for your platform. You very likely want this to be something like "Drupal 6.20".'),
     '#size' => 40,
     '#default_value' => $node->title,
     '#maxlength' => 255,
   );
-
-  $form['publish_path'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Publish path'),
-    '#required' => TRUE,
-    '#description' => t('The absolute path on the filesystem where the sites will be hosted. This needs to be created manually and initialized before your platform works properly.<br />For example, run the following shell commands:<pre>%commands</pre>Your publish path is the absolute path to the directory that gets created.<br />Alternatively, you can specify a makefile below, and the platform will be created automatically if the path specified here does not exist.<br />You are still required to enter the absolute path above, as it will be treated as the target directory by the makefile.', array('%commands' => "cd /var/aegir\n./drush/drush.php dl drupal\n")),
-    '#size' => 40,
-    '#default_value' => $node->publish_path,
-    '#maxlength' => 255,
-  );
+  if (!$node->nid) {
+    $form['publish_path'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Publish path'),
+      '#required' => TRUE,
+      '#description' => t('The absolute path on the filesystem where the sites will be hosted. This needs to be created manually and initialized before your platform works properly. It also needs to be a unique path not already in use by a platform on any server.<br />For example, run the following shell commands:<pre>%commands</pre>Your publish path is the absolute path to the directory that gets created.<br />Alternatively, you can specify a makefile below, and the platform will be created automatically if the path specified here does not exist.<br />You are still required to enter the absolute path above, as it will be treated as the target directory by the makefile.', array('%commands' => "cd /var/aegir\n./drush/drush.php dl drupal\n")),
+      '#size' => 40,
+      '#default_value' => $node->publish_path,
+      '#maxlength' => 255,
+    );
+  }
+  else {
+    // display it
+    $form['info']['publish_path'] = array(
+      '#type' => 'item',
+      '#title' => t('Publish path'),
+      '#value' => $node->publish_path
+    );
+    // send it on form submission
+    $form['publish_path'] = array('#type' => 'hidden', '#value' => $node->publish_path);
+  }
 
   $form['makefile'] = array(
     '#type' => 'textfield',
@@ -278,8 +289,13 @@ function hosting_platform_delete($node) {
  * Implementation of hook_validate()
  */
 function hosting_platform_validate($node, &$form) {
-  if ($node->op != t('Delete') && $result = db_fetch_object(db_query("SELECT n.title AS name FROM {hosting_platform} AS h INNER JOIN {node} AS n ON n.nid = h.nid WHERE publish_path = '%s' AND web_server = %d AND n.nid <> %d AND h.status >= %d", hosting_path_normalize($node->publish_path), $node->web_server, $node->nid, HOSTING_PLATFORM_QUEUED))) {
-    form_set_error('publish_path', t('Path already defined in platform %name', array('%name' => $result->name)));
+  // Make sure the platform name is unique, to avoid context clashes.
+  if ($node->op != t('Delete') && $result = db_fetch_object(db_query("SELECT n.title AS name FROM {hosting_platform} AS h INNER JOIN {node} AS n ON n.nid = h.nid WHERE n.title = '%s' AND n.nid <> %d AND h.status >= %d", $node->title, $node->nid, HOSTING_PLATFORM_QUEUED))) {
+    form_set_error('title', t('Platform name %name is already defined. Platform names must be unique across all servers.', array('%name' => $result->name)));
+  }
+  // Make sure the path is unique. Remote servers can't have the same path to a platform that is in use by another server.
+  if ($node->op != t('Delete') && $result = db_fetch_object(db_query("SELECT n.title AS name FROM {hosting_platform} AS h INNER JOIN {node} AS n ON n.nid = h.nid WHERE publish_path = '%s' AND n.nid <> %d AND h.status >= %d", hosting_path_normalize($node->publish_path), $node->nid, HOSTING_PLATFORM_QUEUED))) {
+    form_set_error('publish_path', t('Path is already in use by platform %name. Platform paths must be unique across all servers.', array('%name' => $result->name)));
   }
 }
 

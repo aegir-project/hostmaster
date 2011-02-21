@@ -267,10 +267,10 @@ function hosting_nodeapi_server_presave(&$node) {
     // this returns an array or FALSE
     $ips = gethostbynamel($node->title);
     if ($ips) {
-      drupal_set_message(t('Initialized the webserver IP to %ip based on hostname %name. This will be used to create database grants so make sure it is the right address, as seen from the database server.', array('%ip' => join(',', $ips), '%name' => $node->title)), 'message');
+      drupal_set_message(t('Initialized the IP to %ip based on hostname %name. If an HTTP service is enabled, this will be used to create database grants so make sure it is the right address, as seen from the database server.', array('%ip' => join(',', $ips), '%name' => $node->title)), 'message');
       $node->ip_addresses = $ips;
     } else {
-      drupal_set_message(t("Could not resolve IP address of server %name, not automatically setting IP address. DNS may fail."));
+      drupal_set_message(t("Could not resolve IP address of server %name, not automatically setting IP address. DNS may fail.", array('%name' => $node->title)));
     }
   }
   hosting_server_services_from_post($node);
@@ -283,7 +283,11 @@ function hosting_server_validate(&$node, &$form) {
 
   hosting_ip_validate($node); 
   if (!_hosting_valid_fqdn($node->title)) {
-    form_set_error('title', t('Invalid domain name. Use a proper domain name or an IP address.'));
+    form_set_error('title', t('Invalid hostname. Use a proper hostname or an IP address.'));
+  }
+
+  if (!$node->nid && db_result(db_query("SELECT COUNT(nid) FROM {node} WHERE type='server' AND title='%s'", $node->title))) {
+    form_set_error('title', t("The hostname you have specified is already in use."));
   }
 
   hosting_server_services_from_post($node);

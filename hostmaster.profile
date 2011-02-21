@@ -11,7 +11,7 @@ function hostmaster_profile_modules() {
   return array(
     /* core */ 'block', 'color', 'filter', 'help', 'menu', 'node', 'system', 'user',
     /* aegir contrib */ 'hosting', 'hosting_task', 'hosting_client', 'hosting_db_server', 'hosting_package', 'hosting_platform', 'hosting_site', 'hosting_web_server', 'hosting_server',
-    /* other contrib */ 'install_profile_api' /* needs >= 2.1 */, 'jquery_ui', 'modalframe'
+    /* other contrib */ 'install_profile_api' /* needs >= 2.1 */, 'jquery_ui', 'modalframe', 'admin_menu',
   );
 }
 
@@ -105,10 +105,10 @@ function hostmaster_bootstrap() {
     'available' => 1,
   ));
 
-  drupal_set_message('creating master server node');
+  drupal_set_message(st('Creating master server node'));
   node_save($node);
   if ($db_server->remote_host != $master_server->remote_host) {
-    drupal_set_message('creating db server node');
+    drupal_set_message(st('Creating db server node'));
     node_save($db_node);
   }
   variable_set('hosting_default_web_server', $node->nid);
@@ -182,47 +182,9 @@ function hostmaster_bootstrap() {
   variable_set('install_url' , $GLOBALS['base_url']);
 }
 
-
-/**
- * Enable optional modules, if present
- */
-function hostmaster_setup_modules() {
-  $modules = array('admin_menu');
-
-  foreach ($modules as $name) {
-
-    drupal_install_modules(array($name));
-
-    drupal_set_message(st("Enabling module !module", array('!module' => $name)));
-    $func = "_hostmaster_setup_" . $name;
-
-    if (function_exists($func)) {
-      $func();
-    }
-  }
-}
-
-function _hostmaster_setup_admin_menu() {
-    variable_set('admin_menu_margin_top', 1);
-    variable_set('admin_menu_position_fixed', 1);
-    variable_set('admin_menu_tweak_menu', 0);
-    variable_set('admin_menu_tweak_modules', 0);
-    variable_set('admin_menu_tweak_tabs', 0);
-
-    $menu_name = install_menu_create_menu(t('Administration'));
-    $admin = install_menu_get_items('admin');
-    $admin = install_menu_get_item($admin[0]['mlid']);
-    $admin['menu_name'] = $menu_name;
-    $admin['customized'] = 1;
-    $admin['hidden'] = 0;
-    menu_link_save($admin);
-    menu_rebuild();
-}
-
-
 function hostmaster_task_finalize() {
   variable_set('install_profile', 'hostmaster');
-  drupal_set_title(st("Configuring roles, blocks and theme"));
+  drupal_set_message(st('Configuring menu items'));
 
   install_include(array('menu'));
   $menu_name = variable_get('menu_primary_links_source', 'primary-links');
@@ -253,17 +215,17 @@ function hostmaster_task_finalize() {
 
 
   $theme = 'eldir';
-  drupal_set_message(st("Enabling Eldir theme"));
+  drupal_set_message(st('Configuring Eldir theme'));
   install_disable_theme('garland');
   install_default_theme('eldir');
   system_theme_data();
 
   db_query("DELETE FROM {cache}");
 
-  drupal_set_message(st('Adding default blocks'));
+  drupal_set_message(st('Configuring default blocks'));
   install_add_block('hosting', 'hosting_queues', $theme, 1, 5, 'right', 1);
 
-  drupal_set_message(st('Setting up roles'));
+  drupal_set_message(st('Configuring roles'));
   install_remove_permissions(install_get_rid('anonymous user'), array('access content', 'access all views'));
   install_remove_permissions(install_get_rid('authenticated user'), array('access content', 'access all views'));
   install_add_permissions(install_get_rid('anonymous user'), array('access disabled sites'));
@@ -273,10 +235,6 @@ function hostmaster_task_finalize() {
   install_add_permissions(install_get_rid('aegir client'), array('access content', 'access all views', 'edit own client', 'view client', 'create site', 'delete site', 'view site', 'create backup task', 'create delete task', 'create disable task', 'create enable task', 'create restore task', 'view own tasks', 'view task', 'cancel own tasks'));
   install_add_role('aegir account manager');
   install_add_permissions(install_get_rid('aegir account manager'), array('create client', 'edit client users', 'view client'));
-
-  drupal_set_message(st('Enabling optional, yet recommended modules'));
-
-  hostmaster_setup_modules();
 
   node_access_rebuild();
 }
