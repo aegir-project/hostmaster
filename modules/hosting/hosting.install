@@ -2,7 +2,6 @@
 // $Id$ 
 
 function hosting_install() {
-  db_query("UPDATE {system} SET weight = 10 WHERE type='module' and name='hosting'");
   drupal_install_schema('hosting');
 }
 
@@ -303,4 +302,17 @@ function hosting_update_6013() {
   install_add_permissions(install_get_rid('authenticated user'), array('access disabled sites'));
   return $ret;
 }
+
+/**
+ * Restore proper weight to the hosting module
+ *
+ * For some obscure reason, the weight is 10 which makes its updates run
+ * after all others, which gave us constant issues during upgrades.
+ */
+function hosting_update_6014() {
+  $ret = array();
+  $ret[] = update_sql("UPDATE {system} SET weight = 0 WHERE type='module' and name='hosting'");
+  return $ret;
+}
+
 
