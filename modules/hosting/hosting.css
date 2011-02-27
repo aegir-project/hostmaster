@@ -3,9 +3,6 @@
  */
 
 .hosting-site-list {clear:both;}
-#hosting-site-list-form {
-  position: relative;
-}
 
 
 .hosting-service-info, 
@@ -78,8 +75,8 @@ td.hosting-package-downgrade,
 td.hosting-package-same,
 td.hosting-package-missing {
   padding-left:25px !important;
-  background-position:5px 7px !important;
-  background-repeat:no-repeat !important;
+  background-position:5px 7px;
+  background-repeat:no-repeat;
 }
 
 span.hosting-status {
