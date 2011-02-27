@@ -87,31 +87,11 @@ function hosting_update_6001() {
 }
 
 /**
- * re-verify at least one platform and all sites
+ * no-op - this used to verify one platform and all sites but breaks
+ * major upgrades
  */
-
 function hosting_update_6002() {
-  include_once(drupal_get_path('module', 'hosting_task') .  '/hosting_task.module');
-
-  // Register context names for all the entities and create the context table.
-  // this is needed for the node_X functions to work.
-  hosting_update_6008();
-
-  $ret = array();
-   $result = db_query("SELECT nid FROM {node} WHERE type='platform' AND status=1");
-  if ($platform = db_fetch_object($result)) {
-    $ret[] = array('success' => TRUE, 'query' => "Re-verify scheduled for platform ". $platform->nid);
-    hosting_add_task($platform->nid, 'verify');
-  } else {
-    drupal_set_message(t("No platform found"));
-  }
-
-  $result = db_query("SELECT n.nid FROM {node} n INNER JOIN hosting_site s on s.nid = n.nid WHERE n.type='site' AND s.status=1");
-  while ($site = db_fetch_object($result)) {
-    $ret[] = array('success' => TRUE, 'query' => "Re-verify scheduled for site ". $site->nid);
-    hosting_add_task($site->nid, 'verify');
-  }
-  return $ret;
+  return array();
 }
 
 /**

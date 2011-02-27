@@ -79,9 +79,7 @@ function hosting_platform_update_1() {
 }
 
 /**
- * Verify at least one platform
- *
- * This is to make sure ~/config/includes/global.inc is properly setup
+ * no-op - this was replaced by hosting_update_6002()
  */
 function hosting_platform_update_6000() {
   // this update was moved to hosting_update_6002()

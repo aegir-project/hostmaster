@@ -219,12 +219,10 @@ function hosting_site_update_6003() {
 }
 
 /**
- * Re-verify all sites
- *
- * This is to make sure the open_basedir protection is in place
+ * no-op - this is to be Re-verify all sites, moved to
+ * hosting_update_6002()
  */
 function hosting_site_update_6004() {
-  // this update was moved to hosting_update_6002()
   return array();
 }
 
