@@ -282,7 +282,7 @@ function hosting_client_register_user($node) {
       '!site' => variable_get('site_name', 'Drupal'), 
       '!password' => $pass, 
       '!uri' => $GLOBALS['base_url'], 
-      '!uri_brief' => substr($base_url, strlen('http://')), 
+      '!uri_brief' => preg_replace('!^https?://!', '', $base_url), 
       '!date' => format_date(time()), 
       '!login_uri' => url('user', array('absolute' => TRUE)), 
       '!edit_uri' => url('user/'. $user->uid .'/edit', array('absolute' => TRUE)), 
@@ -431,7 +431,7 @@ function hosting_client_view($node, $teaser = FALSE, $page = FALSE) {
   if ($page) {
     $node->content['sites_view'] = array(
       '#type' => 'item',
-      '#value' => drupal_get_form('hosting_site_list_form', 'client', $node->nid),
+      '#value' => hosting_site_list("client", $node->nid),
       '#prefix' => '<div id="hosting-site-list">',
       '#suffix' => '</div>',
       '#weight' => 10
