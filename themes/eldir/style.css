@@ -851,6 +851,32 @@ div.hosting-queue-frequency select {
   font-size:10px;
   }
 
+#edit-tasks-frequency-items-wrapper {
+    float: left;
+    margin: 0 0 5px 0;
+}
+
+#edit-cron-frequency-ticks-wrapper input,
+#edit-tasks-frequency-items-wrapper input,
+#edit-tasks-frequency-ticks-wrapper input {
+    width: 3em;
+    margin: 0 5px 0 0;
+}
+
+#edit-cron-frequency-ticks-wrapper {
+    float: left;
+}
+
+#edit-tasks-frequency-ticks-wrapper {
+    float: left;
+    clear: both;
+}
+
+#edit-tasks-frequency-unit-wrapper,
+#edit-cron-frequency-unit-wrapper {
+    float: left;
+}  
+  
 /* Keep labels from being truncated */
 body.aegir #page div.node div.content div.form-item label {
   width: auto;
