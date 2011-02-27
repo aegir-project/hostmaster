@@ -213,7 +213,6 @@ function hostmaster_task_finalize() {
 
   menu_rebuild();
 
-
   $theme = 'eldir';
   drupal_set_message(st('Configuring Eldir theme'));
   install_disable_theme('garland');
@@ -224,6 +223,13 @@ function hostmaster_task_finalize() {
 
   drupal_set_message(st('Configuring default blocks'));
   install_add_block('hosting', 'hosting_queues', $theme, 1, 5, 'right', 1);
+
+  // Simplified UI for Barracuda and Octopus
+  install_disable_block('hosting', 'hosting_summary', $theme);
+  install_disable_block('user', 1 , $theme);
+  install_disable_block('system', 0 , $theme);
+  install_add_block('menu', 'menu-administration', $theme, 1, 10, 'right', 1);
+  // Simplified UI for Barracuda and Octopus
 
   drupal_set_message(st('Configuring roles'));
   install_remove_permissions(install_get_rid('anonymous user'), array('access content', 'access all views'));
