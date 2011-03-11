@@ -108,6 +108,9 @@ function hosting_js_page() {
       }
       $return = call_user_func_array($router_item['page_callback'], $router_item['page_arguments']);
     }
+    else {
+      $return = drupal_access_denied();
+    }
   }
   // Menu status constants are integers; page content is a string.
   if (is_int($return)) {
