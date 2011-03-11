@@ -1,0 +1,45 @@
+From a176911139841de68b34de2d8386445120585e24 Mon Sep 17 00:00:00 2001
+From: Barracuda Team <admin@omega8.cc>
+Date: Sun, 27 Feb 2011 17:30:59 +0100
+Subject: [PATCH] BOA: Force lowercase also in the hosting_task_migrate_form_validate() (Grace)
+
+---
+ modules/hosting/migrate/hosting_migrate.module |    9 +++------
+ 1 files changed, 3 insertions(+), 6 deletions(-)
+
+diff --git a/modules/hosting/migrate/hosting_migrate.module b/modules/hosting/migrate/hosting_migrate.module
+index 6063852..2eb0b03 100755
+--- a/modules/hosting/migrate/hosting_migrate.module
++++ b/modules/hosting/migrate/hosting_migrate.module
+@@ -63,11 +63,11 @@ function hosting_migrate_hosting_tasks() {
+  */
+ function hosting_task_migrate_form_validate($form, &$form_state) {
+   $migrate_possible = false;
+-
+   $site = $form['parameters']['#node'];
+-
+   $url = strtolower(trim($form_state['values']['parameters']['new_uri'])); // domain names are case-insensitive
+-  if ($url != $site->title) {
++  $form_state['values']['parameters']['new_uri'] = $url; // force lowercase
++  
++  if ($url != strtolower(trim($site->title))) {
+     $migrate_possible = TRUE;
+     if (!_hosting_valid_fqdn($url)) {
+       form_set_error('title', t("You have not specified a valid url for this site."));
+@@ -81,13 +81,10 @@ function hosting_task_migrate_form_validate($form, &$form_state) {
+     $migrate_possible = TRUE;
+   }
+ 
+-
+   if ($form_state['values']['parameters']['new_db_server'] != $site->db_server) {
+     $migrate_possible = TRUE;
+   }
+ 
+-
+-
+   if (!$migrate_possible) {
+     form_set_error('parameters][target_platform', t("To migrate a site you need to modify at least one of the following fields: Domain name, Platform or Database server"));
+   }
+-- 
+1.6.1
+
