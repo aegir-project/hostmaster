@@ -81,7 +81,7 @@ function hosting_client_user_form($edit, $user, $category) {
         '#type' => 'textfield',
         '#title' => t('Associate a client to this user'),
         '#weight' => 2,
-        '#autocomplete_path' => 'hosting_client/autocomplete',
+        '#autocomplete_path' => 'hosting_client/autocomplete/client',
         '#description' => t('This field allows you to associate an existing client to a user. 
                              It does not create a new client, but allows this user
                              to manage sites belonging to the given client.'),
