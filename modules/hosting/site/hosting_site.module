@@ -24,7 +24,7 @@ function hosting_site_menu() {
     'title' => 'Sites',
     'description' => 'Display a list of sites',
     'page callback' => 'hosting_sites',
-    'access arguments' => array('create site') 
+    'access arguments' => array('view site'),
   );
 
   $items['hosting/hosting_site_form_check'] = array(
@@ -261,7 +261,8 @@ function hosting_site_access($op, $node, $account) {
     case 'delete':
       return user_access('delete site', $account);
       break;
-    default:
+    case 'view':
+      return user_access('view site', $account);
       break;
   }
 }
