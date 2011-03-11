@@ -18,7 +18,7 @@ function hosting_hosting_site_context_options(&$task) {
 
 function hosting_site_drush_context_import($context, &$node) {
   if ($context->type == 'site') {
-    $node->title = $context->uri;
+    $node->title = strtolower(trim($context->uri)); // force lowercase for existing uri
     $node->site_language = $context->language;
     $node->db_server = hosting_drush_import($context->db_server->name);
     $node->platform = hosting_drush_import($context->platform->name);
