@@ -541,7 +541,7 @@ function hosting_site_list_form($form_state, $filter_by = NULL, $filter_value = 
 
     $form['help'] = array('#value' => $tasks[$task]['description']);
 
-    $question = t("Are you sure you want to @task the following sites?", array('@task' => $task));
+    $question = t('Are you sure you want to perform the "@task" task on each of the following sites?', array('@task' => $tasks[$task]['title']));
     return confirm_form($form, $question, 'hosting/sites', '', $tasks[$task]['title']);
   }
 }
