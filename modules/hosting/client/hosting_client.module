@@ -206,8 +206,8 @@ function hosting_client_validate(&$node) {
  * Implementation of hook_insert().
  */
 function hosting_client_insert($node) {
-  db_query("INSERT INTO {hosting_client} (vid, nid, email) VALUES (%d, %d, '%s' )",
-           $node->vid, $node->nid, $node->email);
+  db_query("INSERT INTO {hosting_client} (vid, nid, uname, email) VALUES (%d, %d, '%s', '%s' )",
+           $node->vid, $node->nid, hosting_client_sanitize($node->title), $node->email);
   if (variable_get('hosting_client_register_user', FALSE) 
     && !user_load(array('mail' => $node->email))) {
     $user = hosting_client_register_user($node);
@@ -289,8 +289,8 @@ function hosting_client_update($node) {
     hosting_client_insert($node);
   }
   else {
-    db_query("UPDATE {hosting_client} SET nid=%d, email='%s' WHERE vid=%d",
-             $node->nid, $node->email, $node->vid);
+    db_query("UPDATE {hosting_client} SET nid=%d, uname='%s', email='%s' WHERE vid=%d",
+             $node->nid, hosting_client_sanitize($node->title), $node->email, $node->vid);
   }
   hosting_client_set_title($node);  
   if ($node->users) {
@@ -322,7 +322,7 @@ function hosting_client_delete($node) {
  *    Node object
  */
 function hosting_client_load($node) {
-  $additions = db_fetch_object(db_query('SELECT email FROM {hosting_client} WHERE vid = %d', $node->vid));
+  $additions = db_fetch_object(db_query('SELECT email, uname FROM {hosting_client} WHERE vid = %d', $node->vid));
   return $additions;
 }
 
@@ -747,7 +747,18 @@ function _hosting_get_allowed_platforms($uid = NULL) {
   }
   return $return;
 }
- 
+
+/**
+ * Return a machine-usable name for a client
+ *
+ * This aims to be usable for unix group/user names and shells
+ *
+ * This is inspired from the context sanitization stuff.
+ */
+function hosting_client_sanitize($title) {
+  return preg_replace("/[!\W\.\-]/", "", $title);
+}
+
 /*
  * Views integration
  */

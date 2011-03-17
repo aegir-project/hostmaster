@@ -14,6 +14,7 @@ function hosting_hosting_site_context_options(&$task) {
 
   $client = node_load($task->ref->client);
   $task->context_options['client_email'] = $client->email;
+  $task->context_options['client_name'] = $client->uname;
 }
 
 function hosting_site_drush_context_import($context, &$node) {

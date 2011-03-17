@@ -25,8 +25,16 @@ function hosting_client_schema() {
         'not null' => TRUE,
         'default' => '',
       ),
+      'uname' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Machine-usable name of this client (without shell metacharacters, usable for UNIX groups)',
+      ),
     ),
     'primary key' => array('vid'),
+    'unique keys' => array('uname_unq' => array('uname')),
   );
 
   $schema['hosting_client_user'] = array(
@@ -200,5 +208,65 @@ function hosting_client_update_9() {
   if (!db_affected_rows($result)) {
     $ret[] = update_sql("INSERT INTO {hosting_client_user} (user, client) VALUES (1, 1)");
   }  
+  return $ret;
+}
+
+/**
+ * Cleanup the hosting_client fields
+ *
+ * This rewrites the client node title based on the organization, name
+ * or email field (in that order).
+ *
+ * It also populates the new, unique, uname field in the
+ * hosting_client table.
+ *
+ * Note that this request will fail if you have more than 100 clients
+ * with the same title.
+ *
+ * https://drupal.org/node/962330
+ * https://drupal.org/node/461840
+ */
+function hosting_client_update_6000() {
+  $ret = array();
+
+  db_add_field($ret, 'hosting_client', 'uname', array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => ''));
+  // populate the unique uname field
+  $result = db_query("SELECT n.nid,n.vid,n.title,hc.organization,hc.name,hc.email FROM {node} n JOIN {hosting_client} hc ON hc.nid = n.nid WHERE n.type = 'client'");
+  while ($client = db_fetch_object($result)) {
+    // try to find a proper name for the client
+    if ($client->organization) {
+      // we arbitrarily choose the organisation as the base parameter
+      $name = $client->organization;
+    } elseif ($client->name) {
+      // fallback on the name of the "contact"
+      $name = $client->name;
+    } else {
+      // fallback - use the email
+      $name = $client->email;
+    }
+    $unique = preg_replace("/[!\W\.\-]/", "", $name);
+    $failed_client = FALSE;
+    $newname = $name;
+    for ($i = ''; $i < 100; $i++) {
+      if ($nid = db_result(db_query("SELECT nid FROM {hosting_client} WHERE uname = '%s'", $unique))) {
+        drupal_set_message("nid $nid dupes this client ({$client->nid}) unique: $unique");
+      } else {
+        drupal_set_message("setting client $name to " . $newname . " ($unique)");
+        db_query("UPDATE {hosting_client} SET uname = '%s' WHERE nid = %d AND vid = %d", $unique, $client->nid, $client->vid);
+        db_query("UPDATE {node} SET title = '%s' WHERE nid = %d", $newname, $client->nid);
+        db_query("UPDATE {node_revisions} SET title = '%s' WHERE nid = %d AND vid = %d", $name, $client->nid, $client->vid);
+        $failed_client = FALSE;
+        break;
+      }
+      $failed_client = $name;
+      $unique = hosting_client_sanitize($name) . $i;
+      $newname = $name . $i;
+    }
+    if ($failed_client) {
+      $ret['#abort'] = array('success' => FALSE, 'query' => t('Could not find a unique client name for client @client (nid: @nid)', array('@client' => $failed_client, '@nid' => $client->nid)));
+      break;
+    }
+  }
+  db_add_unique_key($ret, 'hosting_client', 'uname_unq', array('uname'));
   return $ret;
 }
