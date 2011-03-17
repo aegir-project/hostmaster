@@ -270,3 +270,20 @@ function hosting_client_update_6000() {
   db_add_unique_key($ret, 'hosting_client', 'uname_unq', array('uname'));
   return $ret;
 }
+
+/**
+ * Drop the name, organisation and email field
+ *
+ * For this to be enabled:
+ *  - 1.x needs to be stable and released
+ *  - we need to be on the master (ie. unstable) branch
+ *  - we need typed relationships: https://drupal.org/node/461840
+ *  - emails need to be sent in the right place: https://drupal.org/node/336068
+ */
+/*
+function hosting_client_update_6001() {
+  db_drop_field($ret, 'hosting_client', 'name');
+  db_drop_field($ret, 'hosting_client', 'organization');
+  db_drop_field($ret, 'hosting_client', 'email');
+}
+*/
