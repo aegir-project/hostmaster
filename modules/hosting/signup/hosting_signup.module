@@ -64,9 +64,10 @@ function hosting_signup_form() {
 
     $function($form['client'], $state, 'client_node_form');
   }
+  $form['client']['client_name'] = $form['client']['title'];
+  unset($form['client']['title']);
 
   $form['new_client'] = array('#type' => 'value', '#value' => TRUE);
-  unset($form['client']['title']);
 
   $form['submit'] = array(
     '#type' => 'submit',
@@ -84,6 +85,7 @@ function hosting_signup_form() {
 function hosting_signup_form_validate($form, &$form_state) {
   $client = (object) $form_state['values'];
   $client->type = 'client';
+  $client->title = $client->client_name;
   node_validate($client);
 
   $site = (object) $form_state['values'];
@@ -101,6 +103,7 @@ function hosting_signup_form_submit($form, &$form_state) {
   $client = (object) $form_state['values'];
   $client->type = 'client';
   $client->status = 1;
+  $client->title = $client->client_name;
   node_save($client, 'submit');
 
   $site = (object) $form_state['values'];

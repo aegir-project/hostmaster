@@ -108,14 +108,16 @@ function hosting_get_client_by_email($email) {
  * Implementation of hook_form().
  */
 function hosting_client_form(&$node) {
-  $type = node_get_types('type', $node);
+  $type = node_get_types('type', 'client');
 
   $form['title'] = array(
     '#type' => 'textfield',
+    '#title' => $type->title_label,
     '#required' => TRUE,
     '#size' => 40,
-    '#default_value' => $node->email,
+    '#default_value' => $node->title,
     '#maxlength' => 100,
+    '#description' => t('The name of this client, generally the organization name or the contact name for individuals.'),
    );
 
    $form['email'] = array(
@@ -390,14 +392,26 @@ function hosting_client_users($node) {
  * Implementation of hook_view().
  */
 function hosting_client_view($node, $teaser = FALSE, $page = FALSE) {
+  $type = node_get_types('type', $node);
+
   $node->content['info']['#prefix'] = '<div id="hosting-client-info">';
-  if ($node->name || $node->email) {
-    $node->content['info']['email'] = array(
-      '#type' => 'item',
-      '#title' => t('Email'),
-      '#value' => filter_xss($node->email),
-    );
-  }
+  $node->content['info']['email'] = array(
+    '#type' => 'item',
+    '#title' => t('Email'),
+    '#value' => filter_xss($node->email),
+  );
+  $node->content['info']['title'] = array(
+    '#type' => 'item',
+    '#title' => $type->title_label,
+    '#value' => filter_xss($node->title),
+  );
+  $node->content['info']['uname'] = array(
+    '#type' => 'item',
+    '#title' => t('Internal name'),
+    '#weight' => 1,
+    '#description' => t('A machine-usable name that can be used internally, for example to map to a UNIX group in the backend. It is unique accross the system. Currently not changeable.'),
+    '#value' => filter_xss($node->uname),
+  );
 
   $node->content['info']['#suffix'] = '</div>';
   if ($page) {
