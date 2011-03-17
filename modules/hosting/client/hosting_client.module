@@ -309,7 +309,6 @@ function hosting_client_update($node) {
     db_query("UPDATE {hosting_client} SET nid=%d, uname='%s', email='%s' WHERE vid=%d",
              $node->nid, hosting_client_sanitize($node->title), $node->email, $node->vid);
   }
-  hosting_client_set_title($node);  
   if ($node->users) {
     foreach ($node->users as $user) {
       db_query('DELETE FROM {hosting_client_user} WHERE user = %d AND client = %d', $user, $node->nid);
