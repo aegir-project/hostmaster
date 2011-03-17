@@ -84,7 +84,6 @@ function hosting_signup_form() {
 function hosting_signup_form_validate($form, &$form_state) {
   $client = (object) $form_state['values'];
   $client->type = 'client';
-  $client->title = '';
   node_validate($client);
 
   $site = (object) $form_state['values'];
@@ -101,7 +100,6 @@ function hosting_signup_form_validate($form, &$form_state) {
 function hosting_signup_form_submit($form, &$form_state) {
   $client = (object) $form_state['values'];
   $client->type = 'client';
-  $client->title = '';
   $client->status = 1;
   node_save($client, 'submit');
 

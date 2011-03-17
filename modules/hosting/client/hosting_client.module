@@ -10,7 +10,7 @@ function hosting_client_node_info() {
   $types["client"] =  array(
     "type" => 'client', "name" => 'Client',
     "module" => 'hosting_client',
-    "has_title" => TRUE, "title_label" => 'Client', 
+    "has_title" => TRUE, "title_label" => 'Client name',
     "description" => hosting_node_help("client"),
     "has_body" => 0, "body_label" => '', "min_word_count" => 0);
 
@@ -110,7 +110,13 @@ function hosting_get_client_by_email($email) {
 function hosting_client_form(&$node) {
   $type = node_get_types('type', $node);
 
-  $form['title'] = array('#type' => 'hidden', '#value' => $node->title);
+  $form['title'] = array(
+    '#type' => 'textfield',
+    '#required' => TRUE,
+    '#size' => 40,
+    '#default_value' => $node->email,
+    '#maxlength' => 100,
+   );
 
    $form['email'] = array(
     '#type' => 'textfield',
@@ -130,22 +136,6 @@ function hosting_client_form(&$node) {
       '#maxlength' => 100,
     ); 
   }
-
-  $form['client_name'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Client name'),
-    '#size' => 40,
-    '#default_value' => $node->client_name,
-    '#maxlength' => 50,
-  );
-
-  $form['organization'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Organization'),
-    '#size' => 40,
-    '#default_value' => $node->organization,
-    '#maxlength' => 100,
-  );
 
   if ($node->nid) {
     $users = hosting_client_users($node);
@@ -212,32 +202,12 @@ function hosting_client_validate(&$node) {
   }
 }
 
-function hosting_client_set_title(&$node) {
-  if ($node->organization && $node->client_name) {
-    $node->title = $node->client_name . ' ('.$node->organization.')';
-  }
-  elseif ($node->client_name) {
-    $node->title = $node->client_name . ' ('.$node->email.')';
-  }
-  elseif ($node->organization) {
-    $node->title = $node->organization . ' ('.$node->email.')';
-  }
-  else {
-    $node->title = $node->email;
-  }
-  $node->title = filter_xss($node->title);
-  db_query("UPDATE {node} SET title='%s' WHERE nid=%d", $node->title, $node->nid);
-  db_query("UPDATE {node_revisions} SET title='%s' WHERE vid=%d", $node->title, $node->vid);
-}
-
-
 /**
  * Implementation of hook_insert().
  */
 function hosting_client_insert($node) {
-  db_query("INSERT INTO {hosting_client} (vid, nid, name, organization, email) VALUES (%d, %d, '%s', '%s', '%s' )",
-    $node->vid, $node->nid, $node->client_name, $node->organization, $node->email);
-  hosting_client_set_title($node);
+  db_query("INSERT INTO {hosting_client} (vid, nid, email) VALUES (%d, %d, '%s' )",
+           $node->vid, $node->nid, $node->email);
   if (variable_get('hosting_client_register_user', FALSE) 
     && !user_load(array('mail' => $node->email))) {
     $user = hosting_client_register_user($node);
@@ -319,8 +289,8 @@ function hosting_client_update($node) {
     hosting_client_insert($node);
   }
   else {
-    db_query("UPDATE {hosting_client} SET nid=%d, name = '%s', organization = '%s', email='%s' WHERE vid=%d",
-              $node->nid, $node->client_name, $node->organization, $node->email, $node->vid);
+    db_query("UPDATE {hosting_client} SET nid=%d, email='%s' WHERE vid=%d",
+             $node->nid, $node->email, $node->vid);
   }
   hosting_client_set_title($node);  
   if ($node->users) {
@@ -352,7 +322,7 @@ function hosting_client_delete($node) {
  *    Node object
  */
 function hosting_client_load($node) {
-  $additions = db_fetch_object(db_query('SELECT name as client_name, organization, email FROM {hosting_client} WHERE vid = %d', $node->vid));
+  $additions = db_fetch_object(db_query('SELECT email FROM {hosting_client} WHERE vid = %d', $node->vid));
   return $additions;
 }
 
@@ -405,20 +375,6 @@ function hosting_client_users($node) {
  */
 function hosting_client_view($node, $teaser = FALSE, $page = FALSE) {
   $node->content['info']['#prefix'] = '<div id="hosting-client-info">';
-  if ( $node->organization ) {
-    $node->content['info']['organization'] = array(
-      '#type' => 'item',
-      '#title' => t('Organization'),
-      '#value' => filter_xss($node->organization),
-    );
-  }
-  if ( $node->client_name ) {
-    $node->content['info']['name'] = array(
-      '#type' => 'item',
-      '#title' => t('Client name'),
-      '#value' => filter_xss($node->client_name),
-    );
-  }
   if ($node->name || $node->email) {
     $node->content['info']['email'] = array(
       '#type' => 'item',
@@ -471,6 +427,8 @@ function hosting_client_view($node, $teaser = FALSE, $page = FALSE) {
  *   Return an existing client registered for this email address, defaults to FALSE
  * @return
  *   The nid of the generated client
+ * @deprecated the organization and email parameters will be dropped
+ *   in 2.x in favor of the name parameter
  */
 function hosting_import_client($email, $name = '', $organization = '') {
   $client = hosting_get_client_by_email($email);
@@ -480,7 +438,7 @@ function hosting_import_client($email, $name = '', $organization = '') {
     $client->type = 'client';
     $client->uid = 1;
     $client->email = $email;
-    $client->client_name = trim($name);
+    $client->title = trim($name);
     $client->organization = $organization;
     $client->status = 1;
     node_save($client);

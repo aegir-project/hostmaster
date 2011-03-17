@@ -320,7 +320,7 @@ function hosting_import_site($site_id, $data, $platform) {
   $client = node_load(HOSTING_DEFAULT_CLIENT);
 
   if ($data['client_email']) {
-    $client = hosting_import_client($data['client_email'], $data['client_name'], $data['client_organization']);
+    $client = hosting_import_client($data['client_email'], $data['client_name']);
   }
 
   $site = node_load($site_id);
