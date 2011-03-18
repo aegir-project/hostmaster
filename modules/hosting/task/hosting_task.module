@@ -322,7 +322,14 @@ function hosting_add_task($nid, $type, $args = null, $status = HOSTING_TASK_QUEU
  $task->title = t("!type !title", array('!type' => $type, '!title' => $node->title));
  $task->task_type = $type;
  $task->rid = $node->nid;
- $task->uid = $user->uid;
+ /*
+  * fallback the owner of the task to the owner of the node we operate
+  * upon
+  *
+  * this is mostly for the signup form, which runs as the anonymous
+  * user, but for which the node is set to the right user
+  */
+ $task->uid = $user->uid ? $user->uid : $node->uid;
  $task->status = 1;
  $task->task_status = $status;
  if ($status == HOSTING_TASK_QUEUED) {
