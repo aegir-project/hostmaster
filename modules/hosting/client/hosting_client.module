@@ -10,7 +10,7 @@ function hosting_client_node_info() {
   $types["client"] =  array(
     "type" => 'client', "name" => 'Client',
     "module" => 'hosting_client',
-    "has_title" => TRUE, "title_label" => 'Client', 
+    "has_title" => TRUE, "title_label" => 'Client name',
     "description" => hosting_node_help("client"),
     "has_body" => 0, "body_label" => '', "min_word_count" => 0);
 
@@ -88,7 +88,7 @@ function hosting_get_client($client) {
     $result = db_result(db_query("SELECT n.nid FROM {hosting_client} h INNER JOIN {node} n ON n.nid = h.nid WHERE n.nid = %d", $client));
   }
   else {
-    $result = db_result(db_query("SELECT c.nid FROM {hosting_client} c JOIN {node} n ON c.nid = n.nid WHERE (n.title = '%s' OR c.email = '%s') AND n.type = 'client'", $client, $client));
+    $result = db_result(db_query("SELECT c.nid FROM {hosting_client} c JOIN {node} n ON c.nid = n.nid WHERE n.title = '%s' AND n.type = 'client'", $client, $client));
   }
   if ($result) {
     return node_load($result);
@@ -108,44 +108,37 @@ function hosting_get_client_by_email($email) {
  * Implementation of hook_form().
  */
 function hosting_client_form(&$node) {
-  $type = node_get_types('type', $node);
+  $type = node_get_types('type', 'client');
 
-  $form['title'] = array('#type' => 'hidden', '#value' => $node->title);
+  $form['title'] = array(
+    '#type' => 'textfield',
+    '#title' => $type->title_label,
+    '#required' => TRUE,
+    '#size' => 40,
+    '#default_value' => $node->title,
+    '#maxlength' => 100,
+    '#description' => t('The name of this client, generally the organization name or the contact name for individuals.'),
+   );
 
+  if (!$node->nid && variable_get('hosting_client_register_user', FALSE)) {
    $form['email'] = array(
     '#type' => 'textfield',
     '#title' => t('Email address'),
-    '#required' => TRUE,
+    '#description' => t('Email address of the contact created with this client. Optional - if none is provided, no user will be created with this client.'),
+    '#required' => FALSE,
     '#size' => 40,
     '#default_value' => $node->email,
     '#maxlength' => 100,
   ); 
 
-  if (!$node->nid) {
     $form['email_confirm'] = array(
       '#type' => 'textfield',
       '#title' => t('Confirm Email address'),
-      '#required' => TRUE,
+      '#required' => FALSE,
       '#size' => 40,
       '#maxlength' => 100,
     ); 
   }
-
-  $form['client_name'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Client name'),
-    '#size' => 40,
-    '#default_value' => $node->client_name,
-    '#maxlength' => 50,
-  );
-
-  $form['organization'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Organization'),
-    '#size' => 40,
-    '#default_value' => $node->organization,
-    '#maxlength' => 100,
-  );
 
   if ($node->nid) {
     $users = hosting_client_users($node);
@@ -198,46 +191,42 @@ function theme_hosting_client_form($form) {
  */
 function hosting_client_validate(&$node) {
 
-  $nid = db_result(db_query("SELECT nid FROM {hosting_client} WHERE email='%s'", $node->email));
+  $nid = db_result(db_query("SELECT nid FROM {hosting_client} WHERE LOWER(uname) LIKE LOWER('%s')", hosting_client_sanitize($node->title)));
   if ($nid && $node->nid != $nid) {
-    form_set_error('email', t("Email address already exists."));
+    $suggestion = FALSE;
+    for ($i = 0; $i < 10; $i++) {
+      $nid = db_result(db_query("SELECT nid FROM {hosting_client} WHERE LOWER(uname) LIKE LOWER('%s')", hosting_client_sanitize($node->title) . $i));
+      if ($nid && $node->nid != $nid) {
+        $suggestion = $node->title . $i;
+        break;
+      }
+    }
+    if ($suggestion) {
+      form_set_error('title', t("Client name already in use, try @suggestion.", $suggestion));
+    } else {
+      form_set_error('title', t("Client name already in use."));
+    }
   }
-  if (!$node->nid) {
+  if (!$node->nid && $node->email) {
+    $user = user_load(array('mail' => $node->email));
+    if ($user) {
+      form_set_error('email', t("Email address already exists."));
+    }
     if ($node->email != $node->email_confirm) {
       form_set_error('email_confirm', t("Email addresses do not match"));
     }
-  }
-  if (!valid_email_address($node->email)) {
-    form_set_error('email', t("Email address invalid."));
+    if (!valid_email_address($node->email)) {
+      form_set_error('email', t("Email address invalid."));
+    }
   }
 }
-
-function hosting_client_set_title(&$node) {
-  if ($node->organization && $node->client_name) {
-    $node->title = $node->client_name . ' ('.$node->organization.')';
-  }
-  elseif ($node->client_name) {
-    $node->title = $node->client_name . ' ('.$node->email.')';
-  }
-  elseif ($node->organization) {
-    $node->title = $node->organization . ' ('.$node->email.')';
-  }
-  else {
-    $node->title = $node->email;
-  }
-  $node->title = filter_xss($node->title);
-  db_query("UPDATE {node} SET title='%s' WHERE nid=%d", $node->title, $node->nid);
-  db_query("UPDATE {node_revisions} SET title='%s' WHERE vid=%d", $node->title, $node->vid);
-}
-
 
 /**
  * Implementation of hook_insert().
  */
 function hosting_client_insert($node) {
-  db_query("INSERT INTO {hosting_client} (vid, nid, name, organization, email) VALUES (%d, %d, '%s', '%s', '%s' )",
-    $node->vid, $node->nid, $node->client_name, $node->organization, $node->email);
-  hosting_client_set_title($node);
+  db_query("INSERT INTO {hosting_client} (vid, nid, uname) VALUES (%d, %d, '%s' )",
+           $node->vid, $node->nid, hosting_client_sanitize($node->title));
   if (variable_get('hosting_client_register_user', FALSE) 
     && !user_load(array('mail' => $node->email))) {
     $user = hosting_client_register_user($node);
@@ -319,10 +308,9 @@ function hosting_client_update($node) {
     hosting_client_insert($node);
   }
   else {
-    db_query("UPDATE {hosting_client} SET nid=%d, name = '%s', organization = '%s', email='%s' WHERE vid=%d",
-              $node->nid, $node->client_name, $node->organization, $node->email, $node->vid);
+    db_query("UPDATE {hosting_client} SET nid=%d, uname='%s' WHERE vid=%d",
+             $node->nid, hosting_client_sanitize($node->title), $node->vid);
   }
-  hosting_client_set_title($node);  
   if ($node->users) {
     foreach ($node->users as $user) {
       db_query('DELETE FROM {hosting_client_user} WHERE user = %d AND client = %d', $user, $node->nid);
@@ -352,7 +340,7 @@ function hosting_client_delete($node) {
  *    Node object
  */
 function hosting_client_load($node) {
-  $additions = db_fetch_object(db_query('SELECT name as client_name, organization, email FROM {hosting_client} WHERE vid = %d', $node->vid));
+  $additions = db_fetch_object(db_query('SELECT uname FROM {hosting_client} WHERE vid = %d', $node->vid));
   return $additions;
 }
 
@@ -404,28 +392,21 @@ function hosting_client_users($node) {
  * Implementation of hook_view().
  */
 function hosting_client_view($node, $teaser = FALSE, $page = FALSE) {
+  $type = node_get_types('type', $node);
+
   $node->content['info']['#prefix'] = '<div id="hosting-client-info">';
-  if ( $node->organization ) {
-    $node->content['info']['organization'] = array(
-      '#type' => 'item',
-      '#title' => t('Organization'),
-      '#value' => filter_xss($node->organization),
-    );
-  }
-  if ( $node->client_name ) {
-    $node->content['info']['name'] = array(
-      '#type' => 'item',
-      '#title' => t('Client name'),
-      '#value' => filter_xss($node->client_name),
-    );
-  }
-  if ($node->name || $node->email) {
-    $node->content['info']['email'] = array(
-      '#type' => 'item',
-      '#title' => t('Email'),
-      '#value' => filter_xss($node->email),
-    );
-  }
+  $node->content['info']['title'] = array(
+    '#type' => 'item',
+    '#title' => $type->title_label,
+    '#value' => filter_xss($node->title),
+  );
+  $node->content['info']['uname'] = array(
+    '#type' => 'item',
+    '#title' => t('Internal name'),
+    '#weight' => 1,
+    '#description' => t('A machine-usable name that can be used internally, for example to map to a UNIX group in the backend. It is unique accross the system. Currently not changeable.'),
+    '#value' => filter_xss($node->uname),
+  );
 
   $node->content['info']['#suffix'] = '</div>';
   if ($page) {
@@ -463,25 +444,27 @@ function hosting_client_view($node, $teaser = FALSE, $page = FALSE) {
 /**
  * Helper function to generate new client node during import
  *
- * @param email
- *   Client email address - Required
- * @param contact_name
- *   Client name - Optional
- * @param existing
- *   Return an existing client registered for this email address, defaults to FALSE
+ * @param name
+ *   Client email address or name
+ * @param name
+ *   Client name, title or machine name - deprecated
  * @return
  *   The nid of the generated client
+ * @deprecated the organization and email parameters will be dropped
+ *   in 2.x in favor of the name parameter, which will become the
+ *   sole argument
  */
-function hosting_import_client($email, $name = '', $organization = '') {
-  $client = hosting_get_client_by_email($email);
+function hosting_import_client($name, $name = '', $organization = '') {
+  $client = hosting_get_client_by_email($name);
+  if (!$client) {
+    $client = hosting_get_client($name);
+  }
 
   if (!$client) {
     $client = new stdClass();
     $client->type = 'client';
     $client->uid = 1;
-    $client->email = $email;
-    $client->client_name = trim($name);
-    $client->organization = $organization;
+    $client->title = trim($name);
     $client->status = 1;
     node_save($client);
   }
@@ -609,7 +592,7 @@ function hosting_client_configure() {
   $form['hosting_client_register_user'] = array(
     '#type' => 'checkbox',
     '#title' => t('Automatically create user accounts for new clients.'),
-    '#description' => t('If this setting is on, any new client nodes will automatically have a system user account generated for them, and associated with the new client node.'),
+    '#description' => t('If this setting is on, any new client nodes will automatically have a system user account generated for them, and associated with the new client node. Users going through the signup form module have a user created regardless of this setting.'),
     '#default_value' => variable_get('hosting_client_register_user', FALSE)
   );
 
@@ -645,12 +628,9 @@ function hosting_client_configure() {
 
 function _hosting_get_clients() {
   $return = array();
-  $result = pager_query(db_rewrite_sql('SELECT n.nid, name, email from {hosting_client} AS h INNER JOIN {node} n ON n.nid = h.nid AND n.vid = h.vid'), 25);
+  $result = pager_query(db_rewrite_sql('SELECT n.nid, n.title from {node} n WHERE n.type = "client"'), 25);
   while ($client = db_fetch_object($result)) {
-    if ($client->name == "") {
-     $client->name = $client->email;
-    }
-    $return[$client->nid] = $client->name;
+    $return[$client->nid] = $client->title;
   }
   return $return;
 }
@@ -789,7 +769,18 @@ function _hosting_get_allowed_platforms($uid = NULL) {
   }
   return $return;
 }
- 
+
+/**
+ * Return a machine-usable name for a client
+ *
+ * This aims to be usable for unix group/user names and shells
+ *
+ * This is inspired from the context sanitization stuff.
+ */
+function hosting_client_sanitize($title) {
+  return preg_replace("/[!\W\.\-]/", "", $title);
+}
+
 /*
  * Views integration
  */
