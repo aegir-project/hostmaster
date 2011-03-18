@@ -120,6 +120,7 @@ function hosting_client_form(&$node) {
     '#description' => t('The name of this client, generally the organization name or the contact name for individuals.'),
    );
 
+  if (!$node->nid && variable_get('hosting_client_register_user', FALSE)) {
    $form['email'] = array(
     '#type' => 'textfield',
     '#title' => t('Email address'),
@@ -130,7 +131,6 @@ function hosting_client_form(&$node) {
     '#maxlength' => 100,
   ); 
 
-  if (!$node->nid) {
     $form['email_confirm'] = array(
       '#type' => 'textfield',
       '#title' => t('Confirm Email address'),
@@ -592,7 +592,7 @@ function hosting_client_configure() {
   $form['hosting_client_register_user'] = array(
     '#type' => 'checkbox',
     '#title' => t('Automatically create user accounts for new clients.'),
-    '#description' => t('If this setting is on, any new client nodes will automatically have a system user account generated for them, and associated with the new client node.'),
+    '#description' => t('If this setting is on, any new client nodes will automatically have a system user account generated for them, and associated with the new client node. Users going through the signup form module have a user created regardless of this setting.'),
     '#default_value' => variable_get('hosting_client_register_user', FALSE)
   );
 
