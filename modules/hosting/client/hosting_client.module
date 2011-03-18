@@ -88,7 +88,7 @@ function hosting_get_client($client) {
     $result = db_result(db_query("SELECT n.nid FROM {hosting_client} h INNER JOIN {node} n ON n.nid = h.nid WHERE n.nid = %d", $client));
   }
   else {
-    $result = db_result(db_query("SELECT c.nid FROM {hosting_client} c JOIN {node} n ON c.nid = n.nid WHERE (n.title = '%s' OR c.email = '%s') AND n.type = 'client'", $client, $client));
+    $result = db_result(db_query("SELECT c.nid FROM {hosting_client} c JOIN {node} n ON c.nid = n.nid WHERE n.title = '%s' AND n.type = 'client'", $client, $client));
   }
   if ($result) {
     return node_load($result);
@@ -123,7 +123,8 @@ function hosting_client_form(&$node) {
    $form['email'] = array(
     '#type' => 'textfield',
     '#title' => t('Email address'),
-    '#required' => TRUE,
+    '#description' => t('Email address of the contact created with this client. Optional - if none is provided, no user will be created with this client.'),
+    '#required' => FALSE,
     '#size' => 40,
     '#default_value' => $node->email,
     '#maxlength' => 100,
@@ -133,7 +134,7 @@ function hosting_client_form(&$node) {
     $form['email_confirm'] = array(
       '#type' => 'textfield',
       '#title' => t('Confirm Email address'),
-      '#required' => TRUE,
+      '#required' => FALSE,
       '#size' => 40,
       '#maxlength' => 100,
     ); 
@@ -206,18 +207,17 @@ function hosting_client_validate(&$node) {
       form_set_error('title', t("Client name already in use."));
     }
   }
-
-  $nid = db_result(db_query("SELECT nid FROM {hosting_client} WHERE email='%s'", $node->email));
-  if ($nid && $node->nid != $nid) {
-    form_set_error('email', t("Email address already exists."));
-  }
-  if (!$node->nid) {
+  if (!$node->nid && $node->email) {
+    $user = user_load(array('mail' => $node->email));
+    if ($user) {
+      form_set_error('email', t("Email address already exists."));
+    }
     if ($node->email != $node->email_confirm) {
       form_set_error('email_confirm', t("Email addresses do not match"));
     }
-  }
-  if (!valid_email_address($node->email)) {
-    form_set_error('email', t("Email address invalid."));
+    if (!valid_email_address($node->email)) {
+      form_set_error('email', t("Email address invalid."));
+    }
   }
 }
 
@@ -225,8 +225,8 @@ function hosting_client_validate(&$node) {
  * Implementation of hook_insert().
  */
 function hosting_client_insert($node) {
-  db_query("INSERT INTO {hosting_client} (vid, nid, uname, email) VALUES (%d, %d, '%s', '%s' )",
-           $node->vid, $node->nid, hosting_client_sanitize($node->title), $node->email);
+  db_query("INSERT INTO {hosting_client} (vid, nid, uname) VALUES (%d, %d, '%s' )",
+           $node->vid, $node->nid, hosting_client_sanitize($node->title));
   if (variable_get('hosting_client_register_user', FALSE) 
     && !user_load(array('mail' => $node->email))) {
     $user = hosting_client_register_user($node);
@@ -308,8 +308,8 @@ function hosting_client_update($node) {
     hosting_client_insert($node);
   }
   else {
-    db_query("UPDATE {hosting_client} SET nid=%d, uname='%s', email='%s' WHERE vid=%d",
-             $node->nid, hosting_client_sanitize($node->title), $node->email, $node->vid);
+    db_query("UPDATE {hosting_client} SET nid=%d, uname='%s' WHERE vid=%d",
+             $node->nid, hosting_client_sanitize($node->title), $node->vid);
   }
   if ($node->users) {
     foreach ($node->users as $user) {
@@ -340,7 +340,7 @@ function hosting_client_delete($node) {
  *    Node object
  */
 function hosting_client_load($node) {
-  $additions = db_fetch_object(db_query('SELECT email, uname FROM {hosting_client} WHERE vid = %d', $node->vid));
+  $additions = db_fetch_object(db_query('SELECT uname FROM {hosting_client} WHERE vid = %d', $node->vid));
   return $additions;
 }
 
@@ -395,11 +395,6 @@ function hosting_client_view($node, $teaser = FALSE, $page = FALSE) {
   $type = node_get_types('type', $node);
 
   $node->content['info']['#prefix'] = '<div id="hosting-client-info">';
-  $node->content['info']['email'] = array(
-    '#type' => 'item',
-    '#title' => t('Email'),
-    '#value' => filter_xss($node->email),
-  );
   $node->content['info']['title'] = array(
     '#type' => 'item',
     '#title' => $type->title_label,
@@ -449,27 +444,27 @@ function hosting_client_view($node, $teaser = FALSE, $page = FALSE) {
 /**
  * Helper function to generate new client node during import
  *
- * @param email
- *   Client email address - Required
- * @param contact_name
- *   Client name - Optional
- * @param existing
- *   Return an existing client registered for this email address, defaults to FALSE
+ * @param name
+ *   Client email address or name
+ * @param name
+ *   Client name, title or machine name - deprecated
  * @return
  *   The nid of the generated client
  * @deprecated the organization and email parameters will be dropped
- *   in 2.x in favor of the name parameter
+ *   in 2.x in favor of the name parameter, which will become the
+ *   sole argument
  */
-function hosting_import_client($email, $name = '', $organization = '') {
-  $client = hosting_get_client_by_email($email);
+function hosting_import_client($name, $name = '', $organization = '') {
+  $client = hosting_get_client_by_email($name);
+  if (!$client) {
+    $client = hosting_get_client($name);
+  }
 
   if (!$client) {
     $client = new stdClass();
     $client->type = 'client';
     $client->uid = 1;
-    $client->email = $email;
     $client->title = trim($name);
-    $client->organization = $organization;
     $client->status = 1;
     node_save($client);
   }
@@ -633,12 +628,9 @@ function hosting_client_configure() {
 
 function _hosting_get_clients() {
   $return = array();
-  $result = pager_query(db_rewrite_sql('SELECT n.nid, name, email from {hosting_client} AS h INNER JOIN {node} n ON n.nid = h.nid AND n.vid = h.vid'), 25);
+  $result = pager_query(db_rewrite_sql('SELECT n.nid, n.title from {node} n WHERE n.type = "client"'), 25);
   while ($client = db_fetch_object($result)) {
-    if ($client->name == "") {
-     $client->name = $client->email;
-    }
-    $return[$client->nid] = $client->name;
+    $return[$client->nid] = $client->title;
   }
   return $return;
 }

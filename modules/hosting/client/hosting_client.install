@@ -19,12 +19,6 @@ function hosting_client_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
-      'email' => array(
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE,
-        'default' => '',
-      ),
       'uname' => array(
         'type' => 'varchar',
         'length' => 255,

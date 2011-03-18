@@ -38,7 +38,9 @@ function hosting_site_drush_context_import($context, &$node) {
     $node->profile = $profile->package_id;
 
     $client = node_load(HOSTING_DEFAULT_CLIENT);
-    if ($context->client_email) {
+    if ($context->client_name) {
+      $client = hosting_import_client($context->client_name);
+    } elseif ($context->client_email) {      // @deprecated - drop this after 1.x
       $client = hosting_import_client($context->client_email);
     }
     $node->client = $client;

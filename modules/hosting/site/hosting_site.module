@@ -319,8 +319,11 @@ function hosting_import_site($site_id, $data, $platform) {
   global $user;
   $client = node_load(HOSTING_DEFAULT_CLIENT);
 
+  // @deprecated drop this after 1.x
   if ($data['client_email']) {
-    $client = hosting_import_client($data['client_email'], $data['client_name']);
+    $client = hosting_import_client($data['client_email']);
+  } elseif ($data['client_name']) {
+    $client = hosting_import_client($data['client_name']);
   }
 
   $site = node_load($site_id);
