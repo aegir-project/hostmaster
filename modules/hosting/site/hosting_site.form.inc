@@ -276,7 +276,7 @@ function hosting_site_validate($node, &$form) {
  
   $url = strtolower(trim($node->title)); // domain names are case-insensitive
   if (!_hosting_valid_fqdn($url)) {
-    form_set_error('title', t("You have not specified a valid url for this site."));
+    form_set_error('title', t("You have not specified a valid domain name for this site. It should start with a letter."));
   }
    
   if (!$node->new_client) {

@@ -68,7 +68,7 @@ function hosting_task_migrate_form_validate($form, &$form_state) {
   if ($url != strtolower(trim($site->title))) {
     $migrate_possible = TRUE;
     if (!_hosting_valid_fqdn($url)) {
-      form_set_error('title', t("You have not specified a valid url for this site."));
+      form_set_error('title', t("You have not specified a valid domain name for this site. It should start with a letter."));
     }
     if (hosting_site_exists($url)) {
       form_set_error('title', t("The domain name you have specified is not unique."));
