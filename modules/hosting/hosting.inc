@@ -31,9 +31,13 @@ function _hosting_valid_ip($hostname) {
  */
 function _hosting_valid_fqdn($fqdn) {
   # regex is an implementation of RFC1035
-  # return preg_match("/^([a-z0-9]([a-z0-9-]*[a-z0-9])?\.?)+$/i", $fqdn);
-  # we don't allow using IPs as a site name
-  return preg_match("/^([a-z]+([a-z0-9-]*[a-z0-9])?\.?)+$/i", $fqdn);
+  # original: return preg_match("/^([a-z0-9]([a-z0-9-]*[a-z0-9])?\.?)+$/i", $fqdn);
+  #
+  # We don't allow using IPs as a site name.
+  # The domain name should start with a letter
+  # and end with a-z0-9 only - dot is not allowed.
+  #
+  return preg_match("/^([a-z]+([a-z0-9-]*[a-z0-9])?\.?)+[a-z0-9]+$/i", $fqdn);
 }
 
 function hosting_format_interval($ts) {
