@@ -13,14 +13,18 @@ function hook_hosting_service_type() {
 }
 
 /**
- * Define service implementation.
+ * Define service implementations.
  *
  * Implementation class should go in {module name}.service.inc and be named
  * hostingService_{service type}_{type}, which should be a subclass of
  * hostingService.
+ *
+ * @return
+ *   An associative array with the service implementation as key, and the
+ *   service type implemented as value.
  */
 function hook_hosting_service() {
   return array(
-    'http' => 'apache',  // Service type => type
+    'apache' => 'http',  // Service implementation => service type.
   );
 }
