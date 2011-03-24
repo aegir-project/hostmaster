@@ -83,6 +83,14 @@ function hosting_client_access($op, $node, $account) {
   }
 }
 
+/**
+ * Get a client by name or nid
+ *
+ * This is really a shortcut to node_load()
+ *
+ * @todo just load the freaking node instead of doing that select...
+ * @see node_load()
+ */
 function hosting_get_client($client) {
   if (is_numeric($client)) {
     $result = db_result(db_query("SELECT n.nid FROM {hosting_client} h INNER JOIN {node} n ON n.nid = h.nid WHERE n.nid = %d", $client));
@@ -96,6 +104,18 @@ function hosting_get_client($client) {
   return false;
 }
 
+/**
+ * Get a client by email
+ *
+ * This is really a shortcut to node_load()
+ *
+ * @see node_load()
+ * @see hosting_get_client()
+ * @deprecated the email field and therefore this function will be
+ *   completely dropped in 2.x. this may not even work at all as the
+ *   email field will not be populated on new sites. use
+ *   hosting_get_client() instead
+ */
 function hosting_get_client_by_email($email) {
   $result = db_result(db_query("SELECT c.nid FROM {hosting_client} c INNER JOIN {node} n ON n.nid = c.nid WHERE c.email = '%s'", $email));
   if ($result) {
