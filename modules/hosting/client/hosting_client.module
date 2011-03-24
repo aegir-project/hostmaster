@@ -129,6 +129,9 @@ function hosting_get_client($client) {
  *   hosting_get_client() instead
  */
 function hosting_get_client_by_email($email) {
+  $caller = next(debug_backtrace());
+  trigger_error(t("@function() is deprecated and may yield undefined results, replace with @newfunction(), called from @caller in @file", array('@file' => $caller['file'] . ':' . $caller['line'], '@caller' => $caller['function'], '@function' => __FUNCTION__, '@newfunction' => 'hosting_get_client')), E_USER_DEPRECATED);
+  
   $result = db_result(db_query("SELECT c.nid FROM {hosting_client} c INNER JOIN {node} n ON n.nid = c.nid WHERE c.email = '%s'", $email));
   if ($result) {
     return node_load($result);
