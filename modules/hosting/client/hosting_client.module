@@ -6,6 +6,9 @@
 include('hosting_client.access.inc');
 include drupal_get_path( 'module', 'node' ) . '/node.pages.inc';
 
+/**
+ * Implementation of hook_node_info()
+ */
 function hosting_client_node_info() {
   $types["client"] =  array(
     "type" => 'client', "name" => 'Client',
@@ -33,6 +36,9 @@ function hosting_client_hosting_feature() {
   return $features;
 }
 
+/**
+ * Implementation of hook_theme()
+ */
 function hosting_client_theme($existing, $type, $theme, $path) {
   return array(
     'hosting_client_user_form' => array(
@@ -46,10 +52,16 @@ function hosting_client_theme($existing, $type, $theme, $path) {
   );
 }
 
+/**
+ * Implementation of hook_perm()
+ */
 function hosting_client_perm() {
   return array('create client','view client', 'edit own client', 'delete own client', 'administer clients', 'edit client users');
 }
 
+/**
+ * Implementation of hook_access()
+ */
 function hosting_client_access($op, $node, $account) {
   if (!hosting_feature('client')) {
     // multiple client support has been disabled for this site.
@@ -262,12 +274,27 @@ function hosting_client_insert($node) {
   }
 }
 
+/**
+ * Shortcut to get the rid of the 'aegir client' role.
+ *
+ * This hardcodes the 'aegir client' role name, so if it is changed,
+ * this will fail.
+ *
+ * @todo the rid or role name should be a variable
+ * @deprecated remove this function once the above setting is implemented
+ */
 function _hosting_client_get_role() {
   return db_result(db_query("SELECT rid FROM {role} WHERE name='aegir client'"));
 }
 
+/**
+ * register a new user account for the client
+ *
+ * This is a helper function for client forms that will create a user
+ * alongside a new client if the hosting_client_register_user setting
+ * is true.
+ */
 function hosting_client_register_user($node) {
-  //register a new user account for the client
   $pass = user_password();
   $user = new stdClass();
   $edit['name'] = $node->email;
@@ -342,6 +369,11 @@ function hosting_client_update($node) {
   }
 }
 
+/**
+ * Implementation of internal hosting_nodeapi_hook_delete_revision()
+ *
+ * @see hosting_nodeapi()
+ */
 function hosting_nodeapi_client_delete_revision(&$node) {
   db_query('DELETE FROM {hosting_client} WHERE vid = %d', $node->vid);
 }
@@ -381,7 +413,6 @@ function hosting_client_node_load($arg) {
   }
   return FALSE;
 }
-
 
 /**
  * Return a list of users for a given client.
@@ -569,7 +600,6 @@ function _hosting_client_site_default($node) {
   return $client->title;
 }
 
-
 /**
  * wrapper around the regular site_node_form that passes a dummy site with a proper client
  */
@@ -580,6 +610,11 @@ function hosting_client_site_form($form, $node) {
   return drupal_get_form('site_node_form', $site);
 }
 
+/**
+ * Menu access callback for the site creation tab in the client node
+ *
+ * @see hosting_client_menu()
+ */
 function hosting_client_menu_access($perm, $node) {
   if ($node->type == 'client') {
     return user_access($perm);
@@ -588,10 +623,22 @@ function hosting_client_menu_access($perm, $node) {
   }
 }
 
+/**
+ * Menu access callback for the client settings
+ *
+ * @see hosting_client_menu()
+ */
 function _hosting_client_configure_access() {
   return user_access('administer clients') && hosting_feature('client');
 }
 
+/**
+ * Expand the client registration email message based on the variables
+ *
+ * This will check for a custom message set in the
+ * hosting_client_mail_welcome_subject and
+ * hosting_client_mail_welcome_body variables.
+ */
 function _hosting_client_mail_text($messageid, $variables = array()) {
   // Check if an admin setting overrides the default string.
   if ($admin_setting = variable_get('hosting_client_mail_'. $messageid, FALSE)) {
@@ -607,7 +654,9 @@ function _hosting_client_mail_text($messageid, $variables = array()) {
   }
 }
 
-
+/**
+ * Menu callback for the module's settings
+ */
 function hosting_client_configure() {
   $form['hosting_client_register_user'] = array(
     '#type' => 'checkbox',
@@ -645,7 +694,9 @@ function hosting_client_configure() {
 
 }
 
-
+/**
+ * Get 25 clients in a paged query
+ */
 function _hosting_get_clients() {
   $return = array();
   $result = pager_query(db_rewrite_sql('SELECT n.nid, n.title from {node} n WHERE n.type = "client"'), 25);
@@ -655,12 +706,22 @@ function _hosting_get_clients() {
   return $return;
 }
 
+/**
+ * Make a themed list of clients
+ *
+ * Will take whatever _hosting_get_clients() will give as clients
+ *
+ * @see _hosting_get_clients()
+ */
 function hosting_client_list() {
   $summary = array();
   $clients = _hosting_get_clients();
   return theme('item_list', array_map('_hosting_node_link', array_keys($clients)));
 }
 
+/**
+ * Implementation of hook_block()
+ */
 function hosting_client_block($op = 'list', $delta = 0, $edit = array()) {
   $blocks = array();
   if (user_access('view client')) {
@@ -719,6 +780,14 @@ function hosting_client_form_alter(&$form, $form_state, $form_id) {
   }
 }
 
+/**
+ * Implementation of internal hosting_nodeapi_hook_load()
+ *
+ * This loads the platform/client access control mappings in the platform node.
+ *
+ * @todo move this to the platform module (!!)
+ * @see hosting_nodeapi()
+ */
 function hosting_nodeapi_platform_load($node) {
   $result = db_query("SELECT cid FROM {hosting_platform_client_access} WHERE pid = %d", $node->nid);
 
@@ -728,6 +797,7 @@ function hosting_nodeapi_platform_load($node) {
 
   return $additions;
 }
+
 /**
  * Implementation of hook_nodeapi()
  */
@@ -801,8 +871,8 @@ function hosting_client_sanitize($title) {
   return preg_replace("/[!\W\.\-]/", "", $title);
 }
 
-/*
- * Views integration
+/**
+ * Implementation of hook_views_api()
  */
 function hosting_client_views_api() {
   return array(
