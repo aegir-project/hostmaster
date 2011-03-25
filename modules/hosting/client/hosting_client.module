@@ -102,6 +102,8 @@ function hosting_client_access($op, $node, $account) {
  *
  * @todo just load the freaking node instead of doing that select...
  * @see node_load()
+ * @param $client
+ *   Either the nid or the client title
  */
 function hosting_get_client($client) {
   if (is_numeric($client)) {
