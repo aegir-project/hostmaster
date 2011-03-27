@@ -56,7 +56,7 @@ function hostmaster_bootstrap() {
   $node = new stdClass();
   $node->uid = 1;
   $node->type = 'client';
-  $node->uname = 'admin';
+  $node->title = 'admin';
   $node->status = 1;
   node_save($node);
   variable_set('hosting_default_client', $node->nid);  
