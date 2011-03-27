@@ -509,9 +509,9 @@ function hosting_client_view($node, $teaser = FALSE, $page = FALSE) {
  *   sole argument
  */
 function hosting_import_client($name, $organization = '') {
-  $client = hosting_get_client_by_email($name);
+  $client = hosting_get_client($name);
   if (!$client) {
-    $client = hosting_get_client($name);
+    $client = hosting_get_client_by_email($name);
   }
 
   if (!$client) {
