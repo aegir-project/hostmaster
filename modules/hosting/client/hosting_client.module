@@ -108,7 +108,7 @@ function hosting_get_client($client) {
     $result = db_result(db_query("SELECT n.nid FROM {hosting_client} h INNER JOIN {node} n ON n.nid = h.nid WHERE n.nid = %d", $client));
   }
   else {
-    $result = db_result(db_query("SELECT c.nid FROM {hosting_client} c JOIN {node} n ON c.nid = n.nid WHERE n.title = '%s' AND n.type = 'client'", $client, $client));
+    $result = db_result(db_query("SELECT c.nid FROM {hosting_client} c JOIN {node} n ON c.nid = n.nid WHERE n.title = '%s' AND n.type = 'client'", $client));
   }
   if ($result) {
     return node_load($result);
@@ -500,15 +500,15 @@ function hosting_client_view($node, $teaser = FALSE, $page = FALSE) {
  *
  * @param name
  *   Client email address or name
- * @param name
- *   Client name, title or machine name - deprecated
+ * @param organization
+ *   Client name, title, organization or machine name - deprecated
  * @return
  *   The nid of the generated client
  * @deprecated the organization and email parameters will be dropped
  *   in 2.x in favor of the name parameter, which will become the
  *   sole argument
  */
-function hosting_import_client($name, $name = '', $organization = '') {
+function hosting_import_client($name, $organization = '') {
   $client = hosting_get_client_by_email($name);
   if (!$client) {
     $client = hosting_get_client($name);
