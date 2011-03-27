@@ -1,0 +1,8 @@
+Hosting queue runner
+====================
+
+Simple Drupal module intended to make it easy to run the Aegir tasks queue with
+near-instant execution times.
+
+You will additionally need a daemon like supervisor to call the drush command
+supplied with this module. See the example configuration file included.
