@@ -49,12 +49,12 @@ function drush_hosting_queue_runner() {
     // of the node, and so it is not to be trusted!
     $tasks = _hosting_get_new_tasks(1);
     foreach ($tasks as $task) {
-      // We sleep for a  couple of seconds just in case others want to run the
-      // task first. This guards against other processes that want to add a
-      // hosting task with arguments and run it immediately, they should be
-      // able to do this without us getting in there first.
+      // We sleep for a second just in case others want to run the task first.
+      // This guards against other processes that want to add a hosting task
+      // with arguments and run it immediately, they should be able to do this
+      // without us getting in there first.
       drush_log(dt('Found task to execute. Pausing before execution.'));
-      sleep(2);
+      sleep(1);
 
       // Execute the task in the backend.
       drush_log('Executing task.');
