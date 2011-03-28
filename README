@@ -31,3 +31,8 @@ These instructions are for Debian based linux distributions, you may need to adj
 
 5. Restart supervisor and add a task to your hosting tasks queue in Aegir, re-verify a site and see if it executes then you're all set up!
 Supervisor keeps a log about the execution of the queue runner that may be useful if you are trying to resolve an issue where your tasks are not being executed. The output from the queue runner is also logged by supervisor to (by default) `/var/log/hosting_queue_runner` it may be useful to view this log occasionally to ensure that there are no errors being logged. 'Duplicate task' errors, if you get them are nothing to worry about however.
+
+Troubleshooting
+---------------
+
+Try to run the bash script from the command line as the Aegir user yourself, if you can do this, then the issue is with Supervisor, otherwise it might be an issue with this module/script.
