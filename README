@@ -10,29 +10,45 @@ supplied with this module. See the example configuration file included.
 Installation instructions
 -------------------------
 
-These instructions are for Debian based linux distributions, you may need to adjust settings for other distributions.
+These instructions are for Debian based linux distributions, you may need to
+adjust settings for other distributions.
 
 1. Install supervisor
 
         sudo apt-get install supervisor
 
-2. Install this module in your main hostmaster (Aegir) site. You can enable the feature from: `admin/hosting`. This will disable your hosting tasks queue for you, ready for you to enable the daemon.
+2. Install this module in your main hostmaster (Aegir) site. You can enable the
+   feature from: `admin/hosting`. This will disable your hosting tasks queue for
+   you, ready for you to enable the daemon.
 
-3. Copy the `hosting_queue_runner.sh` script from the module directory to the root of the Aegir home directory (usually `/var/aegir`). You will want to ensure that the script is executable and owned by the Aegir user:
+3. Copy the `hosting_queue_runner.sh` script from the module directory to the
+   root of the Aegir home directory (usually `/var/aegir`). You will want to
+   ensure that the script is executable and owned by the Aegir user:
 
         chown aegir:aegir hosting_queue_runner.sh
         chmod 700 hosting_queue_runner.sh
 
-4. Copy the supervisor example configuration file from the module directory to the conf.d directory of supervisor.
+4. Copy the supervisor example configuration file from the module directory
+   to the conf.d directory of supervisor.
 
         cp hosting_queue_runner.conf /etc/supervisor/conf.d/
 
-    Adjust the settings in that file to match your environment. If you have a standard Aegir setup, and have followed the README so far, then you shouldn't need to change anything.
+    Adjust the settings in that file to match your environment. If you have a
+    standard Aegir setup, and have followed the README so far, then you
+    shouldn't need to change anything.
 
-5. Restart supervisor and add a task to your hosting tasks queue in Aegir, re-verify a site and see if it executes then you're all set up!
-Supervisor keeps a log about the execution of the queue runner that may be useful if you are trying to resolve an issue where your tasks are not being executed. The output from the queue runner is also logged by supervisor to (by default) `/var/log/hosting_queue_runner` it may be useful to view this log occasionally to ensure that there are no errors being logged. 'Duplicate task' errors, if you get them are nothing to worry about however.
+5. Restart supervisor and add a task to your hosting tasks queue in Aegir,
+   re-verify a site and see if it executes then you're all set up!
+   Supervisor keeps a log about the execution of the queue runner that may be
+   useful if you are trying to resolve an issue where your tasks are not being
+   executed. The output from the queue runner is also logged by supervisor to
+   (by default) `/var/log/hosting_queue_runner` it may be useful to view this
+   log occasionally to ensure that there are no errors being logged. 'Duplicate
+   task' errors, if you get them are nothing to worry about however.
 
 Troubleshooting
 ---------------
 
-Try to run the bash script from the command line as the Aegir user yourself, if you can do this, then the issue is with Supervisor, otherwise it might be an issue with this module/script.
+Try to run the bash script from the command line as the Aegir user yourself, if
+you can do this, then the issue is with Supervisor, otherwise it might be an
+issue with this module/script.
