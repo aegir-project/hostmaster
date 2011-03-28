@@ -27,6 +27,10 @@ function drush_hosting_queue_runner() {
   }
   $end_time = variable_get('hosting_queue_runner_process_lifetime', 3600)  + time();
 
+  // Record the fact that we're running, so we can give some feedback in the
+  // frontend.
+  variable_set('hosting_queue_runner_process_started', time());
+
   while (TRUE) {
 
     // Sleep for a second before we look for new tasks.
@@ -39,6 +43,8 @@ function drush_hosting_queue_runner() {
     }
 
     // Try to get a single task to run.
+    // Note that the node_load called by this function might return an old copy
+    // of the node, and so it is not to be trusted!
     $tasks = _hosting_get_new_tasks(1);
     foreach ($tasks as $task) {
       // We sleep for a  couple of seconds just in case others want to run the
