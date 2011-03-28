@@ -5,10 +5,12 @@
  */
 function hosting_queue_runner_settings_form() {
 
+  $form['#description'] = t('Note that the settings on this form will only apply to the daemon once it has been restarted, which by default happens as least once an hour.');
+
   $form['hosting_queue_runner_post_task_delay'] = array(
     '#type' => 'select',
     '#title' => t('Post task delay'),
-    '#description' => t('Tasks are executed as fast as possible, so you may wish to add a delay after the execution of each task. New tasks will still start executing almost instantly.'),
+    '#description' => t('Tasks are executed as fast as possible, so you may wish to add a delay after the execution of each task. After this delay, new tasks will still start executing almost instantly.'),
     '#default_value' => variable_get('hosting_queue_runner_post_task_delay', 0),
     '#options' => array(
       0 => t('No delay'),
