@@ -29,6 +29,9 @@ function drush_hosting_queue_runner() {
 
   while (TRUE) {
 
+    // Sleep for a second before we look for new tasks.
+    sleep(1);
+
     // Should we terminate.
     if (time() > $end_time) {
       drush_log('Terminating hosting queue runner (max run time reached)');
@@ -43,11 +46,14 @@ function drush_hosting_queue_runner() {
       // hosting task with arguments and run it immediately, they should be
       // able to do this without us getting in there first.
       sleep(2);
-      // Execute the task on in the backend.
+
+      // Execute the task in the backend.
       drush_backend_invoke("hosting-task", array($task->nid));
+
+      // Delay for a configurable amount of time.
+      $delay = variable_get('hosting_queue_runner_post_task_delay', 0);
+      sleep($delay);
     }
-    // Sleep for a second before we look for new tasks.
-    sleep(1);
   }
 
 }
