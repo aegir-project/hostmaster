@@ -14,7 +14,6 @@ function hosting_queue_runner_drush_command() {
     ),
   );
 
-
   return $items;
 }
 
