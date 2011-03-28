@@ -5,7 +5,11 @@
  */
 function hosting_queue_runner_settings_form() {
 
-  $form['#description'] = t('Note that the settings on this form will only apply to the daemon once it has been restarted, which by default happens as least once an hour.');
+  $form['description'] = array(
+    '#type' => 'markup',
+    '#value' => t('Note that the settings on this form will only apply to the daemon once it has been restarted, which by default happens as least once an hour.'),
+    '#weight' => -100,
+  );
 
   $last_seen = variable_get('hosting_queue_runner_process_started', NULL);
   $form['hosting_queue_runner_process_started'] = array(
