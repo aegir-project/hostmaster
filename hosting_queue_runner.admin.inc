@@ -14,8 +14,12 @@ function hosting_queue_runner_settings_form() {
     '#default_value' => variable_get('hosting_queue_runner_post_task_delay', 0),
     '#options' => array(
       0 => t('No delay'),
-    ) + drupal_map_assoc(range(1, 60)),
+    ) + drupal_map_assoc(range(1, 60), '_hosting_queue_runner_settings_form_delay_callback'),
   );
 
   return system_settings_form($form);
+}
+
+function _hosting_queue_runner_settings_form_delay_callback($value) {
+  return format_plural($value, '1 second', '@count seconds');
 }
