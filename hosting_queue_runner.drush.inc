@@ -31,6 +31,8 @@ function drush_hosting_queue_runner() {
   // frontend.
   variable_set('hosting_queue_runner_process_started', time());
 
+  drush_log(dt('Starting Hosting queue runner, watching for available tasks'));
+
   while (TRUE) {
 
     // Sleep for a second before we look for new tasks.
@@ -38,7 +40,7 @@ function drush_hosting_queue_runner() {
 
     // Should we terminate.
     if (time() > $end_time) {
-      drush_log('Terminating hosting queue runner (max run time reached)');
+      drush_log(dt('Terminating Hosting queue runner (max run time reached)'));
       break;
     }
 
@@ -51,14 +53,22 @@ function drush_hosting_queue_runner() {
       // task first. This guards against other processes that want to add a
       // hosting task with arguments and run it immediately, they should be
       // able to do this without us getting in there first.
+      drush_log(dt('Found task to execute. Pausing before execution.'));
       sleep(2);
 
       // Execute the task in the backend.
+      drush_log('Executing task.');
       drush_backend_invoke("hosting-task", array($task->nid));
+      drush_log(dt('Finished executing task.'));
 
       // Delay for a configurable amount of time.
+
       $delay = variable_get('hosting_queue_runner_post_task_delay', 0);
-      sleep($delay);
+      if (!empty($delay)) {
+        drush_log(dt('Going to sleep for @count seconds after completing task.', array('@count' => $delay)));
+        sleep($delay);
+      }
+
     }
   }
 
