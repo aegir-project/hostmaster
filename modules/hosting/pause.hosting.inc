@@ -5,7 +5,7 @@
  *
  * @todo wait for tasks to complete
  */
-function drush_hosting_hostmaster_pause_validate($url) {
+function drush_hosting_hosting_pause_validate($url) {
 }
 
 /**
@@ -13,7 +13,7 @@ function drush_hosting_hostmaster_pause_validate($url) {
  *
  * This is really just deleting the cronjob.
  */
-function drush_hosting_hostmaster_pause($url) {
+function drush_hosting_hosting_pause($url) {
   // wipe out cron entry
   exec('crontab -r');
   // we can't rely on update.php because it runs too late
