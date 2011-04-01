@@ -70,6 +70,35 @@ function hook_hosting_service() {
 }
 
 /**
+ * Add or change context options before a hosting task runs.
+ *
+ * This hook is invoked just before an 'install', 'verify' or 'import' task, and
+ * the TASK_OBJECT will be either: 'server', 'platform' or 'site'.
+ *
+ * This gives other modules the chance to send data to the backend to be
+ * persisted by services there. The entire task is sent so that you have access
+ * to it, but you should avoid changing things outside of the
+ * $task->content_options collection.
+ *
+ * @param $task
+ *   The hosting task that is about to be executed, the task is passed by
+ *   reference. The context_options property of this object is about to be saved
+ *   to the backend, so you can make any changes before that happens. Note that
+ *   these changes won't persist in the backend unless you have a service that
+ *   will store them.
+ *
+ *   The node representing the object of the task, e.g. the site that is being
+ *   verified is available in the $task->ref property.
+ *
+ * @see drush_hosting_task()
+ */
+function hook_hosting_TASK_OBJECT_context_options(&$task) {
+  // From hosting_hosting_platform_context_options().
+  $task->context_options['server'] = '@server_master';
+  $task->context_options['web_server'] = hosting_context_name($task->ref->web_server);
+}
+
+/**
  * Act on nodes defined by other modules.
  *
  * This is a more specific version of hook_nodeapi() that includes a node type
@@ -105,7 +134,7 @@ function hook_nodeapi_TYPE_OP(&$node, $a3, $a4) {
 }
 
 /**
- * 
+ *
  */
 function hook_provision_args($task, $task_type) {
 
