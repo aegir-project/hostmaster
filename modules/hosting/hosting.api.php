@@ -1,4 +1,13 @@
 <?php
+/**
+ * @file
+ * Hooks provided by the hosting module, and some other random ones.
+ */
+
+/**
+ * @addtogroup hooks
+ * @{
+ */
 
 /**
  * Define service types.
@@ -28,3 +37,7 @@ function hook_hosting_service() {
     'apache' => 'http',  // Service implementation => service type.
   );
 }
+
+/**
+ * @} End of "addtogroup hooks".
+ */
