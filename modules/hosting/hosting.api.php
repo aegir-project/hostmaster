@@ -10,6 +10,30 @@
  */
 
 /**
+ * Determine if a site can be created using the specified domain.
+ *
+ * @param $url
+ *   The URL of the site that hosting wishes to create.
+ * @param $params
+ *   An array of paramters that may contain information about the site. None of
+ *   the keys are required however, so you should not depend on the value of any
+ *   particular key in this array. If the array is not empty it will usually
+ *   contain at least a 'nid' key whose value is the nid of the site being
+ *   created.
+ * @return
+ *   Return TRUE/FALSE if you allow or deny the domain respectively.
+ */
+function hook_allow_domain($url, $params) {
+  // Don't allow another drupal.org, it's special.
+  if ($url == 'drupal.org') {
+    return FALSE;
+  }
+  else {
+    return TRUE;
+  }
+}
+
+/**
  * Define service types.
  */
 function hook_hosting_service_type() {
