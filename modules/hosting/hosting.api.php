@@ -176,5 +176,22 @@ function hook_provision_args($task, $task_type) {
 }
 
 /**
+ * Perform actions when a task has completed succesfully.
+ *
+ * Replace TASK_TYPE with the type of task that if completed you will be
+ * notified of.
+ *
+ * @param $task
+ *   The hosting task that has completed.
+ * @param
+ *   The drush output of the completed task.
+ *
+ * @see drush_hosting_post_hosting_task()
+ */
+function hook_post_hosting_TASK_TYPE_task($task, $data) {
+
+}
+
+/**
  * @} End of "addtogroup hooks".
  */
