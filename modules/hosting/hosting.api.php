@@ -105,5 +105,12 @@ function hook_nodeapi_TYPE_OP(&$node, $a3, $a4) {
 }
 
 /**
+ * 
+ */
+function hook_provision_args($task, $task_type) {
+
+}
+
+/**
  * @} End of "addtogroup hooks".
  */
