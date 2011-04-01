@@ -34,6 +34,13 @@ function hook_allow_domain($url, $params) {
 }
 
 /**
+ * Define hosting queues.
+ */
+function hook_hosting_queues() {
+
+}
+
+/**
  * Define service types.
  */
 function hook_hosting_service_type() {
