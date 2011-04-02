@@ -1,6 +1,16 @@
 <?php
 
 /**
+ * @file
+ * Hooks provided by the hosting quota module.
+ */
+
+/**
+ * @addtogroup hooks
+ * @{
+ */
+
+/**
  * Definition of hook_hosting_quota_resource
  */
 function hook_hosting_quota_resource() {
@@ -55,3 +65,7 @@ function hook_hosting_quota_resource_render($resource, $usage) {
       return $usage * $bar . ' units';
   }
 }
+
+/**
+ * @} End of "addtogroup hooks".
+ */
