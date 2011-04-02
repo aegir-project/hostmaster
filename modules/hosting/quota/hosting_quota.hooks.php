@@ -3,7 +3,6 @@
 /**
  * Definition of hook_hosting_quota_resource
  */
-
 function hook_hosting_quota_resource () {
   $resources = array();
 
@@ -31,7 +30,7 @@ function hook_hosting_quota_resource () {
  *   Return an integer that can be compared to what the quota is set to
  */
 function hook_hosting_quota_get_usage ($client, $resource, $start, $end) {
-  
+
   if (hosting_get_client($client)) {
     switch ($resource) {
       case 'foo':
