@@ -6,7 +6,7 @@
 
 include_once('hosting.inc');
 
-function drush_hosting_hosting_resume() {
+function drush_hosting_resume() {
   drush_log('bootstrapping drupal');
   drush_bootstrap(DRUSH_BOOTSTRAP_DRUPAL_FULL);
   $server_name = drush_get_option('server_name');
