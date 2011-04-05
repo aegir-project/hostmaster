@@ -122,6 +122,12 @@ function hosting_task_cancel_access($node) {
  * This function defines which tasks should be showed to the user but
  * especially which will be accessible to him, in the permissions system.
  *
+ * @arg $node object
+ *   the node object we're trying to access
+ *
+ * @arg $task string
+ *   the task type we're trying to do on the $node
+ *
  * @see hosting_task_menu()
  */
 function hosting_task_menu_access($node, $task) {
