@@ -205,9 +205,12 @@ function hosting_task_menu_access($node, $task) {
 function hosting_task_menu_access_csrf($node, $task) {
   global $user;
 
+  $interactive_tasks = array('migrate', 'clone');
+
   // To prevent CSRF attacks, a unique token based upon user is used. Deny
-  // access if the token is missing or invalid.
-  if (!isset($_GET['token']) || !drupal_valid_token($_GET['token'], $user->uid)) {
+  // access if the token is missing or invalid. We only do this on
+  // non-interactive tasks.
+  if (!in_array($task, $interactive_tasks) && (!isset($_GET['token']) || !drupal_valid_token($_GET['token'], $user->uid))) {
     return FALSE;
   }
   // Call the main menu access handler.
