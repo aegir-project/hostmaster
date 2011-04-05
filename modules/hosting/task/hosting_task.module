@@ -22,7 +22,7 @@ function hosting_task_menu() {
            'description' => $info['description'],
            'page callback' => 'drupal_get_form',
            'page arguments' => array('hosting_task_confirm_form', 1, $task),
-           'access callback' => 'hosting_task_menu_access_csrf',
+           'access callback' => 'hosting_task_menu_access',
            'access arguments' => array(1, $task),
            'type' => MENU_CALLBACK,
          );
@@ -99,13 +99,6 @@ function hosting_task_cancel($node) {
 function hosting_task_cancel_access($node) {
   // bring $user into scope, so we can test task ownership
   global $user;
-
-  // To prevent CSRF attacks, a unique token based upon user is used. Deny
-  // access if the token is missing or invalid.
-  if (!isset($_GET['token']) || !drupal_valid_token($_GET['token'], $user->uid)) {
-    return FALSE;
-  }
-
   // 'administer tasks' allows cancelling any and all tasks on the system
   if (user_access('administer tasks')) {
     return TRUE;  
@@ -191,27 +184,6 @@ function hosting_task_menu_access($node, $task) {
     }
   }
   return FALSE;
-}
-
-/**
- * Access callback helper for hosting task menu items.
- *
- * Implemented as a helper function since we only want to validate the CSRF
- * token when the user accesses a certain path, not when (for example) building
- * the list of tasks a user has access to.
- *
- * @see hosting_task_menu_access()
- */
-function hosting_task_menu_access_csrf($node, $task) {
-  global $user;
-
-  // To prevent CSRF attacks, a unique token based upon user is used. Deny
-  // access if the token is missing or invalid.
-  if (!isset($_GET['token']) || !drupal_valid_token($_GET['token'], $user->uid)) {
-    return FALSE;
-  }
-  // Call the main menu access handler.
-  return hosting_task_menu_access($node, $task);
 }
 
 /**
@@ -926,7 +898,7 @@ function hosting_task_queue_block() {
     );
 
 
-    $log_button = _hosting_task_button(t('View'), 'node/' . $node->nid, t("Display the task log"), 'hosting-button-log', isset($node->nid) &&  user_access('access task logs'), true, false);
+    $log_button = _hosting_task_button(t('View'), 'node/' . $node->nid, t("Display the task log"), 'hosting-button-log', isset($node->nid) &&  user_access('access task logs'), true);
 
     $row['actions'] = array(
       'data' => $log_button,
@@ -973,7 +945,7 @@ function hosting_task_table($node) {
       $actions['run'] = _hosting_task_button(t('Run'), sprintf("node/%d/%s_%s", $node->nid, $node->type, $task), $info['description'], 'hosting-button-run', $info['task_permitted'], $info['dialog']);
     }
      
-    $actions['log'] = _hosting_task_button(t('View'), 'node/' . $info['nid'], t("Display the task log"), 'hosting-button-log', isset($info['nid']) &&  user_access('access task logs'), TRUE, FALSE);
+    $actions['log'] = _hosting_task_button(t('View'), 'node/' . $info['nid'], t("Display the task log"), 'hosting-button-log', isset($info['nid']) &&  user_access('access task logs'), TRUE);
      $row['actions'] = array(
         'data' => implode('', $actions),
        'class' => 'hosting-actions'
@@ -985,9 +957,7 @@ function hosting_task_table($node) {
   return $output;
 }
 
-function _hosting_task_button($title, $link, $description, $class = '', $status = TRUE, $dialog = FALSE, $add_token = TRUE) {
-  global $user;
-
+function _hosting_task_button($title, $link, $description, $class = '', $status = TRUE, $dialog = FALSE) {
   if ($status) {
     $classes[] = 'hosting-button-enabled';
     if (!empty($class)) {
@@ -997,16 +967,11 @@ function _hosting_task_button($title, $link, $description, $class = '', $status 
       $classes[] = 'hosting-button-dialog';
     }
 
-    $options['attributes'] = array(
-      'title' => $description,
-      'class' => implode(" ", $classes),
-    );
-    if ($add_token) {
-      $options['query'] = array(
-        'token' => drupal_get_token($user->uid),
-      );
-    }
-    return l($title, $link, $options);
+    return l($title, $link, array(
+        'attributes' => array(
+          'title' => $description,
+          'class' => implode(" ", $classes), 
+        )));
   }
   else {
     return "<span class='hosting-button-disabled'>" . $title . "</span>";
