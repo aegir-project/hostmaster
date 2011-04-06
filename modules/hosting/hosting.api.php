@@ -22,6 +22,8 @@
  *   created.
  * @return
  *   Return TRUE/FALSE if you allow or deny the domain respectively.
+ *
+ * @see hosting_domain_allowed()
  */
 function hook_allow_domain($url, $params) {
   // Don't allow another drupal.org, it's special.
@@ -34,7 +36,23 @@ function hook_allow_domain($url, $params) {
 }
 
 /**
+ * @param $context
+ *   The provision context that is being imported.
+ * @param $node
+ *   The node object that is being built up from the $context. You should modify
+ *   the fields and properties so that they reflect the contents of the
+ *   $context.
+ *
+ * @see hosting_drush_import()
+ */
+function hook_drush_context_import($context, &$node) {
+
+}
+
+/**
  * Define hosting queues.
+ *
+ * @see hosting_get_queues()
  */
 function hook_hosting_queues() {
 
@@ -42,6 +60,8 @@ function hook_hosting_queues() {
 
 /**
  * Define service types.
+ *
+ * @hosting_server_services()
  */
 function hook_hosting_service_type() {
   return array(
@@ -62,6 +82,8 @@ function hook_hosting_service_type() {
  * @return
  *   An associative array with the service implementation as key, and the
  *   service type implemented as value.
+ *
+ * @see hosting_server_services()
  */
 function hook_hosting_service() {
   return array(
@@ -189,6 +211,33 @@ function hook_provision_args($task, $task_type) {
  * @see drush_hosting_post_hosting_task()
  */
 function hook_post_hosting_TASK_TYPE_task($task, $data) {
+
+}
+
+/**
+ * Process the specified queue.
+ *
+ * @param $count
+ *   The maximum number of items to process.
+ *
+ * @see hosting_run_queue()
+ * @see hosting_get_queues()
+ */
+function hosting_QUEUE_TYPE_queue($count) {
+
+}
+
+/**
+ * @see hosting_queues()
+ */
+function hosting_TASK_SINGULAR_list() {
+
+}
+
+/**
+ * @see hosting_queue_block()
+ */
+function hosting_TASK_SINGULAR_summary() {
 
 }
 
