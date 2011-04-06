@@ -244,7 +244,7 @@ function hosting_site_hosting_tasks() {
  * Implementation of hook_perm
  */
 function hosting_site_perm() {
-  return array('create site', 'view site', 'edit site', 'delete site', 'administer site');
+  return array('create site', 'view site', 'edit site', 'delete site', 'administer sites');
 }
 
 /**
@@ -319,9 +319,12 @@ function hosting_import_site($site_id, $data, $platform) {
   global $user;
   $client = node_load(HOSTING_DEFAULT_CLIENT);
 
-  if ($data['client_email']) {
-    $client = hosting_import_client($data['client_email'], $data['client_name'], $data['client_organization']);
-  }
+  if ($data['client_name']) {
+    $client = hosting_import_client($data['client_name']);
+  } elseif ($data['client_email']) { 
+    // @deprecated drop this after 1.x
+    $client = hosting_import_client($data['client_email']);
+  } 
 
   $site = node_load($site_id);
   $site->nid = $site_id;
