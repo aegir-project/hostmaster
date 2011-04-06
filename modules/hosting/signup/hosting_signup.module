@@ -47,6 +47,10 @@ function hosting_signup_thanks($url = '', $email = '', $name = '') {
  * forms we want to be present.
  */
 function hosting_signup_form() {
+  global $user;
+  if (!variable_get('hosting_client_register_user', FALSE) && !$user->uid) {
+    drupal_set_message(t("Please login first. We have no way of guessing your email and this site is configured not to register new users. You will not receive the login link for your new site. This is probably a bad configuration."));
+  }
   $node = new stdClass();
   $form['site'] = hosting_site_form($node);
   unset($form['site']['client']);
@@ -64,9 +68,15 @@ function hosting_signup_form() {
 
     $function($form['client'], $state, 'client_node_form');
   }
+  $form['client']['client_name'] = $form['client']['title'];
+  if (variable_get('hosting_client_register_user', FALSE) && !$user->uid) {
+    $form['client']['email']['#required'] = TRUE;
+    $form['client']['email_confirm']['#required'] = TRUE;
+  }
+
+  unset($form['client']['title']);
 
   $form['new_client'] = array('#type' => 'value', '#value' => TRUE);
-  unset($form['client']['title']);
 
   $form['submit'] = array(
     '#type' => 'submit',
@@ -84,7 +94,7 @@ function hosting_signup_form() {
 function hosting_signup_form_validate($form, &$form_state) {
   $client = (object) $form_state['values'];
   $client->type = 'client';
-  $client->title = '';
+  $client->title = $client->client_name;
   node_validate($client);
 
   $site = (object) $form_state['values'];
@@ -101,8 +111,8 @@ function hosting_signup_form_validate($form, &$form_state) {
 function hosting_signup_form_submit($form, &$form_state) {
   $client = (object) $form_state['values'];
   $client->type = 'client';
-  $client->title = '';
   $client->status = 1;
+  $client->title = $client->client_name;
   node_save($client, 'submit');
 
   $site = (object) $form_state['values'];

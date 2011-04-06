@@ -139,9 +139,18 @@ function hosting_services_add(&$node, $name, $type, $values = array()) {
 }
 
 /**
- * Initialize server objects assocated to the node object.
+ * Initializes the service objects associated with a server node object.
+ *
+ * @param
+ *   $node The server node object.
+ *
+ * @return
+ *   The server node object with an additional 'services' property. The
+ *   services property is an associative array with the name of the service
+ *   as key, and the service object as value.
  */
 function hosting_server_init_services(&$node) {
+  $node->services = array();
   $result = db_query("SELECT service, type FROM {hosting_service} WHERE vid=%d AND available=1", $node->vid);
   while ($record = db_fetch_object($result)) {
     $name = $record->service;

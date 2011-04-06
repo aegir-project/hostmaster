@@ -56,7 +56,7 @@ function hostmaster_bootstrap() {
   $node = new stdClass();
   $node->uid = 1;
   $node->type = 'client';
-  $node->email = drush_get_option('client_email', 'webmaster@localhost');
+  $node->title = drush_get_option('client_name', 'admin');
   $node->status = 1;
   node_save($node);
   variable_set('hosting_default_client', $node->nid);  

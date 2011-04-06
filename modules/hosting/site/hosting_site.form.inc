@@ -196,7 +196,7 @@ function hosting_site_form($node) {
       '#weight' => -10
     ));
 
-  $editable = ((!$node->client || $node->nid) || user_access('administer site')) && hosting_feature('client');
+  $editable = ((!$node->client || $node->nid) || user_access('administer sites')) && hosting_feature('client');
   _hosting_site_field($form, $node, 'client', array(
     '#type' => 'textfield',
     '#required' => TRUE,

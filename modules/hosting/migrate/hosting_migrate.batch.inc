@@ -178,7 +178,7 @@ function hosting_migrate_platform_submit($form, &$form_state) {
  * Batch comparison of site packages between platforms to determine
  * if the site can be migrated to the target platform or not.
  */
-function hosting_migrate_platform_batch($site_id, $target_platform, &$context) {
+function hosting_migrate_platform_batch($site_id, $target_platform, $context) {
   if (!isset($context['sandbox']['progress'])) {
     $context['sandbox']['progress'] = 0;
   }

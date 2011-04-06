@@ -40,6 +40,18 @@ function hosting_drush_command() {
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL
   );
 
+  $items['hosting-pause'] = array(
+    'description' => dt('Prepare the hostmaster site to be migrated to a new platform.'),
+    'arguments' => array(
+      'example.com' => dt('The url of the site being migrated.')),
+  );
+
+  $items['hosting-resume'] = array(
+    'description' => dt('Complete the migration of the hostmaster site to a new platform.'),
+    'arguments' => array(
+      'example.com' => dt('The url of the site being migrated.')),
+  );
+
   return $items;
 }
 
