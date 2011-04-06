@@ -46,6 +46,18 @@ function hosting_drush_command() {
       'example.com' => dt('The url of the site being migrated.')),
   );
 
+  /**
+   * stub resume command
+   *
+   * @deprecated will just call hosting-resume, use hosting-resume
+   * now, will be removed after 1.0
+   */
+  $items['hostmaster-resume'] = array(
+    'description' => dt('Complete the migration of the hostmaster site to a new platform.'),
+    'arguments' => array(
+      'example.com' => dt('The url of the site being migrated.')),
+  );
+
   $items['hosting-resume'] = array(
     'description' => dt('Complete the migration of the hostmaster site to a new platform.'),
     'arguments' => array(
