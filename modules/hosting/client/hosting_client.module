@@ -885,7 +885,7 @@ function _hosting_get_allowed_platforms($uid = NULL) {
  * This is inspired from the context sanitization stuff.
  */
 function hosting_client_sanitize($title) {
-  return preg_replace("/[!\W\.\-]/", "", $title);
+  return strtolower(preg_replace("/[!\W\.\-]/", "", $title));
 }
 
 /**
