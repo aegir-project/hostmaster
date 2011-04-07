@@ -216,6 +216,7 @@ function hook_nodeapi_TYPE_OP(&$node, $a3, $a4) {
 }
 
 /**
+ * TODO: Remove this hook documentation?
  *
  * @param $task
  *   The task.
@@ -248,14 +249,31 @@ function hook_post_hosting_TASK_TYPE_task($task, $data) {
 /**
  * Process the specified queue.
  *
+ * Modules providing a queue should implement this function an process the
+ * number of items from the queue that are specified. It is up the to the
+ * module to determine which items it wishes to process.
+ *
+ * If you wish to process multiple items at the same time you will need to fork
+ * the process by calling drush_backend_fork(), specifying a drush command with
+ * the arguments required to process your task. Otherwise you can do all your
+ * processing in this function, or similarly call drush_backend_invoke(), which
+ * won't fork the process.
+ *
  * @param $count
  *   The maximum number of items to process.
  *
  * @see hosting_run_queue()
  * @see hosting_get_queues()
  */
-function hosting_QUEUE_TYPE_queue($count) {
+function hosting_QUEUE_TYPE_queue($count = 5) {
+  // From hosting_tasks_queue().
+  global $provision_errors;
 
+  drush_log(dt("Running tasks queue"));
+  $tasks = _hosting_get_new_tasks($count);
+  foreach ($tasks as $task) {
+    drush_backend_fork("hosting-task", array($task->nid));
+  }
 }
 
 /**
