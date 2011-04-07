@@ -36,17 +36,37 @@ function hook_allow_domain($url, $params) {
 }
 
 /**
+ * Import a backend context into the corresponding frontend node.
+ *
+ * This hook will be invoked when an object is being imported from the backend
+ * into the frontend, for example a site that has just been cloned. You should
+ * inspect the context coming from the backend and store anything the frontend
+ * that you need to.
+ *
+ * A node to represent the object will have already been created and is
+ * available to store things in, this node will be automatically saved after all
+ * implementations of this hook are called. You should not call node_save()
+ * manually on this node.
+ *
+ * If you implement hook_hosting_TASK_OBJECT_context_options() then you will
+ * probably want to implement this hook also, as they mirror each other.
+ *
  * @param $context
- *   The provision context that is being imported.
+ *   The backend context that is being imported.
  * @param $node
  *   The node object that is being built up from the $context. You should modify
  *   the fields and properties so that they reflect the contents of the
  *   $context.
  *
  * @see hosting_drush_import()
+ * @see hook_hosting_TASK_OBJECT_context_options()
  */
 function hook_drush_context_import($context, &$node) {
-
+  // From: hosting_alias_drush_context_import().
+  if ($context->type == 'site') {
+    $node->aliases = $context->aliases;
+    $node->redirection = $context->redirection;
+  }
 }
 
 /**
