@@ -127,6 +127,11 @@ function hook_hosting_service() {
  * to it, but you should avoid changing things outside of the
  * $task->content_options collection.
  *
+ * If you are sending extra context options to the backend based on properties
+ * in the object's node, then you should also implement the
+ * hook_drush_context_import() hook to re-create those properties on the node
+ * when a context is imported.
+ *
  * @param $task
  *   The hosting task that is about to be executed, the task is passed by
  *   reference. The context_options property of this object is about to be saved
@@ -138,6 +143,7 @@ function hook_hosting_service() {
  *   verified is available in the $task->ref property.
  *
  * @see drush_hosting_task()
+ * @see hook_drush_context_import()
  */
 function hook_hosting_TASK_OBJECT_context_options(&$task) {
   // From hosting_hosting_platform_context_options().
