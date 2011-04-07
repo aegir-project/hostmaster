@@ -12,6 +12,10 @@
 /**
  * Determine if a site can be created using the specified domain.
  *
+ * The frontend will only create a specified domains if all implementations of
+ * this hook return TRUE, so in most cases you will be looking for domains that
+ * you don't allow, and fallback to a default position of allowing the domain.
+ *
  * @param $url
  *   The URL of the site that hosting wishes to create.
  * @param $params
