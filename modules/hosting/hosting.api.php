@@ -66,7 +66,7 @@ function hook_allow_domain($url, $params) {
  * @see hook_hosting_TASK_OBJECT_context_options()
  */
 function hook_drush_context_import($context, &$node) {
-  // From: hosting_alias_drush_context_import().
+  // From hosting_alias_drush_context_import().
   if ($context->type == 'site') {
     $node->aliases = $context->aliases;
     $node->redirection = $context->redirection;
@@ -110,7 +110,7 @@ function hook_hosting_service_type() {
  * @see hosting_server_services()
  */
 function hook_hosting_service() {
-  // From: hosting_web_server_hosting_service().
+  // From hosting_web_server_hosting_service().
   return array(
     'apache' => 'http',  // Service implementation => service type.
   );
@@ -211,7 +211,7 @@ function hook_hosting_TASK_TYPE_task_rollback($task, $data) {
  * @see hosting_nodeapi()
  */
 function hook_nodeapi_TYPE_OP(&$node, $a3, $a4) {
-  // This is an example from hosting_nodeapi_client_delete_revision().
+  // From hosting_nodeapi_client_delete_revision().
   db_query('DELETE FROM {hosting_client} WHERE vid = %d', $node->vid);
 }
 
