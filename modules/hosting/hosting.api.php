@@ -189,7 +189,7 @@ function hook_hosting_TASK_TYPE_task_rollback($task, $data) {
  * operation you would like to be notified for. A list of possible values for OP
  * can be found in the documentation for hook_nodeapi().
  *
- * This hook may help you write code that is easier to follow, but this is an
+ * This hook may help you write code that is easier to follow, but this is a
  * hosting specific hook so you may confuse other developers that are not so
  * familar with the internals of hosting.
  *
