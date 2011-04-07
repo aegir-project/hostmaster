@@ -85,7 +85,7 @@ function hook_hosting_queues() {
 /**
  * Define service types.
  *
- * @hosting_server_services()
+ * @see hosting_server_services()
  */
 function hook_hosting_service_type() {
   return array(
@@ -99,9 +99,9 @@ function hook_hosting_service_type() {
 /**
  * Define service implementations.
  *
- * Implementation class should go in {module name}.service.inc and be named
- * hostingService_{service type}_{type}, which should be a subclass of
- * hostingService.
+ * An implementation class should go in {module name}.service.inc and be must be
+ * named hostingService_{service type}_{type}, which should be a subclass of
+ * hostingService_{service type} or hostingService.
  *
  * @return
  *   An associative array with the service implementation as key, and the
@@ -110,6 +110,7 @@ function hook_hosting_service_type() {
  * @see hosting_server_services()
  */
 function hook_hosting_service() {
+  // From: hosting_web_server_hosting_service().
   return array(
     'apache' => 'http',  // Service implementation => service type.
   );
