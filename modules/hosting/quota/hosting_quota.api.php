@@ -1,10 +1,19 @@
 <?php
 
 /**
- * Definition of hook_hosting_quota_resource
+ * @file
+ * Hooks provided by the hosting quota module.
  */
 
-function hook_hosting_quota_resource () {
+/**
+ * @addtogroup hooks
+ * @{
+ */
+
+/**
+ * Definition of hook_hosting_quota_resource
+ */
+function hook_hosting_quota_resource() {
   $resources = array();
 
   $resources['foo'] = array(
@@ -30,8 +39,8 @@ function hook_hosting_quota_resource () {
  * @return int
  *   Return an integer that can be compared to what the quota is set to
  */
-function hook_hosting_quota_get_usage ($client, $resource, $start, $end) {
-  
+function hook_hosting_quota_get_usage($client, $resource, $start, $end) {
+
   if (hosting_get_client($client)) {
     switch ($resource) {
       case 'foo':
@@ -49,10 +58,14 @@ function hook_hosting_quota_get_usage ($client, $resource, $start, $end) {
  * @param $usage int
  *   Usage as returned by hosting_quota_get_usage
  */
-function hook_hosting_quota_resource_render ($resource, $usage) {
+function hook_hosting_quota_resource_render($resource, $usage) {
   switch ($resource) {
     case 'foo':
       $bar = 23;
       return $usage * $bar . ' units';
   }
 }
+
+/**
+ * @} End of "addtogroup hooks".
+ */
