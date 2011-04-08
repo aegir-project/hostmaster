@@ -885,8 +885,6 @@ function _hosting_get_allowed_platforms($uid = NULL) {
  * This is inspired from the context sanitization stuff.
  */
 function hosting_client_sanitize($title) {
-  $number = rand(10000, 99999);
-  $title = $title . '-' . $number;
   return strtolower(preg_replace("/[!\W\.\-]/", "", $title));
 }
 
