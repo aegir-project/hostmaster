@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * This SSL key is a custom, Aegir generated one.
+ */
 define('HOSTING_SSL_CUSTOM_KEY', 'null');
 
 function hosting_ssl_site_form(&$form, &$form_state, $form_id) {
