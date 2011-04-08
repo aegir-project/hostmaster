@@ -1,8 +1,23 @@
 <?php
 
+/**
+ * This site is deleted from the backend.
+ */
 define('HOSTING_SITE_DELETED', -2);
+
+/**
+ * This site is disabled.
+ */
 define('HOSTING_SITE_DISABLED', -1);
+
+/**
+ * This site is queued for creation.
+ */
 define('HOSTING_SITE_QUEUED', 0);
+
+/**
+ * This site is created and enabled in the backend.
+ */
 define('HOSTING_SITE_ENABLED', 1);
 
 include_once('hosting_site.nodeapi.inc');

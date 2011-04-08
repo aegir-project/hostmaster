@@ -1,8 +1,23 @@
 <?php
 
+/**
+ * This platform has been deleted.
+ */
 define('HOSTING_PLATFORM_DELETED', -2);
+
+/**
+ * This platform has been locked, new sites will not be allowed to use it.
+ */
 define('HOSTING_PLATFORM_LOCKED', -1);
+
+/**
+ * This platform has been queued for creation.
+ */
 define('HOSTING_PLATFORM_QUEUED', 0);
+
+/**
+ * This platform is created and enabled, sites may be deployed on it.
+ */
 define('HOSTING_PLATFORM_ENABLED', 1);
 
 /**

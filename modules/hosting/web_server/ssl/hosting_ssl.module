@@ -1,7 +1,18 @@
 <?php
 
+/**
+ * SSL is disabled for this site.
+ */
 define('HOSTING_SSL_DISABLED', 0);
+
+/**
+ * SSL is enabled for this site.
+ */
 define('HOSTING_SSL_ENABLED', 1);
+
+/**
+ * SSL is required for this site.
+ */
 define('HOSTING_SSL_REQUIRED', 2);
 
 include_once('hosting_ssl.nodeapi.inc');

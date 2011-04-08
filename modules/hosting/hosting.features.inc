@@ -6,8 +6,20 @@
  *
  * Contains the logic used to generate the features list
  */
+
+/**
+ * This hosting feature is disabled.
+ */
 define('HOSTING_FEATURE_DISABLED', 0);
+
+/**
+ * This hosting feature is enabled.
+ */
 define('HOSTING_FEATURE_ENABLED', 1);
+
+/**
+ * This hosting feature is required.
+ */
 define('HOSTING_FEATURE_REQUIRED', 2);
 
 
