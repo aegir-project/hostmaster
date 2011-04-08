@@ -237,13 +237,30 @@ function hook_provision_args($task, $task_type) {
  *
  * @param $task
  *   The hosting task that has completed.
- * @param
- *   The drush output of the completed task.
+ * @param $data
+ *   An associative array of the drush output of the completed backend task from
+ *   drush_backend_output(). The array should contain at least the following:
+ *   - "output": The raw output from the drush command executed.
+ *   - "error_status": The error status of the command run on the backend,
+ *     should be DRUSH_SUCCESS normally.
+ *   - "log": The drush log messages.
+ *   - "error_log": The list of errors that occurred when running the command.
+ *   - "context": The drush options for the backend command, this may contain
+ *     options that were set when the command ran, or options that were set by
+ *     the command itself.
  *
  * @see drush_hosting_post_hosting_task()
+ * @see drush_backend_output()
  */
 function hook_post_hosting_TASK_TYPE_task($task, $data) {
+  // From hosting_site_post_hosting_backup_task().
+  if ($data['context']['backup_file'] && $task->ref->type == 'site') {
+    $platform = node_load($task->ref->platform);
 
+    $desc = $task->task_args['description'];
+    $desc = ($desc) ? $desc : t('Generated on request');
+    hosting_site_add_backup($task->ref->nid, $platform->web_server, $data['context']['backup_file'], $desc, $data['context']['backup_file_size']);
+  }
 }
 
 /**
