@@ -159,10 +159,19 @@ function hook_hosting_TASK_OBJECT_context_options(&$task) {
  *
  * @param $task
  *   The hosting task that has failed and has been rolled back.
- * @param
- *   The drush output of the failed task.
+ * @param $data
+ *   An associative array of the drush output of the backend task from
+ *   drush_backend_output(). The array should contain at least the following:
+ *   - "output": The raw output from the drush command executed.
+ *   - "error_status": The error status of the command run on the backend.
+ *   - "log": The drush log messages.
+ *   - "error_log": The list of errors that occurred when running the command.
+ *   - "context": The drush options for the backend command, this may contain
+ *     options that were set when the command ran, or options that were set by
+ *     the command itself.
  *
  * @see drush_hosting_hosting_task_rollback()
+ * @see drush_backend_output()
  */
 function hook_hosting_TASK_TYPE_task_rollback($task, $data) {
   // From hosting_site_hosting_install_task_rollback().
