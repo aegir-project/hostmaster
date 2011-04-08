@@ -7,6 +7,17 @@ include('hosting_client.access.inc');
 include drupal_get_path( 'module', 'node' ) . '/node.pages.inc';
 
 /**
+ * The maximum length of a UNIX group
+ *
+ * Used to determine the sane maximum length of the internal name of a
+ * client.
+ *
+ * @see hosting_client_sanitize()
+ * @see http://community.aegirproject.org/node/557
+ */
+define('MAX_GROUP_LENGTH', 16);
+
+/**
  * Implementation of hook_node_info()
  */
 function hosting_client_node_info() {
@@ -882,10 +893,17 @@ function _hosting_get_allowed_platforms($uid = NULL) {
  *
  * This aims to be usable for unix group/user names and shells
  *
+ * It adds a prefix configured in the frontend settings (defaulting to
+ * 'cl-'), and strips the total length of the string (including the
+ * prefix) to MAX_GROUP_LENGTH.
+ *
  * This is inspired from the context sanitization stuff.
+ *
+ * @see MAX_GROUP_LENGTH
  */
 function hosting_client_sanitize($title) {
-  return strtolower(preg_replace("/[!\W\.\-]/", "", $title));
+  $prefix = variable_get('hosting_client_prefix', 'cl-');
+  return substr(strtolower($prefix . preg_replace("/[!\W\.\-]/", "", $title)), 0, MAX_GROUP_LENGTH);
 }
 
 /**
