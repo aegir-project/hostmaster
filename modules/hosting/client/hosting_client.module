@@ -483,7 +483,7 @@ function hosting_client_view($node, $teaser = FALSE, $page = FALSE) {
     '#type' => 'item',
     '#title' => t('Internal name'),
     '#weight' => 1,
-    '#description' => t('A machine-usable name that can be used internally, for example to map to a UNIX group in the backend. It is unique accross the system. Currently deduced from the client name (by stripping spaces and metacharacters) and not directly editable.'),
+    '#description' => t('A machine-usable name that can be used internally, for example to map to a UNIX group in the backend. It is unique accross the system. Currently deduced from the client name, by stripping spaces and metacharacters, and optionally adding a prefix. It is not directly editable.'),
     '#value' => filter_xss($node->uname),
   );
 
