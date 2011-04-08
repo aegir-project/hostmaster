@@ -902,7 +902,7 @@ function _hosting_get_allowed_platforms($uid = NULL) {
  * @see MAX_GROUP_LENGTH
  */
 function hosting_client_sanitize($title) {
-  $prefix = variable_get('hosting_client_prefix', 'cl-');
+  $prefix = variable_get('hosting_client_prefix', '');
   return substr(strtolower($prefix . preg_replace("/[!\W\.\-]/", "", $title)), 0, MAX_GROUP_LENGTH);
 }
 
