@@ -1,6 +1,15 @@
 <?php
 
+/**
+ * An alias of this type is a custom, user generated one.
+ */
 define('HOSTING_ALIAS_CUSTOM', 0);
+
+/**
+ * An alias of this type is an automatically generated one.
+ *
+ * @see hosting_alias_automatic_aliases()
+ */
 define('HOSTING_ALIAS_AUTOMATIC', 1);
 
 /**
