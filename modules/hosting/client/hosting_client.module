@@ -67,7 +67,7 @@ function hosting_client_theme($existing, $type, $theme, $path) {
  * Implementation of hook_perm()
  */
 function hosting_client_perm() {
-  return array('create client','view client', 'edit own client', 'delete own client', 'administer clients', 'edit client users');
+  return array('create client','view client', 'edit own client', 'delete own client', 'administer clients', 'edit client users', 'edit client uname');
 }
 
 /**
@@ -168,6 +168,15 @@ function hosting_client_form(&$node) {
     '#description' => t('The name of this client, generally the organization name or the contact name for individuals.'),
    );
 
+  $form['uname'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Internal name'),
+    '#size' => MAX_GROUP_LENGTH,
+    '#maxlength' => MAX_GROUP_LENGTH,
+    '#default_value' => $node->uname,
+    '#access' => user_access('edit client uname'),
+    '#description' => t('A machine-usable name that can be used internally, for example to map to a UNIX group in the backend. It is unique accross the system. If no value is provided, it is deduced from the client name, by stripping spaces and metacharacters and adding a prefix (%prefix).', array('%prefix' => variable_get('hosting_client_prefix', 'no prefix define'))),
+  );
   if (!$node->nid && variable_get('hosting_client_register_user', FALSE)) {
    $form['email'] = array(
     '#type' => 'textfield',
@@ -238,8 +247,12 @@ function theme_hosting_client_form($form) {
  * Implementation of hook_validate() 
  */
 function hosting_client_validate(&$node) {
-
-  $nid = db_result(db_query("SELECT nid FROM {hosting_client} WHERE uname LIKE '%s'", hosting_client_sanitize($node->title)));
+  if ($node->uname) {
+    $node->uname = hosting_client_sanitize($node->uname);
+  } else {
+    $node->uname = hosting_client_sanitize($node->title);
+  }
+  $nid = db_result(db_query("SELECT nid FROM {hosting_client} WHERE uname LIKE '%s'", $node->uname));
   if ($nid && $node->nid != $nid) {
     $suggestion = hosting_client_validate_suggest($node);
     if ($suggestion) {
@@ -285,8 +298,13 @@ function hosting_client_validate_suggest($node) {
  * Implementation of hook_insert().
  */
 function hosting_client_insert($node) {
+  if ($node->uname) {
+    $node->uname = hosting_client_sanitize($node->uname);
+  } else {
+    $node->uname = hosting_client_sanitize($node->title);
+  }
   db_query("INSERT INTO {hosting_client} (vid, nid, uname) VALUES (%d, %d, '%s' )",
-           $node->vid, $node->nid, hosting_client_sanitize($node->title));
+           $node->vid, $node->nid, $node->uname);
   if (variable_get('hosting_client_register_user', FALSE) 
     && !user_load(array('mail' => $node->email))) {
     $user = hosting_client_register_user($node);
@@ -383,8 +401,13 @@ function hosting_client_update($node) {
     hosting_client_insert($node);
   }
   else {
+    if ($node->uname) {
+      $node->uname = hosting_client_sanitize($node->uname);
+    } else {
+      $node->uname = hosting_client_sanitize($node->title);
+    }
     db_query("UPDATE {hosting_client} SET nid=%d, uname='%s' WHERE vid=%d",
-             $node->nid, hosting_client_sanitize($node->title), $node->vid);
+             $node->nid, $node->uname, $node->vid);
   }
   if ($node->users) {
     foreach ($node->users as $user) {
@@ -483,7 +506,6 @@ function hosting_client_view($node, $teaser = FALSE, $page = FALSE) {
     '#type' => 'item',
     '#title' => t('Internal name'),
     '#weight' => 1,
-    '#description' => t('A machine-usable name that can be used internally, for example to map to a UNIX group in the backend. It is unique accross the system. Currently deduced from the client name, by stripping spaces and metacharacters, and optionally adding a prefix. It is not directly editable.'),
     '#value' => filter_xss($node->uname),
   );
 
@@ -905,12 +927,18 @@ function _hosting_get_allowed_platforms($uid = NULL) {
  * 'cl-'), and strips the total length of the string (including the
  * prefix) to MAX_GROUP_LENGTH.
  *
+ * This can also be used to validate user-provided client unames, as
+ * it strips and readds the prefix and performs the same validation
+ * and corrections on the field.
+ *
  * This is inspired from the context sanitization stuff.
  *
  * @see MAX_GROUP_LENGTH
  */
 function hosting_client_sanitize($title) {
   $prefix = variable_get('hosting_client_prefix', '');
+  // we remove the prefix in case we are validating an existing uname
+  $title = ltrim($title, $prefix);
   return substr(strtolower($prefix . preg_replace("/[!\W\.\-]/", "", $title)), 0, MAX_GROUP_LENGTH);
 }
 
