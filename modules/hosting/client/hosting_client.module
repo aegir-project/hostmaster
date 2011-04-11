@@ -686,6 +686,14 @@ function _hosting_client_mail_text($messageid, $variables = array()) {
  * Menu callback for the module's settings
  */
 function hosting_client_configure() {
+  $form['hosting_client_prefix'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Client internal name prefix'),
+    '#description' => t('Client nodes have an internal name that can be mapped to a UNIX group. This is the prefix assigned to that internal name to make sure it is in a separate namespace. Note that UNIX groups are generally limited to 16 characters so this prefix should be kept short. It can also be empty, in which case no prefix will be added.'),
+    '#default_value' => variable_get('hosting_client_prefix', ''),
+    '#size' => 5,
+    '#maxlength' => 16,
+  );
   $form['hosting_client_register_user'] = array(
     '#type' => 'checkbox',
     '#title' => t('Automatically create user accounts for new clients.'),
