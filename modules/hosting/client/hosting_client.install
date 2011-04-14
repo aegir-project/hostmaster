@@ -271,7 +271,7 @@ function hosting_client_update_6000() {
  *
  * See #1093436
  */
-function hosting_package_update_6005() {
+function hosting_package_update_6006() {
   $ret = array();
   db_change_field($ret, 'hosting_client_user', 'contact_type', 'contact_type',
                   array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => ''));
