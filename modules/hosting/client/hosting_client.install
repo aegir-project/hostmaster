@@ -1,5 +1,8 @@
 <?php
-// $Id$
+/**
+ * @file
+ *   Install, update and uninstall for the clients module.
+ */
 
 /**
  * Implementation of hook_schema().
@@ -74,6 +77,9 @@ function hosting_client_schema() {
   return $schema;
 }
 
+/**
+ * Implementation of hook_install().
+ */
 function hosting_client_install() {
   // Create tables.
   drupal_install_schema('hosting_client');
