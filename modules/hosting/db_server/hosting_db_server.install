@@ -1,6 +1,8 @@
 <?php
-// $Id$
-
+/**
+ * @file
+ *   Install, update and uninstall for the database server module.
+ */
 
 /**
  * Implementation of hook_schema().
@@ -37,6 +39,9 @@ function hosting_db_server_schema() {
   return $schema;
 }
 
+/**
+ * Implementation of hook_install().
+ */
 function hosting_db_server_install() {
   // Create tables.
   drupal_install_schema('hosting_db_server');
