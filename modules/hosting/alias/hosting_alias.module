@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ *   Allow sites to have domain aliases that they can be accessed with.
+ */
 
 /**
  * An alias of this type is a custom, user generated one.
@@ -13,7 +17,7 @@ define('HOSTING_ALIAS_CUSTOM', 0);
 define('HOSTING_ALIAS_AUTOMATIC', 1);
 
 /**
- * Implementation of hook_menu
+ * Implementation of hook_menu().
  */
 function hosting_alias_menu() {
   $items['admin/hosting/aliases'] = array(
@@ -27,6 +31,9 @@ function hosting_alias_menu() {
   return $items;
 }
 
+/**
+ * Implementation of hook_help().
+ */
 function hosting_alias_help($path, $arg) {
   switch($path) {
     case 'admin/hosting/aliases' :
@@ -40,7 +47,7 @@ function hosting_alias_help($path, $arg) {
 }
 
 /**
- * Implementation of hook_form_alter
+ * Implementation of hook_form_alter().
  *
  * Add a textbox to site node forms with a newline
  * separated list of aliases to the site
@@ -51,6 +58,12 @@ function hosting_alias_form_alter(&$form, $form_state, $form_id) {
   }
 }
 
+/**
+ * Alter the node form for a site to add the aliases and redirection items.
+ *
+ * @param $form
+ *   The form to alter, should come from hook_form_alter().
+ */
 function hosting_alias_form_data(&$form) {
   if (user_access('create site aliases')) {
     $form['aliases'] = array(
@@ -71,7 +84,16 @@ function hosting_alias_form_data(&$form) {
 }
 
 /**
- * Retrieve a list of aliases for a site
+ * Retrieve a list of aliases for a site.
+ *
+ * @param $node
+ *   The site to get the aliases for.
+ * @param $type
+ *   Restrict the type of aliases returned, defaults to returning all aliases. Should be one of:
+ *   - HOSTING_ALIAS_CUSTOM
+ *   - HOSTING_ALIAS_AUTOMATIC
+ * @return
+ *   An array of aliases for the given site.
  */
 function hosting_alias_get_aliases($node, $type = null) {
   if (!$node->vid) {
@@ -97,6 +119,12 @@ function hosting_alias_get_aliases($node, $type = null) {
   return array();
 }
 
+/**
+ * Save stored aliases for a new site.
+ *
+ * @param $node
+ *   The node of the site containing the aliases to save.
+ */
 function hosting_alias_insert($node) {
   $automatic = hosting_alias_automatic_aliases(strtolower(trim($node->title)));
   if ($node->aliases || sizeof($automatic)) {
@@ -118,6 +146,12 @@ function hosting_alias_insert($node) {
   }
 }
 
+/**
+ * Update stored aliases for an existing site.
+ *
+ * @param $node
+ *   The node of the site containing the aliases to save.
+ */
 function hosting_alias_update($node) {
   // We need to wipe clean existing aliases if we are not making a new revision
   if (!$node->revision) {
@@ -127,21 +161,36 @@ function hosting_alias_update($node) {
   hosting_alias_insert($node);
 }
 
+/**
+ * Remove the stored aliases for and existing site.
+ *
+ * @param $node
+ *   The site node.
+ */
 function hosting_alias_delete($node) {
   db_query("DELETE FROM {hosting_site_alias} WHERE nid=%d", $node->nid);
 }
 
+/**
+ * Remove the stored aliases for and existing site for a specific version.
+ *
+ * @param $node
+ *   The site node.
+ */
 function hosting_alias_delete_revision($node) {
   db_query("DELETE FROM {hosting_site_alias} WHERE nid=%d and vid=%d", $node->nid, $node->vid);
 }
 
 /**
- * Implementation of hook_nodeapi
+ * Implementation of hook_nodeapi().
+ *
+ * For most of the $op's we pass of to a help function that does the heavy
+ * lifting.
  */
 function hosting_alias_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
   if ($node->type == 'site') {
     switch ($op) {
-    case 'insert':
+      case 'insert':
         hosting_alias_insert($node);
         break;
       case 'update':
@@ -200,14 +249,16 @@ function hosting_alias_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
 }
 
 /**
- * Implementation of hook_perm
+ * Implementation of hook_perm().
  */
 function hosting_alias_perm() {
   return array('create site aliases', 'administer hosting aliases');
 }
 
 /**
- * Configuration form for aliasing
+ * Configuration form for site aliases.
+ *
+ * @see hosting_alias_menu()
  */
 function hosting_alias_settings() {
   $form['hosting_alias_subdomain'] = array(
@@ -239,7 +290,7 @@ function hosting_alias_settings() {
 }
 
 /**
- * Generate a default set of aliases for the site
+ * Generate a default set of aliases for the site based on the global options.
  */
 function hosting_alias_automatic_aliases($url) {
   $alias = array();
@@ -258,7 +309,7 @@ function hosting_alias_automatic_aliases($url) {
 }
 
 /**
- * Implementation of hook_allow_domain
+ * Implementation of hook_allow_domain().
  *
  * This function will check the existing aliases and the automatically
  * generated aliases to ensure that this url has not been used before
@@ -281,6 +332,11 @@ function hosting_alias_allow_domain($url, $params = array()) {
 
 }
 
+/**
+ * Count the number of sites using a particular URL.
+ *
+ * @deprecated This is essentially !hosting_alias_allow_domain().
+ */
 function hosting_alias_count_sites($url, $params = array()) {
   $query = "SELECT COUNT(n.nid) FROM {node} n 
       LEFT JOIN {hosting_site} h ON h.nid=n.nid 
