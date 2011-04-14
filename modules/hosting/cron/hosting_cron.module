@@ -1,5 +1,12 @@
 <?php
+/**
+ * @file
+ *   Allow the hosting system to cron all the installed sites on a schedule.
+ */
 
+/**
+ * Implementation of hook_hosting_queues().
+ */
 function hosting_cron_hosting_queues() {
   $items['cron'] = array(
     'type' => 'batch',
@@ -16,6 +23,9 @@ function hosting_cron_hosting_queues() {
   return $items;
 }
 
+/**
+ * Implementation of hosting_QUEUE_TYPE_queue().
+ */
 function hosting_cron_queue($count) {
   $sites = hosting_cron_get_sites($count);
 
@@ -38,6 +48,9 @@ function hosting_cron_queue($count) {
   }
 }
 
+/**
+ * Implementation of hook_nodeapi().
+ */
 function hosting_cron_nodeapi(&$node, $op, $a3 = null) {
   if ($node->type == 'site') {
     switch ($op) {
@@ -56,6 +69,14 @@ function hosting_cron_nodeapi(&$node, $op, $a3 = null) {
   }
 }
 
+/**
+ * Get a number of sites that need to have cron executed.
+ *
+ * @param $limit
+ *   Limit to a maximum of this number of sites.
+ * @return
+ *   An array of site nodes that need to have cron executed.
+ */
 function hosting_cron_get_sites($limit = 5) {
   $result = db_query("SELECT n.nid FROM {node} n LEFT JOIN {hosting_site} s ON n.nid=s.nid WHERE n.type='site' and s.status = %d ORDER BY s.last_cron ASC, n.nid ASC limit %d", HOSTING_SITE_ENABLED, $limit);
   while ($nid = db_fetch_object($result)) {
