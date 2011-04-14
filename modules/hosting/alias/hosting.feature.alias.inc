@@ -1,5 +1,12 @@
 <?php
+/**
+ * @file
+ *   Expose the alias feature to hostmaster.
+ */
 
+/**
+ * Implementation of hook_hosting_feature().
+ */
 function hosting_alias_hosting_feature() {
   $features['alias'] = array(
     'title' => t('Site aliasing'),
