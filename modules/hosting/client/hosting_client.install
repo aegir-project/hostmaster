@@ -46,9 +46,10 @@ function hosting_client_schema() {
         'default' => 0,
       ),
       'contact_type' => array(
-        'type' => 'text',
-        'size' => 'big',
+        'type' => 'varchar',
+        'length' => 255,
         'not null' => TRUE,
+        'default' => '',
       ),
     ),
     'primary key' => array('user', 'client'),
@@ -262,5 +263,17 @@ function hosting_client_update_6000() {
     }
   }
   db_add_unique_key($ret, 'hosting_client', 'uname_unq', array('uname'));
+  return $ret;
+}
+
+/**
+ * Use VARCHAR on contact_type field so that we support MariaDB correctly.
+ *
+ * See #1093436
+ */
+function hosting_package_update_6005() {
+  $ret = array();
+  db_change_field($ret, 'hosting_client_user', 'contact_type', 'contact_type',
+                  array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => ''));
   return $ret;
 }
