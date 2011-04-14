@@ -1,5 +1,10 @@
 <?php
 /**
+ * @file
+ *   Provide the hosting serivce classes for DNS integration.
+ */
+
+/**
  * DNS service base class.
  */
 class hostingService_dns extends hostingService {
