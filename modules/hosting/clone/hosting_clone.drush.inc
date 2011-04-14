@@ -1,5 +1,8 @@
 <?php
-// $Id$
+/**
+ * @file
+ *   Drush include for the site cloning module.
+ */
 
 function drush_hosting_clone_pre_hosting_task($task) {
   $task =& drush_get_context('HOSTING_TASK');
