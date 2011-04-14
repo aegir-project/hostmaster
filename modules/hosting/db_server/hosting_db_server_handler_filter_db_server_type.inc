@@ -1,7 +1,11 @@
 <?php
+/**
+ * @file
+ *   Define a views filter handler to filter by database type.
+ */
 
 /**
- * Filter by node type
+ * Filter handler to allowing filtering by database type.
  */
 class hosting_db_server_handler_filter_db_server_type extends views_handler_filter_in_operator {
   function get_value_options() {
