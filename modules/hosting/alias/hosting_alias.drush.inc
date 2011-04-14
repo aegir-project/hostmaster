@@ -1,5 +1,8 @@
 <?php
-// $Id$
+/**
+ * @file
+ *   Drush include for the hosting_alias module.
+ */
 
 function drush_hosting_alias_pre_hosting_task() {
   if (module_exists('hosting_alias')) {
@@ -14,7 +17,11 @@ function drush_hosting_alias_pre_hosting_task() {
   }
 }
 
-
+/**
+ * Implementation of hook_drush_context_import().
+ *
+ * If we're importing a site, then import the aliases and redirection values.
+ */
 function hosting_alias_drush_context_import($context, &$node) {
   if ($context->type == 'site') {
     $node->aliases = $context->aliases;
