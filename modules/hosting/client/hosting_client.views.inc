@@ -1,8 +1,12 @@
 <?php
 /**
- * @file Client views integration.
+ * @file
+ *   Client module views integration.
  */
 
+/**
+ * Implementation of hook_views_data().
+ */
 function hosting_client_views_data() {
   $data['hosting_client'] = array(
     'table' => array(

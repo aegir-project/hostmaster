@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- *   Control client node access
+ *   Control client node access.
  */
 
 /**
@@ -42,7 +42,11 @@ function hosting_client_user($op, &$edit, &$user, $category = NULL) {
   }
 }
 
-
+/**
+ * Add visible items when viewing a user().
+ *
+ * @see hosting_client_user()
+ */
 function hosting_client_user_view($user) {
   if ($user->client_id) {
 
@@ -61,6 +65,11 @@ function hosting_client_user_view($user) {
   }
 }
 
+/**
+ * Add items to the user forms when editing or registering.
+ *
+ * @see hosting_client_user()
+ */
 function hosting_client_user_form($edit, $user, $category) {
 
   $clients = array();
@@ -91,6 +100,9 @@ function hosting_client_user_form($edit, $user, $category) {
   return $fields;
 }
 
+/**
+ * Returns HTML for the client area on the user form.
+ */
 function theme_hosting_client_user_form($form) {
   if (array_key_exists('hosting_client', $form)) {
     $edit_name = drupal_render($form['hosting_client']);
@@ -112,12 +124,22 @@ function theme_hosting_client_user_form($form) {
   return $output;
 }
 
+/**
+ * Validate the submission of a user form.
+ * 
+ * @see hosting_client_user()
+ */
 function hosting_client_user_form_validate($edit) {
   if (array_key_exists('hosting_client', $edit) && $edit['hosting_client'] && (!$client = hosting_get_client($edit['hosting_client']))) {
     form_set_error('hosting_client', 'Please fill in a valid client');
   }
 }
 
+/**
+ * Save the values submitted when editing or adding a user.
+ *
+ * @see hosting_client_user()
+ */
 function hosting_client_user_form_submit($edit, $user) {
   if (array_key_exists('clients', $edit)) {
     foreach ($edit['clients'] as $client) {
@@ -145,16 +167,6 @@ function hosting_client_disabling($set = NULL) {
 
 /**
  * Implementation of hook_node_grants().
- *
- * Tell the node access system what GIDs the user belongs to for each realm.
- * In this example, we are providing two realms: the example realm, which
- * has just one group id (1) and the user is either a member or not depending
- * upon the operation and the access permission set.
- *
- * We are also setting up a realm for the node author, though, to give it
- * special privileges. That has 1 GID for every UID, and each user is
- * automatically a member of the group where GID == UID.
- *
  */
 function hosting_node_grants($account, $op) {
   $account->client_id = hosting_get_client_from_user($account->uid);
@@ -172,12 +184,6 @@ function hosting_node_grants($account, $op) {
 
 /**
  * Implementation of hook_node_access_records().
- *
- * All node access modules must implement this hook. If the module is
- * interested in the privacy of the node passed in, return a list
- * of node access values for each grant ID we offer. Since this
- * example module only offers 1 grant ID, we will only ever be
- * returning one record.
  */
 function hosting_client_node_access_records($node) {
   if (hosting_client_disabling()) {
@@ -244,7 +250,13 @@ function hosting_client_node_access_records($node) {
 }
 
 /**
- * Returns an associative array that provides the relationships a user has with different clients
+ * Get relationships a user has with different clients.
+ *
+ * @param $uid
+ *   The user to get the relationships for.
+ * @return
+ *   An array of clients and their contact type relationships to the specified
+ *   user.
  */
 function hosting_get_client_from_user($uid) {
   $clients = array();

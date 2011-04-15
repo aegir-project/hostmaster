@@ -1,5 +1,8 @@
 <?php
-// $Id$
+/**
+ * @file
+ *   Install, update and uninstall for the clients module.
+ */
 
 /**
  * Implementation of hook_schema().
@@ -46,9 +49,10 @@ function hosting_client_schema() {
         'default' => 0,
       ),
       'contact_type' => array(
-        'type' => 'text',
-        'size' => 'big',
+        'type' => 'varchar',
+        'length' => 255,
         'not null' => TRUE,
+        'default' => '',
       ),
     ),
     'primary key' => array('user', 'client'),
@@ -73,6 +77,9 @@ function hosting_client_schema() {
   return $schema;
 }
 
+/**
+ * Implementation of hook_install().
+ */
 function hosting_client_install() {
   // Create tables.
   drupal_install_schema('hosting_client');
@@ -262,5 +269,17 @@ function hosting_client_update_6000() {
     }
   }
   db_add_unique_key($ret, 'hosting_client', 'uname_unq', array('uname'));
+  return $ret;
+}
+
+/**
+ * Use VARCHAR on contact_type field so that we support MariaDB correctly.
+ *
+ * See #1093436
+ */
+function hosting_client_update_6001() {
+  $ret = array();
+  db_change_field($ret, 'hosting_client_user', 'contact_type', 'contact_type',
+                  array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => ''));
   return $ret;
 }

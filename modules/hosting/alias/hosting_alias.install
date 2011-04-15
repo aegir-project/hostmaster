@@ -1,5 +1,8 @@
 <?php
-// $Id$
+/**
+ * @file
+ *   Install, update and uninstall for the site aliases module.
+ */
 
 /**
  * Implementation of hook_schema().
@@ -44,19 +47,24 @@ function hosting_alias_schema() {
   return $schema;
 }
 
+/**
+ * Implementation of hook_install().
+ */
 function hosting_alias_install() {
   // Create tables.
   drupal_install_schema('hosting_alias');
 }
 
+/**
+ * Implementation of hook_uninstall().
+ */
 function hosting_alias_uninstall() {
   // Remove tables.
   drupal_uninstall_schema('hosting_alias');
-
 }
 
 /**
- * This removes dodgy data created by an import bug
+ * This removes dodgy data created by an import bug.
  */
 function hosting_alias_update_1() {
   $ret = array();
@@ -65,7 +73,7 @@ function hosting_alias_update_1() {
 }
 
 /**
- * Add the redirection field
+ * Add the redirection field.
  */
 function hosting_alias_update_2() {
   $ret = array();

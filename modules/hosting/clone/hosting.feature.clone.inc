@@ -1,5 +1,12 @@
 <?php
+/**
+ * @file
+ *   Expose the clone feature to hostmaster.
+ */
 
+/**
+ * Implementation of hook_hosting_feature().
+ */
 function hosting_clone_hosting_feature() {
   $features['clone'] = array(
     'title' => t('Site cloning'),

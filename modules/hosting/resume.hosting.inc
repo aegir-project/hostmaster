@@ -17,7 +17,11 @@ function drush_hosting_resume() {
 
   // fix the old platform first
   $platform_id = db_result(db_query('SELECT nid FROM {hosting_platform} WHERE publish_path = "%s"', d($old_platform)->root));
-  hosting_context_register($platform_id, ltrim($old_platform, '@'));
+  if ($platform_id) {
+    hosting_context_register($platform_id, ltrim($old_platform, '@'));
+  } else {
+    drush_log(dt('Old platform not found in path %path, not setting context %context', array('%path' => d($old_platform)->root, '%context' => ltrim($old_platform, '@'))), 'warning');
+  }
 
   // if the new platform doesn't exist, create it. 
   $platform_root = d()->root;
