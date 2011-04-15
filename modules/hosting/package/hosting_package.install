@@ -1,5 +1,8 @@
 <?php
-// $Id$
+/**
+ * @file
+ *   Install, update and uninstall for the package management module.
+ */
 
 /**
  * Implementation of hook_schema().
@@ -113,6 +116,9 @@ function hosting_package_schema() {
   return $schema;
 }
 
+/**
+ * Implementation of hook_install().
+ */
 function hosting_package_install() {
   // Create tables.
   drupal_install_schema('hosting_package');

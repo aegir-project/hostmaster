@@ -1,8 +1,7 @@
 <?php
-// $Id$
-
 /**
- * @file API for mapping packages to various Hosting node types
+ * @file
+ *   API for mapping packages to various Hosting node types
  */
 
 /**
