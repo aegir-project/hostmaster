@@ -1,7 +1,11 @@
 <?php
+/**
+ * @file
+ *   Define a views filter for the Package management module.
+ */
 
 /**
- * Filter by node type
+ * Views filter class to filter by package type.
  */
 class hosting_package_handler_filter_hosting_package_type extends views_handler_filter_in_operator {
   function get_value_options() {
