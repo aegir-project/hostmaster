@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ *   Platform node type definition.
+ */
+
+/**
  * This platform has been deleted.
  */
 define('HOSTING_PLATFORM_DELETED', -2);
@@ -35,9 +40,8 @@ function hosting_platform_menu() {
 }
 
 /**
- * @file Platform node type definition
+ * Implementation of hook_node_info().
  */
-
 function hosting_platform_node_info() {
   #configuration
   $types["platform"] =  array(
@@ -51,7 +55,7 @@ function hosting_platform_node_info() {
 }
 
 /**
- * Implementation of hook_hosting_tasks()
+ * Implementation of hook_hosting_tasks().
  */
 function hosting_platform_hosting_tasks() {
   $tasks = array();
@@ -89,14 +93,14 @@ function hosting_platform_hosting_tasks() {
 
 
 /**
- * Implementation of hook_perm()
+ * Implementation of hook_perm().
  */
 function hosting_platform_perm() {
   return array('create platform', 'view platform', 'edit platform', 'delete platform', 'view locked platforms');
 }
 
 /**
- * Implementation of hook_access()
+ * Implementation of hook_access().
  */
 function hosting_platform_access($op, $node, $account) {
   switch ($op) {
@@ -149,7 +153,7 @@ function _hosting_get_locked_platforms() {
 }
 
 /**
- * Small helper function to check if a platform is locked
+ * Small helper function to check if a platform is locked.
  */
 function _hosting_platform_is_locked($node) {
   if (in_array($node, array_keys(_hosting_get_locked_platforms()))) {
@@ -226,7 +230,7 @@ function hosting_platform_form(&$node) {
 }
 
 /**
- * Hide the delete button on platform nodes
+ * Hide the delete button on platform nodes.
  */
 function hosting_platform_form_alter(&$form, &$form_state, $form_id) {
   // Remove delete button from platform edit form, unless the platform's already been deleted via the Delete task
@@ -276,7 +280,7 @@ function hosting_platform_update($node) {
 }
 
 /**
- * Implementation of hook_nodeapi_delete_revision()
+ * Implementation of hook_nodeapi_TYPE_OP().
  */
 function hosting_nodeapi_platform_delete_revision(&$node) {
   db_query('DELETE FROM {hosting_platform} WHERE vid = %d', $node->vid);
@@ -301,7 +305,7 @@ function hosting_platform_delete($node) {
 }
 
 /**
- * Implementation of hook_validate()
+ * Implementation of hook_validate().
  */
 function hosting_platform_validate($node, &$form) {
   // Make sure the platform name is unique, to avoid context clashes.
@@ -442,7 +446,7 @@ function _hosting_platform_status($node) {
 }
 
 /**
- * Implementation of hook_hosting_summary()
+ * Implementation of hook_hosting_summary().
  */
 function hosting_platform_hosting_summary() {
   $summary = array();
@@ -458,7 +462,7 @@ function hosting_platform_hosting_summary() {
 }
 
 /**
- * Views integration
+ * Implementation of hook_views_api().
  */
 function hosting_platform_views_api() {
   return array(
@@ -483,9 +487,8 @@ function _hosting_platform_list_class($node) {
 }
 
 /**
- * Simple list for top level navigation
+ * Simple list for top level navigation.
  */
-
 function hosting_platform_listing() {
   $platforms = _hosting_get_platforms();
 
