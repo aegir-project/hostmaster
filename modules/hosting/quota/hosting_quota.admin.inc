@@ -5,7 +5,7 @@
 function hosting_quota_admin_client_list() {
 
   $all_resources = module_invoke_all('hosting_quota_resource');
-  $result = pager_query('SELECT q.*, c.name, c.email FROM {hosting_client_quota} q INNER JOIN {hosting_client} c ON c.nid = q.client', 23);
+  $result = pager_query('SELECT q.*, n.title FROM {hosting_client_quota} q INNER JOIN {node} n ON n.nid = q.client', 23);
   $output = array();
 
   while ($row = db_fetch_object($result)) {
@@ -20,12 +20,8 @@ function hosting_quota_admin_client_list() {
     $output[$row->client][$row->resource]['rendered usage'] = hosting_quota_resource_render($resource, $output[$row->client][$row->resource]['usage']);
     $output[$row->client][$row->resource]['rendered limit'] = hosting_quota_resource_render($resource, $row->value);
 
-    // Set client identifier, either e-mail or name
-    if (!$output[$row->client]['name'] && $row->name) {
-      $output[$row->client]['name'] = $row->name;
-    } else if (!$output[$row->client]['name']) {
-      $output[$row->client]['name'] = $row->email;
-    }
+    // Set client identifier
+    $output[$row->client]['name'] = $row->title;
   }
 
   return theme_hosting_quota_admin_list ($output, $all_resources);
