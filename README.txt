@@ -15,5 +15,6 @@ can be found on the Aegir website and the community portal:
    http://community.aegirproject.org
 
 To install the complete Aegir system, you first need to install Drush
-and Provision. See the install instructions provided in the Provision
-module.
+and Provision, see the install manual on the community site:
+
+   http://community.aegirproject.org/installing
