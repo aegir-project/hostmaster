@@ -432,12 +432,21 @@ function _hosting_setup_cron() {
   $cron = hosting_queues_cron_cmd();
 
   $fp = popen('crontab -', 'w');
+  $success = TRUE;
   if ($fp) {
-    if (fwrite($fp, $cron)) {
+    if (fwrite($fp, $cron) && fwrite($fp, "\n")) {
       drush_log(dt("Installed hosting-dispatch cron entry to run every minute"), 'success');
+    } else {
+      $success = FALSE;
     }
-    fclose($fp);
+    // pclose returns shell exit codes (ie. 0 is success)
+    if (pclose($fp)) {
+      $success = FALSE;
+    }
   } else {
+    $success = FALSE;
+  }
+  if (!$success) {
     drush_set_error('PROVISION_CRON_FAILED', dt('Failed to install cron job'));
   }
 }
