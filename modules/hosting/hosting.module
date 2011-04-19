@@ -423,7 +423,7 @@ function _hosting_setup_cron() {
   exec('crontab -l 2> /dev/null', $cron);
   variable_set('hosting_cron_backup', $cron);
   if (sizeof($cron)) {
-    drush_log("Your existing cron entry will be replaced.", 'warning');
+    drush_log(dt("Removing existing crontab"), 'warning');
     exec('crontab -r 2> /dev/null');
     $cron = array();
   }
@@ -441,7 +441,7 @@ function _hosting_setup_cron() {
   fclose($fp);
   system(sprintf('crontab %s', escapeshellarg($tmpnam)));
   unlink($tmpnam);
-  drush_log(dt("Installed hosting-dispatch cron entry to run every minute"), 'message');
+  drush_log(dt("Installed hosting-dispatch cron entry to run every minute"), 'success');
   return null;
 }
 
