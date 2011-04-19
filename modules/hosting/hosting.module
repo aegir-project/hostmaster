@@ -423,26 +423,23 @@ function _hosting_setup_cron() {
   exec('crontab -l 2> /dev/null', $cron);
   variable_set('hosting_cron_backup', $cron);
   if (sizeof($cron)) {
-    drush_log(dt("Removing existing crontab"), 'warning');
-    exec('crontab -r 2> /dev/null');
-    $cron = array();
+    drush_log(dt("Replacing existing crontab"), 'warning');
   }
   else {
     drush_log(dt("No existing crontab was found"), 'message');
   }
 
-  $cron[] = hosting_queues_cron_cmd();
+  $cron = hosting_queues_cron_cmd();
 
-  $tmpnam = tempnam('hostmaster', 'hm.cron');
-  $fp = fopen($tmpnam, "w");
-  foreach ($cron as $line) {
-    fwrite($fp, $line . "\n");
+  $fp = popen('crontab -', 'w');
+  if ($fp) {
+    if (fwrite($fp, $cron)) {
+      drush_log(dt("Installed hosting-dispatch cron entry to run every minute"), 'success');
+    }
+    fclose($fp);
+  } else {
+    drush_set_error('PROVISION_CRON_FAILED', dt('Failed to install cron job'));
   }
-  fclose($fp);
-  system(sprintf('crontab %s', escapeshellarg($tmpnam)));
-  unlink($tmpnam);
-  drush_log(dt("Installed hosting-dispatch cron entry to run every minute"), 'success');
-  return null;
 }
 
 
