@@ -35,7 +35,18 @@ function _hosting_valid_fqdn($fqdn) {
   #
   # We don't allow IPs here.
   #
-  return (preg_match("/^([a-z0-9]([a-z0-9-]*[a-z0-9])?\.?)+[a-z0-9]+$/i", $fqdn) && preg_match("/([a-z]+)/i", $fqdn));
+  return (preg_match("/^([a-z0-9]([a-z0-9-]*[a-z0-9])?\.?)+[a-z0-9]+$/", $fqdn) && preg_match("/([a-z]+)/", $fqdn));
+}
+
+/**
+ * Check if the FQDN or IP provided is valid.
+ */
+function _hosting_valid_fqdn_ip($fqdn) {
+  # regex is an implementation of RFC1035
+  #
+  # We allow IPs here.
+  #
+  return (preg_match("/^([a-z0-9]([a-z0-9-]*[a-z0-9])?\.?)+[a-z0-9]+$/", $fqdn));
 }
 
 function hosting_format_interval($ts) {

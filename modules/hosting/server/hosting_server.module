@@ -291,7 +291,7 @@ function hosting_nodeapi_server_presave(&$node) {
 function hosting_server_validate(&$node, &$form) {
 
   hosting_ip_validate($node); 
-  if (!_hosting_valid_fqdn($node->title)) {
+  if (!_hosting_valid_fqdn_ip($node->title)) {
     form_set_error('title', t('Invalid hostname. Use a proper hostname or an IP address.'));
   }
 
