@@ -9,8 +9,8 @@ function drush_hosting_migrate_pre_hosting_task($task) {
 
     $site = $task->ref;
 
-    if ($site->title != $task->task_args['new_uri']) {
-      $task->args[3] = '@' . $task->task_args['new_uri'];
+    if (strtolower(trim($site->title)) != strtolower(trim($task->task_args['new_uri']))) {
+      $task->args[3] = '@' . strtolower(trim($task->task_args['new_uri']));
     }
 
     if ($site->db_server != $task->task_args['new_db_server']) {
