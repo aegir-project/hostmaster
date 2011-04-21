@@ -679,23 +679,17 @@ function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
   } else {
     $queues = hosting_get_queues();
     $queue = $queues['tasks'];
-    $freq = $queue['frequency'];
-    $last = $queue['last_run'];
-    $now = time();
-    # the first part is the regular case: the task was never run, compute the next time
-    # the second part is the case where the task wasn't run in the last queue run even though it was scheduled, so we compute the next iteration
-    $next = max($last + $freq, ( $now - ( ($now - $last) % $freq ) ) + $freq );
-    if ($freq < 60*60*12) { # 12h
+    $next = _hosting_queue_next_run($queue);
+    if ($queue['frequency'] < 60*60*12) { # 12h
       # display only the time if we have short iterations
       $date = format_date($next, 'custom', 'H:i:sO');
     } else {
       $date = format_date($next, 'medium');
     }
-    $items = $queue['items'];
     $node->content['info']['notexecuted'] = array(
       '#type' => 'item',
       '#title' => t('This task has not been processed yet'),
-      '#value' => t('It will be processed around %date, if the queue is not too crowded. The queue is currently run every %freq, was last run %last and processes %items items at a time. Server time is %time.', array('%freq' => format_interval($freq), '%date' => $date, '%last' => hosting_format_interval($last), '%items' => $items, '%time' => format_date($now, 'custom', 'H:i:sO'))),
+      '#value' => t('It will be processed around %date, if the queue is not too crowded. The queue is currently run every %freq, was last run %last and processes %items items at a time. Server time is %time.', array('%freq' => format_interval($queue['frequency']), '%date' => $date, '%last' => hosting_format_interval($queue['last_run']), '%items' => $queue['items'], '%time' => format_date(time(), 'custom', 'H:i:sO'))),
     );
   }
   if ($node->task_status) {

@@ -140,6 +140,24 @@ function hosting_queues_get_arguments($task) {
   return $data;
 }
 
+/**
+ * Calculate the time at which the task queue will run next.
+ *
+ * There are two possibilities here - the task was never run, in which
+ * case we compute the next time it was run.
+ *
+ * The second case is the case where the task wasn't run in the last
+ * queue run even though it was scheduled, so we compute the next
+ * iteration.
+ */
+function _hosting_queue_next_run($queue) {
+  $freq = $queue['frequency'];
+  $last = $queue['last_run'];
+  $now = time();
+  return max($last + $freq,
+    ( $now - ( ($now - $last) % $freq ) ) + $freq );
+}
+
 function _hosting_backend_invoke($cmd, $task) {
   $proc = _drush_proc_open($cmd, FALSE);
   if ($proc['output']) {
