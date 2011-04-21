@@ -149,8 +149,20 @@ function hosting_queues_get_arguments($task) {
  * The second case is the case where the task wasn't run in the last
  * queue run even though it was scheduled, so we compute the next
  * iteration.
+ *
+ * @param $queue mixed
+ *   the queue name or a queue array as returned by
+ *   hosting_get_queues()
+ *
+ * @return integer
+ *   the date at which the queue will run as a number of seconds since
+ *   the UNIX epoch
  */
 function _hosting_queue_next_run($queue) {
+  if (!is_array($queue)) {
+    $queues = hosting_get_queues();
+    $queue = $queues[$queue];
+  }
   $freq = $queue['frequency'];
   $last = $queue['last_run'];
   $now = time();
