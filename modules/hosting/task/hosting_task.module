@@ -350,6 +350,8 @@ function hosting_add_task($nid, $type, $args = null, $status = HOSTING_TASK_QUEU
  }
  node_save($task);
 
+ drupal_set_message(t("Task %type was added to the queue. Next queue run is %date, server time is %time.", array('%type' => $type, '%date' => format_date(_hosting_queue_next_run('tasks'), 'custom', 'H:i:sO'), '%time' => format_date(time(), 'custom', 'H:i:sO'))));
+
  return $task;
 }
 /**
