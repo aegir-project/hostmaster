@@ -351,6 +351,7 @@ function hosting_import_site($site_id, $data, $platform) {
   $site->verified = mktime();
   $site->client = $client->nid;
   $site->ip_addresses = array_values($data['site_ip_addresses']);
+  $site->cron_key = ($data['cron_key']) ? $data['cron_key'] : '';
 
   $site->aliases = ($data['aliases']) ? $data['aliases'] : array();
   $site->db_server = ($site->db_server) ? $site->db_server : HOSTING_DEFAULT_DB_SERVER;
@@ -738,5 +739,3 @@ function hosting_site_preprocess_views_view_table(&$variables) {
   }
   $variables['class'] .= " hosting-table";
 }
-
-
