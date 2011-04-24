@@ -50,6 +50,12 @@ function hosting_site_schema() {
         'type' => 'int',
         'not null' => FALSE,
       ),
+      'cron_key' => array(
+        'type' => 'varchar',
+        'not null' => FALSE,
+        'length' => 80,
+        'default' => '',
+      ),
       'verified' => array(
         'type' => 'int',
         'not null' => TRUE,
@@ -251,6 +257,21 @@ function hosting_site_update_6006() {
 function hosting_site_update_6007() {
   $ret = array();
   $ret[] = update_sql("ALTER TABLE {hosting_site_backups} ADD COLUMN size INT");
+  return $ret;
+}
+
+/**
+ * Add the cron_key column to the hosting_site table.
+ */
+function hosting_site_update_6008() {
+  $ret = array();
+  db_add_field($ret, 'hosting_site', 'cron_key', array('type' => 'varchar', 'not null' => TRUE, 'length' => 80, 'default' =>''));
+  // Generate cron keys for all existing sites.
+  $sites = db_query('SELECT vid FROM {hosting_site}');
+  while ($site = db_fetch_object($sites)) {
+    $cron_key = hosting_site_generate_cron_key();
+    db_query("UPDATE {hosting_site} SET cron_key = '%s' WHERE vid = %d", $cron_key, $site->vid);
+  }
   return $ret;
 }
 
