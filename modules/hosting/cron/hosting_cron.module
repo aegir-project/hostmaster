@@ -26,7 +26,9 @@ function hosting_cron_queue($count) {
       provision_backend_invoke($site_name, "cron");
     }
     else {
-      drush_shell_exec("wget -O - -q %s  > /dev/null", _hosting_site_url($site) . '/cron.php?cron_key=' . $site->cron_key);
+      // Optionally add the cron_key querystring key if the site has one.
+      $query = !empty($site->cron_key) ? '?cron_key=' . rawurlencode($site->cron_key) : '';
+      drush_shell_exec("wget -O - -q %s  > /dev/null", _hosting_site_url($site) . '/cron.php' . $query);
     }
 
     // We are updating the site table here directly to avoid a possible race condition,
