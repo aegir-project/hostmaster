@@ -143,7 +143,7 @@ function hosting_site_insert(&$node) {
   $node->client = $client->nid;
   $node->site_language = ($node->site_language) ? $node->site_language : 'en';
   // If the cron_key is set use it, otherwise generate a new one.
-  $node->cron_key = !empty($node->cron_key) ? $node->cron_key : hosting_site_generate_cron_key();
+  $node->cron_key = !empty($node->cron_key) ? $node->cron_key : '';
 
   hosting_ip_save($node, FALSE);
 
