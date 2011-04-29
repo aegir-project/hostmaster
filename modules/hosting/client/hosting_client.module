@@ -944,7 +944,7 @@ function hosting_client_sanitize($title) {
   // remove anything but "word characters", dots and dashes
   // remove the prefix in case we are validating an existing uname
   // TODO: optimize in one call
-  $title = preg_replace("/[!\W\.\-]/", "", preg_replace("/^$prefix/", "", $title))
+  $title = preg_replace("/[!\W\.\-]/", "", preg_replace("/^$prefix/", "", $title));
   return substr(strtolower($prefix . $title), 0, MAX_GROUP_LENGTH);
 }
 
