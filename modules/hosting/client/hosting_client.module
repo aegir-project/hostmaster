@@ -941,9 +941,11 @@ function _hosting_get_allowed_platforms($uid = NULL) {
  */
 function hosting_client_sanitize($title) {
   $prefix = variable_get('hosting_client_prefix', '');
-  // we remove the prefix in case we are validating an existing uname
-  $title = ltrim($title, $prefix);
-  return substr(strtolower($prefix . preg_replace("/[!\W\.\-]/", "", $title)), 0, MAX_GROUP_LENGTH);
+  // remove anything but "word characters", dots and dashes
+  // remove the prefix in case we are validating an existing uname
+  // TODO: optimize in one call
+  $title = preg_replace("/[!\W\.\-]/", "", preg_replace("/^$prefix/", "", $title))
+  return substr(strtolower($prefix . $title), 0, MAX_GROUP_LENGTH);
 }
 
 /**
