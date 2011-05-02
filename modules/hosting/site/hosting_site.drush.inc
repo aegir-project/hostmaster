@@ -9,8 +9,6 @@ function hosting_hosting_site_context_options(&$task) {
   $task->context_options['uri'] = strtolower(trim($task->ref->title));
   $task->context_options['language'] = $task->ref->site_language;
 
-  $task->context_options['cron_key'] = $task->ref->cron_key;
-
   $profile = node_load($task->ref->profile);
   $task->context_options['profile'] = $profile->short_name;
 
