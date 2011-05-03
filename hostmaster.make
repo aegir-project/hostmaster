@@ -5,7 +5,7 @@ api = 2
 projects[admin_menu][version] = "1.6"
 projects[openidadmin][version] = "1.2"
 projects[install_profile_api][version] = "2.1"
-projects[jquery_ui][version] = "1.3"
+projects[jquery_ui][version] = "1.4"
 projects[modalframe][version] = "1.6"
 
 ; Libraries

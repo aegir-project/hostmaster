@@ -283,3 +283,17 @@ function hosting_client_update_6001() {
                   array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => ''));
   return $ret;
 }
+
+/**
+ * Remove old primary keys from hosting_client table
+ *
+ * This should never fail as the index is present only in really old installs
+ * and this update may run on installs that have been done after the index was
+ * removed from the schema.
+ */
+function hosting_client_update_6002() {
+  $ret = array();
+  @db_drop_unique_key($ret, 'hosting_client', 'hosting_client_email_idx');
+  $ret[0]['success'] = TRUE; // never fail
+  return $ret;
+}
