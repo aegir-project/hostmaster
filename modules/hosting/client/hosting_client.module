@@ -627,7 +627,7 @@ function _hosting_client_site_default($node) {
         $current_client_id = $client_id;
       }
     }
-    if (!$current_client_id && !user_access('administer site')) {
+    if (!$current_client_id && !user_access('administer clients')) {
       form_set_error('client', t('Your user is not associated with any clients so you are not allowed to create new sites'));
     }
   }
@@ -637,7 +637,7 @@ function _hosting_client_site_default($node) {
   }
 
   // allow admins to override
-  if ($node->client && user_access('administer site')) {
+  if ($node->client && user_access('administer clients')) {
     $current_client_id = $node->client;
   }
 
