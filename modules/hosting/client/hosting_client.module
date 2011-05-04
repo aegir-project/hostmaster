@@ -405,8 +405,7 @@ function hosting_client_update($node) {
     } else {
       $node->uname = hosting_client_sanitize($node->title);
     }
-    db_query("UPDATE {hosting_client} SET nid=%d, uname='%s' WHERE vid=%d",
-             $node->nid, $node->uname, $node->vid);
+    db_query("UPDATE {hosting_client} SET uname='%s' WHERE nid=%d", $node->uname, $node->nid);
   }
   if ($node->users) {
     foreach ($node->users as $user) {
