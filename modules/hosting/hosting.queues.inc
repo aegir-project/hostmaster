@@ -1,6 +1,8 @@
 <?php
 
-
+/**
+ * @todo What is this doing here and why is this necessary?
+ */
 function _hosting_watchdog($entry) {
   watchdog($entry['type'], $entry['message']);
 }
