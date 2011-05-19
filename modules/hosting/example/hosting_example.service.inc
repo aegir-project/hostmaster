@@ -197,12 +197,6 @@ class hostingService_example_basic extends hostingService_example {
      parent::delete_revision();
    }
 
-
-
-   /**
-    * Backend communication.
-    */
-
    /**
     * Pass values to the provision backend when we call provision-save.
     *
@@ -211,6 +205,8 @@ class hostingService_example_basic extends hostingService_example {
     *
     * This backend class will be responsible for receiving and reacting to the options
     * passed here.
+    *
+    * @ingroup backend-frontend-IPC
     */
    public function context_options($task_type, $ref_type, &$task) {
      // REMEMBER TO CALL THE PARENT!
