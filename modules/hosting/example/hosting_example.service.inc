@@ -16,8 +16,8 @@
  */
 class hostingService_example extends hostingService {
  /**
- *   the value stored in the service column of hosting_service table.
- */
+  * the value stored in the service column of hosting_service table.
+  */
   public $service = 'example';
 }
 
@@ -28,30 +28,30 @@ class hostingService_example extends hostingService {
 
 class hostingService_example_basic extends hostingService_example {
  /**
-  *   the value stored in the type column of the hosting_service table.
+  * the value stored in the type column of the hosting_service table.
   */
   public $type = 'basic';
 
 
  /**
-  *   this service needs to have a port specified for it.
+  * this service needs to have a port specified for it.
   */
   public $has_port = TRUE;
 
  /**
-  *   the default value for the port input.
+  * the default value for the port input.
   */
   function default_port() {
     return 12345;
   }
 
  /**
-  *   this service needs to be restarted with a shell command.
+  * this service needs to be restarted with a shell command.
   */
   public $has_restart_cmd = TRUE;
 
  /**
-  *   The default value for the restart command input.
+  * The default value for the restart command input.
   */
   function default_restart_cmd() {
     return "/usr/bin/true";
@@ -60,7 +60,7 @@ class hostingService_example_basic extends hostingService_example {
 
 
  /**
-  *   node operations
+  * node operations
   */
 
   /**
@@ -212,14 +212,12 @@ class hostingService_example_basic extends hostingService_example {
     * This backend class will be responsible for receiving and reacting to the options
     * passed here.
     */
-
-  public function context_options($task_type, $ref_type, &$task) {
-    // REMEMBER TO CALL THE PARENT!
-    parent::context_options($task_type, $ref_type, $task);
-
-    $task->context_options['example_field'] = $this->example_field;
-  }
-
+   public function context_options($task_type, $ref_type, &$task) {
+     // REMEMBER TO CALL THE PARENT!
+     parent::context_options($task_type, $ref_type, $task);
+     
+     $task->context_options['example_field'] = $this->example_field;
+   }
 }
 
 /**
