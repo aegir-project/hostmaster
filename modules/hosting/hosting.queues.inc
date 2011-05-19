@@ -125,22 +125,6 @@ function hosting_tasks_queue($count = 20) {
 }
 
 /**
- * @deprecated this isn't called from anywhere, and nobody implements provision_args
- */
-function hosting_queues_get_arguments($task) {
-  $data = module_invoke_all('provision_args', $task, $task->task_type); 
-  foreach ($data as $key => $value) {
-    if (substr($key, 0, 1) == '#') {
-      $data[(int) str_replace('#', '', $key)] = $value;
-      unset($data[$key]);
-    }
-  }
-  
-  ksort($data);
-  return $data;
-}
-
-/**
  * Calculate the time at which the task queue will run next.
  *
  * There are two possibilities here - the task was never run, in which
