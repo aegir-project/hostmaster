@@ -8,6 +8,15 @@ function _hosting_watchdog($entry) {
 }
 
 /**
+ * @file Backend queues.
+ *
+ * This file defines an API for defining new queues.
+ *
+ * @defgroup backend-frontend-IPC
+ * @{
+ */
+
+/**
  * Retrieve a list of queues that need to be dispatched
  *
  * Generate a list of queues, and the frequency / amount of items
@@ -174,3 +183,6 @@ END;
   return $return;
 }
 
+/**
+ * @} End of "defgroup backend-frontend-IPC".
+ */
