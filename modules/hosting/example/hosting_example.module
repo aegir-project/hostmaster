@@ -32,6 +32,7 @@
  * least a single class named "provisionService_$service", which
  * extends the base provisionService class.
  *
+ * @see hosting_server_services()
  * @return
  *    an associative array with the index declaring the service
  *    type, and containing another associative array of properties.
@@ -39,7 +40,12 @@
  *    of the server node form.
  */
 function hosting_example_hosting_service_type() {
-  return array('example' => array('title' => t('Example service')));
+  return array(
+    'example' => array(       // Machine name
+      'title' => t('Example service'), // Human-readable name
+      'weight' => 0,       // Optional, defaults to 0
+    ),
+  );
 }
 
 /**
@@ -48,11 +54,21 @@ function hosting_example_hosting_service_type() {
  * Return a service implementation, such as the "apache" implementation
  * of the "http" service.
  *
- * You will then need to either extend the existing $module.service.inc
+ * An implementation class should go in {module name}.service.inc and be must be
+ * named hostingService_{service type}_{type}, which should be a subclass of
+ * hostingService_{service type} or hostingService.
+ *
+ * You will then need to either extend the existing {module name}.service.inc
  * file, or create a new file, containing the implementation of your service.
+ *
+ * @return
+ *   An associative array with the service implementation as key, and the
+ *   service type implemented as value.
+ *
+ * @see hosting_server_services()
  */
 function hosting_example_hosting_service() {
-  return array('basic' => 'example');
+  return array('basic' => 'example');   // Service implementation => service type.
 }
 
 /**
