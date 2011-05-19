@@ -11,8 +11,13 @@
  */
 
 /**
- * @addtogroup hostinghooks
+ * @defgroup hostingserviceapi Frontend Service API
  * @{
+ *
+ * The "service API" is what makes Aegir capable of managing multiple
+ * services like web or database servers. It provides a level of
+ * abstraction that allows different implementations of a specific
+ * service type.
  */
 
 /**
@@ -72,6 +77,6 @@ function hosting_example_hosting_service() {
 }
 
 /**
- * @} End of "addtogroup hooks".
+ * @} End of "defgroup hostingserviceapi".
  */
 
