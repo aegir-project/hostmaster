@@ -165,18 +165,6 @@ function _hosting_queue_next_run($queue) {
     ( $now - ( ($now - $last) % $freq ) ) + $freq );
 }
 
-/**
- * @deprecated this is not used or called from anywhere
- */
-function _hosting_backend_invoke($cmd, $task) {
-  $proc = _drush_proc_open($cmd, FALSE);
-  if ($proc['output']) {
-    $values = drush_backend_parse_output($proc['output'], FALSE);
-
-  }
-  return FALSE;
-}
-
 function _hosting_queues_clean_output($return) {
   return filter_xss($return, array());
 }
