@@ -6,7 +6,7 @@
  */
 
 /**
- * @addtogroup hooks
+ * @addtogroup hostinghooks
  * @{
  */
 

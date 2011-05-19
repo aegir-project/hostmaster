@@ -2,11 +2,12 @@
 /**
  * @file
  * Hooks provided by the hosting module, and some other random ones.
- */
-
-/**
- * @addtogroup hooks
+ *
+ * @defgroup hostinghooks Frontend hooks
  * @{
+ *
+ * Those hooks are hooks usable within contrib Drupal modules running
+ * in the Aegir frontend site. 
  */
 
 /**
