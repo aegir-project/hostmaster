@@ -75,71 +75,12 @@ function hook_drush_context_import($context, &$node) {
 }
 
 /**
- * Define hosting features.
- *
- * The frontend provides a UI for enabling and disabling features, which usually
- * corresponds to enabling and disabling a module providing the feature.
- *
- * This hook should be implemented in a file named:
- * hosting.feature.FEATURE_KEY.inc
- *
- * @return
- *   An array of hosting features, keyed by the name of the feature.
- *
- * @see hosting_get_features()
- */
-function hook_hosting_feature() {
-  // From hosting_cron_hosting_feature().
-  $features['cron'] = array(
-    'title' => t('Cron queue'),
-    'description' => t('Keeps track of running the cron process on all your sites.'),
-    'status' => HOSTING_FEATURE_ENABLED,
-    'module' => 'hosting_cron',
-  );
-  return $features;
-}
-
-/**
  * Define hosting queues.
  *
  * @see hosting_get_queues()
  */
 function hook_hosting_queues() {
 
-}
-
-/**
- * Define service types.
- *
- * @see hosting_server_services()
- */
-function hook_hosting_service_type() {
-  return array(
-    'http' => array(       // Machine name
-      'title' => t('Web'), // Human-readable name
-      'weight' => 0,       // Optional, defaults to 0
-    ),
-  );
-}
-
-/**
- * Define service implementations.
- *
- * An implementation class should go in {module name}.service.inc and be must be
- * named hostingService_{service type}_{type}, which should be a subclass of
- * hostingService_{service type} or hostingService.
- *
- * @return
- *   An associative array with the service implementation as key, and the
- *   service type implemented as value.
- *
- * @see hosting_server_services()
- */
-function hook_hosting_service() {
-  // From hosting_web_server_hosting_service().
-  return array(
-    'apache' => 'http',  // Service implementation => service type.
-  );
 }
 
 /**
