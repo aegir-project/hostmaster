@@ -9,10 +9,17 @@
 /**
  * Register a hosting feature with Aegir.
  *
- * This will be used to generate the 'admin/hosting' page.
- * 
- * @return 
- *  associative array indexed by feature key.
+ * The frontend provides a UI for enabling and disabling features, which usually
+ * corresponds to enabling and disabling a module providing the
+ * feature.
+ *
+ * This hook should be implemented in a file named:
+ * hosting.feature.FEATURE_KEY.inc
+ *
+ * @return
+ *   An array of hosting features, keyed by the name of the feature.
+ *
+ * @see hosting_get_features()
  */
 function hosting_example_hosting_feature() {
   $features['example'] = array(
