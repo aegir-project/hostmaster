@@ -6,7 +6,7 @@
  */
 
 /**
- * @addtogroup hostinghooks
+ * @addtogroup backend-frontend-IPC
  * @{
  */
 
