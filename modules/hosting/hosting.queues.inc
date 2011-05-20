@@ -28,17 +28,17 @@
  *
  * The point of entry is through the "dispatcher" (the
  * hosting-dispatch command), which runs the different queues
- * appropriately. There are different types of queues (@see
+ * appropriately. There are different types of queues (see
  * hook_hosting_queues()), but the most important one is the "task"
  * queue, which runs the basic tasks like install and backup.
  *
  * When tasks are ran, a provision command is called with the same
- * name of the task type defined in the frontend (@see
+ * name of the task type defined in the frontend (see
  * drush_hosting_task()). If we are running a special task like
  * install, verify or import, data from the task is actually saved in
  * the backend, through the backend provision-save command. The data
  * saved is from the associative array "context_options", defined from
- * the hook @see hook_hosting_TASK_OBJECT_context_options(). A good
+ * the hook see hook_hosting_TASK_OBJECT_context_options(). A good
  * example of such a variable is the site name or platform it is on,
  * which are obviously saved in the backend.
  *
