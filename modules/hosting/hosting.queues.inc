@@ -4,7 +4,9 @@
  * @file Backend queues.
  *
  * This file defines an API for defining new queues.
- *
+ */
+
+/**
  * @defgroup backend-frontend-IPC
  * @{
  * Aegir is based on a very important distinction between the
