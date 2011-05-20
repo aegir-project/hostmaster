@@ -72,8 +72,8 @@ function hosting_task_migrate_form_validate($form, &$form_state) {
     if (!_hosting_valid_fqdn($url)) {
       form_set_error('title', t("You have not specified a valid url for this site."));
     }
-    if (hosting_site_exists($url)) {
-      form_set_error('title', t("The domain name you have specified is not unique."));
+    if (!hosting_domain_allowed($url)) {
+      form_set_error('title', t("The domain name you have specified is not unique or not allowed."));
     }
   }
 

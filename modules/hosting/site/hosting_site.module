@@ -336,9 +336,6 @@ function hosting_import_site($site_id, $data, $platform) {
 
   if ($data['client_name']) {
     $client = hosting_import_client($data['client_name']);
-  } elseif ($data['client_email']) { 
-    // @deprecated drop this after 1.x
-    $client = hosting_import_client($data['client_email']);
   } 
 
   $site = node_load($site_id);
@@ -403,16 +400,6 @@ function _hosting_site_status($node) {
     HOSTING_SITE_DISABLED => "Disabled",
   );
   return $labels[$status];
-}
-
-/**
- * Check if a site exists in a somehow wrong way
- *
- * @see hosting_domain_allowed()
- * @deprecated
- */
-function hosting_site_exists($url, $nid = null) {
-  return !hosting_domain_allowed($url, array('nid' => $nid));
 }
 
 /**

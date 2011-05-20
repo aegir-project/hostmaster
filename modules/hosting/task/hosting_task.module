@@ -1013,17 +1013,6 @@ function _hosting_task_button($title, $link, $description, $class = '', $status 
 }
 
 /**
- * A list of recent tasks, used to be embeded in site and platform nodes
- *
- * @deprecated
- * @see hosting_task_list_table()
- * @see hosting_task_list()
- */
-function hosting_task_list_embedded($filter_by = null, $filter_value = null) {
-  return _hosting_task_list($filter_by, $filter_value, 5, 10, 'task_type', array('created'));
-} 
-
-/**
  * Theme a task list
  */
 function _hosting_task_list($filter_by, $filter_value, $count = 5, $element = 0, $field = 'title', $skip = array(), $pager = TRUE) {
