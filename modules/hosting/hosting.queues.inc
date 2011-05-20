@@ -134,38 +134,6 @@ function hosting_run_queue() {
 }
 
 /**
- * Retrieve a list of outstanding tasks.
- *
- * @param limit
- *   The amount of items to return.
- * @return
- *   An associative array containing task nodes, indexed by node id.
- */
-function _hosting_get_new_tasks($limit = 20) {
-  $return = array();
-  $result = db_query("SELECT t.nid FROM {hosting_task} t INNER JOIN {node} n ON t.vid = n.vid WHERE t.task_status = %d ORDER BY n.changed, n.nid ASC LIMIT %d", 0, $limit);
-  while ($node = db_fetch_object($result)) {
-    $return[$node->nid] =  node_load($node->nid);
-  }
-  return $return;
-}
-
-/**
- * Process the hosting task queue.
- *
- * Iterates through the list of outstanding tasks, and execute the commands on the back end.
- */
-function hosting_tasks_queue($count = 20) {
-  global $provision_errors;
-
-  drush_log(dt("Running tasks queue"));
-  $tasks = _hosting_get_new_tasks($count);
-  foreach ($tasks as $task) {
-    drush_backend_fork("hosting-task", array($task->nid));
-  }
-}
-
-/**
  * Calculate the time at which the task queue will run next.
  *
  * There are two possibilities here - the task was never run, in which
