@@ -319,7 +319,7 @@ function _hosting_client_get_role() {
 function hosting_client_register_user($node) {
   $pass = user_password();
   $user = new stdClass();
-  $edit['name'] = $node->email;
+  $edit['name'] = $node->uname;
   $edit['hosting_client'] = $node->nid;
   $edit['mail'] = $node->email;
   $edit['pass'] = $pass;
