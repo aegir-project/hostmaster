@@ -31,7 +31,7 @@
  *
  * @see hosting_available_tasks()
  */
-function hook_hosting_tasks() {
+function hosting_example_hosting_tasks() {
   // From hosting_clone_hosting_tasks().
   $options = array();
 
