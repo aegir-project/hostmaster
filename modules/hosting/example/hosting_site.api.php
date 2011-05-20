@@ -20,7 +20,7 @@
  *
  * @see hosting_site_available_options()
  */
-function hook_hosting_site_options_alter(&$return, $node) {
+function hosting_example_hosting_site_options_alter(&$return, $node) {
   // From: hosting_ssl_hosting_site_options_alter().
 
   // Disable the ssl key fields by default.
