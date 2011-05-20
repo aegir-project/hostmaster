@@ -315,6 +315,8 @@ function _hosting_client_get_role() {
  * This is a helper function for client forms that will create a user
  * alongside a new client if the hosting_client_register_user setting
  * is true.
+ *
+ * @see hosting_client_insert()
  */
 function hosting_client_register_user($node) {
   $pass = user_password();
