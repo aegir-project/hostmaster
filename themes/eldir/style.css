@@ -308,6 +308,7 @@ div#main {
   float:left;
   width:600px;
   padding:10px;
+  clear:both;
   }
 
   body.wide div#main {

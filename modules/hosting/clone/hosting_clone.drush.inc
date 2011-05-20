@@ -61,6 +61,9 @@ function hosting_clone_post_hosting_clone_task($task, $data) {
     }
 
     node_save($clone);
+
+    // record the backup created
+    hosting_site_post_hosting_backup_task($task, $data);
   }
 }
 
