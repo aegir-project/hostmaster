@@ -1,6 +1,8 @@
 <?php
 
-
+/**
+ * @deprecated not used anywhere, gone in 2.x
+ */
 function _hosting_watchdog($entry) {
   watchdog($entry['type'], $entry['message']);
 }
