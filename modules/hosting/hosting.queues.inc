@@ -1,13 +1,6 @@
 <?php
 
 /**
- * @deprecated not used anywhere, gone in 2.x
- */
-function _hosting_watchdog($entry) {
-  watchdog($entry['type'], $entry['message']);
-}
-
-/**
  * @file Backend queues.
  *
  * This file defines an API for defining new queues.
@@ -143,63 +136,33 @@ function hosting_run_queue() {
 }
 
 /**
- * Retrieve a list of outstanding tasks.
+ * Calculate the time at which the task queue will run next.
  *
- * @param limit
- *   The amount of items to return.
- * @return
- *   An associative array containing task nodes, indexed by node id.
- */
-function _hosting_get_new_tasks($limit = 20) {
-  $return = array();
-  $result = db_query("SELECT t.nid FROM {hosting_task} t INNER JOIN {node} n ON t.vid = n.vid WHERE t.task_status = %d ORDER BY n.changed, n.nid ASC LIMIT %d", 0, $limit);
-  while ($node = db_fetch_object($result)) {
-    $return[$node->nid] =  node_load($node->nid);
-  }
-  return $return;
-}
-
-/**
- * Process the hosting task queue.
+ * There are two possibilities here - the task was never run, in which
+ * case we compute the next time it was run.
  *
- * Iterates through the list of outstanding tasks, and execute the commands on the back end.
+ * The second case is the case where the task wasn't run in the last
+ * queue run even though it was scheduled, so we compute the next
+ * iteration.
+ *
+ * @param $queue mixed
+ *   the queue name or a queue array as returned by
+ *   hosting_get_queues()
+ *
+ * @return integer
+ *   the date at which the queue will run as a number of seconds since
+ *   the UNIX epoch
  */
-function hosting_tasks_queue($count = 20) {
-  global $provision_errors;
-
-  drush_log(dt("Running tasks queue"));
-  $tasks = _hosting_get_new_tasks($count);
-  foreach ($tasks as $task) {
-    drush_backend_fork("hosting-task", array($task->nid));
+function _hosting_queue_next_run($queue) {
+  if (!is_array($queue)) {
+    $queues = hosting_get_queues();
+    $queue = $queues[$queue];
   }
-}
-
-/**
- * @deprecated this isn't called from anywhere, and nobody implements provision_args
- */
-function hosting_queues_get_arguments($task) {
-  $data = module_invoke_all('provision_args', $task, $task->task_type); 
-  foreach ($data as $key => $value) {
-    if (substr($key, 0, 1) == '#') {
-      $data[(int) str_replace('#', '', $key)] = $value;
-      unset($data[$key]);
-    }
-  }
-  
-  ksort($data);
-  return $data;
-}
-
-/**
- * @deprecated this is not used or called from anywhere
- */
-function _hosting_backend_invoke($cmd, $task) {
-  $proc = _drush_proc_open($cmd, FALSE);
-  if ($proc['output']) {
-    $values = drush_backend_parse_output($proc['output'], FALSE);
-
-  }
-  return FALSE;
+  $freq = $queue['frequency'];
+  $last = $queue['last_run'];
+  $now = time();
+  return max($last + $freq,
+    ( $now - ( ($now - $last) % $freq ) ) + $freq );
 }
 
 function _hosting_queues_clean_output($return) {
