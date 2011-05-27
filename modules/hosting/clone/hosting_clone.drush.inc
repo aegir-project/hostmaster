@@ -62,7 +62,8 @@ function hosting_clone_post_hosting_clone_task($task, $data) {
 
     node_save($clone);
 
-    // record the backup created
+    // Record the backup created during clone.
+    $task->task_args['description'] = t('Pre-clone backup');
     hosting_site_post_hosting_backup_task($task, $data);
   }
 }

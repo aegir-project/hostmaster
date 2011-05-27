@@ -85,7 +85,8 @@ function hosting_migrate_post_hosting_migrate_task($task, $data) {
     hosting_package_sync($packages);
     hosting_package_instance_sync($task->ref->nid, $packages);
 
-    // record the backup created
+    // Record the backup created during migrate.
+    $task->task_args['description'] = t('Pre-migration backup');
     hosting_site_post_hosting_backup_task($task, $data);
   }
 }
