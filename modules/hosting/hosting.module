@@ -783,7 +783,6 @@ function hosting_context_register($nid, $name) {
  * Delete an alias from the context lookup table.
  */
 function hosting_context_delete($nid) {
-  db_query("DELETE FROM {url_alias} WHERE src='node/%d'", $nid);
   db_query("DELETE FROM {hosting_context} WHERE nid=%d", $nid);
 }
 
