@@ -179,7 +179,7 @@ function hosting_platform_form(&$node) {
       '#type' => 'textfield',
       '#title' => t('Publish path'),
       '#required' => TRUE,
-      '#description' => t('The absolute path on the filesystem where the sites will be hosted. This needs to be created manually and initialized before your platform works properly. It also needs to be a unique path not already in use by a platform on any server.<br />For example, run the following shell commands:<pre>%commands</pre>Your publish path is the absolute path to the directory that gets created.<br />Alternatively, you can specify a makefile below, and the platform will be created automatically if the path specified here does not exist.<br />You are still required to enter the absolute path above, as it will be treated as the target directory by the makefile.', array('%commands' => "cd /var/aegir\n./drush/drush.php dl drupal\n")),
+      '#description' => t('The absolute path on the filesystem where the sites will be hosted. This needs to be created manually and initialized before your platform works properly. It also needs to be a unique path not already in use by a platform on any server.<br />For example, run the following shell commands:<pre>%commands</pre>Your publish path is the absolute path to the directory that gets created.<br />Alternatively, you can specify a makefile below, and the platform will be created automatically if the path specified here does not exist.<br />You are still required to enter the absolute path above, as it will be treated as the target directory by the makefile.', array('%commands' => "cd /var/aegir/platforms\n/var/aegir/drush/drush.php dl drupal\n")),
       '#size' => 40,
       '#default_value' => $node->publish_path,
       '#maxlength' => 255,
