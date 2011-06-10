@@ -8,6 +8,7 @@
   <?php print $head; ?>
   <title><?php print $head_title; ?></title>
   <?php print $styles; ?>
+  <?php print $scripts; ?>
   <!--[if lt IE 7]>
   <style type="text/css" media="all">@import "<?php print $styles_ie6 ?>";</style>
   <![endif]-->

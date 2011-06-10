@@ -15,8 +15,6 @@ function eldir_preprocess_page(&$variables) {
     $variables['tabs2'] = "<ul class='links tabs clear-block'>{$secondary}</ul>";
   }
 
-  // Add IE 6 compatibility stylesheet
-  $variables['styles_ie6'] = base_path() . path_to_theme() . '/ie6.css';
 }
 
 function eldir_preprocess_html(&$variables) {
@@ -32,10 +30,6 @@ function eldir_preprocess_html(&$variables) {
     $variables['body_classes'] .= " ntype-{$type}";
   }
 
-  $variables['sidebar_first'] = trim($variables['left']);
-  $variables['sidebar_second'] = trim($variables['right']);
-  $variables['body_classes'] .= empty($variables['left']) && empty($variables['right']) ? ' wide' : '';
-
   // Add path-based class for a last line of defense
   if (!empty($_GET['q'])) {
     $variables['body_classes'] .= ' path-'. str_replace('/', '-', $_GET['q']);
@@ -46,6 +40,8 @@ function eldir_preprocess_html(&$variables) {
 #    $variables['body_classes'] .= ' error-page';
 #  }
 
+  // Add IE 6 compatibility stylesheet
+  $variables['styles_ie6'] = base_path() . path_to_theme() . '/ie6.css';
 }
 
 /**
