@@ -1,0 +1,14 @@
+name = Eldir
+description = Companion theme for the Aegir hosting system.
+version = VERSION
+core = 7.x
+engine = phptemplate
+
+stylesheets[all][] = style.css
+
+regions[sidebar_first] = Left sidebar
+regions[sidebar_second] = Right sidebar
+regions[content] = Content
+regions[header] = Header
+regions[footer] = Footer
+regions[help] = Help

@@ -1,0 +1,776 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="400"
+   height="260"
+   id="svg2"
+   sodipodi:version="0.32"
+   inkscape:version="0.46"
+   version="1.0"
+   sodipodi:docname="aegir_logo.svg"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape"
+   enable-background="new"
+   inkscape:export-filename="/home/yh/graphics/aegir/renders/aegir_logo.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90">
+  <defs
+     id="defs4">
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 100 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="600 : 100 : 1"
+       inkscape:persp3d-origin="300 : 66.666667 : 1"
+       id="perspective134" />
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient6450">
+      <stop
+         style="stop-color:#eefafb;stop-opacity:1"
+         offset="0"
+         id="stop6452" />
+      <stop
+         style="stop-color:#a8d5d8;stop-opacity:1"
+         offset="1"
+         id="stop6454" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient6422">
+      <stop
+         style="stop-color:#0e3f70;stop-opacity:1;"
+         offset="0"
+         id="stop6424" />
+      <stop
+         style="stop-color:#06203a;stop-opacity:1"
+         offset="1"
+         id="stop6426" />
+    </linearGradient>
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient6422"
+       id="radialGradient6428"
+       cx="740"
+       cy="38.049831"
+       fx="740"
+       fy="38.049831"
+       r="100"
+       gradientTransform="matrix(3.3202314,0,0,2.0108953,-2356.9712,28.485765)"
+       gradientUnits="userSpaceOnUse" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient6450"
+       id="radialGradient6456"
+       cx="940"
+       cy="38.46154"
+       fx="940"
+       fy="38.46154"
+       r="100"
+       gradientTransform="matrix(3.4007205,0,0,1.99,-2256.6773,-44.538463)"
+       gradientUnits="userSpaceOnUse" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient6450"
+       id="radialGradient6460"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(3.3202314,0,0,2.0108953,-2156.9712,28.485765)"
+       cx="740"
+       cy="38.049831"
+       fx="740"
+       fy="38.049831"
+       r="100" />
+    <filter
+       inkscape:collect="always"
+       id="filter3283">
+      <feBlend
+         inkscape:collect="always"
+         mode="screen"
+         in2="BackgroundImage"
+         id="feBlend3285" />
+    </filter>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     gridtolerance="10000"
+     guidetolerance="10"
+     objecttolerance="10"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.4096"
+     inkscape:cx="463.36403"
+     inkscape:cy="-197.88652"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:snap-bbox="true"
+     inkscape:object-nodes="false"
+     inkscape:object-paths="false"
+     showguides="false"
+     inkscape:guide-bbox="true">
+    <inkscape:grid
+       type="xygrid"
+       id="grid75444"
+       visible="true"
+       enabled="true" />
+    <sodipodi:guide
+       orientation="0,1"
+       position="633.86845,597.7495"
+       id="guide5750" />
+    <sodipodi:guide
+       orientation="0,1"
+       position="633.42865,578.89287"
+       id="guide5752" />
+    <sodipodi:guide
+       orientation="1,0"
+       position="594.40026,590.58038"
+       id="guide5761" />
+    <sodipodi:guide
+       orientation="0,1"
+       position="593.9122,584.47716"
+       id="guide5763" />
+    <sodipodi:guide
+       orientation="0,1"
+       position="596.81702,573.03802"
+       id="guide5765" />
+    <sodipodi:guide
+       orientation="1,0"
+       position="731.70884,110.42826"
+       id="guide6061" />
+    <sodipodi:guide
+       orientation="1,0"
+       position="729.52684,119.17651"
+       id="guide6063" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     style="display:inline">
+    <rect
+       y="500"
+       x="440"
+       height="200"
+       width="500"
+       id="rect6224"
+       style="opacity:1;fill:#202020;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       inkscape:export-filename="/home/yh/graphics/aegir/renders/aegir_wordmark.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <rect
+       y="0"
+       x="200"
+       height="260"
+       width="200"
+       id="rect6458"
+       style="opacity:1;fill:url(#radialGradient6460);fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
+    <rect
+       style="opacity:1;fill:#202020;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       id="rect6230"
+       width="500"
+       height="200"
+       x="440"
+       y="700"
+       inkscape:export-filename="/home/yh/graphics/aegir/renders/aegir_wordmark.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <rect
+       y="899"
+       x="440"
+       height="1"
+       width="500"
+       id="rect6232"
+       style="opacity:1;fill:#e0e0e0;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       inkscape:export-filename="/home/yh/graphics/aegir/renders/aegir_wordmark.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <rect
+       style="opacity:1;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       id="rect6310"
+       width="75"
+       height="75"
+       x="655"
+       y="520"
+       inkscape:export-filename="/home/yh/graphics/aegir/renders/aegir_wordmark.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <rect
+       y="520"
+       x="750"
+       height="75"
+       width="75"
+       id="rect6312"
+       style="opacity:1;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       inkscape:export-filename="/home/yh/graphics/aegir/renders/aegir_wordmark.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <rect
+       style="opacity:1;fill:#404040;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       id="rect6226"
+       width="500"
+       height="1"
+       x="440"
+       y="699"
+       inkscape:export-filename="/home/yh/graphics/aegir/renders/aegir_wordmark.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <rect
+       style="opacity:1;fill:#202020;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       id="rect6220"
+       width="500"
+       height="100"
+       x="440"
+       y="400"
+       inkscape:export-filename="/home/yh/graphics/aegir/renders/aegir_wordmark.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <rect
+       y="499"
+       x="440"
+       height="1"
+       width="500"
+       id="rect6222"
+       style="opacity:1;fill:#404040;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       inkscape:export-filename="/home/yh/graphics/aegir/renders/aegir_wordmark.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <rect
+       y="300"
+       x="440"
+       height="100"
+       width="500"
+       id="rect6216"
+       style="opacity:1;fill:#202020;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       inkscape:export-filename="/home/yh/graphics/aegir/renders/aegir_wordmark.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <rect
+       style="opacity:1;fill:#404040;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       id="rect6218"
+       width="500"
+       height="1"
+       x="440"
+       y="399"
+       inkscape:export-filename="/home/yh/graphics/aegir/renders/aegir_wordmark.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <rect
+       style="opacity:1;fill:#202020;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       id="rect6212"
+       width="500"
+       height="100"
+       x="440"
+       y="200"
+       inkscape:export-filename="/home/yh/graphics/aegir/renders/aegir_wordmark.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <rect
+       y="299"
+       x="440"
+       height="1"
+       width="500"
+       id="rect6214"
+       style="opacity:1;fill:#404040;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       inkscape:export-filename="/home/yh/graphics/aegir/renders/aegir_wordmark.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <rect
+       y="100"
+       x="440"
+       height="100"
+       width="500"
+       id="rect6206"
+       style="opacity:1;fill:#202020;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       inkscape:export-filename="/home/yh/graphics/aegir/renders/aegir_wordmark.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <rect
+       style="opacity:1;fill:#202020;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       id="rect6204"
+       width="500"
+       height="100"
+       x="440"
+       y="0"
+       inkscape:export-filename="/home/yh/graphics/aegir/renders/aegir_wordmark.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <rect
+       style="opacity:1;fill:url(#radialGradient6428);fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       id="rect5990"
+       width="200"
+       height="260"
+       x="0"
+       y="0" />
+    <g
+       id="g6139"
+       transform="translate(-640,72.499998)"
+       style="fill:#e3f6f7;fill-opacity:1">
+      <g
+         style="fill:#e3f6f7;fill-opacity:1"
+         transform="matrix(1.0726552,0,0,1.1700569,198.12171,-90.138095)"
+         id="g5843">
+        <g
+           id="g5809"
+           style="fill:#e3f6f7;fill-opacity:1"
+           transform="matrix(1.3824225,0,0,1.3824225,-193.58855,-49.517314)">
+          <path
+             sodipodi:nodetypes="ccsss"
+             id="path5801"
+             d="M 529.1538,129.33275 C 529.1538,129.33275 482.14333,129.33275 482.14333,129.33275 C 482.14333,129.33275 494.50844,99.022132 494.50844,99.022132 C 498.2583,99.022132 484.97246,118.45007 505.13344,122.2082 C 526.97345,126.27931 529.1538,126.98958 529.1538,129.33275 z"
+             style="opacity:1;fill:#e3f6f7;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
+          <path
+             sodipodi:nodetypes="csccsc"
+             id="path5803"
+             d="M 494.4833,108.16112 C 494.4833,108.16112 493.71352,116.10434 509.86284,116.79039 C 521.20571,117.26986 524.44198,117.50077 524.44198,117.50077 L 527.16391,123.94501 C 527.16391,123.94501 526.96231,123.55661 508.2377,121.24864 C 491.88501,119.23303 494.4833,108.16112 494.4833,108.16112 z"
+             style="opacity:1;fill:#e3f6f7;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
+          <path
+             sodipodi:nodetypes="cssszczs"
+             id="path5805"
+             d="M 495.32782,105.75061 C 497.00588,113.38935 511.89839,113.87336 511.37259,105.32145 C 511.01628,99.526178 504.29853,100.12926 505.82689,103.25587 C 505.82689,103.25587 503.2628,102.14347 503.2628,102.14347 C 504.35623,98.99799 514.23431,96.438248 518.88186,105.03424 C 523.52941,113.63023 523.25298,114.69297 523.25298,114.69297 C 523.25298,114.69297 519.33816,114.70557 506.45463,114.57796 C 493.57167,114.45035 495.32782,105.75061 495.32782,105.75061 z"
+             style="opacity:1;fill:#e3f6f7;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
+          <path
+             transform="matrix(0.8999532,0,0,0.8999532,50.390569,10.161106)"
+             d="M 508.43824,103.49209 A 2.8776281,2.8776281 0 1 1 502.68298,103.49209 A 2.8776281,2.8776281 0 1 1 508.43824,103.49209 z"
+             sodipodi:ry="2.8776281"
+             sodipodi:rx="2.8776281"
+             sodipodi:cy="103.49209"
+             sodipodi:cx="505.56061"
+             id="path5807"
+             style="opacity:1;fill:#e3f6f7;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+             sodipodi:type="arc" />
+        </g>
+      </g>
+      <path
+         style="font-size:64px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:end;line-height:110.00000238%;writing-mode:lr-tb;text-anchor:end;fill:#e3f6f7;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:AF Battersea Bold;-inkscape-font-specification:Helvetica Neue Bold"
+         d="M 714.34986,73.533838 C 703.62183,77.977541 703.62879,93.951541 703.62879,93.951541 L 708.28431,93.958138 L 708.74305,89.587047 L 716.11531,89.577496 L 716.11531,93.956382 L 731.68564,93.956382 C 731.68564,93.956382 729.55629,92.050097 729.55629,89.760274 C 729.55629,89.760274 720.83566,89.760274 720.83566,89.760274 L 720.83566,85.413644 L 729.52684,85.413644 L 729.52684,81.89802 L 720.83566,81.89802 L 720.83566,77.372825 C 720.83566,77.372825 729.52684,77.372825 729.52684,77.372825 C 729.52684,75.269584 731.70884,73.533838 731.70884,73.533838 C 731.70884,73.533838 714.34986,73.533838 714.34986,73.533838 z M 739.95783,73.332963 C 735.38668,73.332953 732.6146,76.823587 732.6146,81.211822 L 732.6146,86.456954 C 732.6146,90.708054 735.5249,94.224216 739.91315,94.224216 C 742.153,94.224216 744.20998,93.215902 745.62698,91.478893 C 745.62698,92.118829 745.67166,92.803069 745.67166,93.443025 C 745.67157,96.597071 744.12046,98.844394 740.78357,98.844394 C 738.77234,98.844404 737.73344,97.962496 736.45355,96.54547 L 733.10563,99.380071 C 735.0712,101.61989 737.76673,102.90659 740.78357,102.90659 C 744.07479,102.90658 747.01476,101.3426 748.75171,98.554241 C 749.80308,96.862946 749.97934,95.7657 749.97934,93.800136 L 749.97934,73.623116 L 745.62698,73.623116 L 745.62698,76.033647 C 744.0728,74.296627 742.28901,73.332963 739.95783,73.332963 z M 771.70641,73.332963 C 769.4209,73.332953 767.49992,74.342342 766.03725,76.033647 L 766.03725,73.623116 L 761.64022,73.623116 L 761.64022,93.956382 L 766.03725,93.956382 L 766.03725,82.216207 C 766.03725,79.656412 767.87332,77.685307 770.47888,77.685307 C 771.71301,77.685307 772.39814,78.047595 773.35808,78.778971 L 776.37121,74.984623 C 775.04565,73.887569 773.39769,73.332963 771.70641,73.332963 z M 753.6001,73.623116 L 753.6001,93.956382 L 757.97479,93.956382 L 757.97479,73.623116 L 753.6001,73.623116 z M 716.11104,76.748235 C 716.11104,76.748235 716.11104,86.138473 716.11104,86.138473 L 709.2621,86.142929 C 709.2621,86.142929 710.60725,79.027976 716.11104,76.748235 z M 741.34163,77.685307 C 743.81,77.685307 745.62698,79.704259 745.62698,82.126929 L 745.62698,85.117767 C 745.62698,87.814696 744.17563,89.871871 741.34163,89.871871 C 739.01036,89.871882 736.9446,87.963441 736.9446,85.586485 L 736.9446,82.126929 C 736.9446,79.658544 738.87327,77.685307 741.34163,77.685307 z"
+         id="path5988"
+         sodipodi:nodetypes="cccccccsccccccscscccscssccscccccccccccccscccccccccccscccsccc" />
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-size:67.91362762px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:end;line-height:110.00000238%;writing-mode:lr-tb;text-anchor:end;opacity:1;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:AF Battersea Bold;-inkscape-font-specification:'AF Battersea Bold,'"
+       x="383"
+       y="147"
+       id="text5696"
+       sodipodi:linespacing="110%"><tspan
+         sodipodi:role="line"
+         id="tspan5698"
+         x="383"
+         y="147" /></text>
+    <text
+       xml:space="preserve"
+       style="font-size:48px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:end;line-height:110.00000238%;writing-mode:lr-tb;text-anchor:end;opacity:1;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Alternate Gothic No3 D;-inkscape-font-specification:Alternate Gothic No3 D"
+       x="687"
+       y="157"
+       id="text5973"
+       sodipodi:linespacing="110%"><tspan
+         sodipodi:role="line"
+         id="tspan5975"
+         x="687"
+         y="157" /></text>
+    <g
+       transform="translate(-440,72.499998)"
+       id="g6150"
+       style="fill:#0a1f36;fill-opacity:1">
+      <g
+         id="g6152"
+         transform="matrix(1.0726552,0,0,1.1700569,198.12171,-90.138095)"
+         style="fill:#0a1f36;fill-opacity:1">
+        <g
+           transform="matrix(1.3824225,0,0,1.3824225,-193.58855,-49.517314)"
+           style="fill:#0a1f36;fill-opacity:1"
+           id="g6154">
+          <path
+             style="opacity:1;fill:#0a1f36;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+             d="M 529.1538,129.33275 C 529.1538,129.33275 482.14333,129.33275 482.14333,129.33275 C 482.14333,129.33275 494.50844,99.022132 494.50844,99.022132 C 498.2583,99.022132 484.97246,118.45007 505.13344,122.2082 C 526.97345,126.27931 529.1538,126.98958 529.1538,129.33275 z"
+             id="path6156"
+             sodipodi:nodetypes="ccsss" />
+          <path
+             style="opacity:1;fill:#0a1f36;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+             d="M 494.4833,108.16112 C 494.4833,108.16112 493.71352,116.10434 509.86284,116.79039 C 521.20571,117.26986 524.44198,117.50077 524.44198,117.50077 L 527.16391,123.94501 C 527.16391,123.94501 526.96231,123.55661 508.2377,121.24864 C 491.88501,119.23303 494.4833,108.16112 494.4833,108.16112 z"
+             id="path6158"
+             sodipodi:nodetypes="csccsc" />
+          <path
+             style="opacity:1;fill:#0a1f36;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+             d="M 495.32782,105.75061 C 497.00588,113.38935 511.89839,113.87336 511.37259,105.32145 C 511.01628,99.526178 504.29853,100.12926 505.82689,103.25587 C 505.82689,103.25587 503.2628,102.14347 503.2628,102.14347 C 504.35623,98.99799 514.23431,96.438248 518.88186,105.03424 C 523.52941,113.63023 523.25298,114.69297 523.25298,114.69297 C 523.25298,114.69297 519.33816,114.70557 506.45463,114.57796 C 493.57167,114.45035 495.32782,105.75061 495.32782,105.75061 z"
+             id="path6160"
+             sodipodi:nodetypes="cssszczs" />
+          <path
+             sodipodi:type="arc"
+             style="opacity:1;fill:#0a1f36;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+             id="path6162"
+             sodipodi:cx="505.56061"
+             sodipodi:cy="103.49209"
+             sodipodi:rx="2.8776281"
+             sodipodi:ry="2.8776281"
+             d="M 508.43824,103.49209 A 2.8776281,2.8776281 0 1 1 502.68298,103.49209 A 2.8776281,2.8776281 0 1 1 508.43824,103.49209 z"
+             transform="matrix(0.8999532,0,0,0.8999532,50.390569,10.161106)" />
+        </g>
+      </g>
+      <path
+         sodipodi:nodetypes="cccccccsccccccscscccscssccscccccccccccccscccccccccccscccsccc"
+         id="path6164"
+         d="M 714.34986,73.533838 C 703.62183,77.977541 703.62879,93.951541 703.62879,93.951541 L 708.28431,93.958138 L 708.74305,89.587047 L 716.11531,89.577496 L 716.11531,93.956382 L 731.68564,93.956382 C 731.68564,93.956382 729.55629,92.050097 729.55629,89.760274 C 729.55629,89.760274 720.83566,89.760274 720.83566,89.760274 L 720.83566,85.413644 L 729.52684,85.413644 L 729.52684,81.89802 L 720.83566,81.89802 L 720.83566,77.372825 C 720.83566,77.372825 729.52684,77.372825 729.52684,77.372825 C 729.52684,75.269584 731.70884,73.533838 731.70884,73.533838 C 731.70884,73.533838 714.34986,73.533838 714.34986,73.533838 z M 739.95783,73.332963 C 735.38668,73.332953 732.6146,76.823587 732.6146,81.211822 L 732.6146,86.456954 C 732.6146,90.708054 735.5249,94.224216 739.91315,94.224216 C 742.153,94.224216 744.20998,93.215902 745.62698,91.478893 C 745.62698,92.118829 745.67166,92.803069 745.67166,93.443025 C 745.67157,96.597071 744.12046,98.844394 740.78357,98.844394 C 738.77234,98.844404 737.73344,97.962496 736.45355,96.54547 L 733.10563,99.380071 C 735.0712,101.61989 737.76673,102.90659 740.78357,102.90659 C 744.07479,102.90658 747.01476,101.3426 748.75171,98.554241 C 749.80308,96.862946 749.97934,95.7657 749.97934,93.800136 L 749.97934,73.623116 L 745.62698,73.623116 L 745.62698,76.033647 C 744.0728,74.296627 742.28901,73.332963 739.95783,73.332963 z M 771.70641,73.332963 C 769.4209,73.332953 767.49992,74.342342 766.03725,76.033647 L 766.03725,73.623116 L 761.64022,73.623116 L 761.64022,93.956382 L 766.03725,93.956382 L 766.03725,82.216207 C 766.03725,79.656412 767.87332,77.685307 770.47888,77.685307 C 771.71301,77.685307 772.39814,78.047595 773.35808,78.778971 L 776.37121,74.984623 C 775.04565,73.887569 773.39769,73.332963 771.70641,73.332963 z M 753.6001,73.623116 L 753.6001,93.956382 L 757.97479,93.956382 L 757.97479,73.623116 L 753.6001,73.623116 z M 716.11104,76.748235 C 716.11104,76.748235 716.11104,86.138473 716.11104,86.138473 L 709.2621,86.142929 C 709.2621,86.142929 710.60725,79.027976 716.11104,76.748235 z M 741.34163,77.685307 C 743.81,77.685307 745.62698,79.704259 745.62698,82.126929 L 745.62698,85.117767 C 745.62698,87.814696 744.17563,89.871871 741.34163,89.871871 C 739.01036,89.871882 736.9446,87.963441 736.9446,85.586485 L 736.9446,82.126929 C 736.9446,79.658544 738.87327,77.685307 741.34163,77.685307 z"
+         style="font-size:64px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:end;line-height:110.00000238%;writing-mode:lr-tb;text-anchor:end;fill:#0a1f36;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:AF Battersea Bold;-inkscape-font-specification:Helvetica Neue Bold" />
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-size:32px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:end;line-height:110.00000238%;writing-mode:lr-tb;text-anchor:end;opacity:1;fill:#c0c0c0;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:DINMittelEF;-inkscape-font-specification:DINMittelEF"
+       x="614.20251"
+       y="60.575989"
+       id="text6174"
+       sodipodi:linespacing="110%"
+       inkscape:export-filename="/home/yh/graphics/aegir/renders/aegir_wordmark.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90"><tspan
+         sodipodi:role="line"
+         id="tspan6176"
+         x="614.20251"
+         y="60.575989">DinMittel EF</tspan></text>
+    <text
+       sodipodi:linespacing="110%"
+       id="text6178"
+       y="164.504"
+       x="568.89001"
+       style="font-size:48px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:end;line-height:110.00000238%;writing-mode:lr-tb;text-anchor:end;opacity:1;fill:#c0c0c0;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:DINMittelEF;-inkscape-font-specification:DINMittelEF"
+       xml:space="preserve"
+       inkscape:export-filename="/home/yh/graphics/aegir/renders/aegir_wordmark.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90"><tspan
+         y="164.504"
+         x="568.89001"
+         id="tspan6180"
+         sodipodi:role="line">ÆGIR</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:48px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:end;line-height:110.00000238%;writing-mode:lr-tb;text-anchor:end;opacity:1;fill:#c0c0c0;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:DINMittelEF;-inkscape-font-specification:DINMittelEF"
+       x="548.54626"
+       y="259.19199"
+       id="text6182"
+       sodipodi:linespacing="110%"
+       inkscape:export-filename="/home/yh/graphics/aegir/renders/aegir_wordmark.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90"><tspan
+         sodipodi:role="line"
+         id="tspan6184"
+         x="548.54626"
+         y="259.19199">ægir</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:48px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:end;line-height:110.00000238%;writing-mode:lr-tb;text-anchor:end;opacity:1;fill:#c0c0c0;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:DINMittelEF;-inkscape-font-specification:DINMittelEF"
+       x="554.07751"
+       y="359.19202"
+       id="text6186"
+       sodipodi:linespacing="110%"
+       inkscape:export-filename="/home/yh/graphics/aegir/renders/aegir_wordmark.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90"><tspan
+         sodipodi:role="line"
+         id="tspan6188"
+         x="554.07751"
+         y="359.19202">Ægir</tspan></text>
+    <text
+       sodipodi:linespacing="110%"
+       id="text6190"
+       y="459.19202"
+       x="542.15564"
+       style="font-size:48px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:end;line-height:110.00000238%;writing-mode:lr-tb;text-anchor:end;opacity:1;fill:#c0c0c0;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:DINMittelEF;-inkscape-font-specification:DINMittelEF"
+       xml:space="preserve"
+       inkscape:export-filename="/home/yh/graphics/aegir/renders/aegir_wordmark.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90"><tspan
+         y="459.19202"
+         x="542.15564"
+         id="tspan6192"
+         sodipodi:role="line"><tspan
+   style="font-size:34px;fill:#c0c0c0;fill-opacity:1"
+   id="tspan6194">Æ</tspan>gir</tspan></text>
+    <path
+       sodipodi:nodetypes="ccccccccccccccccccccscssccscccccccccccccscccccccccccccccsccc"
+       id="path6202"
+       d="M 479.54174,585.62937 L 464.5314,605.74569 L 470,605.75219 L 473.01714,601.44562 L 481.28113,601.43621 L 481.28113,605.75045 L 495.11301,605.75045 L 495.11301,601.61629 L 485.9318,601.61629 L 485.9318,597.33382 L 495.11301,597.33382 L 495.11301,593.87009 L 485.9318,593.87009 L 485.9318,589.41169 L 495.11301,589.41169 L 495.11301,585.62937 L 479.54174,585.62937 z M 504.77171,585.43146 C 500.26804,585.43145 497.53687,588.87056 497.53687,593.19402 L 497.53687,598.36173 C 497.53687,602.55008 500.40422,606.01434 504.72769,606.01434 C 506.93448,606.01434 508.96112,605.02091 510.35722,603.30954 C 510.35722,603.94003 510.40122,604.61417 510.40122,605.24468 C 510.40112,608.35217 508.87292,610.56632 505.58526,610.56632 C 503.60372,610.56633 502.58016,609.69744 501.31916,608.30132 L 498.02066,611.09409 C 499.95721,613.30085 502.61295,614.56855 505.58526,614.56855 C 508.82792,614.56854 511.72452,613.02765 513.43582,610.28045 C 514.47162,608.61412 514.64532,607.53307 514.64532,605.59652 L 514.64532,585.71733 L 510.35722,585.71733 L 510.35722,588.09228 C 508.82592,586.3809 507.06848,585.43146 504.77171,585.43146 z M 536.05162,585.43146 C 533.79992,585.43145 531.90722,586.42594 530.46622,588.09228 L 530.46622,585.71733 L 526.13402,585.71733 L 526.13402,605.75045 L 530.46622,605.75045 L 530.46622,594.18358 C 530.46622,591.66157 532.27512,589.71956 534.84222,589.71956 C 536.05812,589.71956 536.73322,590.0765 537.67892,590.79708 L 540.64762,587.05874 C 539.34162,585.97788 537.71792,585.43146 536.05162,585.43146 z M 518.21262,585.71733 L 518.21262,605.75045 L 522.52272,605.75045 L 522.52272,585.71733 L 518.21262,585.71733 z M 481.27692,589.76389 L 481.27692,598.04795 L 475.21958,598.05234 L 481.27692,589.76389 z M 506.13509,589.71956 C 508.56702,589.71956 510.35722,591.70871 510.35722,594.09562 L 510.35722,597.04231 C 510.35722,599.69943 508.92722,601.72624 506.13509,601.72624 C 503.83823,601.72624 501.80296,599.84598 501.80296,597.50411 L 501.80296,594.09562 C 501.80296,591.66367 503.70316,589.71956 506.13509,589.71956 z"
+       style="font-size:64px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:end;line-height:110.00000238%;writing-mode:lr-tb;text-anchor:end;fill:#c0c0c0;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:AF Battersea Bold;-inkscape-font-specification:Helvetica Neue Bold"
+       inkscape:export-filename="/home/yh/graphics/aegir/renders/aegir_wordmark.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <rect
+       y="99"
+       x="440"
+       height="1"
+       width="500"
+       id="rect6208"
+       style="opacity:1;fill:#404040;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       inkscape:export-filename="/home/yh/graphics/aegir/renders/aegir_wordmark.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <rect
+       style="opacity:1;fill:#404040;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       id="rect6210"
+       width="500"
+       height="1"
+       x="440"
+       y="199"
+       inkscape:export-filename="/home/yh/graphics/aegir/renders/aegir_wordmark.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <path
+       sodipodi:nodetypes="cccccccsccccccscscccscssccscccccccccccccscccccccccccscccsccc"
+       id="path6228"
+       d="M 473.34986,785.41407 C 462.62183,789.85777 462.62879,805.83181 462.62879,805.83181 L 467.28431,805.83841 L 467.74305,801.46731 L 475.11531,801.45771 L 475.11531,805.83661 L 490.68564,805.83661 C 490.68564,805.83661 488.55629,803.93031 488.55629,801.64051 C 488.55629,801.64051 479.83566,801.64051 479.83566,801.64051 L 479.83566,797.29391 L 488.52684,797.29391 L 488.52684,793.77825 L 479.83566,793.77825 L 479.83566,789.25306 C 479.83566,789.25306 488.52684,789.25306 488.52684,789.25306 C 488.52684,787.14982 490.70884,785.41407 490.70884,785.41407 C 490.70884,785.41407 473.34986,785.41407 473.34986,785.41407 z M 498.95783,785.2132 C 494.38668,785.21319 491.6146,788.70382 491.6146,793.09206 L 491.6146,798.33721 C 491.6146,802.58831 494.5249,806.10441 498.91315,806.10441 C 501.153,806.10441 503.20998,805.09611 504.62698,803.35911 C 504.62698,803.99911 504.67166,804.68331 504.67166,805.32321 C 504.67157,808.47731 503.12046,810.72461 499.78357,810.72461 C 497.77234,810.72461 496.73344,809.84271 495.45355,808.42571 L 492.10563,811.26031 C 494.0712,813.50011 496.76673,814.78681 499.78357,814.78681 C 503.07479,814.78681 506.01476,813.22281 507.75171,810.43451 C 508.80308,808.74321 508.97934,807.64591 508.97934,805.68041 L 508.97934,785.50335 L 504.62698,785.50335 L 504.62698,787.91388 C 503.0728,786.17686 501.28901,785.2132 498.95783,785.2132 z M 530.70641,785.2132 C 528.4209,785.21319 526.49992,786.22258 525.03725,787.91388 L 525.03725,785.50335 L 520.64022,785.50335 L 520.64022,805.83661 L 525.03725,805.83661 L 525.03725,794.09644 C 525.03725,791.53665 526.87332,789.56554 529.47888,789.56554 C 530.71301,789.56554 531.39814,789.92783 532.35808,790.6592 L 535.37121,786.86486 C 534.04565,785.7678 532.39769,785.2132 530.70641,785.2132 z M 512.6001,785.50335 L 512.6001,805.83661 L 516.97479,805.83661 L 516.97479,785.50335 L 512.6001,785.50335 z M 475.11104,788.62847 C 475.11104,788.62847 475.11104,798.01871 475.11104,798.01871 L 468.2621,798.02311 C 468.2621,798.02311 469.60725,790.90821 475.11104,788.62847 z M 500.34163,789.56554 C 502.81,789.56554 504.62698,791.58449 504.62698,794.00716 L 504.62698,796.99801 C 504.62698,799.69491 503.17563,801.75211 500.34163,801.75211 C 498.01036,801.75211 495.9446,799.84371 495.9446,797.46671 L 495.9446,794.00716 C 495.9446,791.53878 497.87327,789.56554 500.34163,789.56554 z"
+       style="font-size:64px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:end;line-height:110.00000238%;writing-mode:lr-tb;text-anchor:end;fill:#c0c0c0;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:AF Battersea Bold;-inkscape-font-specification:Helvetica Neue Bold"
+       inkscape:export-filename="/home/yh/graphics/aegir/renders/aegir_wordmark.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <text
+       sodipodi:linespacing="110%"
+       id="text6234"
+       y="310.57599"
+       x="1036.2025"
+       style="font-size:18px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:110.00000238%;writing-mode:lr-tb;text-anchor:middle;opacity:1;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Parisine;-inkscape-font-specification:Parisine"
+       xml:space="preserve"><tspan
+         y="310.57599"
+         x="1036.2025"
+         id="tspan6236"
+         sodipodi:role="line" /></text>
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot6238"
+       style="font-size:13px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:150%;writing-mode:lr-tb;text-anchor:start;opacity:1;fill:#c0c0c0;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Parisine;-inkscape-font-specification:Parisine"
+       transform="translate(-210,-234.06325)"
+       inkscape:export-filename="/home/yh/graphics/aegir/renders/aegir_wordmark.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90"><flowRegion
+         id="flowRegion6240"><rect
+           id="rect6242"
+           width="257"
+           height="74"
+           x="863"
+           y="263"
+           style="font-size:13px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:150%;writing-mode:lr-tb;text-anchor:start;fill:#c0c0c0;fill-opacity:1;font-family:Parisine;-inkscape-font-specification:Parisine" /></flowRegion><flowPara
+         id="flowPara6244">We start with a geometric typeface to convey technical, rational.</flowPara><flowPara
+         id="flowPara6246" /></flowRoot>    <flowRoot
+       transform="translate(-210,-124.83325)"
+       style="font-size:13px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:150%;writing-mode:lr-tb;text-anchor:start;opacity:1;fill:#c0c0c0;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Parisine;-inkscape-font-specification:Parisine"
+       id="flowRoot6248"
+       xml:space="preserve"
+       inkscape:export-filename="/home/yh/graphics/aegir/renders/aegir_wordmark.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90"><flowRegion
+         id="flowRegion6250"><rect
+           style="font-size:13px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:150%;writing-mode:lr-tb;text-anchor:start;fill:#c0c0c0;fill-opacity:1;font-family:Parisine;-inkscape-font-specification:Parisine"
+           y="263"
+           x="863"
+           height="74"
+           width="257"
+           id="rect6252" /></flowRegion><flowPara
+         id="flowPara6256">Caps are too strong, corporate.</flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot6260"
+       style="font-size:13px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:150%;writing-mode:lr-tb;text-anchor:start;opacity:1;fill:#c0c0c0;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Parisine;-inkscape-font-specification:Parisine"
+       transform="translate(-210,-35.45587)"
+       inkscape:export-filename="/home/yh/graphics/aegir/renders/aegir_wordmark.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90"><flowRegion
+         id="flowRegion6262"><rect
+           id="rect6264"
+           width="257"
+           height="74"
+           x="863"
+           y="263"
+           style="font-size:13px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:150%;writing-mode:lr-tb;text-anchor:start;fill:#c0c0c0;fill-opacity:1;font-family:Parisine;-inkscape-font-specification:Parisine" /></flowRegion><flowPara
+         id="flowPara6266">Lowercase <flowSpan
+   style="font-weight:bold;fill:#c0c0c0;fill-opacity:1;-inkscape-font-specification:Parisine Bold"
+   id="flowSpan6268">æ</flowSpan> is pretty lame and makes for even more nightmarish kerning.</flowPara></flowRoot>    <flowRoot
+       transform="translate(-210,64.61725)"
+       style="font-size:13px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:150%;writing-mode:lr-tb;text-anchor:start;opacity:1;fill:#c0c0c0;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Parisine;-inkscape-font-specification:Parisine"
+       id="flowRoot6270"
+       xml:space="preserve"
+       inkscape:export-filename="/home/yh/graphics/aegir/renders/aegir_wordmark.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90"><flowRegion
+         id="flowRegion6272"><rect
+           style="font-size:13px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:150%;writing-mode:lr-tb;text-anchor:start;fill:#c0c0c0;fill-opacity:1;font-family:Parisine;-inkscape-font-specification:Parisine"
+           y="263"
+           x="863"
+           height="74"
+           width="257"
+           id="rect6274" /></flowRegion><flowPara
+         id="flowPara6276">Mixed case has the right tone but not the right proportions.</flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot6280"
+       style="font-size:13px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:150%;writing-mode:lr-tb;text-anchor:start;opacity:1;fill:#c0c0c0;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Parisine;-inkscape-font-specification:Parisine"
+       transform="translate(-210,164.61725)"
+       inkscape:export-filename="/home/yh/graphics/aegir/renders/aegir_wordmark.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90"><flowRegion
+         id="flowRegion6282"><rect
+           id="rect6284"
+           width="267"
+           height="72"
+           x="863"
+           y="263"
+           style="font-size:13px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:150%;writing-mode:lr-tb;text-anchor:start;fill:#c0c0c0;fill-opacity:1;font-family:Parisine;-inkscape-font-specification:Parisine" /></flowRegion><flowPara
+         id="flowPara6286">We adjust proportions but we also need to adjust the weight of the <flowSpan
+   style="font-weight:bold;fill:#c0c0c0;fill-opacity:1"
+   id="flowSpan6304">Æ</flowSpan>.</flowPara></flowRoot>    <flowRoot
+       transform="translate(-210,341.12175)"
+       style="font-size:13px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:150%;writing-mode:lr-tb;text-anchor:start;opacity:1;fill:#c0c0c0;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Parisine;-inkscape-font-specification:Parisine"
+       id="flowRoot6288"
+       xml:space="preserve"
+       inkscape:export-filename="/home/yh/graphics/aegir/renders/aegir_wordmark.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90"><flowRegion
+         id="flowRegion6290"><rect
+           style="font-size:13px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:150%;writing-mode:lr-tb;text-anchor:start;fill:#c0c0c0;fill-opacity:1;font-family:Parisine;-inkscape-font-specification:Parisine"
+           y="263"
+           x="863"
+           height="135"
+           width="257"
+           id="rect6292" /></flowRegion><flowPara
+         id="flowPara6294">We adjust weights, compress vertically and kern as tightly as possible to minimize the visual difference between the separated letterforms and the <flowSpan
+   style="font-weight:bold;fill:#c0c0c0;fill-opacity:1"
+   id="flowSpan6308">Æ</flowSpan>.</flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot6296"
+       style="font-size:13px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:150%;writing-mode:lr-tb;text-anchor:start;opacity:1;fill:#c0c0c0;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Parisine;-inkscape-font-specification:Parisine"
+       transform="translate(-210,539.65675)"
+       inkscape:export-filename="/home/yh/graphics/aegir/renders/aegir_wordmark.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90"><flowRegion
+         id="flowRegion6298"><rect
+           id="rect6300"
+           width="272.48001"
+           height="160.52"
+           x="863"
+           y="263"
+           style="font-size:13px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:150%;writing-mode:lr-tb;text-anchor:start;fill:#c0c0c0;fill-opacity:1;font-family:Parisine;-inkscape-font-specification:Parisine" /></flowRegion><flowPara
+         id="flowPara6302">We curve the harsh angles on Æ to match the other rounded letterforms (<flowSpan
+   style="font-weight:bold;fill:#c0c0c0;fill-opacity:1"
+   id="flowSpan6403">g</flowSpan>, <flowSpan
+   style="font-weight:bold;fill:#c0c0c0;fill-opacity:1"
+   id="flowSpan6405">r</flowSpan>) and curve the negative space on the right to make for an even tighter fit.</flowPara></flowRoot>    <rect
+       style="opacity:1;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       id="rect6314"
+       width="75"
+       height="75"
+       x="845"
+       y="520"
+       inkscape:export-filename="/home/yh/graphics/aegir/renders/aegir_wordmark.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <path
+       style="font-size:208.75856018px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:end;line-height:110.00000238%;writing-mode:lr-tb;text-anchor:end;opacity:1;fill:#606060;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:DINMittelEF;-inkscape-font-specification:DINMittelEF"
+       d="M 655,520 L 655,595 L 705,595 L 705,587.34375 L 659.03125,587.34375 L 659.03125,558.21875 L 698.21875,558.21875 L 698.21875,545.0625 L 659.03125,545.0625 L 659.03125,520 L 655,520 z M 721.71875,520 C 719.52631,524.96549 718.34375,530.64071 718.34375,536.6875 L 718.34375,567.15625 C 718.34375,578.15088 722.64363,588.0543 730,594.59375 L 730,520 L 721.71875,520 z"
+       id="text6318"
+       sodipodi:nodetypes="ccccccccccccccccc"
+       inkscape:export-filename="/home/yh/graphics/aegir/renders/aegir_wordmark.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <path
+       style="font-size:93.75804901px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:end;line-height:110.00000238%;writing-mode:lr-tb;text-anchor:end;opacity:1;fill:#606060;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:DINMittelEF;-inkscape-font-specification:DINMittelEF"
+       d="M 754.9375,526.25 C 753.15299,526.25001 751.50537,526.51993 750,527 L 750,539.59375 C 751.55068,536.93544 754.40204,535.15625 757.75,535.15625 C 762.81296,535.15625 766.5625,539.28083 766.5625,544.25 L 766.5625,553.34375 C 766.56249,558.87544 763.56299,563.09375 757.75,563.09375 C 754.54111,563.09376 751.5971,561.32761 750,558.6875 L 750,571.25 C 751.49031,571.74535 753.10909,572 754.84375,572 C 759.43791,571.99999 763.656,569.9378 766.5625,566.375 C 766.56249,567.6876 766.65625,569.09364 766.65625,570.40625 C 766.65625,576.87552 763.46933,581.46875 756.625,581.46875 C 753.73322,581.46875 751.79649,580.5871 750,579.0625 L 750,588.75 C 752.08322,589.44755 754.31496,589.8125 756.625,589.8125 C 763.37556,589.81249 769.3747,586.62549 772.9375,580.90625 C 775.09392,577.43723 775.46875,575.18784 775.46875,571.15625 L 775.46875,526.8125 L 766.5625,526.8125 L 766.5625,531.78125 C 763.37472,528.21846 759.71916,526.25 754.9375,526.25 z M 825,526.6875 C 821.8445,527.4534 819.1179,529.22402 816.9062,531.78125 L 816.9062,526.8125 L 807.9062,526.8125 L 807.9062,571.4375 L 816.9062,571.4375 L 816.9062,544.4375 C 816.9062,539.52553 820.2009,535.66285 825,535.1875 L 825,526.6875 z M 787.125,526.8125 L 787.125,571.4375 L 796.125,571.4375 L 796.125,526.8125 L 787.125,526.8125 z"
+       id="text6331"
+       inkscape:export-filename="/home/yh/graphics/aegir/renders/aegir_wordmark.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <path
+       style="font-size:64px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:end;line-height:110.00000238%;writing-mode:lr-tb;text-anchor:end;fill:#606060;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:AF Battersea Bold;-inkscape-font-specification:Helvetica Neue Bold"
+       d="M 873.7188,533.0625 C 866.0906,533.0625 861.4688,538.89598 861.4688,546.21875 L 861.4688,554.96875 C 861.4687,562.06268 866.3333,567.90625 873.6562,567.90625 C 877.3939,567.90628 880.8229,566.24235 883.1875,563.34375 C 883.1875,564.41163 883.25,565.55708 883.25,566.625 C 883.2499,571.88827 880.662,575.625 875.0938,575.625 C 871.7374,575.62502 870.0108,574.1459 867.875,571.78125 L 862.2812,576.53125 C 865.5611,580.26889 870.0593,582.40625 875.0938,582.40625 C 880.5858,582.40624 885.5079,579.80926 888.4062,575.15625 C 890.1607,572.33395 890.4375,570.49874 890.4375,567.21875 L 890.4375,533.53125 L 883.1875,533.53125 L 883.1875,537.5625 C 880.5939,534.6639 877.6089,533.0625 873.7188,533.0625 z M 845,533.40625 L 845,539.8125 L 854.8438,539.8125 L 854.8438,533.40625 L 845,533.40625 z M 899,533.53125 L 899,567.46875 L 906.3125,567.46875 L 906.3125,533.53125 L 899,533.53125 z M 914.9375,533.53125 L 914.9375,567.46875 L 920,567.46875 L 920,533.53125 L 914.9375,533.53125 z M 876.0312,540.3125 C 880.1501,540.31252 883.1875,543.67597 883.1875,547.71875 L 883.1875,552.71875 C 883.1875,557.21919 880.7603,560.65625 876.0312,560.65625 C 872.1408,560.65627 868.6875,557.46649 868.6875,553.5 L 868.6875,547.71875 C 868.6875,543.5997 871.9123,540.3125 876.0312,540.3125 z M 845,547.34375 L 845,553.21875 L 854.8438,553.21875 L 854.8438,547.34375 L 845,547.34375 z M 845,560.46875 L 845,567.46875 L 854.8438,567.46875 L 854.8438,560.46875 L 845,560.46875 z"
+       id="path6342"
+       inkscape:export-filename="/home/yh/graphics/aegir/renders/aegir_wordmark.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <rect
+       y="720"
+       x="655"
+       height="75"
+       width="75"
+       id="rect6354"
+       style="opacity:1;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       inkscape:export-filename="/home/yh/graphics/aegir/renders/aegir_wordmark.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <g
+       id="g6376"
+       transform="matrix(4.3238105,0,0,4.3238105,-3022.564,-3668.602)"
+       inkscape:export-filename="/home/yh/graphics/aegir/renders/aegir_wordmark.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
+      <path
+         style="font-size:64px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:end;line-height:110.00000238%;writing-mode:lr-tb;text-anchor:end;fill:#606060;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:AF Battersea Bold;-inkscape-font-specification:Helvetica Neue Bold"
+         d="M 899.3125,970 L 855,1029.4062 L 855,1045 L 866.5,1045 L 871.59375,1037.75 L 907.34375,1037.6875 L 907.34375,1045 L 930,1045 L 930,1038.4688 L 927.4375,1038.4688 L 927.4375,1019.9688 L 930,1019.9688 L 930,1004.9688 L 927.4375,1004.9688 L 927.4375,985.71875 L 930,985.71875 L 930,970 L 899.3125,970 z M 907.3125,987.21875 L 907.3125,1023.0312 L 881.125,1023.0625 L 907.3125,987.21875 z"
+         transform="matrix(0.2312775,0,0,0.2312775,652.79549,790.64566)"
+         id="path6374" />
+    </g>
+    <rect
+       style="opacity:1;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       id="rect6390"
+       width="75"
+       height="75"
+       x="750"
+       y="720"
+       inkscape:export-filename="/home/yh/graphics/aegir/renders/aegir_wordmark.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <path
+       style="font-size:64px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:end;line-height:110.00000238%;writing-mode:lr-tb;text-anchor:end;fill:#606060;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:AF Battersea Bold;-inkscape-font-specification:Helvetica Neue Bold"
+       d="M 811.5,725 C 797.5099,725 789.03125,735.69444 789.03125,749.125 L 789.03125,765.1562 C 789.03124,778.1671 797.9444,788.9375 811.375,788.9375 C 816.3942,788.9375 821.1263,787.2866 825,784.3125 L 825,772.0312 C 822.8192,774.2776 819.7411,775.625 815.75,775.625 C 808.6153,775.625 802.2812,769.7749 802.2812,762.5 L 802.2812,751.9062 C 802.2813,744.3516 808.1957,738.3125 815.75,738.3125 C 819.4473,738.31249 822.6736,739.80697 825,742.1875 L 825,729.59375 C 821.1549,726.6057 816.7783,725 811.5,725 z M 750,725.625 L 750,788.125 L 781.8125,788.125 L 781.8125,775.2812 C 779.33835,775.2812 753,775.2812 753,775.2812 L 753,761.9688 L 781.8125,761.9688 L 781.8125,751.2188 L 753,751.2188 L 753,737.375 C 753.00002,737.37497 779.49044,737.375 781.8125,737.375 L 781.8125,725.625 C 774.29112,725.625 761.90586,725.625 750,725.625 z"
+       id="path6392"
+       inkscape:export-filename="/home/yh/graphics/aegir/renders/aegir_wordmark.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Glow"
+     style="filter:url(#filter3283)"
+     sodipodi:insensitive="true">
+    <path
+       id="path6329"
+       d="M 655,520 L 655,595 L 705,595 L 705,587.34375 L 659.03125,587.34375 L 659.03125,562.21875 L 705,562.15625 L 705,545 L 659.03125,545.0625 L 659.03125,520 L 655,520 z M 721.71875,520 C 719.52631,524.96549 718.34375,530.64071 718.34375,536.6875 L 718.34375,567.15625 C 718.34375,578.15088 722.29988,588.0543 729.65625,594.59375 L 730,520 L 721.71875,520 z"
+       style="font-size:208.75856018px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:end;line-height:110.00000238%;writing-mode:lr-tb;text-anchor:end;opacity:1;fill:#ff3c00;fill-opacity:0.62745098;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:DINMittelEF;-inkscape-font-specification:DINMittelEF"
+       sodipodi:nodetypes="ccccccccccccccccc" />
+    <path
+       id="path6340"
+       d="M 754.9375,529.25 C 753.15299,529.25001 751.50537,529.51993 750,530 L 750,542.59375 C 751.55068,539.93544 754.40204,538.15625 757.75,538.15625 C 762.81296,538.15625 766.5625,542.28083 766.5625,547.25 L 766.5625,550.34375 C 766.56249,555.87544 763.56299,560.09375 757.75,560.09375 C 754.54111,560.09376 751.5971,558.32761 750,555.6875 L 750,568.25 C 751.49031,568.74535 753.10909,569 754.84375,569 C 759.43791,568.99999 763.656,566.9378 766.5625,563.375 C 766.56249,564.6876 766.65625,566.09364 766.65625,567.40625 C 766.65625,573.87552 763.46933,578.46875 756.625,578.46875 C 753.73322,578.46875 751.79649,577.5871 750,576.0625 L 750,585.75 C 752.08322,586.44755 754.31496,586.8125 756.625,586.8125 C 763.37556,586.81249 769.3747,583.62549 772.9375,577.90625 C 775.09392,574.43723 775.46875,572.18784 775.46875,568.15625 L 775.46875,529.8125 L 766.5625,529.8125 L 766.5625,534.78125 C 763.37472,531.21846 759.71916,529.25 754.9375,529.25 z M 825,529.6875 C 821.8445,530.4534 819.1179,532.22402 816.9062,534.78125 L 816.9062,529.8125 L 807.9062,529.8125 L 807.9062,568.4375 L 816.9062,568.4375 L 816.9062,547.4375 C 816.9062,542.52553 820.2009,538.66285 825,538.1875 L 825,529.6875 z M 787.125,529.8125 L 787.125,568.4375 L 796.125,568.4375 L 796.125,529.8125 L 787.125,529.8125 z"
+       style="font-size:93.75804901px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:end;line-height:110.00000238%;writing-mode:lr-tb;text-anchor:end;opacity:1;fill:#ff3c00;fill-opacity:0.62745098;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:DINMittelEF;-inkscape-font-specification:DINMittelEF"
+       sodipodi:nodetypes="cccsccsccscssccscccccccccccccccccccc" />
+    <path
+       style="font-size:64px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:end;line-height:110.00000238%;writing-mode:lr-tb;text-anchor:end;fill:#ff3c00;fill-opacity:0.62745098;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:AF Battersea Bold;-inkscape-font-specification:Helvetica Neue Bold"
+       d="M 873.2188,533.0625 C 865.5906,533.0625 860.9688,538.89598 860.9688,546.21875 L 860.9688,554.96875 C 860.9687,562.06268 865.8333,567.90625 873.1562,567.90625 C 876.8939,567.90628 880.3229,566.24235 882.6875,563.34375 C 882.6875,564.41163 882.75,565.55708 882.75,566.625 C 882.7499,571.88827 880.162,575.625 874.5938,575.625 C 871.2374,575.62502 869.5108,574.1459 867.375,571.78125 L 861.7812,576.53125 C 865.0611,580.26889 869.5593,582.40625 874.5938,582.40625 C 880.0858,582.40624 885.0079,579.80926 887.9062,575.15625 C 889.6607,572.33395 889.9375,570.49874 889.9375,567.21875 L 889.9375,533.53125 L 882.6875,533.53125 L 882.6875,537.5625 C 880.0939,534.6639 877.1089,533.0625 873.2188,533.0625 z M 845,533.40625 L 845,539.8125 L 857.375,539.8125 L 857.375,533.40625 L 845,533.40625 z M 896.5,533.53125 L 896.5,567.46875 L 903.7812,567.46875 L 903.7812,533.53125 L 896.5,533.53125 z M 909.9062,533.53125 L 909.9062,567.46875 L 917.25,567.46875 L 917.25,547.875 C 917.25,545.39727 918.2857,543.27273 920,541.90625 L 920,535.125 C 919.0027,535.79899 918.0775,536.6056 917.25,537.5625 L 917.25,533.53125 L 909.9062,533.53125 z M 875.5312,540.3125 C 879.6501,540.31252 882.6875,543.67597 882.6875,547.71875 L 882.6875,552.71875 C 882.6875,557.21919 880.2603,560.65625 875.5312,560.65625 C 871.6408,560.65627 868.1875,557.46649 868.1875,553.5 L 868.1875,547.71875 C 868.1875,543.5997 871.4123,540.3125 875.5312,540.3125 z M 845,547.34375 L 845,553.21875 L 857.375,553.21875 L 857.375,547.34375 L 845,547.34375 z M 845,560.46875 L 845,567.46875 L 857.375,567.46875 L 857.375,560.46875 L 845,560.46875 z"
+       id="path6344"
+       sodipodi:nodetypes="cccscssccsccccccccccccccccccccccccccccsccccccccccccc" />
+    <path
+       style="font-size:64px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:end;line-height:110.00000238%;writing-mode:lr-tb;text-anchor:end;fill:#ff3d01;fill-opacity:0.62745098;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:AF Battersea Bold;-inkscape-font-specification:Helvetica Neue Bold"
+       d="M 894.4375,970 C 871.80465,980.08005 860.57401,1002.2071 855,1021.7188 L 855,1045 L 870.96875,1045 L 871.625,1038.7812 L 907.5,1038.7188 L 907.5,1045 L 930,1045 L 930,1039.5312 C 929.63609,1039.5313 927.40625,1039.5312 927.40625,1039.5312 L 927.40625,1020.7188 L 930,1020.7188 L 930,1005.5312 L 927.40625,1005.5312 L 927.40625,985.96875 C 927.40625,985.96875 929.63489,985.96875 930,985.96875 L 930,970 L 894.4375,970 z M 907.46875,983.25 C 907.46875,983.25003 907.46875,1023.875 907.46875,1023.875 L 873.84375,1023.875 C 873.84376,1023.875 883.67141,993.10699 907.46875,983.25 z"
+       transform="translate(-200.00001,-249.99999)"
+       id="path6372"
+       sodipodi:nodetypes="cccccccccccccccccccccc" />
+    <path
+       style="font-size:64px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:end;line-height:110.00000238%;writing-mode:lr-tb;text-anchor:end;fill:#ff3d01;fill-opacity:0.62745098;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:AF Battersea Bold;-inkscape-font-specification:Helvetica Neue Bold"
+       d="M 811.5,725 C 797.5099,725 789.03125,735.69444 789.03125,749.125 L 789.03125,765.1562 C 789.03124,778.167 797.9444,788.9375 811.375,788.9375 C 816.3942,788.9375 821.1299,787.2853 825,784.3125 L 825,772.0312 C 822.8213,774.2748 819.7411,775.625 815.75,775.625 C 808.6153,775.625 802.2812,769.7749 802.2812,762.5 L 802.2812,751.9062 C 802.2812,744.35154 808.1957,738.3125 815.75,738.3125 C 819.4611,738.31249 822.6739,739.82258 825,742.21875 L 825,729.59375 C 821.1615,726.60075 816.7787,725 811.5,725 z M 750,725.625 L 750,788.125 L 786.1875,788.125 C 786.18751,788.125 779.6875,782.2893 779.6875,775.2812 C 779.68752,775.2812 753,775.2812 753,775.2812 L 753,761.9688 L 779.59375,761.9688 L 779.59375,751.2188 L 753,751.2188 L 753,737.375 C 753.00002,737.37497 779.59375,737.375 779.59375,737.375 C 779.59378,730.9377 786.28125,725.625 786.28125,725.625 C 786.28127,725.625 765.71445,725.625 750,725.625 z"
+       id="path6388" />
+  </g>
+</svg>
