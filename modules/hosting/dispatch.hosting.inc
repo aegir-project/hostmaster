@@ -1,12 +1,16 @@
 <?php
+/**
+ * @file
+ *   Drush include for the Hosting module's dispatch command.
+ */
 
 /**
- * Main queue processing command for hostmaster.
+ * Main queue processing drush command for hostmaster.
  *
- * This is a single command, which will (based on configuration) run all the other
- * queue commands (cron, backup, tasks, stats). This is done so that there
- * is only one cron job to configure, and allow the frequency of calls to be configured
- * from the interface.
+ * This is a single command, which will (based on configuration) run all the
+ * other queue commands (cron, backup, tasks, stats). This is done so that there
+ * is only one cron job to configure, and allow the frequency of calls to be
+ * configured from the frontend interface.
  */
 function drush_hosting_dispatch() {
   $now = mktime();
