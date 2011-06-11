@@ -13,7 +13,7 @@
 /**
  * Definition of hook_hosting_quota_resource
  */
-function hosting_example_hosting_quota_resource() {
+function hook_hosting_quota_resource() {
   $resources = array();
 
   $resources['foo'] = array(
@@ -39,7 +39,7 @@ function hosting_example_hosting_quota_resource() {
  * @return int
  *   Return an integer that can be compared to what the quota is set to
  */
-function hosting_example_hosting_quota_get_usage($client, $resource, $start, $end) {
+function hook_hosting_quota_get_usage($client, $resource, $start, $end) {
 
   if (hosting_get_client($client)) {
     switch ($resource) {
@@ -58,7 +58,7 @@ function hosting_example_hosting_quota_get_usage($client, $resource, $start, $en
  * @param $usage int
  *   Usage as returned by hosting_quota_get_usage
  */
-function hosting_example_hosting_quota_resource_render($resource, $usage) {
+function hook_hosting_quota_resource_render($resource, $usage) {
   switch ($resource) {
     case 'foo':
       $bar = 23;
