@@ -2,8 +2,9 @@
 /**
  * @file
  * Hooks provided by the hosting module, and some other random ones.
- *
- * @defgroup hostinghooks Frontend hooks
+ */
+
+/** @defgroup hostinghooks Frontend hooks
  * @{
  *
  * Those hooks are hooks usable within contrib Drupal modules running
@@ -284,5 +285,5 @@ function hosting_TASK_SINGULAR_summary() {
 }
 
 /**
- * @} End of "addtogroup hooks".
+ * @} End of "addtogroup hostinghooks".
  */
