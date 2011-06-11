@@ -1,5 +1,13 @@
 <?php
 
+/**
+ * @file
+ *   Views integration for the Hosting module.
+ */
+
+/**
+ * Implementation of hook_views_handlers().
+ */
 function hosting_views_handlers() {
   return array(
     'info' => array(

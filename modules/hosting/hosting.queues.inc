@@ -1,17 +1,16 @@
 <?php
 
 /**
+ * @file
+ *   This file defines an API for defining new queues.
+ */
+
+/**
  * @deprecated not used anywhere, gone in 2.x
  */
 function _hosting_watchdog($entry) {
   watchdog($entry['type'], $entry['message']);
 }
-
-/**
- * @file Backend queues.
- *
- * This file defines an API for defining new queues.
- */
 
 /**
  * @defgroup backend-frontend-IPC
@@ -120,7 +119,7 @@ function hosting_get_queues($refresh = false) {
 }
 
 /**
- * Run a queue specified by hook_hosting_queues
+ * Run a queue specified by hook_hosting_queues()
  *
  * Run an instance of a queue processor. This function contains all the book keeping
  * functionality needed to ensure that the queues are running as scheduled.
@@ -162,7 +161,8 @@ function _hosting_get_new_tasks($limit = 20) {
 /**
  * Process the hosting task queue.
  *
- * Iterates through the list of outstanding tasks, and execute the commands on the back end.
+ * Iterates through the list of outstanding tasks, and execute the commands on
+ * the back end.
  */
 function hosting_tasks_queue($count = 20) {
   global $provision_errors;
@@ -175,7 +175,8 @@ function hosting_tasks_queue($count = 20) {
 }
 
 /**
- * @deprecated this isn't called from anywhere, and nobody implements provision_args
+ * @deprecated this isn't called from anywhere, and nobody implements
+ * provision_args
  */
 function hosting_queues_get_arguments($task) {
   $data = module_invoke_all('provision_args', $task, $task->task_type); 
