@@ -76,6 +76,56 @@ function hook_drush_context_import($context, &$node) {
 }
 
 /**
+ * Register a hosting feature with Aegir.
+ *
+ * The frontend provides a UI for enabling and disabling features, which usually
+ * corresponds to enabling and disabling a module providing the feature.
+ *
+ * This hook can be implemented in a file named:
+ * hosting.feature.FEATURE_KEY.inc
+ *
+ * Note that the module providing this hook does not need to be enabled for it
+ * to be called. The frontend will use details in this hook to enable a module
+ * if the feature is enabled.
+ *
+ * @return
+ *   An array of hosting features, keyed by the machine name of the feature.
+ *   Inner arrays may contain the following keys:
+ *   - 'title': The localised title of the feature.
+ *   - 'description': The localised description of the feature.
+ *   - 'status': The inital status of the feature, either
+ *      HOSTING_FEATURE_DISABLED, HOSTING_FEATURE_ENABLED or
+ *      HOSTING_FEATURE_REQUIRED.
+ *   - 'module': A module to enable or disable whenever the feature is enabled
+ *      or disabled.
+ *   - 'node': A node type that is associated with this feature.
+ *   - 'callback': A function name to call when this feature is enabled or
+ *      disabled.
+ *   - 'group': The group that this feature belongs to, should be either NULL or
+ *     'experimental'.
+ *
+ * @see hosting_get_features()
+ */
+function hook_hosting_feature() {
+  // From hosting_example_hosting_feature().
+  $features['example'] = array(
+    // title to display in form
+    'title' => t('Example feature'),
+    // description
+    'description' => t('Example feature documenting how to create your own extensions.'),
+    // initial status ( HOSTING_FEATURE_DISABLED, HOSTING_FEATURE_ENABLED, HOSTING_FEATURE_REQUIRED )
+    'status' => HOSTING_FEATURE_DISABLED,
+    // module to enable/disable alongside feature
+    'module' => 'hosting_example',
+    // associate with a specific node type.
+    //  'node' => 'nodetype',
+    // which group to display in ( null , experimental )
+    'group' => 'experimental'
+    );
+  return $features;
+}
+
+/**
  * Define hosting queues.
  *
  * @see hosting_get_queues()

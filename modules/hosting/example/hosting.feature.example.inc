@@ -1,25 +1,15 @@
 <?php
-// $Id$
+
 /**
  * @file
- *   an example hosting feature definition.
- * 
+ *   Expose the example feature to hostmaster.
  */
 
 /**
- * Register a hosting feature with Aegir.
- *
- * The frontend provides a UI for enabling and disabling features, which usually
- * corresponds to enabling and disabling a module providing the
- * feature.
- *
- * This hook should be implemented in a file named:
- * hosting.feature.FEATURE_KEY.inc
- *
- * @return
- *   An array of hosting features, keyed by the name of the feature.
- *
- * @see hosting_get_features()
+ * Implementation of hook_hosting_feature().
+ * 
+ * Register the example hosting feature with Aegir, initially this feature will
+ * be disabled.
  */
 function hosting_example_hosting_feature() {
   $features['example'] = array(
