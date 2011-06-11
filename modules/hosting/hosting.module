@@ -322,12 +322,11 @@ function hosting_block($op = 'list', $delta = 0, $edit = array()) {
       case 'hosting_queues':
         return array('title' => t('Queues'),
                      'content' => hosting_queue_block());
-        break;
       case 'hosting_queues_summary':
         return array('title' => t('Queues summary'),
                      'content' => hosting_queue_summary_block());
-        break;
       }
+      break;
   }
 }
 
