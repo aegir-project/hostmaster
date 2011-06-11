@@ -1,10 +1,19 @@
 <?php
-// $Id$ 
+/**
+ * @file
+ *   Install, update and uninstall for the hosting module.
+ */
 
+/**
+ * Implementation of hook_install().
+ */
 function hosting_install() {
   drupal_install_schema('hosting');
 }
 
+/**
+ * Implementation of hook_schema().
+ */
 function hosting_schema() {
   $schema['hosting_context'] = array(
     'fields' => array(
@@ -29,6 +38,9 @@ function hosting_schema() {
   return $schema;
 }
 
+/**
+ * Implementation of hook_update_N().
+ */
 function hosting_update_1() {
   $ret = array();
   $ret[] = update_sql("UPDATE {system} SET weight = 10 WHERE type='module' and name='hosting'");
@@ -36,6 +48,8 @@ function hosting_update_1() {
 }
 
 /**
+ * Implementation of hook_update_N().
+ * 
  * Update function to remove unused table
  */
 function hosting_update_2() {
@@ -45,7 +59,9 @@ function hosting_update_2() {
 }
 
 /**
- * Hide hostmaster and hostslave profiles
+ * Implementation of hook_update_N().
+ * 
+ * Hide hostmaster and hostslave profiles.
  */
 function hosting_update_3() {
   $ret = array();
@@ -59,7 +75,9 @@ function hosting_update_3() {
 }
 
 /**
- * Enable the modalframe and jquery_ui modules
+ * Implementation of hook_update_N().
+ *
+ * Enable the modalframe and jquery_ui modules.
  */
 function hosting_update_6000() {
   $ret = array();
@@ -68,7 +86,9 @@ function hosting_update_6000() {
 }
 
 /**
- * Change the default configured blocks to match eldir
+ * Implementation of hook_update_N().
+ *
+ * Change the default configured blocks to match eldir.
  */
 function hosting_update_6001() {
   $ret = array();
@@ -87,15 +107,19 @@ function hosting_update_6001() {
 }
 
 /**
+ * Implementation of hook_update_N().
+ * 
  * no-op - this used to verify one platform and all sites but breaks
- * major upgrades
+ * major upgrades.
  */
 function hosting_update_6002() {
   return array();
 }
 
 /**
- * Lower the default amount of concurrent tasks
+ * Implementation of hook_update_N().
+ * 
+ * Lower the default amount of concurrent tasks.
  */
 function hosting_update_6003() {
   $ret = array();
@@ -104,6 +128,8 @@ function hosting_update_6003() {
 }
 
 /**
+ * Implementation of hook_update_N().
+ * 
  * Stricter initial permissions for the anonymous user.
  */
 function hosting_update_6004() {
@@ -117,6 +143,8 @@ function hosting_update_6004() {
 }
 
 /**
+ * Implementation of hook_update_N().
+ * 
  * Move some menu items to the primary links menu.
  */
 function hosting_update_6005() {
@@ -145,7 +173,9 @@ function hosting_update_6005() {
 }
 
 /**
- * move the platforms into primary links
+ * Implementation of hook_update_N().
+ * 
+ * Move the platforms into primary links.
  */
 function hosting_update_6006() {
   install_include(array('menu'));
@@ -165,6 +195,8 @@ function hosting_update_6006() {
 }
 
 /**
+ * Implementation of hook_update_N().
+ * 
  * Update the default db_server now that we've merged the webserver and dbserver nodes
  * See http://drupal.org/node/731550
  */
@@ -175,6 +207,8 @@ function hosting_update_6007() {
 }
 
 /**
+ * Implementation of hook_update_N().
+ * 
  * Add hosting_context table to map alias names.
  */
 function hosting_update_6008() {
@@ -229,6 +263,8 @@ function hosting_update_6008() {
 }
 
 /**
+ * Implementation of hook_update_N().
+ * 
  * Fix the reference to the master server so that it no longer points at localhost.
  */
 function hosting_update_6009() {
@@ -246,6 +282,8 @@ function hosting_update_6009() {
 }
 
 /**
+ * Implementation of hook_update_N().
+ * 
  * Add url aliases for the context names that are registered.
  */
 function hosting_update_6010() {
@@ -266,6 +304,8 @@ function hosting_update_6010() {
 }
 
 /**
+ * Implementation of hook_update_N().
+ * 
  * Clients and packages were imported as belonging to the anonymous user. Reassign them to the admin user.
  */
 function hosting_update_6011() {
@@ -277,7 +317,9 @@ function hosting_update_6011() {
 }
 
 /**
- * Remove the hosting summary block
+ * Implementation of hook_update_N().
+ *
+ * Remove the hosting summary block.
  */
 function hosting_update_6012() {
   $ret = array();
@@ -291,6 +333,8 @@ function hosting_update_6012() {
 }
 
 /**
+ * Implementation of hook_update_N().
+ * 
  * Add a permission allowing users to view the 'site disabled' message, which got
  * lost when 'access content' permission was revoked a while ago.
  */
@@ -304,7 +348,9 @@ function hosting_update_6013() {
 }
 
 /**
- * Restore proper weight to the hosting module
+ * Implementation of hook_update_N().
+ * 
+ * Restore proper weight to the hosting module.
  *
  * For some obscure reason, the weight is 10 which makes its updates run
  * after all others, which gave us constant issues during upgrades.
