@@ -1,11 +1,11 @@
 <?php
 /**
- * @file Hosting platform views integration.
+ * @file
+ *   Hosting platform views integration.
  */
 
 /**
- * Implementation of hook_views_handlers() to register all of the basic handlers
- * views uses.
+ * Implementation of hook_views_handlers().
  */
 function hosting_platform_views_handlers() {
   return array(

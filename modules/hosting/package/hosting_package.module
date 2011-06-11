@@ -1,8 +1,10 @@
 <?php
 /**
- * @file Defines package node types
+ * @file
+ *   Defines package node types
  *
- * Packages are somewhat analogous to Drupal.org projects. IE: components that can be installed onto Drupal sites.
+ * Packages are somewhat analogous to Drupal.org projects. i.e.: components that
+ * can be installed onto Drupal sites.
  */
 
 require_once('hosting_package.instance.inc');
@@ -15,6 +17,9 @@ function _hosting_package_types() {
   );
 }
 
+/**
+ * Implementation of hook_node_info().
+ */
 function hosting_package_node_info() {
   #package management
   $types["package"] =  array(
@@ -27,6 +32,9 @@ function hosting_package_node_info() {
   return $types;
 }
 
+/**
+ * Implementation of hook_menu().
+ */
 function hosting_package_menu() {
   $items = array();
 
@@ -82,6 +90,9 @@ function hosting_package_perm() {
   return array('create package', 'view package', 'edit package', 'delete package');
 }
 
+/**
+ * Implementation of hook_access().
+ */
 function hosting_package_access($op, $node, $account) {
   switch ($op) {
   case 'create':
@@ -184,10 +195,11 @@ function hosting_get_profile_languages($profile = NULL, $platform = NULL) {
  *
  * @param
  *    An associated array containing the following properties
- *      name => A string containing the friendly name of the package
- *      short_name => The name of the drupal package in the system table
- *      old_short_name => The name that a package used to be called, for migration purposes.
- *      package_type => The type of package. (theme|module|profile|engine)
+ *    - name => A string containing the friendly name of the package
+ *    - short_name => The name of the drupal package in the system table
+ *    - old_short_name => The name that a package used to be called, for
+ *      migration purposes.
+ *    - package_type => The type of package. (theme|module|profile|engine)
  */
 function _hosting_package_load($param) {
   // Turn the conditions into a query.
@@ -319,7 +331,6 @@ function hosting_package_view($node, $teaser = FALSE, $page = FALSE) {
 /**
  * Return names of the languages available
  */
-
 function _hosting_language_names($languages) {
   foreach ($languages as $language) {
     // Try to use verbose language name
@@ -350,7 +361,7 @@ function _hosting_package_plural_map($key = null) {
 }
 
 /**
- * Synch the package and package release nodes with the information
+ * Sync the package and package release nodes with the information
  * retrieved from the verify task
  *
  * @todo Make this prettier.
@@ -434,7 +445,7 @@ function hosting_package_list($ref, $type = null) {
 }
 
 /**
- * Views integration
+ * Implementation of hook_views_api().
  */
 function hosting_package_views_api() {
   return array(

@@ -1,6 +1,12 @@
 <?php
-// $Id$
+/**
+ * @file
+ *   Implement drush hooks for the Platforms module.
+ */
 
+/**
+ * Implementation of hook_hosting_TASK_OBJECT_context_options().
+ */
 function hosting_hosting_platform_context_options(&$task) {
   $task->context_options['server'] = '@server_master';
   $task->context_options['web_server'] = hosting_context_name($task->ref->web_server);
@@ -11,6 +17,9 @@ function hosting_hosting_platform_context_options(&$task) {
   }
 }
 
+/**
+ * Implementation of hook_drush_context_import().
+ */
 function hosting_platform_drush_context_import($context, &$node) {
   if ($context->type == 'platform') {
     $node->title = str_replace('platform_', '', trim($context->name, '@'));
@@ -21,7 +30,7 @@ function hosting_platform_drush_context_import($context, &$node) {
 }
 
 /**
- * Implementation hook_post_verify
+ * Implementation hook_post_verify().
  *
  * Sets the platform verified timestamp, to discren when it was verified.
  * Imports all the profiles and modules into package and package release nodes.
@@ -77,7 +86,7 @@ function hosting_platform_post_hosting_verify_task($task, $data) {
 }
 
 /**
- * implementation of hook_hosting_post_DELETE
+ * Implementation of hook_hosting_post_DELETE().
  */
 function hosting_platform_post_hosting_delete_task($task, $data) {
   $task->ref->platform_status = HOSTING_PLATFORM_DELETED;

@@ -1,9 +1,11 @@
 <?php
-// $Id$
-
+/**
+ * @file
+ *   Implemented batch migration of sites.
+ */
 
 /**
- * Batch migration of sites between platforms
+ * Batch migration of sites between platforms.
  */
 function hosting_migrate_platform($form_state, $node) {
   drupal_add_js(drupal_get_path('module','hosting_migrate') . '/hosting_migrate.js');
@@ -113,7 +115,7 @@ function _hosting_migrate_site_list_class($status) {
 }
 
 /**
- * Implementation of hook_submit()
+ * Implementation of hook_submit().
  */
 function hosting_migrate_platform_submit($form, &$form_state) {
   $step = isset($form_state['storage']['step']) ? $form_state['storage']['step'] : 1;

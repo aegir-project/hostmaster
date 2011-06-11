@@ -1,6 +1,8 @@
 <?php
-// $Id$
-
+/**
+ * @file
+ *   Install, update and uninstall for the Platforms module.
+ */
 
 /**
  * Implementation of hook_schema().
@@ -58,6 +60,9 @@ function hosting_platform_schema() {
   return $schema;
 }
 
+/**
+ * Implementation of hook_install().
+ */
 function hosting_platform_install() {  
   // Create tables.
   drupal_install_schema('hosting_platform');

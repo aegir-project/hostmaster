@@ -1,8 +1,11 @@
 <?php
-// $Id$
+/**
+ * @file
+ *   Expose the dns feature to hostmaster.
+ */
 
 /**
- * Register a hosting feature with Aegir.
+ * Implementation of hook_hosting_feature().
  */
 function hosting_dns_hosting_feature() {
   $features['dns'] = array(

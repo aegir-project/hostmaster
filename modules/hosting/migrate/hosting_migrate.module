@@ -1,17 +1,23 @@
 <?php
-// $Id$
-
 /**
- * @file Migration forms for Aegir
+ * @file
+ *   Migrate sites between platforms, performing upgrades when necessary.
  */
+
 include_once('hosting_migrate.batch.inc');
 
+/**
+ * Implementation of hook_perm().
+ */
 function hosting_migrate_perm() {
   return array(
     'create migrate task',
   );
 }
 
+/**
+ * Implementation of hook_menu().
+ */
 function hosting_migrate_menu() {
   // TODO: add some security here
   $items['hosting/migrate/compare'] = array(
@@ -35,7 +41,7 @@ function hosting_migrate_menu() {
 }
 
 /**
- * Implementation of hook_hosting_tasks()
+ * Implementation of hook_hosting_tasks().
  */
 function hosting_migrate_hosting_tasks() {
   $tasks = array();
@@ -56,7 +62,7 @@ function hosting_migrate_hosting_tasks() {
 }
 
 /**
- * Implementation of hook_validate()
+ * Implementation of hook_validate().
  *
  * A site may be migrated if it's URL, Platform or DB server has changed.
  * Only one of these needs to change for a valid migration to be possible.
@@ -94,7 +100,7 @@ function hosting_task_migrate_form_validate($form, &$form_state) {
 }
 
 /**
- * Implementation of hook_theme()
+ * Implementation of hook_theme().
  */
 function hosting_migrate_theme($existing, $type, $theme, $path) {
   return array(
@@ -105,7 +111,7 @@ function hosting_migrate_theme($existing, $type, $theme, $path) {
 }
 
 /**
- * Implementation of hook_form()
+ * Implementation of hook_form().
  */
 function hosting_task_migrate_form($node) {
   $node->check_profile_migrations =  TRUE;
@@ -247,6 +253,9 @@ function _hosting_migrate_version_display($version, $schema = null, $status = nu
   return array('class' => 'hosting-package-' . $status, 'data' => $display);
 }
 
+/**
+ * Render a list of compared packages for migration.
+ */
 function theme_hosting_migrate_comparison($packages) {
   $rows = array();
 

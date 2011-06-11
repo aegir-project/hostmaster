@@ -1,11 +1,11 @@
 <?php
 /**
- * @file Hosting package views integration.
+ * @file
+ *   Hosting package views integration.
  */
 
 /**
- * Implementation of hook_views_handlers() to register all of the basic handlers
- * views uses.
+ * Implementation of hook_views_handlers().
  */
 function hosting_package_views_handlers() {
   return array(
@@ -20,8 +20,8 @@ function hosting_package_views_handlers() {
   );
 }
 
-/** 
- * Implements hook_views_data().
+/**
+ * Implementation of hook_views_data().
  */
 function hosting_package_views_data() {
   $data['hosting_package'] = array(

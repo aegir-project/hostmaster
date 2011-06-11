@@ -1,5 +1,12 @@
 <?php
+/**
+ * @file
+ *   Expose the migrate feature to hostmaster.
+ */
 
+/**
+ * Implementation of hook_hosting_feature().
+ */
 function hosting_migrate_hosting_feature() {
   $features['migrate'] = array(
     'title' => t('Site migration'),

@@ -1,5 +1,8 @@
 <?php
-// $Id$
+/**
+ * @file
+ *   Drush include for the package management module.
+ */
 
 function drush_hosting_package_pre_hosting_task() {
   $task =& drush_get_context('HOSTING_TASK');
