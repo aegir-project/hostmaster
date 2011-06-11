@@ -1,9 +1,8 @@
 <?php
 
 /**
- * @file Backend queues.
- *
- * This file defines an API for defining new queues.
+ * @file
+ *   This file defines an API for defining new queues.
  */
 
 /**
@@ -113,7 +112,7 @@ function hosting_get_queues($refresh = false) {
 }
 
 /**
- * Run a queue specified by hook_hosting_queues
+ * Run a queue specified by hook_hosting_queues()
  *
  * Run an instance of a queue processor. This function contains all the book keeping
  * functionality needed to ensure that the queues are running as scheduled.

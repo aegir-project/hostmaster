@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ *   Drush include for the Hosting module's hosting pause command.
+ */
+
+/**
  * Make sure Aegir is ready to be upgraded.
  *
  * @todo wait for tasks to complete
@@ -9,9 +14,9 @@ function drush_hosting_pause_validate($url) {
 }
 
 /**
- * Pause this aegir install
+ * Drush command to pause the Aegir frontend queues.
  *
- * This is really just deleting the cronjob.
+ * This is really just deleting the crontab.
  */
 function drush_hosting_pause($url) {
   // wipe out cron entry

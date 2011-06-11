@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  *   Drush include for the Hosting module's dispatch command.
