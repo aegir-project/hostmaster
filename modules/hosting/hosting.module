@@ -1,8 +1,8 @@
 <?php
-// $Id$
 
 /**
- * @file Hosting module
+ * @file
+ *   Hosting module.
  *
  * Contains just about all the interface magic of hostmaster.
  */
@@ -10,13 +10,12 @@
 /**
  * Not split for performance reasons. Just to keep code together.
  */
-
 include_once('hosting.inc');
 include_once('hosting.queues.inc');
 include_once('hosting.features.inc');
 
 /**
- * Implementation of hook_menu()
+ * Implementation of hook_menu().
  */
 function hosting_menu() {
   global $user;
@@ -92,6 +91,9 @@ function hosting_menu() {
   return $items;
 }
 
+/**
+ * Page callback for a page to be rendered in modal frame.
+ */
 function hosting_js_page() {
   modalframe_child_js();
 
@@ -119,6 +121,9 @@ function hosting_js_page() {
  return $return; 
 }
 
+/**
+ * Implementation of hook_menu_alter().
+ */
 function hosting_menu_alter(&$items) {
   $items['node/add']['page callback'] = '_hosting_node_add';
 
@@ -134,26 +139,46 @@ function hosting_menu_alter(&$items) {
   unset($items['node/add/task']);
 }
 
+/**
+ * Menu access callback for creating a node provided by a Hosting feature.
+ *
+ * @param $type
+ *   The node type that the user wants to create.
+ * @param $feature
+ *   The machine name of the host feature that should be additionally checked to
+ *   see if it's enabled.
+ * @return
+ *   TRUE if the user can access, FALSE otherwise.
+ */
 function hosting_menu_access($type, $feature) {
   global $user;
   return  (($user->uid == 1) || user_access('create ' . $type)) && (hosting_feature($feature) != HOSTING_FEATURE_DISABLED);
 }
 
+/**
+ * Page callback for a site that has been disabled.
+ */
 function hosting_disabled_site() {
   drupal_set_breadcrumb(array());
   return t("This site has been disabled by the site administrators");
 }
 
+/**
+ * Page callback for a site that is undergoing maintenance.
+ */
 function hosting_site_maintenance() {
   drupal_set_breadcrumb(array());
   return t("This site is currently in maintenance. Check back later.");
 }
 
 /**
- * Implementation of hook_nodeapi
+ * Implementation of hook_nodeapi().
  *
- * This function redirects to hosting_nodeapi_$nodetype_$op calls, to save ourselves
- * from an incessant amount of intricately nested code, and allow easier extension / maintenance.
+ * This function redirects to hosting_nodeapi_$nodetype_$op calls, to save
+ * ourselves from an incessant amount of intricately nested code, and allow
+ * easier extension / maintenance.
+ *
+ * @see hook_nodeapi_TYPE_OP()
  */
 function hosting_nodeapi(&$node, $op, $arg1, $arg2) {
   global $user;
@@ -200,7 +225,7 @@ function hosting_nodeapi(&$node, $op, $arg1, $arg2) {
 }
 
 /**
- * Implementation of hook_perm
+ * Implementation of hook_perm().
  */
 function hosting_perm() {
   return array('access hosting wizard', 'administer hosting queues', 'administer hosting features', 'administer hosting', 'access disabled sites');
@@ -209,10 +234,10 @@ function hosting_perm() {
 /**
  * Per node type description text. To be stored in the node_type table.
  *
- * @param type
- *  The node type.
+ * @param $type
+ *   The node type.
  * @return
- *  Description text for the node type.
+ *   Description text for the node type.
  */
 function hosting_node_help($type) {
   switch ($type) {
@@ -249,7 +274,7 @@ function hosting_node_help($type) {
 }
 
 /**
- * Implementation of hook_init
+ * Implementation of hook_init().
  */
 function hosting_init() {
   // Definitions for the default platforms, clients etc.
@@ -278,9 +303,6 @@ function hosting_init() {
   drupal_add_css(drupal_get_path('module', 'hosting') . '/hosting.css');
 }
 
-
-
-
 /**
  * Implementation of hook_theme().
  */
@@ -306,7 +328,9 @@ function _hosting_node_link($nid, $title = null) {
   }
 }
 
-
+/**
+ * Implementation of hook_block().
+ */
 function hosting_block($op = 'list', $delta = 0, $edit = array()) {
   switch ($op) {
     case 'list' :
@@ -330,6 +354,9 @@ function hosting_block($op = 'list', $delta = 0, $edit = array()) {
   }
 }
 
+/**
+ * Build a block summarising the hosting queues.
+ */
 function hosting_queue_summary_block() {
   if (user_access('administer hosting queues')) {
     $queues = hosting_get_queues();
@@ -356,6 +383,11 @@ function hosting_queue_summary_block() {
   }
 }
 
+/**
+ * Build a block of the hosting queues.
+ *
+ * @see hosting_TASK_SINGULAR_summary()
+ */
 function hosting_queue_block() {
   if (user_access('access task logs')) {
     $queues = hosting_get_queues();
@@ -371,12 +403,14 @@ function hosting_queue_block() {
 }
 
 /**
- * Check site URL is allowed
+ * Check site URL is allowed.
  *
  * This function hooks into hook_allow_domain to let contrib modules
  * weigh in on whether the site should be created.
  *
  * All the hooks must return true for the domain to be allowed.
+ *
+ * @see hook_allow_domain()
  */
 function hosting_domain_allowed($url, $params = array()) {
   $results = module_invoke_all('allow_domain', $url, $params);
@@ -385,9 +419,9 @@ function hosting_domain_allowed($url, $params = array()) {
 }
 
 /**
- * Initial hosting setup
- * Runs the 'hosting-dispatch' command, and 
- * move on to setting up the crontab
+ * Initial hosting setup drush command.
+ * 
+ * Runs the 'hosting-dispatch' command, and sets up the crontab.
  */ 
 function drush_hosting_setup() {
   if (drush_confirm("This command will replace your crontab for this user. continue?")) {
@@ -414,8 +448,9 @@ function drush_hosting_setup() {
 }
 
 /**
- * Set up the hosting-dispatch command in the aegir user's crontab
- * Replace the crontab entry if it exists, else create it from scratch
+ * Set up the hosting-dispatch command in the aegir user's crontab.
+ * 
+ * Replace the crontab entry if it exists, else create it from scratch.
  */
 function _hosting_setup_cron() {
   $existing = FALSE;
@@ -454,9 +489,9 @@ function _hosting_setup_cron() {
 /**
  * Replacement node/add page.
  *
- * Major kludge to remove the hidden node types from node/add page
+ * Major kludge to remove the hidden node types from node/add page.
  *
- * Copied from node.module
+ * Copied from node.module.
  */
 function _hosting_node_add($type = '') {
   global $user;
@@ -500,9 +535,10 @@ function _hosting_node_add($type = '') {
 }
 
 /**
- * List queues or tasks in a queue if a key is provided
+ * List queues or tasks in a queue if a key is provided.
+ *
+ * @see hosting_TASK_SINGULAR_list()
  */
-
 function hosting_queues($key='') {
   $queues = hosting_get_queues();
 
@@ -529,7 +565,10 @@ function hosting_queues($key='') {
 }
 
 /**
- * Generate context sensitive breadcrumbs
+ * Generate context sensitive breadcrumbs.
+ *
+ * @param $node
+ *   A node object to use for context of the breadcrumbs.
  */
 function hosting_set_breadcrumb($node) {
   $breadcrumbs[] = l(t('Home'), NULL);
@@ -551,9 +590,7 @@ function hosting_set_breadcrumb($node) {
 }
 
 /**
- * Page callback
- *
- * Configure the frequency of tasks.
+ * Form to configure the frequency of queue execution.
  */
 function hosting_queues_configure() {
   drupal_add_css(drupal_get_path('module', 'hosting') . '/hosting.css');
@@ -632,6 +669,11 @@ function hosting_queues_configure() {
   return $form;
 }
 
+/**
+ * Theme function to render the queue configuration form.
+ *
+ * @see hosting_queues_configure()
+ */
 function theme_hosting_queues_configure($form) {
   $queues = hosting_get_queues();
 
@@ -655,7 +697,9 @@ function theme_hosting_queues_configure($form) {
 }
 
 /**
- * Implementation of hook_validate()
+ * Validation callback for the the queue execution frequency form.
+ *
+ * @see hosting_queues_configure()
  */
 function hosting_queues_configure_validate($form, &$form_state) {
   foreach (hosting_get_queues() as $queue => $info) {
@@ -671,7 +715,9 @@ function hosting_queues_configure_validate($form, &$form_state) {
 }
 
 /**
- * Implementation of hook_submit()
+ * Submit callback for the the queue execution frequency form.
+ *
+ * @see hosting_queues_configure()
  */
 function hosting_queues_configure_submit($form, &$form_state) {
   foreach (hosting_get_queues() as $queue => $info) {
@@ -687,7 +733,7 @@ function hosting_queues_configure_submit($form, &$form_state) {
 }
 
 /**
- * Implementation of hook_form_alter() 
+ * Implementation of hook_form_alter().
  */
 function hosting_form_alter(&$form, &$form_state, $form_id) {
   // Alter the 'Add User' form to remind users that this is not the New Client form
@@ -744,8 +790,15 @@ function hosting_menu_rebuild() {
   }
 }
 
-
-
+/**
+ * Get the node associated with a given provision context.
+ *
+ * @param $name
+ *   The name of the context to load.
+ * @return
+ *   Either the node object associated with the context, or FALSE if no
+ *   associated node can be found.
+ */
 function hosting_context_load($name) {
   $name = ltrim($name, '@');
   // TODO : introduce static caching ?
@@ -755,11 +808,16 @@ function hosting_context_load($name) {
   if ($obj = db_fetch_object($result)) {
     return node_load($obj->nid);
   }
-  return false;
+  return FALSE;
 }
 
 /**
  * Add a node to the context lookup db.
+ *
+ * @param $nid
+ *   The nid of the node to associate to the given provision context name.
+ * @param $name
+ *   The name of the provision context.
  */
 function hosting_context_register($nid, $name) {
   // Check first to see if this nid exists in the system. If so, update its name
@@ -780,6 +838,9 @@ function hosting_context_register($nid, $name) {
 
 /**
  * Delete an alias from the context lookup table.
+ *
+ * @param $nid
+ *   The nid of the node to remove the association from.
  */
 function hosting_context_delete($nid) {
   db_query("DELETE FROM {hosting_context} WHERE nid=%d", $nid);
@@ -788,17 +849,27 @@ function hosting_context_delete($nid) {
 
 /**
  * Return the hosting context name for a node.
+ *
+ * @param $nid
+ *   The nid of the node to get the provision context name for.
+ * @return
+ *   The provision context name associated with the specified node, will be
+ *   prefixed with '@'.
  */
 function hosting_context_name($nid) {
   $node = node_load($nid);
   return '@' . $node->hosting_name;
 }
 
+/**
+ * Define the node types that have associated provision contexts.
+ */
 function hosting_context_node_types() {
   return array('site', 'platform', 'server');
 }
+
 /**
- * Views integration
+ * Implementation of hook_views_api().
  */
 function hosting_views_api() {
   return array(
@@ -807,7 +878,9 @@ function hosting_views_api() {
   );
 }
 
-
+/**
+ * General settings form.
+ */
 function hosting_settings() {
   $form['settings'] = array(
     '#type' => 'item',
