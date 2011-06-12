@@ -8,7 +8,7 @@
   <div id='navigation' class='reverse'><div class='limiter clearfix'>
     <?php if ($breadcrumb) print $breadcrumb; ?>
     <?php if ($main_menu): ?>
-        <?php print theme('links__system_main_menu', array('links' => $main_menu, 'attributes' => array('id' => 'main-menu', 'class' => array('links', 'inline', 'clearfix')), 'heading' => t('Main menu'))); ?>
+        <?php print theme('links__system_main_menu', array('links' => $main_menu, 'attributes' => array('id' => 'main-menu', 'class' => array('links', 'inline', 'clearfix')))); ?>
     <?php endif; ?>
   </div></div>
 
@@ -24,7 +24,7 @@
     <?php if ($tabs) print $tabs ?>
   </div></div>
 
-  <div id='page'><div class='limiter clearfix'>
+  <div id='center'><div class='limiter clearfix'>
 
     <?php if ($tabs2) print $tabs2 ?>
 

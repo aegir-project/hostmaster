@@ -297,7 +297,7 @@ div#page {
   padding-bottom:40px;
   }
 
-div#page div.limiter { background:url(images/page.png) repeat-y; }
+div#center div.limiter { background:url(images/page.png) repeat-y; }
 
   body.wide div#page div.limiter {
     padding-right:190px;
