@@ -1,6 +1,13 @@
 <?php
 
+/**
+ * @file
+ *   Drush include for the Hosting module.
+ */
 
+/**
+ * Implementation of hook_drush_command().
+ */
 function hosting_drush_command() {
   $items['hosting-dispatch'] = array(
     'description' => dt('Centralized command for dispatching the various queue processors (hosting, cron, backup etc.)'),
@@ -70,6 +77,9 @@ function hosting_drush_command() {
 /**
  * Command to import an existing provision named context and
  * generate nodes for it.
+ *
+ * @param $alias
+ *   The name of the provision context to import.
  */
 function drush_hosting_import($alias) {
   if (sizeof($alias)) {
@@ -84,7 +94,10 @@ function drush_hosting_import($alias) {
  * Imports a drush named context / "site alias" into the hostmaster front
  * end, by creating nodes and translating the value.
  *
- * this is bascally the reverse of the context_options hook.
+ * This is bascally the reverse of the context_options hook.
+ * 
+ * @param $alias
+ *   The name of the provision context to import.
  */
 function hosting_drush_import($alias) {
   $name = (is_object($alias)) ? $alias->name : $alias;

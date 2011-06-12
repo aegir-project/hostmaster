@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ *   Drush include for the hostmaster resume command.
+ */
+
 include_once('resume.hosting.inc');
 
 /**

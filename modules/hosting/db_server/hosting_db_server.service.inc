@@ -1,8 +1,19 @@
 <?php
+/**
+ * @file
+ *   Provide the hosting serivce classes for database integration.
+ */
+
+/**
+ * The base db service type class.
+ */
 class hostingService_db extends hostingService {
   public $service = 'db';
 }
 
+/**
+ * A MySQL specific db service implementation class.
+ */
 class hostingService_db_mysql extends hostingService_db {
   public $type = 'mysql';
   public $has_port = TRUE;

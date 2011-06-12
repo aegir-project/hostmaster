@@ -1,7 +1,11 @@
 <?php
+/**
+ * @file
+ *   Allow Hostmaster to configure database servers.
+ */
 
 /**
- * Implementation of hook_hosting_service()
+ * Implementation of hook_hosting_service().
  */
 function hosting_db_server_hosting_service() {
   return array(
@@ -9,6 +13,9 @@ function hosting_db_server_hosting_service() {
   );
 }
 
+/**
+ * Implementation of hook_hosting_service_type().
+ */
 function hosting_db_server_hosting_service_type() {
   return array(
     'db' => array(
@@ -18,7 +25,7 @@ function hosting_db_server_hosting_service_type() {
 }
 
 /**
- * Find the database server()
+ * Find the database server.
  */
 function hosting_get_db_server($hostname) {
   if (_hosting_valid_ip($hostname)) {
@@ -37,7 +44,7 @@ function hosting_get_db_server($hostname) {
 }
 
 /**
- * Implementation of hook_nodeapi() presave for server node type.
+ * Implementation of hook_nodeapi_TYPE_OP().
  */
 function hosting_db_server_nodeapi_server_presave(&$node) {
   if (empty($node->db_passwd) && !empty($node->nid)) {
@@ -47,7 +54,7 @@ function hosting_db_server_nodeapi_server_presave(&$node) {
 }
 
 /**
- * Views integration
+ * Implementation of hook_views_api().
  */
 function hosting_db_server_views_api() {
   return array(

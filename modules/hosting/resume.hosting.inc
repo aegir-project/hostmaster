@@ -1,11 +1,15 @@
 <?php
 
 /**
- * @file Implementation of the hosting-resume command
+ * @file
+ *   Drush include for the Hosting module's hosting resume command.
  */
 
 include_once('hosting.inc');
 
+/**
+ * Drush command to resume the Aegir frontend site.
+ */
 function drush_hosting_resume() {
   drush_log('bootstrapping drupal');
   drush_bootstrap(DRUSH_BOOTSTRAP_DRUPAL_FULL);

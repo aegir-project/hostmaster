@@ -1,10 +1,7 @@
 <?php
-// $Id$
-
 /**
- * @file Hosting features
- *
- * Contains the logic used to generate the features list
+ * @file
+ *   Include for functionality related to Hosting module features.
  */
 
 /**
@@ -26,11 +23,10 @@ define('HOSTING_FEATURE_REQUIRED', 2);
 /**
  * Determine whether a specific feature of the hosting system is turned on.
  *
- * param @feature
- *    The feature to check, ie "client" or "platform" and so forth.
- *
- * return
- *    Boolean. Yes if enabled, False if disabled.
+ * @param $feature
+ *   The feature to check the status of, e.g. "client" or "platform".
+ * @return
+ *    TRUE if the feature is enabled, FALSE if it is disabled.
  */
 function hosting_feature($feature) {
   static $features = array();
@@ -47,6 +43,17 @@ function hosting_feature($feature) {
   return $return;
 }
 
+/**
+ * The Hosting features form.
+ *
+ * This returns a form with any known Hosting features grouped and listed. It
+ * allows administrators to enable or disable the features.
+ *
+ * @return
+ *   A drupal form.
+ *
+ * @see hosting_features_form_submit()
+ */
 function hosting_features_form() {
   $form['features'] = array(
     '#type' => 'item',
@@ -83,6 +90,21 @@ function hosting_features_form() {
   return system_settings_form($form);
 }
 
+/**
+ * Submit callback for the Hosting features form.
+ *
+ * We process the submitted values and enable any features that the user has
+ * requested. This may involve enabling a module and their dependencies and/or
+ * calling a specified callback function.
+ *
+ * @param $form
+ *   The built form.
+ * @param $form_state
+ *   The current form state.
+ *   
+ * @see hosting_features_form()
+ * @see hook_hosting_feature()
+ */
 function hosting_features_form_submit($form, &$form_state) {
   $values = $form_state['values'];
   $features = hosting_get_features(TRUE);
@@ -147,6 +169,17 @@ function hosting_features_form_submit($form, &$form_state) {
   menu_rebuild();
 }
 
+/**
+ * Get a listing of all known Hosting features.
+ *
+ * @param $refresh
+ *   (optional) Pass in TRUE to force the list of features to be rebuilt and not
+ *   returned from the cache.
+ * @return
+ *   An array of Hosting features.
+ *
+ * @see hook_hosting_feature()
+ */
 function hosting_get_features($refresh = FALSE) {
   $cache = cache_get('hosting_features');
 
@@ -176,6 +209,15 @@ function hosting_get_features($refresh = FALSE) {
   }
 }
 
+/**
+ * Determine which node types are provided by Hosting features.
+ * 
+ * @param $refresh
+ *   (optional) Pass in TRUE to force the list of node types to be rebuilt and
+ *   not returned from the cache.
+ * @return
+ *   An array of node types keyed by the Hosting feature that provides them.
+ */
 function hosting_feature_node_types($refresh = FALSE) {
   static $types;
 

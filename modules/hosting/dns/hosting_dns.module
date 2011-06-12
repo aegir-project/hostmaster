@@ -1,15 +1,19 @@
 <?php
-// $Id$
 /**
- * Expose a type of service to the Service API.
+ * @file
+ *   Manage DNS records for your hosted sites.
+ */
+
+/**
+ * Implementation of hook_hosting_service_type().
  */
 function hosting_dns_hosting_service_type() {
   return array('dns' => array('title' => t('DNS service')));
 }
 
 /**
- * Expose a service implementation to the service API.
-  */
+ * Implementation of hook_hosting_service().
+ */
 function hosting_dns_hosting_service() {
   return array('dnsmasq' => 'dns',
     'bind' => 'dns',

@@ -1,5 +1,13 @@
 <?php
 
+/**
+ * @file
+ *   Drush include for the Hosting module's hosting task command.
+ */
+
+/**
+ * Log a message to the current task's node if possible, the screen otherwise.
+ */
 function _hosting_task_log($entry) {
   $task = drush_get_context('HOSTING_TASK');
   if ($task->vid) {
@@ -13,6 +21,15 @@ function _hosting_task_log($entry) {
   }
 }
 
+/**
+ * Validate hook for the hosting-task Drush command.
+ *
+ * We do some magic in this command to allow the user to run either a specifc
+ * task by specifying a node id or chosen task type by specifying the type of
+ * task, e.g. 'verify' or 'migrate'.
+ * 
+ * @see drush_hosting_task()
+ */
 function drush_hosting_task_validate($id, $type = null) {
   drush_set_option('user', 1);
   drush_bootstrap(DRUSH_BOOTSTRAP_DRUPAL_LOGIN);
@@ -57,6 +74,15 @@ function drush_hosting_task_validate($id, $type = null) {
   }
 }
 
+/**
+ * Drush hosting task command.
+ *
+ * This is the main way that the frontend communicates with the backend. Tasks
+ * correspond to backend drush commands, and the results and log of the command
+ * are attached to the task for reference.
+ *
+ * @see drush_hosting_task_validate()
+ */
 function drush_hosting_task() {
   $task =& drush_get_context('HOSTING_TASK');
   $output = array();
@@ -95,12 +121,21 @@ function drush_hosting_task() {
   node_save($task);
 }
 
+/**
+ * Rollback hook for the hosting-task Drush command.
+ *
+ * @see hook_hosting_TASK_TYPE_task_rollback()
+ */
 function drush_hosting_hosting_task_rollback() {
   $task =& drush_get_context('HOSTING_TASK');
   module_invoke_all(sprintf("hosting_%s_task_rollback", $task->task_type), $task, drush_get_context('HOSTING_DRUSH_OUTPUT'));
 }
 
-
+/**
+ * Post completion hook for the hosting-task Drush command.
+ *
+ * @see hook_post_hosting_TASK_TYPE_task()
+ */
 function drush_hosting_post_hosting_task($task) {
   $task =& drush_get_context('HOSTING_TASK');
 
