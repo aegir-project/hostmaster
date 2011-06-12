@@ -14,14 +14,13 @@
 
   <?php if ($messages): ?>
   <div id="console" class='reverse'><div class='limiter clearfix'>
-    <?php if ($messages): print $messages; endif; ?>
+   <?php if ($messages): print $messages; endif; ?>
   </div></div>
   <?php endif; ?>
 
   <div id='header-region'><div class='limiter clearfix'>
     <?php print render($page['header']); ?>
     <?php if ($title): ?><h2 class='page-title'><?php print $title ?></h2><?php endif; ?>
-    <?php if ($tabs) print $tabs ?>
   </div></div>
 
   <div id='center'><div class='limiter clearfix'>
@@ -45,7 +44,7 @@
   <div id="footer" class='reverse'><div class='limiter clearfix'>
     <?php print render($page['footer']); ?>
     <?php if ($secondary_menu): ?>
-        <?php print theme('links__system_secondary_menu', array('links' => $secondary_menu, 'attributes' => array('id' => 'secondary-menu', 'class' => array('links', 'inline', 'clearfix')), 'heading' => t('Secondary menu'))); ?>
+        <?php print theme('links__system_secondary_menu', array('links' => $secondary_menu, 'attributes' => array('id' => 'secondary-menu', 'class' => array('links', 'inline', 'clearfix')))); ?>
     <?php endif; ?>
   </div></div>
 
