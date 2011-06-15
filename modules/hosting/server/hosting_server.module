@@ -508,7 +508,11 @@ function hosting_server_listing() {
  * @param $service
  *   Service type string, like 'http' or 'db'
  *
- * @return array pairs of nid -> title of enabled webservers
+ * @return
+ *   An array of enabled servers, keys are the nid's of the nodes representing
+ *   them, values are the titles of the servers.
+ *
+ * @see hook_hosting_servers_titles_alter()
  */ 
 function hosting_get_servers($service) {
   $return = array();
@@ -516,5 +520,6 @@ function hosting_get_servers($service) {
   while($server = db_fetch_object($result)) {
     $return[$server->nid] = $server->title;
   }
+  drupal_alter('hosting_servers_titles', $return, $service);
   return $return;
 }
