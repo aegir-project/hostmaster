@@ -72,4 +72,19 @@ function drush_hosting_queue_runner() {
     }
   }
 
+  // restart the dispatcher if we hit the timeout and if we're configured for non-external restarts
+  if (variable_get('hosting_queue_runner_autorestart', FALSE)) {
+    if (function_exists('pcntl_exec')) {
+      // this would usually be:
+      // _drush_backend_generate_command_sitealias(drush_sitealias_get_record(d()->name), 'hosting-queue-runner', array(), $data);
+      // but that generates --backend or > `tty` (if #interactive) which are both wrong
+      $parts = explode(' ', DRUSH_COMMAND);
+      $command = array_shift($parts);
+      array_push($args, '@' . d()->name, 'hosting-queue-runner');
+      drush_log(dt('Restarting queue runner with @drush @args', array('@drush' => $command, '@args' => implode(" ", $args))));
+      pcntl_exec($command, $args);
+      /* NOTREACHED */
+    }
+  }
+
 }
