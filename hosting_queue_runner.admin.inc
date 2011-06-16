@@ -28,6 +28,13 @@ function hosting_queue_runner_settings_form() {
     ) + drupal_map_assoc(range(1, 60), '_hosting_queue_runner_settings_form_delay_callback'),
   );
 
+  $form['hosting_queue_runner_process_lifetime'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Process lifetime timeout'),
+    '#description' => t('Because of memory leaks and bugs in PHP, the daemon automatically stops after this delay (in seconds). If you are running a lot of tasks, you may want to lower this so it gets restarted more often. In empirical tests, it was found that around 100KB are leaked for every task fired.'),
+    '#default_value' => variable_get('hosting_queue_runner_process_lifetime', 3600),
+  );
+
   return system_settings_form($form);
 }
 
