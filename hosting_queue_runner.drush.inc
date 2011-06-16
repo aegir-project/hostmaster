@@ -122,7 +122,7 @@ function hosting_queue_runner_restart() {
     }
     array_push($args, '@hostmaster', $command);
     watchdog('hosting_queue_runner', 'Restarting queue runner with @drush @args', array('@drush' => $drush, '@args' => implode(" ", $args)));
-    pcntl_exec($drush, $args);
+    pcntl_exec($drush, $args, $_ENV);
     watchdog('hosting_queue_runner', 'Could not restart the queue runner, aborting', array(), WATCHDOG_ERROR);
     /* NOTREACHED */
   }
