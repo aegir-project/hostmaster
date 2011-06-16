@@ -34,6 +34,7 @@ function hosting_queue_runner_settings_form() {
     '#description' => t('Because of memory leaks and bugs in PHP, the daemon automatically stops after this delay, and is restarted. If you are running a lot of tasks, you may want to lower this so it gets restarted more often. In empirical tests, it was found that around 100KB are leaked for every task fired.'),
     '#default_value' => variable_get('hosting_queue_runner_process_lifetime', 3600),
     '#options' => drupal_map_assoc(array(
+      60,
       60 * 5,
       60 * 10,
       60 * 15,
