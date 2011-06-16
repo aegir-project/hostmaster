@@ -51,6 +51,18 @@ function drush_hosting_queue_runner() {
   if (function_exists('set_time_limit')) {
     @set_time_limit(0);
   }
+
+  // in some environments (e.g. in "productin") ENV is not actually
+  // set (!) so try to guess from $_SERVER
+  if (strpos(ini_get('variables_order'), 'E') === FALSE) {
+    if (strpos(ini_get('variables_order'), 'S') === FALSE) {
+      drush_log(dt('Neither $_ENV nor $_SERVER are available to set up proper environment inheritance; ensure E and/or S is set in your php.ini\'s "variables_order" setting.'), 'warning');
+    }
+    else {
+      $_ENV = $_SERVER;
+    }
+  }
+
   $end_time = variable_get('hosting_queue_runner_process_lifetime', 3600)  + time();
 
   // Record the fact that we're running, so we can give some feedback in the
