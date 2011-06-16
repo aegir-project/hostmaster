@@ -40,8 +40,6 @@ function hosting_queue_runner_drush_command() {
  * Drush command to execute hosting tasks.
  */
 function drush_hosting_queue_runner() {
-  global $pid; // the pid of the currently running task
-
   if (function_exists('pcntl_signal')) {
     // reload the server on SIGHUP
     pcntl_signal(SIGHUP, 'hosting_queue_runner_restart');
