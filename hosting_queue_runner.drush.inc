@@ -43,6 +43,8 @@ function drush_hosting_queue_runner() {
   if (function_exists('pcntl_signal')) {
     // reload the server on SIGHUP
     pcntl_signal(SIGHUP, 'hosting_queue_runner_restart');
+    pcntl_signal(SIGINT, 'hosting_queue_runner_stop');
+    pcntl_signal(SIGTERM, 'hosting_queue_runner_stop');
   }
 
   // Set a nice high time limit, if we can:
@@ -110,6 +112,18 @@ function drush_hosting_queue_runner() {
 
   // restart the daemon to recycle leaked memory
   hosting_queue_runner_restart();
+}
+
+/**
+ * Handle interruption signals gracefully
+ *
+ * We do not want to interrupt children tasks, so we wait for them
+ * before stopping.
+ */
+function hosting_queue_runner_stop($signal) {
+  watchdog('hosting_queue_runner', 'received signal @signal, waiting for child to die before restarting', array('@signal' => $signal));
+  pcntl_wait($status);
+  exit($status);
 }
 
 /**
