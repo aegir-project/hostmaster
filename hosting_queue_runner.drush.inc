@@ -121,8 +121,9 @@ function drush_hosting_queue_runner() {
  * before stopping.
  */
 function hosting_queue_runner_stop($signal) {
-  watchdog('hosting_queue_runner', 'received signal @signal, waiting for child to die before restarting', array('@signal' => $signal));
+  watchdog('hosting_queue_runner', 'Received signal @signal, waiting for children to die', array('@signal' => $signal));
   pcntl_wait($status);
+  watchdog('hosting_queue_runner', 'Stopped daemon');
   exit($status);
 }
 
@@ -130,7 +131,7 @@ function hosting_queue_runner_stop($signal) {
  * Restart the dispatcher to work around memory leaks
  */
 function hosting_queue_runner_restart($signal = NULL) {
-  watchdog('hosting_queue_runner', 'received signal @signal, waiting for child to die before restarting', array('@signal' => $signal));
+  watchdog('hosting_queue_runner', 'Received signal @signal, waiting for children to die', array('@signal' => $signal));
   pcntl_wait($status);
 
   $drush_command = drush_get_command();
