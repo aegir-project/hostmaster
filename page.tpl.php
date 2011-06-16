@@ -21,11 +21,12 @@
   <div id='header-region'><div class='limiter clearfix'>
     <?php print render($page['header']); ?>
     <?php if ($title): ?><h2 class='page-title'><?php print $title ?></h2><?php endif; ?>
+    <?php if ($tabs): ?><div class="tabs"><ul class='links tabs clear-block'><?php print render($tabs); ?></ul></div><?php endif; ?>
   </div></div>
 
   <div id='center'><div class='limiter clearfix'>
 
-    <?php if ($tabs2) print $tabs2 ?>
+    <?php if ($action_links): ?><ul class="action-links"><?php print render($action_links); ?></ul><?php endif; ?>
 
     <div id='main'>
       <div class='page-content'>

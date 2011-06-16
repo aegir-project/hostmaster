@@ -4,20 +4,13 @@
 /**
  * Preprocessor for theme_page().
  */
-function eldir_preprocess_page(&$variables) {
+function eldir_preprocess_page(&$variables, $hook) {
+
   $variables['logo'] = l($variables['site_name'], '<front>');
-
-  if ($primary = menu_primary_local_tasks()) {
-    $variables['tabs'] = "<ul class='links tabs clear-block'>{$primary}</ul>";
-  }
-
-  if ($secondary = menu_secondary_local_tasks()) {
-    $variables['tabs2'] = "<ul class='links tabs clear-block'>{$secondary}</ul>";
-  }
 
 }
 
-function eldir_preprocess_html(&$variables) {
+function eldir_preprocess_html(&$variables, $hook) {
   if (!empty($variables['node'])) {
     // Add a node type label on node pages to help users.
     $types = node_get_types();
@@ -41,19 +34,19 @@ function eldir_preprocess_html(&$variables) {
 #  }
 
   // Add IE 6 compatibility stylesheet
-  $variables['styles_ie6'] = base_path() . path_to_theme() . '/ie6.css';
+  $variables['styles_ie6'] = 'url(' . base_path() . drupal_get_path('theme', 'eldir') . '/ie6.css)';
 }
 
 /**
  * Preprocessor for theme_node().
  */
-function eldir_preprocess_node(&$variables) {
+function eldir_preprocess_node(&$variables, $hook) {
   if (!empty($variables['node'])) {
     // Add a node type label on node pages to help users.
     $types = node_get_types();
     $type = $variables['node']->type;
     if (!empty($types[$type])) {
-      $variables['title'] = "<span class='label'>{$types[$type]->name}</span> {$variables['title']}";
+      $variables['title'] .= "<span class='label'>{$types[$type]->name}</span> {$variables['title']}";
     }
   }
 }
