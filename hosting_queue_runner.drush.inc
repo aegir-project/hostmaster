@@ -106,10 +106,22 @@ function hosting_queue_runner_restart() {
     // _drush_backend_generate_command_sitealias(drush_sitealias_get_record(d()->name), 'hosting-queue-runner', array(), $data);
     // but that generates --backend or > `tty` (if #interactive) which are both wrong
     $parts = explode(' ', DRUSH_COMMAND);
-    $command = array_shift($parts);
-    array_push($args, '@' . d()->name, 'hosting-queue-runner');
-    drush_log(dt('Restarting queue runner with @drush @args', array('@drush' => $command, '@args' => implode(" ", $args))));
-    pcntl_exec($command, $args);
+    $drush = array_shift($parts);
+    $args = array(); // the arguments after argv0
+    // we need to reimplement _drush_escape_option() because it adds
+    // extra leading spaces
+    foreach ($options as $key => $value) {
+      if ($value !== TRUE) {
+        $args[] = "--$key=" . escapeshellarg($value);
+      }
+      else {
+        $args[] = "--$key";
+      }
+    }
+    array_push($args, '@hostmaster', $command);
+    drush_log(dt('Restarting queue runner with @drush @args', array('@drush' => $drush, '@args' => implode(" ", $args))));
+    pcntl_exec($drush, $args);
+    drush_log(dt('Exec failed'), 'warning');
     /* NOTREACHED */
   }
   else {
