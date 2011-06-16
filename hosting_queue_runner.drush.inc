@@ -87,20 +87,20 @@ function drush_hosting_queue_runner() {
 
   // If we're set up for auto-restarting attempt it!
   if (drush_get_option('auto-restart', FALSE)) {
-    $drush_command = drush_get_command();
-    $command = $drush_command['command'];
-    $options = array('--auto-restart');
-    hosting_queue_runner_drush_command_refork($command, array(), $options);
+    hosting_queue_runner_restart();
   }
 
 }
 
 /**
- * Modified version of drush_do_command_redispatch to fork the process.
- *
- * @see drush_do_command_redispatch()
+ * Restart the dispatcher to work around memory leaks
  */
-function hosting_queue_runner_drush_command_refork($command, $args = array(), $options = array()) {
+function hosting_queue_runner_restart() {
+  $drush_command = drush_get_command();
+  // should be hosting-queue-runner unless something is very wrong
+  $command = $drush_command['command'];
+  $options = drush_get_context('cli');
+
   if (function_exists('pcntl_exec')) {
     // this would usually be:
     // _drush_backend_generate_command_sitealias(drush_sitealias_get_record(d()->name), 'hosting-queue-runner', array(), $data);
@@ -113,18 +113,6 @@ function hosting_queue_runner_drush_command_refork($command, $args = array(), $o
     /* NOTREACHED */
   }
   else {
-    $drush_path = drush_get_option('drush-script');
-    if (!isset($drush_path)) {
-      $drush_folder = drush_get_option('drush');
-      if (isset($drush)) {
-        $drush_path = $drush_folder . '/drush';
-      }
-    }
-
-    foreach ($args as $arg) {
-      $command .= ' ' . escapeshellarg($arg);
-    }
-
     // Call through to backend fork.
     drush_log(dt('Redispatch via backend fork'));
     drush_backend_fork($command, $options, $drush_path);
