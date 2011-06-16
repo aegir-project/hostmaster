@@ -47,7 +47,7 @@ function drush_hosting_queue_runner() {
   // frontend.
   variable_set('hosting_queue_runner_process_started', time());
 
-  watchdog('hosting_queue_runner', 'Starting Hosting queue runner, watching for available tasks');
+  watchdog('hosting_queue_runner', 'Started Hosting queue runner, waiting for new tasks');
 
   while (TRUE) {
     // Sleep for a second before we look for new tasks.
@@ -55,7 +55,6 @@ function drush_hosting_queue_runner() {
 
     // Should we terminate.
     if (time() > $end_time) {
-      watchdog('hosting_queue_runner', 'Terminating Hosting queue runner (max run time reached)');
       break;
     }
 
@@ -72,7 +71,6 @@ function drush_hosting_queue_runner() {
       sleep(1);
 
       // Execute the task in the backend.
-      drush_log('Executing task.');
       drush_backend_invoke("hosting-task", array($task->nid));
       drush_log(dt('Finished executing task.'));
 
