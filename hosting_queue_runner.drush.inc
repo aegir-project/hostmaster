@@ -12,7 +12,15 @@ function hosting_queue_runner_drush_command() {
     'drupal dependencies' => array(
       'hosting_queue_runner',
     ),
+    // We need this get around a drush bug, see: http://drupal.org/node/704848
+    // But we remove it below for Drush 4.5 and above.
+    'callback' => 'drush_hosting_queue_runner',
   );
+
+  // We don't need the callback defined for Drush > 4.4
+  if (defined('DRUSH_VERSION') && version_compare(DRUSH_VERSION, '4.4', '>')) {
+    unset($items['hosting-queue-runner']['callback']);
+  }
 
   return $items;
 }
@@ -69,7 +77,44 @@ function drush_hosting_queue_runner() {
         sleep($delay);
       }
 
+      // We're done with this task, set our reference to NULL, this might help
+      // reduce memory usage.
+      $task = NULL;
+    }
+    $tasks = NULL;
+
+  }
+
+  // If we're set up for auto-restarting attempt it!
+  if (drush_get_option('auto-restart', FALSE)) {
+    $drush_command = drush_get_command();
+    $command = $drush_command['command'];
+    $options = array('--auto-restart');
+    hosting_queue_runner_drush_command_refork($command, array(), $options);
+  }
+
+}
+
+/**
+ * Modified version of drush_do_command_redispatch to fork the process.
+ *
+ * @see drush_do_command_redispatch()
+ */
+function hosting_queue_runner_drush_command_refork($command, $args = array(), $options = array()) {
+
+  $drush_path = drush_get_option('drush-script');
+  if (!isset($drush_path)) {
+    $drush_folder = drush_get_option('drush');
+    if (isset($drush)) {
+      $drush_path = $drush_folder . '/drush';
     }
   }
 
+  foreach ($args as $arg) {
+    $command .= ' ' . escapeshellarg($arg);
+  }
+
+  // Call through to backend fork.
+  drush_log(dt('Redispatch via backend fork'));
+  drush_backend_fork($command, $options, $drush_path);
 }
