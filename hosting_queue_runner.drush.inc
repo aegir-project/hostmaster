@@ -1,6 +1,14 @@
 <?php
 
 /**
+ * @file
+ * Dispatcher daemon
+ *
+ * This file is the heart of the dispatcher drush command. It
+ * implements most of the backend functionality.
+ */
+
+/**
  * Implementation of hook_drush_command().
  */
 function hosting_queue_runner_drush_command() {
@@ -42,7 +50,6 @@ function drush_hosting_queue_runner() {
   drush_log(dt('Starting Hosting queue runner, watching for available tasks'));
 
   while (TRUE) {
-
     // Sleep for a second before we look for new tasks.
     sleep(1);
 
@@ -70,7 +77,6 @@ function drush_hosting_queue_runner() {
       drush_log(dt('Finished executing task.'));
 
       // Delay for a configurable amount of time.
-
       $delay = variable_get('hosting_queue_runner_post_task_delay', 0);
       if (!empty($delay)) {
         drush_log(dt('Going to sleep for @count seconds after completing task.', array('@count' => $delay)));
@@ -82,7 +88,6 @@ function drush_hosting_queue_runner() {
       $task = NULL;
     }
     $tasks = NULL;
-
   }
 
   // restart the daemon to recycle leaked memory
