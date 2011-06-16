@@ -85,11 +85,8 @@ function drush_hosting_queue_runner() {
 
   }
 
-  // If we're set up for auto-restarting attempt it!
-  if (drush_get_option('auto-restart', FALSE)) {
-    hosting_queue_runner_restart();
-  }
-
+  // restart the daemon to recycle leaked memory
+  hosting_queue_runner_restart();
 }
 
 /**
