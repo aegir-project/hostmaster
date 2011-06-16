@@ -8,6 +8,9 @@
  * implements most of the backend functionality.
  */
 
+// this is necessary for signal handling to work
+declare(ticks=1);
+
 /**
  * Implementation of hook_drush_command().
  */
@@ -37,6 +40,11 @@ function hosting_queue_runner_drush_command() {
  * Drush command to execute hosting tasks.
  */
 function drush_hosting_queue_runner() {
+  if (function_exists('pcntl_signal')) {
+    // reload the server on SIGHUP
+    pcntl_signal(SIGHUP, 'hosting_queue_runner_restart');
+  }
+
   // Set a nice high time limit, if we can:
   if (function_exists('set_time_limit')) {
     @set_time_limit(0);
@@ -129,4 +137,5 @@ function hosting_queue_runner_restart() {
     watchdog('Restarting queue runner with drush_backend_fork');
     drush_backend_fork($command, $options, $drush_path);
   }
+  exit(1); // explicit exit in case we're handling a signal
 }
