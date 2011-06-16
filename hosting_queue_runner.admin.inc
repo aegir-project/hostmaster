@@ -28,11 +28,25 @@ function hosting_queue_runner_settings_form() {
     ) + drupal_map_assoc(range(1, 60), '_hosting_queue_runner_settings_form_delay_callback'),
   );
 
-  $form['hosting_queue_runner_autorestart'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Automatically restart'),
-    '#description' => t('If this is enabled, the queue runner will automatically restart after the timeout. Do *NOT* enable if you are running the dispatcher under "supervisord" or a similar daemon.'),
-    '#default_value' => variable_get('hosting_queue_runner_autorestart', FALSE),
+  $form['hosting_queue_runner_process_lifetime'] = array(
+    '#type' => 'select',
+    '#title' => t('Process lifetime timeout'),
+    '#description' => t('Because of memory leaks and bugs in PHP, the daemon automatically stops after this delay, and is restarted. If you are running a lot of tasks, you may want to lower this so it gets restarted more often. In empirical tests, it was found that around 100KB are leaked for every task fired.'),
+    '#default_value' => variable_get('hosting_queue_runner_process_lifetime', 3600),
+    '#options' => drupal_map_assoc(array(
+      60 * 5,
+      60 * 10,
+      60 * 15,
+      60 * 20,
+      60 * 25,
+      60 * 30,
+      60 * 35,
+      60 * 40,
+      60 * 45,
+      60 * 50,
+      60 * 55,
+      60 * 60,
+    ), 'format_interval'),
   );
 
   return system_settings_form($form);

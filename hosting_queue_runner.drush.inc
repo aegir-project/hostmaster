@@ -12,7 +12,15 @@ function hosting_queue_runner_drush_command() {
     'drupal dependencies' => array(
       'hosting_queue_runner',
     ),
+    // We need this get around a drush bug, see: http://drupal.org/node/704848
+    // But we remove it below for Drush 4.5 and above.
+    'callback' => 'drush_hosting_queue_runner',
   );
+
+  // We don't need the callback defined for Drush > 4.4
+  if (defined('DRUSH_VERSION') && version_compare(DRUSH_VERSION, '4.4', '>')) {
+    unset($items['hosting-queue-runner']['callback']);
+  }
 
   return $items;
 }
@@ -69,22 +77,56 @@ function drush_hosting_queue_runner() {
         sleep($delay);
       }
 
+      // We're done with this task, set our reference to NULL, this might help
+      // reduce memory usage.
+      $task = NULL;
     }
+    $tasks = NULL;
+
   }
 
-  // restart the dispatcher if we hit the timeout and if we're configured for non-external restarts
-  if (variable_get('hosting_queue_runner_autorestart', FALSE)) {
-    if (function_exists('pcntl_exec')) {
-      // this would usually be:
-      // _drush_backend_generate_command_sitealias(drush_sitealias_get_record(d()->name), 'hosting-queue-runner', array(), $data);
-      // but that generates --backend or > `tty` (if #interactive) which are both wrong
-      $parts = explode(' ', DRUSH_COMMAND);
-      $command = array_shift($parts);
-      array_push($args, '@' . d()->name, 'hosting-queue-runner');
-      drush_log(dt('Restarting queue runner with @drush @args', array('@drush' => $command, '@args' => implode(" ", $args))));
-      pcntl_exec($command, $args);
-      /* NOTREACHED */
-    }
+  // If we're set up for auto-restarting attempt it!
+  if (drush_get_option('auto-restart', FALSE)) {
+    $drush_command = drush_get_command();
+    $command = $drush_command['command'];
+    $options = array('--auto-restart');
+    hosting_queue_runner_drush_command_refork($command, array(), $options);
   }
 
+}
+
+/**
+ * Modified version of drush_do_command_redispatch to fork the process.
+ *
+ * @see drush_do_command_redispatch()
+ */
+function hosting_queue_runner_drush_command_refork($command, $args = array(), $options = array()) {
+  if (function_exists('pcntl_exec')) {
+    // this would usually be:
+    // _drush_backend_generate_command_sitealias(drush_sitealias_get_record(d()->name), 'hosting-queue-runner', array(), $data);
+    // but that generates --backend or > `tty` (if #interactive) which are both wrong
+    $parts = explode(' ', DRUSH_COMMAND);
+    $command = array_shift($parts);
+    array_push($args, '@' . d()->name, 'hosting-queue-runner');
+    drush_log(dt('Restarting queue runner with @drush @args', array('@drush' => $command, '@args' => implode(" ", $args))));
+    pcntl_exec($command, $args);
+    /* NOTREACHED */
+  }
+  else {
+    $drush_path = drush_get_option('drush-script');
+    if (!isset($drush_path)) {
+      $drush_folder = drush_get_option('drush');
+      if (isset($drush)) {
+        $drush_path = $drush_folder . '/drush';
+      }
+    }
+
+    foreach ($args as $arg) {
+      $command .= ' ' . escapeshellarg($arg);
+    }
+
+    // Call through to backend fork.
+    drush_log(dt('Redispatch via backend fork'));
+    drush_backend_fork($command, $options, $drush_path);
+  }
 }
