@@ -47,7 +47,7 @@ function drush_hosting_queue_runner() {
   // frontend.
   variable_set('hosting_queue_runner_process_started', time());
 
-  drush_log(dt('Starting Hosting queue runner, watching for available tasks'));
+  watchdog('hosting_queue_runner', 'Starting Hosting queue runner, watching for available tasks');
 
   while (TRUE) {
     // Sleep for a second before we look for new tasks.
@@ -55,7 +55,7 @@ function drush_hosting_queue_runner() {
 
     // Should we terminate.
     if (time() > $end_time) {
-      drush_log(dt('Terminating Hosting queue runner (max run time reached)'));
+      watchdog('hosting_queue_runner', 'Terminating Hosting queue runner (max run time reached)');
       break;
     }
 
@@ -121,14 +121,14 @@ function hosting_queue_runner_restart() {
       }
     }
     array_push($args, '@hostmaster', $command);
-    drush_log(dt('Restarting queue runner with @drush @args', array('@drush' => $drush, '@args' => implode(" ", $args))));
+    watchdog('hosting_queue_runner', 'Restarting queue runner with @drush @args', array('@drush' => $drush, '@args' => implode(" ", $args)));
     pcntl_exec($drush, $args);
-    drush_log(dt('Exec failed'), 'warning');
+    watchdog('hosting_queue_runner', 'Could not restart the queue runner, aborting', array(), WATCHDOG_ERROR);
     /* NOTREACHED */
   }
   else {
     // Call through to backend fork.
-    drush_log(dt('Redispatch via backend fork'));
+    watchdog('Restarting queue runner with drush_backend_fork');
     drush_backend_fork($command, $options, $drush_path);
   }
 }
