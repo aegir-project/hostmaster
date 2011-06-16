@@ -40,6 +40,8 @@ function hosting_queue_runner_drush_command() {
  * Drush command to execute hosting tasks.
  */
 function drush_hosting_queue_runner() {
+  global $pid; // the pid of the currently running task
+
   if (function_exists('pcntl_signal')) {
     // reload the server on SIGHUP
     pcntl_signal(SIGHUP, 'hosting_queue_runner_restart');
@@ -78,9 +80,22 @@ function drush_hosting_queue_runner() {
       drush_log(dt('Found task to execute. Pausing before execution.'));
       sleep(1);
 
-      // Execute the task in the backend.
-      drush_backend_invoke("hosting-task", array($task->nid));
-      drush_log(dt('Finished executing task.'));
+      // we fork so we can handle signals properly
+      $pid = pcntl_fork();
+      if ($pid == -1) {
+        watchdog('hosting_queue_runner', 'could not fork');
+        exit(1);
+      } else if ($pid) {
+        // we are the parent, just wait for the task to finish and go
+        // on our way
+        pcntl_wait($status); // Protect against Zombie children
+        drush_log(dt('Finished executing task.'));
+        $pid = 0;
+      } else {
+        // we are the child, execute the task in the backend
+        drush_backend_invoke("hosting-task", array($task->nid));
+        exit(0); // ideally, the above would be another pcntl_exec() but i'm lazy
+      }
 
       // Delay for a configurable amount of time.
       $delay = variable_get('hosting_queue_runner_post_task_delay', 0);
@@ -103,7 +118,13 @@ function drush_hosting_queue_runner() {
 /**
  * Restart the dispatcher to work around memory leaks
  */
-function hosting_queue_runner_restart() {
+function hosting_queue_runner_restart($signal = NULL) {
+  global $pid;
+  if ($pid) {
+    watchdog('hosting_queue_runner', 'received signal @signal waiting for child to die before restarting', array('@signal' => $signal));
+    pcntl_waitpid($pid, $status);
+  }
+
   $drush_command = drush_get_command();
   // should be hosting-queue-runner unless something is very wrong
   $command = $drush_command['command'];
