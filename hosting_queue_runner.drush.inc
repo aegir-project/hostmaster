@@ -77,11 +77,11 @@ function drush_hosting_queue_runner() {
 
     // Should we terminate.
     if (time() > $end_time) {
-      // restart the daemon to recycle leaked memory
+      // Restart the daemon to recycle leaked memory
       hosting_queue_runner_restart();
     }
 
-    // get some tasks to run
+    // Get some tasks to run
     $tasks = _hosting_get_new_tasks();
     foreach ($tasks as $task) {
       // We sleep for a second just in case others want to run the task first.
@@ -92,7 +92,7 @@ function drush_hosting_queue_runner() {
       drush_log(dt('Found task to execute. Pausing before execution.'));
       sleep(1);
 
-      // execute the task in the backend
+      // Execute the task in the backend
       drush_backend_invoke("hosting-task", array($task->nid));
       drush_log(dt('Finished executing task.'));
 
@@ -103,13 +103,12 @@ function drush_hosting_queue_runner() {
         sleep($delay);
       }
 
-      // We're done with this task, set our reference to NULL, this might help
-      // reduce memory usage.
+      // We're done with this task, this unset might help reduce memory usage.
       unset($task);
 
       // Should we terminate.
       if (time() > $end_time) {
-        // restart the daemon to recycle leaked memory
+        // Restart the daemon to recycle leaked memory
         hosting_queue_runner_restart();
       }
     }
@@ -177,8 +176,9 @@ function hosting_queue_runner_restart($signal = NULL) {
   else {
     watchdog('hosting_queue_runner', 'PCNTL not installed, unable to auto-restart.', array(), WATCHDOG_WARNING);
   }
-
-  exit(1); // explicit exit in case we're handling a signal
+  
+  // Explicit exit in case we're handling a signal
+  exit(1); 
 }
 
 /**
