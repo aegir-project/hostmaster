@@ -8,6 +8,9 @@
  * implements most of the backend functionality.
  */
 
+// this is necessary for signal handling to work
+declare(ticks=1);
+
 /**
  * Implementation of hook_drush_command().
  */
@@ -37,17 +40,36 @@ function hosting_queue_runner_drush_command() {
  * Drush command to execute hosting tasks.
  */
 function drush_hosting_queue_runner() {
+  if (function_exists('pcntl_signal')) {
+    // reload the server on SIGHUP
+    pcntl_signal(SIGHUP, 'hosting_queue_runner_restart');
+    pcntl_signal(SIGINT, 'hosting_queue_runner_stop');
+    pcntl_signal(SIGTERM, 'hosting_queue_runner_stop');
+  }
+
   // Set a nice high time limit, if we can:
   if (function_exists('set_time_limit')) {
     @set_time_limit(0);
   }
+
+  // in some environments (e.g. in "productin") ENV is not actually
+  // set (!) so try to guess from $_SERVER
+  if (strpos(ini_get('variables_order'), 'E') === FALSE) {
+    if (strpos(ini_get('variables_order'), 'S') === FALSE) {
+      drush_log(dt('Neither $_ENV nor $_SERVER are available to set up proper environment inheritance; ensure E and/or S is set in your php.ini\'s "variables_order" setting.'), 'warning');
+    }
+    else {
+      $_ENV = $_SERVER;
+    }
+  }
+
   $end_time = variable_get('hosting_queue_runner_process_lifetime', 3600)  + time();
 
   // Record the fact that we're running, so we can give some feedback in the
   // frontend.
   variable_set('hosting_queue_runner_process_started', time());
 
-  watchdog('hosting_queue_runner', 'Starting Hosting queue runner, watching for available tasks');
+  watchdog('hosting_queue_runner', 'Started Hosting queue runner, waiting for new tasks');
 
   while (TRUE) {
     // Sleep for a second before we look for new tasks.
@@ -55,7 +77,6 @@ function drush_hosting_queue_runner() {
 
     // Should we terminate.
     if (time() > $end_time) {
-      watchdog('hosting_queue_runner', 'Terminating Hosting queue runner (max run time reached)');
       break;
     }
 
@@ -71,8 +92,7 @@ function drush_hosting_queue_runner() {
       drush_log(dt('Found task to execute. Pausing before execution.'));
       sleep(1);
 
-      // Execute the task in the backend.
-      drush_log('Executing task.');
+      // execute the task in the backend
       drush_backend_invoke("hosting-task", array($task->nid));
       drush_log(dt('Finished executing task.'));
 
@@ -85,9 +105,9 @@ function drush_hosting_queue_runner() {
 
       // We're done with this task, set our reference to NULL, this might help
       // reduce memory usage.
-      $task = NULL;
+      unset($task);
     }
-    $tasks = NULL;
+    unset($tasks);
   }
 
   // restart the daemon to recycle leaked memory
@@ -95,9 +115,25 @@ function drush_hosting_queue_runner() {
 }
 
 /**
+ * Handle interruption signals gracefully
+ *
+ * We do not want to interrupt children tasks, so we wait for them
+ * before stopping.
+ */
+function hosting_queue_runner_stop($signal) {
+  watchdog('hosting_queue_runner', 'Received signal @signal, waiting for children to die', array('@signal' => $signal));
+  pcntl_wait($status);
+  watchdog('hosting_queue_runner', 'Stopped daemon');
+  exit($status);
+}
+
+/**
  * Restart the dispatcher to work around memory leaks
  */
-function hosting_queue_runner_restart() {
+function hosting_queue_runner_restart($signal = NULL) {
+  watchdog('hosting_queue_runner', 'Received signal @signal, waiting for children to die', array('@signal' => $signal));
+  pcntl_wait($status);
+
   // We need the PCNTL extension to be able to auto restart.
   if (function_exists('pcntl_exec')) {
     $drush_command = drush_get_command();
@@ -133,6 +169,8 @@ function hosting_queue_runner_restart() {
   else {
     watchdog('hosting_queue_runner', 'PCNTL not installed, unable to auto-restart.', array(), WATCHDOG_WARNING);
   }
+  
+  exit(1); // explicit exit in case we're handling a signal
 }
 
 /**
