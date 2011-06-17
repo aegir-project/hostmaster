@@ -105,9 +105,9 @@ function drush_hosting_queue_runner() {
 
       // We're done with this task, set our reference to NULL, this might help
       // reduce memory usage.
-      $task = NULL;
+      unset($task);
     }
-    $tasks = NULL;
+    unset($tasks);
   }
 
   // restart the daemon to recycle leaked memory
