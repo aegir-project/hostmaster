@@ -89,6 +89,7 @@ function drush_hosting_queue_runner() {
       // This guards against other processes that want to add a hosting task
       // with arguments and run it immediately, they should be able to do this
       // without us getting in there first.
+      // This is a workaround for http://drupal.org/node/1003536
       drush_log(dt('Found task to execute. Pausing before execution.'));
       sleep(1);
 
