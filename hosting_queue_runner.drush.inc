@@ -77,13 +77,12 @@ function drush_hosting_queue_runner() {
 
     // Should we terminate.
     if (time() > $end_time) {
-      break;
+      // restart the daemon to recycle leaked memory
+      hosting_queue_runner_restart();
     }
 
-    // Try to get a single task to run.
-    // Note that the node_load called by this function might return an old copy
-    // of the node, and so it is not to be trusted!
-    $tasks = _hosting_get_new_tasks(1);
+    // get some tasks to run
+    $tasks = _hosting_get_new_tasks();
     foreach ($tasks as $task) {
       // We sleep for a second just in case others want to run the task first.
       // This guards against other processes that want to add a hosting task
@@ -106,12 +105,15 @@ function drush_hosting_queue_runner() {
       // We're done with this task, set our reference to NULL, this might help
       // reduce memory usage.
       unset($task);
+
+      // Should we terminate.
+      if (time() > $end_time) {
+        // restart the daemon to recycle leaked memory
+        hosting_queue_runner_restart();
+      }
     }
     unset($tasks);
   }
-
-  // restart the daemon to recycle leaked memory
-  hosting_queue_runner_restart();
 }
 
 /**
