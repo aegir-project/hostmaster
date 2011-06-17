@@ -115,9 +115,6 @@ function drush_hosting_queue_runner() {
     }
     unset($tasks);
   }
-
-  // Restart the daemon to recycle leaked memory
-  hosting_queue_runner_restart();
 }
 
 /**
