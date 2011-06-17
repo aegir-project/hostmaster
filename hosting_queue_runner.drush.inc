@@ -8,7 +8,7 @@
  * implements most of the backend functionality.
  */
 
-// this is necessary for signal handling to work
+// This is necessary for signal handling to work
 declare(ticks=1);
 
 /**
@@ -88,6 +88,7 @@ function drush_hosting_queue_runner() {
       // This guards against other processes that want to add a hosting task
       // with arguments and run it immediately, they should be able to do this
       // without us getting in there first.
+      // This is a workaround for http://drupal.org/node/1003536
       drush_log(dt('Found task to execute. Pausing before execution.'));
       sleep(1);
 
@@ -114,6 +115,9 @@ function drush_hosting_queue_runner() {
     }
     unset($tasks);
   }
+
+  // Restart the daemon to recycle leaked memory
+  hosting_queue_runner_restart();
 }
 
 /**
@@ -123,7 +127,8 @@ function drush_hosting_queue_runner() {
  * before stopping.
  */
 function hosting_queue_runner_stop($signal) {
-  watchdog('hosting_queue_runner', 'Received signal @signal, waiting for children to die', array('@signal' => $signal));
+  watchdog('hosting_queue_runner', 'Received signal @signal, waiting for children to die.', array('@signal' => $signal));
+  $status = NULL;
   pcntl_wait($status);
   watchdog('hosting_queue_runner', 'Stopped daemon');
   exit($status);
@@ -133,23 +138,30 @@ function hosting_queue_runner_stop($signal) {
  * Restart the dispatcher to work around memory leaks
  */
 function hosting_queue_runner_restart($signal = NULL) {
-  watchdog('hosting_queue_runner', 'Received signal @signal, waiting for children to die', array('@signal' => $signal));
-  pcntl_wait($status);
+  // If we received a singal, process it.
+  if (!is_null($signal)) {
+    watchdog('hosting_queue_runner', 'Received signal @signal, waiting for children to die.', array('@signal' => $signal));
+    $status = NULL;
+    pcntl_wait($status);
+  }
 
-  $drush_command = drush_get_command();
-  // should be hosting-queue-runner unless something is very wrong
-  $command = $drush_command['command'];
-  $options = drush_get_context('cli');
-
+  // We need the PCNTL extension to be able to auto restart.
   if (function_exists('pcntl_exec')) {
-    // this would usually be:
-    // _drush_backend_generate_command_sitealias(drush_sitealias_get_record(d()->name), 'hosting-queue-runner', array(), $data);
-    // but that generates --backend or > `tty` (if #interactive) which are both wrong
-    $parts = explode(' ', DRUSH_COMMAND);
-    $drush = array_shift($parts);
-    $args = array(); // the arguments after argv0
-    // we need to reimplement _drush_escape_option() because it adds
-    // extra leading spaces
+    $drush_command = drush_get_command();
+    // should be hosting-queue-runner unless something is very wrong
+    $command = $drush_command['command'];
+
+    // Get the drush executable and any arguments it needs.
+    $args = hosting_queue_runner_drush_find_drush();
+    $drush = array_shift($args);
+
+    // Get the original options passed to this command.
+    $options = drush_get_context('cli');
+    // The 'php' option, if needed will be set in $args already.
+    unset($options['php']);
+
+    // We need to reimplement _drush_escape_option() because it adds
+    // extra leading spaces.
     foreach ($options as $key => $value) {
       if ($value !== TRUE) {
         $args[] = "--$key=" . escapeshellarg($value);
@@ -158,16 +170,35 @@ function hosting_queue_runner_restart($signal = NULL) {
         $args[] = "--$key";
       }
     }
+
     array_push($args, '@hostmaster', $command);
-    watchdog('hosting_queue_runner', 'Restarting queue runner with @drush @args', array('@drush' => $drush, '@args' => implode(" ", $args)));
+    watchdog('hosting_queue_runner', 'Restarting queue runner with @drush @args.', array('@drush' => $drush, '@args' => implode(" ", $args)));
     pcntl_exec($drush, $args, $_ENV);
-    watchdog('hosting_queue_runner', 'Could not restart the queue runner, aborting', array(), WATCHDOG_ERROR);
+    watchdog('hosting_queue_runner', 'Could not restart the queue runner, aborting.', array(), WATCHDOG_ERROR);
     /* NOTREACHED */
   }
   else {
-    // Call through to backend fork.
-    watchdog('Restarting queue runner with drush_backend_fork');
-    drush_backend_fork($command, $options, $drush_path);
+    watchdog('hosting_queue_runner', 'PCNTL not installed, unable to auto-restart.', array(), WATCHDOG_WARNING);
   }
+
   exit(1); // explicit exit in case we're handling a signal
+}
+
+/**
+ * Get the proper way to call drush again.
+ *
+ * Note that unlike drush_find_drush() we return an array of parts, and we trim
+ * the 'php' option of extra single quotes.
+ *
+ * @see drush_find_drush()
+ */
+function hosting_queue_runner_drush_find_drush() {
+ $php = drush_get_option('php');
+ if (isset($php)) {
+    $php = trim($php, "'");
+    $drush = array($php, realpath($_SERVER['argv'][0]) ,  "--php='$php'");
+  } else {
+    $drush = array(realpath($_SERVER['argv']['0']));
+  }
+  return $drush;
 }

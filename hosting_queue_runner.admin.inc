@@ -54,5 +54,5 @@ function hosting_queue_runner_settings_form() {
 }
 
 function _hosting_queue_runner_settings_form_delay_callback($value) {
-  return format_plural($value, t('1 second'), t('@count seconds'));
+  return format_plural($value, '1 second', '@count seconds');
 }
