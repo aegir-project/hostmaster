@@ -8,7 +8,7 @@
  * implements most of the backend functionality.
  */
 
-// this is necessary for signal handling to work
+// This is necessary for signal handling to work
 declare(ticks=1);
 
 /**
@@ -132,9 +132,12 @@ function hosting_queue_runner_stop($signal) {
  * Restart the dispatcher to work around memory leaks
  */
 function hosting_queue_runner_restart($signal = NULL) {
-  watchdog('hosting_queue_runner', 'Received signal @signal, waiting for children to die.', array('@signal' => $signal));
-  $status = NULL;
-  pcntl_wait($status);
+  // If we received a singal, process it.
+  if (!is_null($signal)) {
+    watchdog('hosting_queue_runner', 'Received signal @signal, waiting for children to die.', array('@signal' => $signal));
+    $status = NULL;
+    pcntl_wait($status);
+  }
 
   // We need the PCNTL extension to be able to auto restart.
   if (function_exists('pcntl_exec')) {
