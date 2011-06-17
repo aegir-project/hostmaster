@@ -220,7 +220,11 @@ function hosting_platform_form(&$node) {
     );
   }
   else {
-    $form['web_server'] = array('#type' => 'hidden', '#value' => key($servers));
+    reset($servers);
+    $form['web_server'] = array(
+      '#type' => 'hidden',
+      '#value' => key($servers)
+    );
   }
 
   foreach(array('verified', 'platform_status') as $extra_attribute) {
