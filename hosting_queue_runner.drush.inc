@@ -110,7 +110,7 @@ function drush_hosting_queue_runner() {
     unset($tasks);
   }
 
-  // restart the daemon to recycle leaked memory
+  // Restart the daemon to recycle leaked memory
   hosting_queue_runner_restart();
 }
 
@@ -121,7 +121,8 @@ function drush_hosting_queue_runner() {
  * before stopping.
  */
 function hosting_queue_runner_stop($signal) {
-  watchdog('hosting_queue_runner', 'Received signal @signal, waiting for children to die', array('@signal' => $signal));
+  watchdog('hosting_queue_runner', 'Received signal @signal, waiting for children to die.', array('@signal' => $signal));
+  $status = NULL;
   pcntl_wait($status);
   watchdog('hosting_queue_runner', 'Stopped daemon');
   exit($status);
@@ -131,7 +132,8 @@ function hosting_queue_runner_stop($signal) {
  * Restart the dispatcher to work around memory leaks
  */
 function hosting_queue_runner_restart($signal = NULL) {
-  watchdog('hosting_queue_runner', 'Received signal @signal, waiting for children to die', array('@signal' => $signal));
+  watchdog('hosting_queue_runner', 'Received signal @signal, waiting for children to die.', array('@signal' => $signal));
+  $status = NULL;
   pcntl_wait($status);
 
   // We need the PCNTL extension to be able to auto restart.
@@ -146,7 +148,7 @@ function hosting_queue_runner_restart($signal = NULL) {
 
     // Get the original options passed to this command.
     $options = drush_get_context('cli');
-    // the 'php' option, if needed will be set in $args already.
+    // The 'php' option, if needed will be set in $args already.
     unset($options['php']);
 
     // We need to reimplement _drush_escape_option() because it adds
@@ -161,9 +163,9 @@ function hosting_queue_runner_restart($signal = NULL) {
     }
 
     array_push($args, '@hostmaster', $command);
-    watchdog('hosting_queue_runner', 'Restarting queue runner with @drush @args', array('@drush' => $drush, '@args' => implode(" ", $args)));
+    watchdog('hosting_queue_runner', 'Restarting queue runner with @drush @args.', array('@drush' => $drush, '@args' => implode(" ", $args)));
     pcntl_exec($drush, $args, $_ENV);
-    watchdog('hosting_queue_runner', 'Could not restart the queue runner, aborting', array(), WATCHDOG_ERROR);
+    watchdog('hosting_queue_runner', 'Could not restart the queue runner, aborting.', array(), WATCHDOG_ERROR);
     /* NOTREACHED */
   }
   else {
