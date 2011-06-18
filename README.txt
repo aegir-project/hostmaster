@@ -22,17 +22,17 @@ Those instructions will setup the daemon to run as a regular service
 in /etc/init.d/ - instructions will vary according to platforms, the
 following should work in Debian, running as root.
 
- 1. install the init script in place
+1. Install the init script in place
 
-   cp init.d.example /etc/init.d/hosting-queue-runner
+        cp init.d.example /etc/init.d/hosting-queue-runner
 
- 2. setup symlinks and runlevels
+2. Setup symlinks and runlevels
 
-   update-rc.d hosting-queue-runner defaults
+        update-rc.d hosting-queue-runner defaults
 
- 3. start the daemon
+3. Start the daemon
 
-   /etc/init.d/hosting-queue-runner
+        /etc/init.d/hosting-queue-runner
 
 Supervisord configuration instructions
 --------------------------------------
