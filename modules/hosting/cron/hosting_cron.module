@@ -37,8 +37,15 @@ function hosting_cron_queue($count) {
     }
     else {
       // Optionally add the cron_key querystring key if the site has one.
-      $query = !empty($site->cron_key) ? '?cron_key=' . rawurlencode($site->cron_key) : '';
-      drush_shell_exec("wget -O - -q %s  > /dev/null", _hosting_site_url($site) . '/cron.php' . $query);
+      $url =_hosting_site_url($site) . '/cron.php';
+      if (!empty($site->cron_key)) {
+        $url .= '?cron_key=' . rawurlencode($site->cron_key);
+      }
+      $response = drupal_http_request($url);
+      if (isset($response->error) && $response->error) {
+        watchdog('hosting_cron', 'cron failed on site %site with error %error', array('%site' => $site->title, '%error' => $response->error), WATCHDOG_NOTICE);
+        break; // don't update the timestamp
+      }
     }
 
     // We are updating the site table here directly to avoid a possible race condition,

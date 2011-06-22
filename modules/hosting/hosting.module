@@ -905,8 +905,8 @@ function hosting_settings() {
     $form['hosting_cron_use_backend'] = array(
       '#type' => 'radios',
       '#title' => t('Cron method'),
-      '#description' => t('For running cron on a site. You can use the drush cron implementation or a traditional wget method.'),
-      '#options' => array('Wget', 'Drush'),
+      '#description' => t('For running cron on a site. You can use the drush cron implementation or the web-based cron.php method using builtin HTTP requests. The drush implementation is more reliable but will be slower than the web-based approach if the webserver has an opcode cache (like APC) configured.'),
+      '#options' => array('Web-based', 'Drush'),
       '#default_value' => variable_get('hosting_cron_use_backend', TRUE),
     );
   }
