@@ -41,6 +41,7 @@ function hosting_cron_queue($count) {
       if (!empty($site->cron_key)) {
         $url .= '?cron_key=' . rawurlencode($site->cron_key);
       }
+      drush_log(dt("running cron on URL %url", array('%url' => $url)));
       $response = drupal_http_request($url);
       if (isset($response->error) && $response->error) {
         watchdog('hosting_cron', 'cron failed on site %site with error %error', array('%site' => $site->title, '%error' => $response->error), WATCHDOG_NOTICE);
