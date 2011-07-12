@@ -20,7 +20,7 @@ hostingTaskRefreshList = function() {
   }
  
   hostingTaskAddOverlay('#hosting-task-list');
-  $.get('/hosting/tasks/' + Drupal.settings.hostingTaskRefresh.nid + '/list', null, hostingTaskListRefreshCallback , 'json' );
+  $.get(Drupal.settings.basePath + 'hosting/tasks/' + Drupal.settings.hostingTaskRefresh.nid + '/list', null, hostingTaskListRefreshCallback , 'json' );
 }
 
 
@@ -42,7 +42,7 @@ function hostingTaskRefreshQueueBlock() {
   }
  
   hostingTaskAddOverlay('#hosting-task-queue-block');
-  $.get('/hosting/tasks/queue', null, hostingTaskQueueRefreshCallback , 'json' );
+  $.get(Drupal.settings.basePath + 'hosting/tasks/queue', null, hostingTaskQueueRefreshCallback , 'json' );
 }
 
 $(document).ready(function() {
@@ -63,7 +63,7 @@ hostingTaskBindButtons = function(elem) {
   $('.hosting-button-dialog', elem).click(function() {
       $(document).data('hostingOpenModalFrame', true)
      var options = {
-        url : '/hosting/js' + $(this).attr('href'),
+        url : Drupal.settings.basePath + 'hosting/js' + $(this).attr('href'),
         draggable : false,
         width : 600,
         height : 150,
