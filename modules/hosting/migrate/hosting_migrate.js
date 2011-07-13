@@ -19,7 +19,7 @@ function hostingMigrateComparisonInline(elem) {
     );
   }
  
-  $.get('/hosting/js' + $(elem).attr('href'), null, hostingMigrateCallback );
+  $.get(Drupal.settings.basePath + 'hosting/js' + $(elem).attr('href'), null, hostingMigrateCallback );
 }
 
 function hostingMigrateToggleSize() {

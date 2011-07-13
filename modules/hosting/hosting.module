@@ -100,6 +100,10 @@ function hosting_js_page() {
   $args = func_get_args();
   $path = implode('/', $args);
 
+  // Incase Aegir is running in a sub-directory the base_path should be stripped away here
+  //    Remove the leading slash from base_path as $path doesn't have one either
+  $path = str_replace(ltrim(base_path(), '/'), '', $path);
+
   menu_set_active_item($path);
 #  $_SERVER['REQUEST_URI'] = str_replace('/hosting/js', '', $_SERVER['REQUEST_URI']);
 
