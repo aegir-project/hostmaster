@@ -232,7 +232,7 @@ function hosting_nodeapi(&$node, $op, $arg1, $arg2) {
  * Implementation of hook_perm().
  */
 function hosting_perm() {
-  return array('access hosting wizard', 'administer hosting queues', 'administer hosting features', 'administer hosting', 'access disabled sites');
+  return array('access hosting wizard', 'administer hosting queues', 'administer hosting features', 'administer hosting', 'access disabled sites', 'administer hosting settings');
 }
 
 /**
