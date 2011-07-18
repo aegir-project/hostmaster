@@ -27,9 +27,11 @@ function hosting_cron_hosting_queues() {
  * Implementation of hosting_QUEUE_TYPE_queue().
  */
 function hosting_cron_queue($count) {
-  $sites = hosting_cron_get_sites($count);
+  $result = db_query("SELECT n.nid FROM {node} n LEFT JOIN {hosting_site} s ON n.nid=s.nid WHERE n.type='site' and s.status = %d ORDER BY s.last_cron ASC, n.nid ASC", HOSTING_SITE_ENABLED);
 
-  foreach ($sites as $site) {
+  $i = 0;
+  while ($i < $count && $nid = db_fetch_object($result)) {
+    $site = node_load($nid->nid);
     $site_name = hosting_context_name($site->nid);
 
     if (variable_get('hosting_cron_use_backend', TRUE)) {
@@ -54,6 +56,7 @@ function hosting_cron_queue($count) {
     // same node at the same time, and then an old record from the cron queue might
     // replace the newly updated record.
     db_query("UPDATE {hosting_site} SET last_cron=%d WHERE nid=%d", mktime(), $site->nid);
+    $i++;
   }
 }
 
@@ -85,6 +88,8 @@ function hosting_cron_nodeapi(&$node, $op, $a3 = null) {
  *   Limit to a maximum of this number of sites.
  * @return
  *   An array of site nodes that need to have cron executed.
+ *
+ * @deprecated function unused
  */
 function hosting_cron_get_sites($limit = 5) {
   $result = db_query("SELECT n.nid FROM {node} n LEFT JOIN {hosting_site} s ON n.nid=s.nid WHERE n.type='site' and s.status = %d ORDER BY s.last_cron ASC, n.nid ASC limit %d", HOSTING_SITE_ENABLED, $limit);
