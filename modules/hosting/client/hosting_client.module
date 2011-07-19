@@ -136,7 +136,7 @@ function hosting_get_client($client) {
  *   The internal name of this client.
  */
 function hosting_get_client_by_uname($uname) {
-  $result = db_result(db_query("SELECT c.nid FROM {hosting_client} c JOIN {node} n ON c.nid = n.nid WHERE n.uname = '%s' AND n.type = 'client'", $uname));
+  $result = db_result(db_query("SELECT c.nid FROM {hosting_client} c JOIN {node} n ON c.nid = n.nid WHERE c.uname = '%s' AND n.type = 'client'", $uname));
   if ($result) {
     return node_load($result);
   }
