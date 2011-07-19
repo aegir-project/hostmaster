@@ -47,7 +47,7 @@ function hosting_cron_queue($count) {
       $response = drupal_http_request($url);
       if (isset($response->error) && $response->error) {
         watchdog('hosting_cron', 'cron failed on site %site with error %error', array('%site' => $site->title, '%error' => $response->error), WATCHDOG_NOTICE);
-        break; // don't update the timestamp
+        continue; // don't update the timestamp
       }
     }
 
