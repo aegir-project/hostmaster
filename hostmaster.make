@@ -11,6 +11,6 @@ projects[modalframe][version] = "1.6"
 ; Libraries
 libraries[jquery_ui][download][type] = "get"
 libraries[jquery_ui][destination] = "modules/jquery_ui"
-libraries[jquery_ui][download][url] = "http://omega8.cc/dev/jquery.ui-1.6.zip"
+libraries[jquery_ui][download][url] = "http://files.aegir.cc/dev/jquery.ui-1.6.zip"
 libraries[jquery_ui][directory_name] = "jquery.ui"
 
