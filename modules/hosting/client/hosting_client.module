@@ -88,7 +88,7 @@ function hosting_client_access($op, $node, $account) {
         return user_access('create client', $account);
         break;
       case 'view':
-        return user_access('view client', $account) && db_fetch_array(db_query("SELECT user FROM {hosting_client_user} WHERE user=%d and client=%d", $user->uid, $node->nid));
+        return user_access('view client', $account) && db_fetch_array(db_query("SELECT user FROM {hosting_client_user} WHERE user=%d and client=%d", $account->uid, $node->nid));
       case 'update':
         if (user_access('edit own client', $account) && $account->uid == $node->uid) {
           return TRUE;
