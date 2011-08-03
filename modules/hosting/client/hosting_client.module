@@ -249,7 +249,7 @@ function hosting_client_validate(&$node) {
   if ($nid && $node->nid != $nid) {
     $suggestion = hosting_client_validate_suggest($node);
     if ($suggestion) {
-      form_set_error('title', t("Client name already in use, try @suggestion.", $suggestion));
+      form_set_error('title', t("Client name already in use, try %suggestion.", array('%suggestion' => $suggestion)));
     } else {
       form_set_error('title', t("Client name already in use."));
     }
@@ -279,7 +279,7 @@ function hosting_client_validate_suggest($node) {
   $suggestion = FALSE;
   for ($i = 0; $i < 10; $i++) {
     $nid = db_result(db_query("SELECT nid FROM {hosting_client} WHERE uname LIKE '%s'", hosting_client_sanitize($node->title) . $i));
-    if ($nid && $node->nid != $nid) {
+    if (!$nid) {
       $suggestion = $node->title . $i;
       break;
     }
