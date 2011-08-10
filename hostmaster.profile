@@ -31,7 +31,7 @@ function hostmaster_profile_details() {
 function hostmaster_profile_tasks(&$task, $url) {
   // Install dependencies
   install_include(hostmaster_profile_modules());
-  
+
   // add support for nginx
   if (d()->platform->server->http_service_type === 'nginx') {
     drupal_install_modules(array('hosting_nginx'));
@@ -51,7 +51,7 @@ function hostmaster_bootstrap() {
   variable_set('install_profile', 'hostmaster');
   // Initialize the hosting defines
   hosting_init();
-  
+
   /* Default client */
   $node = new stdClass();
   $node->uid = 1;
@@ -59,7 +59,7 @@ function hostmaster_bootstrap() {
   $node->title = drush_get_option('client_name', 'admin');
   $node->status = 1;
   node_save($node);
-  variable_set('hosting_default_client', $node->nid);  
+  variable_set('hosting_default_client', $node->nid);
   variable_set('hosting_admin_client', $node->nid);
 
   $client_id = $node->nid;
