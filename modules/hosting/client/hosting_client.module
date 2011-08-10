@@ -88,7 +88,7 @@ function hosting_client_access($op, $node, $account) {
         return user_access('create client', $account);
         break;
       case 'view':
-        return user_access('view client', $account) && db_fetch_array(db_query("SELECT user FROM {hosting_client_user} WHERE user=%d and client=%d", $user->uid, $node->nid));
+        return user_access('view client', $account) && db_fetch_array(db_query("SELECT user FROM {hosting_client_user} WHERE user=%d and client=%d", $account->uid, $node->nid));
       case 'update':
         if (user_access('edit own client', $account) && $account->uid == $node->uid) {
           return TRUE;
@@ -249,7 +249,7 @@ function hosting_client_validate(&$node) {
   if ($nid && $node->nid != $nid) {
     $suggestion = hosting_client_validate_suggest($node);
     if ($suggestion) {
-      form_set_error('title', t("Client name already in use, try @suggestion.", $suggestion));
+      form_set_error('title', t("Client name already in use, try %suggestion.", array('%suggestion' => $suggestion)));
     } else {
       form_set_error('title', t("Client name already in use."));
     }
@@ -279,7 +279,7 @@ function hosting_client_validate_suggest($node) {
   $suggestion = FALSE;
   for ($i = 0; $i < 10; $i++) {
     $nid = db_result(db_query("SELECT nid FROM {hosting_client} WHERE uname LIKE '%s'", hosting_client_sanitize($node->title) . $i));
-    if ($nid && $node->nid != $nid) {
+    if (!$nid) {
       $suggestion = $node->title . $i;
       break;
     }
