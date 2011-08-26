@@ -10,7 +10,7 @@
 function hostmaster_profile_modules() {
   return array(
     /* core */ 'block', 'color', 'filter', 'help', 'menu', 'node', 'system', 'user',
-    /* aegir contrib */ 'hosting', 'hosting_task', 'hosting_client', 'hosting_db_server', 'hosting_package', 'hosting_platform', 'hosting_site', 'hosting_web_server', 'hosting_server',
+    /* aegir contrib */ 'hosting', 'hosting_task', 'hosting_client', 'hosting_db_server', 'hosting_package', 'hosting_platform', 'hosting_site', 'hosting_web_server', 'hosting_server', 'hosting_clone', 'hosting_cron', 'hosting_migrate',
     /* other contrib */ 'install_profile_api' /* needs >= 2.1 */, 'jquery_ui', 'modalframe', 'admin_menu',
   );
 }
@@ -31,7 +31,7 @@ function hostmaster_profile_details() {
 function hostmaster_profile_tasks(&$task, $url) {
   // Install dependencies
   install_include(hostmaster_profile_modules());
-  
+
   // add support for nginx
   if (d()->platform->server->http_service_type === 'nginx') {
     drupal_install_modules(array('hosting_nginx'));
@@ -51,7 +51,7 @@ function hostmaster_bootstrap() {
   variable_set('install_profile', 'hostmaster');
   // Initialize the hosting defines
   hosting_init();
-  
+
   /* Default client */
   $node = new stdClass();
   $node->uid = 1;
@@ -59,7 +59,7 @@ function hostmaster_bootstrap() {
   $node->title = drush_get_option('client_name', 'admin');
   $node->status = 1;
   node_save($node);
-  variable_set('hosting_default_client', $node->nid);  
+  variable_set('hosting_default_client', $node->nid);
   variable_set('hosting_admin_client', $node->nid);
 
   $client_id = $node->nid;
@@ -238,4 +238,3 @@ function hostmaster_task_finalize() {
 
   node_access_rebuild();
 }
-
