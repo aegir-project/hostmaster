@@ -8,7 +8,14 @@ hostingTaskRefreshList = function() {
     if (Drupal.settings.hostingTaskRefresh.changed < data.changed) {
       // only reload if there is no modal frame currently open
       if ($(document).data('hostingOpenModalFrame') != true) {
-        document.location.reload();
+        // If a specific URL was specified, go there.
+        if (data.navigate_url) {
+          document.location = data.navigate_url;
+        }
+        // Fall back to just doing a reload of the current page.
+        else {
+          document.location.reload();
+        }
       }
     }
     else {
