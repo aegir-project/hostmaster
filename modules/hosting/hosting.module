@@ -847,6 +847,7 @@ function hosting_context_register($nid, $name) {
  *   The nid of the node to remove the association from.
  */
 function hosting_context_delete($nid) {
+  db_query("DELETE FROM {url_alias} WHERE src='node/%d'", $nid);
   db_query("DELETE FROM {hosting_context} WHERE nid=%d", $nid);
 }
 

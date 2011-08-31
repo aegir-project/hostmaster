@@ -67,6 +67,7 @@ function hosting_task_menu() {
 function hosting_task_ajax_list($node) {
   $return['markup'] = hosting_task_table($node);
   $return['changed'] = $node->changed;
+  $return['navigate_url'] = url('node/' . $node->nid);
   drupal_json($return);
   exit();
 }
