@@ -44,7 +44,7 @@ function hosting_site_drush_context_import($context, &$node) {
     } elseif ($context->client_email) {      // @deprecated - drop this after 1.x
       $client = hosting_import_client($context->client_email);
     }
-    $node->client = $client;
+    $node->client = $client->nid;
   }
 
 }
