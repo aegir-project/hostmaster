@@ -42,7 +42,7 @@ function hosting_site_drush_context_import($context, &$node) {
     if ($context->client_name) {
       $client = hosting_import_client($context->client_name);
     }
-    $node->client = $client;
+    $node->client = $client->nid;
   }
 
 }
