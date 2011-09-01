@@ -360,3 +360,41 @@ function hosting_update_6014() {
   $ret[] = update_sql("UPDATE {system} SET weight = 0 WHERE type='module' and name='hosting'");
   return $ret;
 }
+
+/**
+ * Delete URL aliases for sites that have been deleted.
+ *
+ * Ideally we'd do this in a single DB query, but there isn't a nice performant
+ * way to do it, so we do more DB queries instead of using potentially a lot of
+ * memory. Basically this may take a long time to run, but it shouldn't run out
+ * of resources doing so.
+ */
+function hosting_update_6015(&$sandbox) {
+  $ret = array();
+
+  if (!isset($sandbox['progress'])) {
+    $sandbox['progress'] = 0;
+    $sandbox['current_pid'] = 0;
+    $sandbox['max'] = db_result(db_query('SELECT COUNT(pid) FROM {url_alias}'));
+  }
+
+  $aliases = db_query_range("SELECT pid, src, dst FROM {url_alias} WHERE dst LIKE 'hosting/c/%' AND pid > %d ORDER BY pid ASC", $sandbox['current_pid'], 0, 50);
+
+  while ($alias = db_fetch_object($aliases)) {
+    // Get the node ID for the alias.
+    $nid = preg_replace('#^node/#', '', $alias->src);
+    if (is_numeric($nid)) {
+      // Check to see if the corresponding context has been deleted.
+      if (!db_result(db_query('SELECT COUNT(nid) FROM {hosting_context} WHERE nid = %d', $nid))) {
+        db_query('DELETE FROM {url_alias} WHERE pid = %d', $alias->pid);
+      }
+    }
+
+    $sandbox['progress']++;
+    $sandbox['current_pid'] = $alias->pid;
+  }
+
+  $ret['#finished'] = empty($sandbox['max']) ? 1 : ($sandbox['progress'] / $sandbox['max']);
+
+  return $ret;
+}
