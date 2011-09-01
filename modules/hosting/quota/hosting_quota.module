@@ -149,8 +149,8 @@ function hosting_quota_resource_render ($resource, $usage) {
  *   The new value for the resource.
  */
 function hosting_quota_set_limit($client, $resource, $value) {
-  if (db_query("SELECT COUNT(*) FROM {hosting_client_quota} WHERE client=%d AND resource='%s'", $client, $resource)) {
-    db_query("UPDATE {hosting_client_quota} SET value='%s' WHERE client=%d AND resource='%s'", $value, $client, $resource);
+  if (db_result(db_query("SELECT COUNT(*) FROM {hosting_client_quota} WHERE client = %d AND resource = '%s'", $client, $resource))) {
+    db_query("UPDATE {hosting_client_quota} SET value = '%s' WHERE client = %d AND resource = '%s'", $value, $client, $resource);
   }
   else {
     db_query("INSERT INTO {hosting_client_quota} (client, resource, value) VALUES (%d, '%s', '%s')", $client, $resource, $value);
