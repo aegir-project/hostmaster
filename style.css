@@ -118,6 +118,10 @@ div.limiter {
   margin:0px auto;
   }
 
+ul.primary {
+    line-height: inherit;
+  }
+
 /**
  * LINKS ==============================================================
  */
@@ -227,7 +231,7 @@ div#navigation ul.links li {
     background:#6ac;
     color:#000;
     }
-  
+
   div#navigation ul.links li.active a,
   div#navigation ul.links li a.active {
     background:#e8e8e8;
@@ -283,7 +287,7 @@ div#header-region ul.tabs { clear:both; }
 
   div#header-region ul.tabs li.active a,
   div#header-region ul.tabs li a.active {
-    padding:5px 15px 5px;
+    padding: 5px 15px;
     background:#fff;
     color:#444;
     border-bottom:1px solid #fff;
@@ -321,12 +325,6 @@ div.sidebar {
   float:right;
   width:300px;
   padding:10px;
-  }
-
-#page ul.tabs {
-  height:29px;
-  border-bottom:1px solid #e8e8e8;
-  background:#fff;
   }
 
 /**
@@ -691,7 +689,7 @@ div.node div.meta {
 
 div.node ul.links {
   float:right;
-  font-size:11px;  
+  font-size:11px;
   }
 
   div.node ul.links li a {
@@ -767,14 +765,14 @@ table.hosting-table th {
   }
 
 /* Node info */
-#hosting-task-list { 
+#hosting-task-list {
   width:290px;
   float:right;
 }
 
 #hosting-server-info,
 #hosting-platform-info,
-#hosting-package-info, 
+#hosting-package-info,
 #hosting-site-info,
 #hosting-task-info,
 #hosting-site-edit-info {
@@ -876,8 +874,8 @@ div.hosting-queue-frequency select {
 #edit-tasks-frequency-unit-wrapper,
 #edit-cron-frequency-unit-wrapper {
     float: left;
-}  
-  
+}
+
 /* Keep labels from being truncated */
 body.aegir #page div.node div.content div.form-item label {
   width: auto;

@@ -36,8 +36,8 @@
       </div>
     </div><!-- /main -->
 
-    <?php if (!empty($sidebar_second) or !empty($sidebar_first)): ?>
-      <div id="right" class="sidebar"><?php print render($page['sidebar_second']); ?><?php print render($page['sidebar_first']); ?></div>
+    <?php if (!empty($page['sidebar_first']) or !empty($page['sidebar_second'])): ?>
+      <div id="right" class="sidebar"><?php print render($page['sidebar_first']); ?><?php print render($page['sidebar_second']); ?></div>
     <?php endif; ?>
 
   </div></div>
