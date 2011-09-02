@@ -9,9 +9,6 @@
   <title><?php print $head_title; ?></title>
   <?php print $styles; ?>
   <?php print $scripts; ?>
-  <!--[if lt IE 7]>
-  <style type="text/css" media="all">@import "<?php print $styles_ie6 ?>";</style>
-  <![endif]-->
 </head>
 <body class="aegir <?php print $classes; ?>" <?php print $attributes;?>>
   <div id="skip-link">

@@ -35,8 +35,6 @@ function eldir_preprocess_html(&$variables, $hook) {
 #    $variables['body_classes'] .= ' error-page';
 #  }
 
-  // Add IE 6 compatibility stylesheet
-  $variables['styles_ie6'] = 'url(' . base_path() . drupal_get_path('theme', 'eldir') . '/ie6.css)';
 }
 
 /**

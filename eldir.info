@@ -6,6 +6,8 @@ engine = phptemplate
 
 stylesheets[all][] = style.css
 
+stylesheets-conditional[lt IE 7][all][] = ie6.css
+
 regions[sidebar_first] = Left sidebar
 regions[sidebar_second] = Right sidebar
 regions[content] = Content
