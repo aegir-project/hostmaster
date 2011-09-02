@@ -42,10 +42,10 @@
 
   </div></div>
 
-  <div id="footer" class='reverse'><div class='limiter clearfix'>
+  <div id="footer" class='reverse'><div class='limiter'>
     <?php print render($page['footer']); ?>
     <?php if ($secondary_menu): ?>
-        <?php print theme('links__system_secondary_menu', array('links' => $secondary_menu, 'attributes' => array('id' => 'secondary-menu', 'class' => array('links', 'inline', 'clearfix')))); ?>
+        <?php print theme('links__system_secondary_menu', array('links' => $secondary_menu, 'attributes' => array('id' => 'secondary-menu', 'class' => array('links', 'inline')))); ?>
     <?php endif; ?>
   </div></div>
 
