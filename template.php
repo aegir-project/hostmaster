@@ -18,14 +18,16 @@ function eldir_preprocess_html(&$variables, $hook) {
     if (!empty($types[$type])) {
       $variables['title'] = "<span class='label'>{$types[$type]->name}</span> {$variables['title']}";
     }
+    
 
-    $variables['body_classes'] .= " node-page";
-    $variables['body_classes'] .= " ntype-{$type}";
+    $variables['classes_array'][] = " node-page";
+    $variables['classes_array'][] = " ntype-{$type}";
   }
 
   // Add path-based class for a last line of defense
-  if (!empty($_GET['q'])) {
-    $variables['body_classes'] .= ' path-'. str_replace('/', '-', $_GET['q']);
+  $current_path = current_path();
+  if (!empty($current_path)) {
+    $variables['classes_array'][] = ' path-'. str_replace('/', '-', current_path());
   }
 
   // Add special body class for error pages
