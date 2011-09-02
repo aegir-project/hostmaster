@@ -230,6 +230,8 @@ div#navigation ul.links li {
   
   div#navigation ul.links li.active a,
   div#navigation ul.links li a.active {
+    background:#e8e8e8;
+    color:#444;
     }
 
 /**
