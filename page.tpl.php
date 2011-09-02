@@ -1,4 +1,4 @@
-<div id="page-wrapper"><div id="page">
+<div id="page-wrapper">
 
   <div id="header" class='reverse'><div class='limiter clearfix'>
     <div class='logo'><?php print $logo ?></div>
@@ -21,11 +21,11 @@
   <div id='header-region'><div class='limiter clearfix'>
     <?php print render($page['header']); ?>
     <?php if ($title): ?><h2 class='page-title'><?php print $title ?></h2><?php endif; ?>
-    <?php if ($tabs): ?><div class="tabs"><ul class='links tabs clear-block'><?php print render($tabs); ?></ul></div><?php endif; ?>
+    <?php if ($tabs): ?><?php print render($tabs); ?><?php endif; ?>
   </div></div>
 
-  <div id='center'><div class='limiter clearfix'>
-
+  <div id='page'><div class='limiter clearfix'>
+    <?php if ($tabs2): ?><?php print render($tabs2); ?><?php endif; ?>
     <?php if ($action_links): ?><ul class="action-links"><?php print render($action_links); ?></ul><?php endif; ?>
 
     <div id='main'>
@@ -49,4 +49,4 @@
     <?php endif; ?>
   </div></div>
 
-</div></div> <!-- /#page, /#page-wrapper -->
+</div> <!-- /#page-wrapper -->

@@ -8,6 +8,19 @@ function eldir_preprocess_page(&$variables, $hook) {
 
   $variables['logo'] = l($variables['site_name'], '<front>');
 
+  $variables['tabs2'] = $variables['tabs'];
+  unset($variables['tabs']['#secondary']);
+  unset($variables['tabs2']['#primary']);
+
+  // Move the local actions into place of the secondary tabs, for now.
+  if (is_array($variables['action_links'])) {
+    foreach ($variables['action_links'] as $link) {
+      $variables['tabs2']['#secondary'][] = $link;
+      $variables['tabs2']['#theme'] = 'menu_local_tasks';
+    }
+    $variables['action_links']['#access'] = FALSE;
+  }
+
 }
 
 function eldir_preprocess_html(&$variables, $hook) {
@@ -18,7 +31,7 @@ function eldir_preprocess_html(&$variables, $hook) {
     if (!empty($types[$type])) {
       $variables['title'] = "<span class='label'>{$types[$type]->name}</span> {$variables['title']}";
     }
-    
+
 
     $variables['classes_array'][] = " node-page";
     $variables['classes_array'][] = " ntype-{$type}";

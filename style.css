@@ -301,7 +301,7 @@ div#page {
   padding-bottom:40px;
   }
 
-div#center div.limiter { background:url(images/page.png) repeat-y; }
+div#page div.limiter { background:url(images/page.png) repeat-y; }
 
   body.wide div#page div.limiter {
     padding-right:190px;
@@ -325,6 +325,12 @@ div.sidebar {
   float:right;
   width:300px;
   padding:10px;
+  }
+
+#page ul.tabs {
+  height:29px;
+  border-bottom:1px solid #e8e8e8;
+  background:#fff;
   }
 
 /**
