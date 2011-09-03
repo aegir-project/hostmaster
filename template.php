@@ -21,17 +21,23 @@ function eldir_preprocess_page(&$variables, $hook) {
     $variables['action_links']['#access'] = FALSE;
   }
 
+  $node = menu_get_object();
+  if (!empty($node)) {
+    // Add a node type label on node pages to help users.
+    $types = node_type_get_types();
+    $type = $node->type;
+    if (!empty($types[$type])) {
+      $variables['title'] = "<span class='label'>{$types[$type]->name}</span>" . (isset($variables['title']) ? $variables['title'] : drupal_get_title());
+
+    }
+  }
+
 }
 
 function eldir_preprocess_html(&$variables, $hook) {
-  if (!empty($variables['node'])) {
-    // Add a node type label on node pages to help users.
-    $types = node_get_types();
-    $type = $variables['node']->type;
-    if (!empty($types[$type])) {
-      $variables['title'] = "<span class='label'>{$types[$type]->name}</span> {$variables['title']}";
-    }
-
+  $node = menu_get_object();
+  if (!empty($node)) {
+    $type = $node->type;
 
     $variables['classes_array'][] = " node-page";
     $variables['classes_array'][] = " ntype-{$type}";
@@ -54,12 +60,13 @@ function eldir_preprocess_html(&$variables, $hook) {
  * Preprocessor for theme_node().
  */
 function eldir_preprocess_node(&$variables, $hook) {
+  //kprint_r($variables);
   if (!empty($variables['node'])) {
     // Add a node type label on node pages to help users.
-    $types = node_get_types();
+    $types = node_type_get_types();
     $type = $variables['node']->type;
     if (!empty($types[$type])) {
-      $variables['title'] .= "<span class='label'>{$types[$type]->name}</span> {$variables['title']}";
+      $variables['title'] = "<span class='label'>{$types[$type]->name}</span>" . $variables['title'];
     }
   }
 }

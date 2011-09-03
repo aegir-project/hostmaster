@@ -682,13 +682,13 @@ div.node h2 {
     color:#fff;
     }
 
-div.node div.meta {
+div.node div.submitted {
   color:#888;
   margin:0px 0px 10px;
   font-size:11px;
   }
 
-  body.node-page div.node div.meta {
+  body.node-page div.node div.submitted {
     border-bottom:1px solid #e8e8e8;
     padding:0px 0px 9px;
     }
