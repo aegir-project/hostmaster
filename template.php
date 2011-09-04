@@ -32,6 +32,19 @@ function eldir_preprocess_page(&$variables, $hook) {
     }
   }
 
+  // Overlay is enabled.
+  $vars['overlay'] = (module_exists('overlay') && overlay_get_mode() === 'child');
+
+}
+
+/**
+ * Implements hook_css_alter().
+ * @TODO: Do this in .info once http://drupal.org/node/575298 is committed.
+ */
+function eldir_css_alter(&$css) {
+  if (isset($css['modules/overlay/overlay-child.css'])) {
+    $css['modules/overlay/overlay-child.css']['data'] = drupal_get_path('theme', 'eldir') . '/overlay-child.css';
+  }
 }
 
 function eldir_preprocess_html(&$variables, $hook) {
