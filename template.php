@@ -33,7 +33,7 @@ function eldir_preprocess_page(&$variables, $hook) {
   }
 
   // Overlay is enabled.
-  $vars['overlay'] = (module_exists('overlay') && overlay_get_mode() === 'child');
+  $variables['overlay'] = (module_exists('overlay') && overlay_get_mode() === 'child');
 
 }
 
@@ -73,7 +73,6 @@ function eldir_preprocess_html(&$variables, $hook) {
  * Preprocessor for theme_node().
  */
 function eldir_preprocess_node(&$variables, $hook) {
-  //kprint_r($variables);
   if (!empty($variables['node'])) {
     // Add a node type label on node pages to help users.
     $types = node_type_get_types();

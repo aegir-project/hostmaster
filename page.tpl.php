@@ -37,9 +37,10 @@
         <?php print $feed_icons ?>
       </div>
     </div><!-- /main -->
-
-    <?php if (!empty($page['sidebar_first']) or !empty($page['sidebar_second'])): ?>
-      <div id="right" class="sidebar"><?php print render($page['sidebar_first']); ?><?php print render($page['sidebar_second']); ?></div>
+    <?php
+      $sidebar = render($page['sidebar_first']) . render($page['sidebar_second']); ?>
+    <?php if (!empty($sidebar)): ?>
+      <div id="right" class="sidebar"><?php print $sidebar; ?></div>
     <?php endif; ?>
 
   </div></div>

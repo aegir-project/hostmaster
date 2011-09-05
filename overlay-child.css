@@ -58,7 +58,24 @@ html.js body {
   -webkit-box-shadow:#111 0px 0px 10px;
   }
 
-#overlay-content .limiter { margin:0px 20px; }
+/*#overlay-content .limiter { margin:0px 20px; }*/
+
+#overlay div.limiter {
+  width: 100%;
+  }
+
+#overlay div#main {
+  width: 100%;
+  padding: 0;
+  }
+
+#overlay div.page-content {
+  padding: 10px;
+  }
+
+#overlay div#page {
+  padding-bottom: 0;
+  }
 
 #branding {
   border-radius:5px 5px 0px 0px;
@@ -80,7 +97,7 @@ html.js body {
   }
 
 .overlay div#header-region {
-  padding: 0;
+  padding: 0 10px;
   background:url(images/bleeds.png) 0px -30px repeat-x;
   color:#FFF;
   height:30px;
@@ -116,4 +133,3 @@ html.js body {
   background-color:#333;
   text-shadow:#555 0px 1px 0px;
   }
-
