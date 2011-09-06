@@ -8,6 +8,9 @@ function eldir_preprocess_page(&$variables, $hook) {
 
   $variables['logo'] = l($variables['site_name'], '<front>');
 
+  // Overlay is enabled.
+  $variables['overlay'] = (module_exists('overlay') && overlay_get_mode() === 'child');
+
   $variables['tabs2'] = $variables['tabs'];
   unset($variables['tabs']['#secondary']);
   unset($variables['tabs2']['#primary']);
@@ -22,7 +25,7 @@ function eldir_preprocess_page(&$variables, $hook) {
   }
 
   $node = menu_get_object();
-  if (!empty($node)) {
+  if (!empty($node) && !$variables['overlay']) {
     // Add a node type label on node pages to help users.
     $types = node_type_get_types();
     $type = $node->type;
@@ -31,10 +34,6 @@ function eldir_preprocess_page(&$variables, $hook) {
 
     }
   }
-
-  // Overlay is enabled.
-  $variables['overlay'] = (module_exists('overlay') && overlay_get_mode() === 'child');
-
 }
 
 /**
@@ -73,6 +72,7 @@ function eldir_preprocess_html(&$variables, $hook) {
  * Preprocessor for theme_node().
  */
 function eldir_preprocess_node(&$variables, $hook) {
+
   if (!empty($variables['node'])) {
     // Add a node type label on node pages to help users.
     $types = node_type_get_types();
