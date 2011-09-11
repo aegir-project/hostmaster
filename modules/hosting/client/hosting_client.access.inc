@@ -236,7 +236,7 @@ function hosting_client_node_access_records($node) {
       return;
   }
 
-  if ($base_grant['gid']) {
+  if (isset($base_grant['gid'])) {
     $grants[] = $base_grant;
 
     // this should _always_ happen.
