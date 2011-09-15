@@ -49,7 +49,10 @@ function hosting_get_db_server($hostname) {
 function hosting_db_server_nodeapi_server_presave(&$node) {
   if (empty($node->db_passwd) && !empty($node->nid)) {
     $old = node_load($node->nid);
-    $node->db_passwd = $old->db_passwd;
+
+    if (isset($old->db_passwd)) {
+      $node->db_passwd = $old->db_passwd;
+    }
   }
 }
 

@@ -165,7 +165,7 @@ function hosting_site_insert(&$node) {
  */
 function hosting_site_update(&$node) {
   // if this is a new node or we're adding a new revision,
-  if ($node->revision) {
+  if (!empty($node->revision)) {
     hosting_site_insert($node);
   }
   else {

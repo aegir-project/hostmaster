@@ -165,9 +165,9 @@ function hosting_server_init_services(&$node) {
 /**
  * Translate a server form submission into populated server objects on the node.*/
 function hosting_server_services_from_post(&$node) {
-  if (is_array($node->services)) {
+  if (isset($node->services) && is_array($node->services)) {
     foreach (hosting_server_services() as $name => $data) {
-      if (is_array($node->services[$name])) {
+      if (isset($node->services[$name]) && is_array($node->services[$name])) {
         if ($node->services[$name]['type'] !== 'null') {
           if ($service_object = hosting_services_new_object($name, $node->services[$name]['type'], $node, $node->services[$name][$node->services[$name]['type']])) {
             $node->services[$name] = hosting_services_new_object($name, $node->services[$name]['type'], $node, $node->services[$name][$node->services[$name]['type']]);
@@ -313,7 +313,7 @@ function hosting_server_validate(&$node, &$form) {
  */
 function hosting_server_update($node) {
   // if this is a new node or we're adding a new revision,
-  if ($node->revision) {
+  if (!empty($node->revision)) {
     hosting_server_insert($node);
   }
   else {

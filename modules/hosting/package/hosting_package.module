@@ -262,7 +262,7 @@ function hosting_package_insert($node) {
  */
 function hosting_package_update($node) {
   // if this is a new node or we're adding a new revision,
-  if ($node->revision) {
+  if (!empty($node->revision)) {
     hosting_package_insert($node);
   }
   else {

@@ -840,6 +840,8 @@ function hosting_client_form_alter(&$form, $form_state, $form_id) {
 function hosting_nodeapi_platform_load($node) {
   $result = db_query("SELECT cid FROM {hosting_platform_client_access} WHERE pid = %d", $node->nid);
 
+  $additions = array();
+
   while ($record = db_fetch_object($result)) {
     $additions['clients'][$record->cid] = $record->cid;
   }
@@ -856,7 +858,7 @@ function hosting_client_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
     case 'update':
       if ($node->type == 'platform') {
         // Enter access rights in to the db for clients if any were selected
-        if ($node->clients) {
+        if (!empty($node->clients)) {
           $clients = $node->clients;
           foreach ($clients as $cid => $choice) {
             if ($choice) {
