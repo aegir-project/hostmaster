@@ -107,7 +107,7 @@ Drupal.hosting.siteFormToggleOptions = function(settings) {
           // we were given a default value by the server
           if (settings[key].length) {
             // set the textfield to the provided default
-            $input_id.val(settings[key])
+            $input_id.val(settings[key]);
           }
         }
       }
@@ -134,7 +134,7 @@ Drupal.hosting.siteFormCheck = function() {
      // generate an css id to retrieve the value, based on the field type.
      var id = 'input[@name=' + field + ']';
      if ($(this).hasClass('hosting-site-field-radios')) {
-       id = id + ':checked'
+       id = id + ':checked';
      }
 
      // Update the post_data with the right values.
