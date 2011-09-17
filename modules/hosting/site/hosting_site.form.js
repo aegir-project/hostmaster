@@ -1,24 +1,48 @@
 (function($) {
 
-// Obey the Drupal JS killswitch, almost entirely pointless though.
-if (Drupal.jsEnabled) {
-  $(document).ready(function() {
-     $('div.hosting-site-field-description').hide();
-     Drupal.hosting.siteFormCheck();
-     $('div.hosting-site-field input').change(function() {
-      Drupal.hosting.siteFormCheck();
-     });
-  });
-}
-
 // Setup our namespace.
 Drupal.hosting = Drupal.hosting || {};
 
+// Obey the Drupal JS killswitch, almost entirely pointless though.
+if (Drupal.jsEnabled) {
+  $(document).ready(function() {
+
+    $('div.hosting-site-field-description').hide();
+    Drupal.hosting.siteFormCheck('.node-form');
+    $('.node-form').addClass('site-form-ajax-processed');
+    $('div.hosting-site-field input').change(function() {
+      Drupal.hosting.siteFormCheck(this);
+    });
+  });
+}
+
+Drupal.hosting.addSiteFormProgress = function(element) {
+  // Don't let the user submit the form until we've computed the new values.
+  $('#edit-submit').attr('disabled', true);
+
+  // Add a progress div.
+  var $progress = $('<div class="site-form-progress"><div class="throbber"></div></div>');
+  $(element).before($progress);
+
+}
+
+Drupal.hosting.removeSiteFormProgress = function(can_submit) {
+  // Enable/disable the submit button.
+  if (can_submit) {
+    $('#edit-submit').removeAttr('disabled');
+  }
+  else {
+    $('#edit-submit').attr('disabled', true);
+  }
+
+  // Remove the progress div.
+  $('.site-form-progress').remove();
+
+}
+
 Drupal.hosting.siteFormToggleOptions = function(settings) {
 
-  // Set the form to not be submittable
-  $('#edit-submit').attr('disabled', 'disabled');
-
+  // We'll compute if the user should be allowed to submit the form.
   var can_submit = true;
 
   for (var key in settings) {
@@ -119,15 +143,13 @@ Drupal.hosting.siteFormToggleOptions = function(settings) {
     }
   }
 
-  if (can_submit) {
-    $('#edit-submit').removeAttr('disabled');
-  }
+  return can_submit;
 }
 
-Drupal.hosting.siteFormCheck = function() {
-  var post_data = {}
+Drupal.hosting.siteFormCheck = function(element) {
+  var post_data = {};
 
-   $('div.hosting-site-field').each( function() {
+   $('div.hosting-site-field').each(function() {
      // get the field name for this field.
      var field = $(this).attr('id').replace('hosting-site-field-', '').replace(/-/g,'_');
 
@@ -140,14 +162,25 @@ Drupal.hosting.siteFormCheck = function() {
      // Update the post_data with the right values.
      post_data[field] = $(id, this).val();
   });
-  $.post(
-    '/hosting/hosting_site_form_check',
-    post_data,
-    function(data) {
-      Drupal.hosting.siteFormToggleOptions(data);
+
+  // Add the progress indicator before sending the ajax.
+  Drupal.hosting.addSiteFormProgress(element);
+
+  $.ajax({
+    type: 'POST',
+    url: '/hosting/hosting_site_form_check',
+    data: post_data,
+    // Handle the success callback.
+    success: function(data) {
+      var can_submit = Drupal.hosting.siteFormToggleOptions(data);
+      Drupal.hosting.removeSiteFormProgress(can_submit);
     },
-    'json'
-  );
+    // On an error, still remove the progress indicator.
+    error: function () {
+      Drupal.hosting.removeSiteFormProgress(true);
+    },
+    dataType: 'json'
+  });
 }
 
 })(jQuery);
