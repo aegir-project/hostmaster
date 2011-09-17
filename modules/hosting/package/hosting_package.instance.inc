@@ -68,8 +68,8 @@ function hosting_package_instance_update(&$instance) {
   db_query("UPDATE {hosting_package_instance} SET
     rid = %d, package_id = %d, filename = '%s',
     schema_version = %d, version = '%s', version_code = %f, status = %d
-    WHERE iid = %d", 
-    $instance->rid, $instance->package_id, $instance->filename, 
+    WHERE iid = %d",
+    $instance->rid, $instance->package_id, $instance->filename,
     $instance->schema_version, $instance->version, $instance->version_code, $instance->status,
     $instance->iid);
 
@@ -80,8 +80,8 @@ function hosting_package_instance_create(&$instance) {
    db_query("INSERT INTO {hosting_package_instance} (
       rid, package_id, filename,
       schema_version, version, version_code, status)
-      VALUES (%d, %d, '%s', %d, '%s', %f, %d)", 
-      $instance->rid, $instance->package_id, $instance->filename, 
+      VALUES (%d, %d, '%s', %d, '%s', %f, %d)",
+      $instance->rid, $instance->package_id, $instance->filename,
       $instance->schema_version, $instance->version, $instance->version_code, $instance->status);
    $instance->iid = db_last_insert_id('hosting_package_instance', 'iid');
    _hosting_package_instance_languages($instance);
@@ -113,13 +113,13 @@ function _hosting_package_instances_load($param, $multiple = FALSE) {
     return FALSE;
   }
   $instances = array();
-  $result = db_query("SELECT 
+  $result = db_query("SELECT
       n.title, r.type, p.package_type, p.nid,
       i.iid, i.version, i.version_code, i.schema_version,
       i.status, p.description, p.short_name, p.old_short_name, i.rid,
       i.package_id
-      FROM {hosting_package_instance} i 
-        LEFT JOIN {hosting_package} p ON p.nid=i.package_id 
+      FROM {hosting_package_instance} i
+        LEFT JOIN {hosting_package} p ON p.nid=i.package_id
         LEFT JOIN {node} n ON p.nid=n.nid
         LEFT JOIN {node} r ON r.nid=i.rid
         LEFT JOIN {hosting_platform} h ON r.nid=h.nid
@@ -200,9 +200,9 @@ function hosting_package_instance_version_code($version) {
     return 0;
   }
   // we use the float type because php generally has a maximum integer value to small to handle this value
-  $result =  (float) sprintf("%d%02d%02d%02d%02d%02d", 
-    $matches['platform_major'], $matches['platform_minor'], $matches['package_major'], 
-    $matches['package_minor'], $release_types[$matches['package_version_type']], 
+  $result =  (float) sprintf("%d%02d%02d%02d%02d%02d",
+    $matches['platform_major'], $matches['platform_minor'], $matches['package_major'],
+    $matches['package_minor'], $release_types[$matches['package_version_type']],
     $matches['package_patch_level']);
 
   return $result;
@@ -228,7 +228,7 @@ function hosting_package_comparison($current, $target) {
   while ($obj = db_fetch_object($result)) {
     $status['upgrade'] = $obj->upgrade;
   }
-  
+
   $result = db_query("SELECT count(c.nid) AS downgrade FROM current c LEFT JOIN target t ON c.nid=t.nid WHERE (c.version_code > t.version_code)");
   while ($obj = db_fetch_object($result)) {
     $status['downgrade'] = $obj->downgrade;
@@ -242,5 +242,5 @@ function hosting_package_comparison($current, $target) {
 
 
 function _hosting_package_temporary_table($name, $ref) {
-  db_query("CREATE TEMPORARY TABLE %s AS SELECT nid, short_name, old_short_name, version_code, schema_version, version, status from {hosting_package} p left join {hosting_package_instance} i on p.nid = i.package_id where rid= %d", $name, $ref);
+  db_query("CREATE TEMPORARY TABLE %s AS SELECT p.nid, p.short_name, p.old_short_name, i.version_code, i.schema_version, i.version, i.status FROM {hosting_package} p LEFT JOIN {hosting_package_instance} i on p.nid = i.package_id WHERE i.rid = %d", $name, $ref);
 }
