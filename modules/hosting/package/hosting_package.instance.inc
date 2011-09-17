@@ -62,6 +62,9 @@ function _hosting_package_instance_languages($instance) {
       db_query("INSERT INTO {hosting_package_languages} (iid, language) VALUES (%d, '%s')", $instance->iid, $language);
     }
   }
+
+  // Clear the static cache for languages of package instances.
+  _hosting_package_instances_load_languages(NULL, TRUE);
 }
 
 function hosting_package_instance_update(&$instance) {
@@ -126,20 +129,40 @@ function _hosting_package_instances_load($param, $multiple = FALSE) {
       WHERE " . $cond, $arguments);
 
   while ($instance = db_fetch_object($result)) {
-    $languages = array('en' => 'en');
-
-    // load language options: if argument is null, load all language options
-    $lang_result = db_query("SELECT DISTINCT(language) FROM {hosting_package_languages} WHERE iid = %d", $instance->iid);
-    while ($language = db_fetch_object($lang_result)) {
-      $languages[$language->language] = _hosting_language_name($language->language);
-    }
-    $instance->languages = $languages;
+    $instance->languages = _hosting_package_instances_load_languages($instance->iid);
     if (!$multiple) {
       return $instance;
     }
     $instances[$instance->iid] = $instance;
   }
   return $instances;
+}
+
+/**
+ * Get the languages associated with an instance of a package.
+ */
+function _hosting_package_instances_load_languages($instance_id = NULL, $reset = FALSE) {
+  static $instances = array();
+  if (!empty($reset)) {
+    $instances = array();
+  }
+
+  // Build the array of languages if requested and we need to.
+  if (!is_null($instance_id) && !isset($instances[$instance_id])) {
+    $languages = array('en' => 'en');
+
+    // load language options: if argument is null, load all language options
+    $lang_result = db_query("SELECT DISTINCT(language) FROM {hosting_package_languages} WHERE iid = %d", $instance_id);
+    while ($language = db_fetch_object($lang_result)) {
+      $languages[$language->language] = _hosting_language_name($language->language);
+    }
+
+    $instances[$instance_id] = $languages;
+  }
+
+  // Return the array of languages if requested.
+  return !is_null($instance_id) ? $instances[$instance_id] : NULL;
+
 }
 
 
@@ -210,37 +233,45 @@ function hosting_package_instance_version_code($version) {
 
 function hosting_package_comparison($current, $target) {
 
-  _hosting_package_temporary_table("current", $current);
-  _hosting_package_temporary_table("target", $target);
+  $current_tbl = _hosting_package_temporary_table($current);
+  $target_tbl = _hosting_package_temporary_table($target);
 
   $status = array();
-  $result = db_query("SELECT count(c.nid) AS error FROM current c LEFT JOIN target t ON c.nid=t.nid WHERE (t.schema_version > 0) && (c.schema_version > t.schema_version) AND c.status=1");
+  $result = db_query("SELECT count(c.nid) AS error FROM %s c LEFT JOIN %s t ON c.nid=t.nid WHERE (t.schema_version > 0) && (c.schema_version > t.schema_version) AND c.status=1", $current_tbl, $target_tbl);
   while ($obj = db_fetch_object($result)) {
     $status['error'] = $obj->error;
   }
 
-  $result = db_query("SELECT COUNT(c.nid) as missing FROM current c LEFT JOIN target t ON c.nid=t.nid WHERE t.nid IS null AND c.status=1");
+  $result = db_query("SELECT COUNT(c.nid) as missing FROM %s c LEFT JOIN %s t ON c.nid=t.nid WHERE t.nid IS null AND c.status=1", $current_tbl, $target_tbl);
   while ($obj = db_fetch_object($result)) {
     $status['missing'] = $obj->missing;
   }
 
-  $result = db_query("SELECT COUNT(c.nid) as upgrade FROM  current c LEFT JOIN target t ON c.nid=t.nid WHERE (c.version_code < t.version_code) OR (c.schema_version < t.schema_version) AND c.status=1");
+  $result = db_query("SELECT COUNT(c.nid) as upgrade FROM %s c LEFT JOIN %s t ON c.nid=t.nid WHERE (c.version_code < t.version_code) OR (c.schema_version < t.schema_version) AND c.status=1", $current_tbl, $target_tbl);
   while ($obj = db_fetch_object($result)) {
     $status['upgrade'] = $obj->upgrade;
   }
 
-  $result = db_query("SELECT count(c.nid) AS downgrade FROM current c LEFT JOIN target t ON c.nid=t.nid WHERE (c.version_code > t.version_code)");
+  $result = db_query("SELECT count(c.nid) AS downgrade FROM %s c LEFT JOIN %s t ON c.nid=t.nid WHERE (c.version_code > t.version_code)", $current_tbl, $target_tbl);
   while ($obj = db_fetch_object($result)) {
     $status['downgrade'] = $obj->downgrade;
   }
-
-  db_query("DROP TEMPORARY TABLE target");
-  db_query("DROP TEMPORARY TABLE current");
 
   return $status;
 }
 
 
-function _hosting_package_temporary_table($name, $ref) {
-  db_query("CREATE TEMPORARY TABLE %s AS SELECT p.nid, p.short_name, p.old_short_name, i.version_code, i.schema_version, i.version, i.status FROM {hosting_package} p LEFT JOIN {hosting_package_instance} i on p.nid = i.package_id WHERE i.rid = %d", $name, $ref);
+function _hosting_package_temporary_table($ref) {
+  static $names = array();
+
+  if (!isset($names[$ref])) {
+    // Generate a unique table name for this $ref.
+    $names[$ref] = '_hosting_comparision_' . trim($ref);
+
+    // Create the temporary table.
+    db_query("CREATE TEMPORARY TABLE %s AS SELECT p.nid, p.short_name, p.old_short_name, i.version_code, i.schema_version, i.version, i.status FROM {hosting_package} p LEFT JOIN {hosting_package_instance} i on p.nid = i.package_id WHERE i.rid = %d", $names[$ref], $ref);
+  }
+
+
+  return $names[$ref];
 }

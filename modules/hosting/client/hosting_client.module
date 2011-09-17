@@ -890,25 +890,45 @@ function hosting_client_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
  * Small helper function to get platforms that haven't been deleted or locked,
  * and are accessible by this user.
  *
+ * We can get called a few times during a page request, so we implement static
+ * caching for speed, and because the platforms that are available are unlikely
+ * to change during a single page request.
+ *
+ * @param $uid
+ *   The user ID to retrieve the allowed platforms for. If none is specified the
+ *   currently logged in user will be used.
+ * @param $reset
+ *   Whether to reset the internal static cache or not.
+ *
  * @todo this is not the right way. we need to implement node-level
  * access permissions here, the same way we do for sites. see
  * http://drupal.org/node/725952
  */
-function _hosting_get_allowed_platforms($uid = NULL) {
+function _hosting_get_allowed_platforms($uid = NULL, $reset = FALSE) {
+  static $platforms = array();
+
+  if ($reset) {
+    $platforms = array();
+  }
+
   if (is_null($uid)) {
     global $user;
     $uid = $user->uid;
   }
-  $return = array();
-  $result = db_query("SELECT n.nid, n.title FROM {node} n LEFT JOIN {hosting_platform} h ON n.nid = h.nid 
-                      LEFT JOIN {hosting_platform_client_access} p ON n.nid = p.pid 
+
+  if (!isset($platforms[$uid])) {
+    $platforms[$uid] = array();
+
+    $result = db_query("SELECT n.nid, n.title FROM {node} n LEFT JOIN {hosting_platform} h ON n.nid = h.nid
+                      LEFT JOIN {hosting_platform_client_access} p ON n.nid = p.pid
                       LEFT JOIN {hosting_client_user} c ON c.client = p.cid
-                      WHERE n.type='platform' AND n.status=1 AND h.status > '%d' 
+                      WHERE n.type='platform' AND n.status=1 AND h.status > '%d'
                       AND (c.user= %d OR p.pid IS NULL)", HOSTING_PLATFORM_LOCKED, $uid);
-  while($server = db_fetch_object($result)) {
-    $return[$server->nid] = $server->title; 
+    while($server = db_fetch_object($result)) {
+      $platforms[$uid][$server->nid] = $server->title;
+    }
   }
-  return $return;
+  return $platforms[$uid];
 }
 
 /**
