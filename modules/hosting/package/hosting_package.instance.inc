@@ -16,7 +16,7 @@
  * will be referenced to the node.
  */
 function hosting_package_instance_sync($rid) {
-  db_query("UPDATE {hosting_package_instance} SET status = -1 where rid=%d", $rid);
+  db_query("UPDATE {hosting_package_instance} SET status = -1 WHERE rid = %d", $rid);
   $map = _hosting_package_plural_map();
   $args = func_get_args();
   $rid = array_shift($args);
