@@ -95,7 +95,7 @@ class hostingService_db_mysql extends hostingService_db {
     parent::context_options($task_type, $ref_type, $task);
 
     // Provide context_options for verification and writing out to an alias
-    $task->context_options['master_db'] = 'mysql' . '://' . $this->db_user . ':' . $this->db_passwd . '@' . $this->server->title;
+    $task->context_options['master_db'] = 'mysql' . '://' . urlencode($this->db_user) . ':' . urlencode($this->db_passwd) . '@' . $this->server->title;
   }
 
   public function context_import($context) {
@@ -103,7 +103,7 @@ class hostingService_db_mysql extends hostingService_db {
 
     $matches = array();
     preg_match("+^mysql://(.*):(.*)@.*$+", stripslashes($context->master_db), $matches);
-    $this->db_user = $matches[1];
-    $this->db_passwd = $matches[2];
+    $this->db_user = urldecode($matches[1]);
+    $this->db_passwd = urldecode($matches[2]);
   }
 }
