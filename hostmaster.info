@@ -17,7 +17,6 @@ dependencies[] = user
 ; General utility modules:
 dependencies[] = admin_menu
 dependencies[] = conditional_styles
-dependencies[] = features
 
 ; Dependencies: Hostmaster modules
 ; ==============================================================================
