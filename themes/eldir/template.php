@@ -58,7 +58,7 @@ function eldir_preprocess_html(&$variables, $hook) {
   // Add path-based class for a last line of defense
   $current_path = current_path();
   if (!empty($current_path)) {
-    $variables['classes_array'][] = ' path-'. str_replace('/', '-', current_path());
+    $variables['classes_array'][] = ' path-' . drupal_html_class(current_path());
   }
 
   // Add special body class for error pages
