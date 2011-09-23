@@ -1,0 +1,25 @@
+name = "Hostmaster"
+description = "The Aegir frontend install profile."
+core = "7.x"
+
+; Dependencies: Core modules
+; ==============================================================================
+dependencies[] = block
+dependencies[] = filter
+dependencies[] = help
+dependencies[] = menu
+dependencies[] = node
+dependencies[] = system
+dependencies[] = user
+
+; Dependencies: Contrib modules
+; ==============================================================================
+; General utility modules:
+dependencies[] = admin_menu
+dependencies[] = conditional_styles
+dependencies[] = features
+
+; Dependencies: Hostmaster modules
+; ==============================================================================
+;dependencies[] = hosting_site
+;dependencies[] = hosting_task
