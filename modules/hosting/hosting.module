@@ -428,6 +428,8 @@ function hosting_domain_allowed($url, $params = array()) {
  * Runs the 'hosting-dispatch' command, and sets up the crontab.
  */ 
 function drush_hosting_setup() {
+  // Return for now.
+  return;
   if (drush_confirm("This command will replace your crontab for this user. continue?")) {
     variable_set('hosting_dispatch_enabled', FALSE);
     // attempt to run the dispatch command, to make sure it runs without the queue being enabled.

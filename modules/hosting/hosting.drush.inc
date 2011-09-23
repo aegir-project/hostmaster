@@ -20,7 +20,7 @@ function hosting_drush_command() {
 
 
 
-  $queues = hosting_get_queues();
+  /*$queues = hosting_get_queues();
   foreach ($queues as $queue => $info) {
     $dispatch = dt("Dispatched: @items items every @frequency minutes", array('@items' => $info['items'], '@frequency' => round($info['frequency'] / 60)));
     $items['hosting-' . $queue] = array(
@@ -28,7 +28,7 @@ function hosting_drush_command() {
       'description' => $info['description'] . " " . $dispatch,
       'queue' => $queue,
     );
-  }
+  }*/
 
   $items['hosting-task'] = array(
     'description' => 'execute a specific queue item',
