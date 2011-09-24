@@ -17,11 +17,9 @@ function hosting_drush_command() {
   $items['hosting-setup'] = array(
     'description' => dt('Set up initial configuration settings such as the cron entry for the queue dispatcher and more.'),
     'drupal dependencies' => array(
-      'hosting',
+      //'hosting',
     ),
   );
-
-
 
   /*$queues = hosting_get_queues();
   foreach ($queues as $queue => $info) {
