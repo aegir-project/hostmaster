@@ -1,5 +1,7 @@
 <?php
 
+define('HOSTMASTER_VERSION', '7.x-2.x');
+
 ///**
 // * Return an array of the modules to be enabled when this profile is installed.
 // *
