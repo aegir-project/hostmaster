@@ -185,10 +185,10 @@ function hosting_get_features($refresh = FALSE) {
 
   if (empty($cache->data) || $refresh) {
     ## include any optional hosting.feature.*.inc files
-    $files = drupal_system_listing("hosting\.feature\.[a-zA-Z_]*\.inc$", "modules");
+    $files = drupal_system_listing("/hosting\.feature\.[a-zA-Z_]*\.inc$/", "modules");
     if (sizeof($files)) {
       foreach ($files as $name => $info) {
-        include_once($info->filename);
+        include_once($info->uri);
       }
     }
     $functions = get_defined_functions();
