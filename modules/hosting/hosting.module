@@ -27,13 +27,6 @@ function hosting_menu() {
     'type' => MENU_CALLBACK
   );
 
-  $items['hosting/js'] = array(
-    'title' => t('ahah callback'),
-    'page callback' => 'hosting_js_page',
-    'access arguments' => array('access content'),
-    'type' => MENU_CALLBACK
-  );
-
   $items['hosting/maintenance'] = array(
     'title' => 'Site maintenance',
     'page callback' => 'hosting_site_maintenance',
@@ -89,44 +82,10 @@ function hosting_menu() {
 }
 
 /**
- * Page callback for a page to be rendered in modal frame.
- */
-function hosting_js_page() {
-  modalframe_child_js();
-
-  $args = func_get_args();
-  $path = implode('/', $args);
-
-  // Incase Aegir is running in a sub-directory the base_path should be stripped away here
-  //    Remove the leading slash from base_path as $path doesn't have one either
-  $path = str_replace(ltrim(base_path(), '/'), '', $path);
-
-  menu_set_active_item($path);
-#  $_SERVER['REQUEST_URI'] = str_replace('/hosting/js', '', $_SERVER['REQUEST_URI']);
-
-  if ($router_item = menu_get_item($path)) {
-    if ($router_item['access']) {
-      if ($router_item['file']) {
-        require_once($router_item['file']);
-      }
-      $return = call_user_func_array($router_item['page_callback'], $router_item['page_arguments']);
-    }
-    else {
-      $return = drupal_access_denied();
-    }
-  }
-  // Menu status constants are integers; page content is a string.
-  if (is_int($return)) {
-    modalframe_close_dialog();
-  }
- return $return; 
-}
-
-/**
  * Implementats hook_menu_alter().
  */
 function hosting_menu_alter(&$items) {
-  /*
+  
   $items['node/add']['page callback'] = '_hosting_node_add';
 
   $types = hosting_feature_node_types(TRUE);
@@ -139,7 +98,7 @@ function hosting_menu_alter(&$items) {
   // These node types should remain hidden, and provide no user interface.
   unset($items['node/add/package']);
   unset($items['node/add/task']);
-  */
+  
 }
 
 /**

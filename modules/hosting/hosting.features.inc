@@ -222,6 +222,7 @@ function hosting_feature_node_types($refresh = FALSE) {
   static $types;
 
   if (!is_array($types) || $refresh) {
+    $types = array();
     $features = hosting_get_features($refresh);
     foreach ($features as $feature => $info) {
       if (!empty($info['node'])) {
