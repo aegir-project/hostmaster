@@ -228,10 +228,29 @@ function hosting_nodeapi(&$node, $op, $arg1, $arg2) {
 }
 
 /**
- * Implementation of hook_perm().
+ * Implements hook_permission().
  */
-function hosting_perm() {
-  return array('access hosting wizard', 'administer hosting queues', 'administer hosting features', 'administer hosting', 'access disabled sites', 'administer hosting settings');
+function hosting_permission() {
+  return array(
+    'access hosting wizard' => array(
+      'title' => t('Access hosting wizard'),
+    ),
+    'administer hosting queues' => array(
+      'title' => t('Administer hosting queues'),
+    ),
+    'administer hosting features' => array(
+      'title' => t('Administer hosting features'),
+    ),
+    'administer hosting' => array(
+      'title' => t('Administer hosting'),
+    ),
+    'access disabled sites' => array(
+      'title' => t('Access disabled sites'),
+    ),
+    'administer hosting settings' => array(
+      'title' => t('Administer hosting settings'),
+    ),
+  );
 }
 
 /**
