@@ -278,7 +278,7 @@ function hosting_node_help($type) {
 }
 
 /**
- * Implementation of hook_init().
+ * Implements hook_init().
  */
 function hosting_init() {
   // Definitions for the default platforms, clients etc.
@@ -297,14 +297,11 @@ function hosting_init() {
   define('HOSTING_OWN_PLATFORM', variable_get('hosting_own_platform', 6)); 
 
 
-  /** 
+  /**
    * Find the base URL, this is used by the initial 'hosting-setup' drush command
    * This gets defined in the bootstrap, so just using the global definition.
    */
-  define('HOSTING_DEFAULT_BASE_URL', $GLOBALS['base_url']); 
-
-  // moved from hook_menu()
-  drupal_add_css(drupal_get_path('module', 'hosting') . '/hosting.css');
+  define('HOSTING_DEFAULT_BASE_URL', $GLOBALS['base_url']);
 }
 
 /**

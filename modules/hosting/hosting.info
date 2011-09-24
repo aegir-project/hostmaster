@@ -10,4 +10,6 @@ version = HOSTMASTER_VERSION
 #dependencies[] = hosting_site
 #dependencies[] = hosting_web_server
 
-core = 6.x
+stylesheets[all][] = hosting.css
+
+core = 7.x
