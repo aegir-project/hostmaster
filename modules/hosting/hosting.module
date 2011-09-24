@@ -134,56 +134,36 @@ function hosting_site_maintenance() {
 }
 
 /**
- * Implementation of hook_nodeapi().
- *
- * This function redirects to hosting_nodeapi_$nodetype_$op calls, to save
- * ourselves from an incessant amount of intricately nested code, and allow
- * easier extension / maintenance.
- *
- * @see hook_nodeapi_TYPE_OP()
+ * Implements hook_node_presave().
  */
-function hosting_nodeapi(&$node, $op, $arg1, $arg2) {
+function hosting_node_presave($node) {
   global $user;
-  $return = array();
+  if (in_array($node->type, hosting_context_node_types()) && !isset($node->uid)) {
+    $node->uid = $user->uid;
+  }
+}
 
+/**
+ * Implements hook_node_delete().
+ */
+function hosting_node_delete($node) {
   if (in_array($node->type, hosting_context_node_types())) {
-    switch ($op) {
-      case 'presave':
-        if (!$node->uid) {
-          $node->uid = $user->uid;
-        }
-        break;
+    db_delete('hosting_context')
+      ->condition('nid', $node->nid)
+      ->execute();
+  }
+}
 
-      case 'load':
-        $return = db_fetch_array(db_query("SELECT name AS hosting_name FROM {hosting_context} WHERE nid = %d", $node->nid));
-        if ($return === FALSE) { // Should only happen on install
-          $return = array();
-        }
-        break;
-
-      case 'delete':
-        db_query("DELETE FROM {hosting_context} WHERE nid = %d", $node->nid);
-        break;
+/**
+ * Implements hook_node_load().
+ */
+function hosting_node_load($nodes, $types) {
+  if (count(array_intersect($types, hosting_context_node_types()))) {
+    $result = db_query('SELECT name FROM {hosting_context} WHERE nid IN(:nids)', array(':nids' => array_keys($nodes)));
+    foreach ($result as $record) {
+      $nodes[$record->nid]->hosting_name = $record->name;
     }
   }
-
-
-  // We need to practically re-invent module_invoke_all here because
-  // we have to pass the node as a reference.
-  $hook = "nodeapi_" . $node->type . "_" . str_replace(" ", "_", $op);
-
-  foreach (module_implements($hook) as $module) {
-    $function = $module .'_'. $hook;
-    $result = $function($node, $arg1, $arg2);
-    if (isset($result) && is_array($result)) {
-      $return = array_merge_recursive($return, $result);
-    }
-    else if (isset($result)) {
-      $return[] = $result;
-    }
-  }
-
-  return $return;
 }
 
 /**
