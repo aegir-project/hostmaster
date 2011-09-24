@@ -10,17 +10,15 @@
 /**
  * Not split for performance reasons. Just to keep code together.
  */
-include_once('hosting.inc');
-include_once('hosting.queues.inc');
+//include_once('hosting.inc');
+//include_once('hosting.queues.inc');
 include_once('hosting.features.inc');
 
 /**
- * Implementation of hook_menu().
+ * Implements hook_menu().
  */
 function hosting_menu() {
-  global $user;
   $items = array();
-
 
   $items['hosting/disabled'] = array(
     'title' => 'Site disabled',
@@ -43,9 +41,7 @@ function hosting_menu() {
     'type' => MENU_CALLBACK
   );
 
-  
-
-  $items['admin/hosting'] = array(
+  $items['admin/config/hosting'] = array(
     'title' => 'Hosting',
     'description' => 'Configure and manage the hosting system',
     'page callback' => 'drupal_get_form',
@@ -54,7 +50,7 @@ function hosting_menu() {
     'type' => MENU_NORMAL_ITEM
   );
 
-  $items['admin/hosting/features'] = array(
+  $items['admin/config/hosting/features'] = array(
     'title' => 'Features',
     'description' => 'Configure the exposed functionality of the Hosting system',
     'weight' => -100,
@@ -64,7 +60,7 @@ function hosting_menu() {
     'access arguments' => array('administer hosting features'),
   );
 
-  $items['admin/hosting/queues'] = array(
+  $items['admin/config/hosting/queues'] = array(
     'title' => 'Queues',
     'description' => 'Configure the frequency that cron, backup and task events are process',
     'page callback' => 'drupal_get_form',
@@ -73,13 +69,14 @@ function hosting_menu() {
     'access arguments' => array('administer hosting queues'),
   );
 
-  $items['admin/hosting/settings'] = array(
+  $items['admin/config/hosting/settings'] = array(
     'title' => 'Settings',
     'description' => 'Configure general Hosting settings',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('hosting_settings'),
     'type' => MENU_LOCAL_TASK,
     'access arguments' => array('administer hosting settings'),
+    'file' => 'hosting.admin.inc',
   );
   
   $items['hosting/queues'] = array(
@@ -126,9 +123,10 @@ function hosting_js_page() {
 }
 
 /**
- * Implementation of hook_menu_alter().
+ * Implementats hook_menu_alter().
  */
 function hosting_menu_alter(&$items) {
+  /*
   $items['node/add']['page callback'] = '_hosting_node_add';
 
   $types = hosting_feature_node_types(TRUE);
@@ -141,6 +139,7 @@ function hosting_menu_alter(&$items) {
   // These node types should remain hidden, and provide no user interface.
   unset($items['node/add/package']);
   unset($items['node/add/task']);
+  */
 }
 
 /**
