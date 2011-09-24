@@ -5,13 +5,6 @@
  */
 
 /**
- * Implementation of hook_install().
- */
-function hosting_install() {
-  drupal_install_schema('hosting');
-}
-
-/**
  * Implementation of hook_schema().
  */
 function hosting_schema() {
