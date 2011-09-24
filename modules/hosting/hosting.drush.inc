@@ -16,6 +16,9 @@ function hosting_drush_command() {
 
   $items['hosting-setup'] = array(
     'description' => dt('Set up initial configuration settings such as the cron entry for the queue dispatcher and more.'),
+    'drupal dependencies' => array(
+      'hosting',
+    ),
   );
 
 
@@ -143,4 +146,71 @@ function hosting_drush_import($alias) {
   return $node->nid;
 }
 
+/**
+ * Initial hosting setup drush command.
+ * 
+ * Runs the 'hosting-dispatch' command, and sets up the crontab.
+ */ 
+function drush_hosting_setup() {
+  // Return for now.
+  return;
+  if (drush_confirm("This command will replace your crontab for this user. continue?")) {
+    variable_set('hosting_dispatch_enabled', FALSE);
+    // attempt to run the dispatch command, to make sure it runs without the queue being enabled.
+    variable_set('hosting_dispatch_enabled', TRUE);
+    drush_print(_hosting_dispatch_cmd());
+    exec(_hosting_dispatch_cmd(), $return, $code);
+    variable_set('hosting_dispatch_enabled', FALSE);
+    $return = join("\n", $return);
+    $data = unserialize($return);
+    if ($code == DRUSH_SUCCESS) {
+      variable_set('hosting_dispatch_enabled', TRUE);
+      drush_log(t("Dispatch command was run successfully"), 'success');
+      _hosting_setup_cron();
+    }
+    else {
+      drush_set_error('DRUSH_FRAMEWORK_ERROR', dt("Dispatch command could not be run. Returned: \n@return", array('@return' => $return))); 
+    }
+    if (drush_get_error()) {
+      drush_log(t("The command did not complete successfully, please fix the issues and re-run this script"), 'error');
+    }
+  }
+}
 
+/**
+ * Set up the hosting-dispatch command in the aegir user's crontab.
+ * 
+ * Replace the crontab entry if it exists, else create it from scratch.
+ */
+function _hosting_setup_cron() {
+  $existing = FALSE;
+  exec('crontab -l 2> /dev/null', $cron);
+  variable_set('hosting_cron_backup', $cron);
+  if (sizeof($cron)) {
+    drush_log(dt("Replacing existing crontab"), 'warning');
+  }
+  else {
+    drush_log(dt("No existing crontab was found"), 'message');
+  }
+
+  $cron = hosting_queues_cron_cmd();
+
+  $fp = popen('crontab -', 'w');
+  $success = TRUE;
+  if ($fp) {
+    if (fwrite($fp, $cron) && fwrite($fp, "\n")) {
+      drush_log(dt("Installed hosting-dispatch cron entry to run every minute"), 'success');
+    } else {
+      $success = FALSE;
+    }
+    // pclose returns shell exit codes (ie. 0 is success)
+    if (pclose($fp)) {
+      $success = FALSE;
+    }
+  } else {
+    $success = FALSE;
+  }
+  if (!$success) {
+    drush_set_error('PROVISION_CRON_FAILED', dt('Failed to install cron job'));
+  }
+}

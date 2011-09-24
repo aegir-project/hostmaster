@@ -438,76 +438,6 @@ function hosting_domain_allowed($url, $params = array()) {
 }
 
 /**
- * Initial hosting setup drush command.
- * 
- * Runs the 'hosting-dispatch' command, and sets up the crontab.
- */ 
-function drush_hosting_setup() {
-  // Return for now.
-  return;
-  if (drush_confirm("This command will replace your crontab for this user. continue?")) {
-    variable_set('hosting_dispatch_enabled', FALSE);
-    // attempt to run the dispatch command, to make sure it runs without the queue being enabled.
-    variable_set('hosting_dispatch_enabled', TRUE);
-    drush_print(_hosting_dispatch_cmd());
-    exec(_hosting_dispatch_cmd(), $return, $code);
-    variable_set('hosting_dispatch_enabled', FALSE);
-    $return = join("\n", $return);
-    $data = unserialize($return);
-    if ($code == DRUSH_SUCCESS) {
-      variable_set('hosting_dispatch_enabled', TRUE);
-      drush_log(t("Dispatch command was run successfully"), 'success');
-      _hosting_setup_cron();
-    }
-    else {
-      drush_set_error('DRUSH_FRAMEWORK_ERROR', dt("Dispatch command could not be run. Returned: \n@return", array('@return' => $return))); 
-    }
-    if (drush_get_error()) {
-      drush_log(t("The command did not complete successfully, please fix the issues and re-run this script"), 'error');
-    }
-  }
-}
-
-/**
- * Set up the hosting-dispatch command in the aegir user's crontab.
- * 
- * Replace the crontab entry if it exists, else create it from scratch.
- */
-function _hosting_setup_cron() {
-  $existing = FALSE;
-  exec('crontab -l 2> /dev/null', $cron);
-  variable_set('hosting_cron_backup', $cron);
-  if (sizeof($cron)) {
-    drush_log(dt("Replacing existing crontab"), 'warning');
-  }
-  else {
-    drush_log(dt("No existing crontab was found"), 'message');
-  }
-
-  $cron = hosting_queues_cron_cmd();
-
-  $fp = popen('crontab -', 'w');
-  $success = TRUE;
-  if ($fp) {
-    if (fwrite($fp, $cron) && fwrite($fp, "\n")) {
-      drush_log(dt("Installed hosting-dispatch cron entry to run every minute"), 'success');
-    } else {
-      $success = FALSE;
-    }
-    // pclose returns shell exit codes (ie. 0 is success)
-    if (pclose($fp)) {
-      $success = FALSE;
-    }
-  } else {
-    $success = FALSE;
-  }
-  if (!$success) {
-    drush_set_error('PROVISION_CRON_FAILED', dt('Failed to install cron job'));
-  }
-}
-
-
-/**
  * Replacement node/add page.
  *
  * Major kludge to remove the hidden node types from node/add page.
@@ -897,40 +827,5 @@ function hosting_views_api() {
     'api' => 2, 
     'path' => drupal_get_path('module', 'hosting'),
   );
-}
-
-/**
- * General settings form.
- */
-function hosting_settings() {
-  $form['settings'] = array(
-    '#type' => 'item',
-    '#title' => t('General Hosting settings'),
-    '#value' => t('Here you may set various general settings that apply to site management or to the frontend system.'),
-    '#weight' => 0,
-  );
-
-  $form['hosting_ignore_default_profiles'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Hide platforms with non-default profiles'),
-    '#description' => t('When selecting a Drupal core profile, hide platforms that also contain other profiles (i.e intended as distributions). Warning: requires a platform other than the Hostmaster platform.'),
-    '#default_value' => variable_get('hosting_ignore_default_profiles', FALSE),
-  );
-  $form['hosting_require_disable_before_delete'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Require site to be disabled before deletion'),
-    '#description' => t('Check if you wish for users to run the Disable task on a site prior to running the Delete task.'),
-    '#default_value' => variable_get('hosting_require_disable_before_delete', TRUE),
-  );
-  if(hosting_feature('cron')) {
-    $form['hosting_cron_use_backend'] = array(
-      '#type' => 'radios',
-      '#title' => t('Cron method'),
-      '#description' => t('For running cron on a site. You can use the drush cron implementation or the web-based cron.php method using builtin HTTP requests. The drush implementation is more reliable but will be slower than the web-based approach if the webserver has an opcode cache (like APC) configured.'),
-      '#options' => array('Web-based', 'Drush'),
-      '#default_value' => variable_get('hosting_cron_use_backend', TRUE),
-    );
-  }
-  return system_settings_form($form);
 }
 
