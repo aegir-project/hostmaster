@@ -22,3 +22,4 @@ dependencies[] = conditional_styles
 ; ==============================================================================
 ;dependencies[] = hosting_site
 ;dependencies[] = hosting_task
+dependencies[] = hosting
