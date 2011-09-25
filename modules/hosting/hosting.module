@@ -287,29 +287,56 @@ function _hosting_node_link($nid, $title = null) {
 }
 
 /**
- * Implementation of hook_block().
+ * Implements hook_block_info().
  */
-function hosting_block($op = 'list', $delta = 0, $edit = array()) {
-  switch ($op) {
-    case 'list' :
-      $blocks['hosting_summary'] = array('info' => t('Hosting summary'), 
-            'enabled' => 1, 'region' => 'left', 'weight' => 10);
-      $blocks['hosting_queues'] = array('info' => t('Hosting queues'),
-            'enabled' => 1, 'region' => 'right', 'weight' => 0);
-      $blocks['hosting_queues_summary'] = array('info' => t('Hosting queues summary'),
-            'enabled' => 1, 'region' => 'right', 'weight' => 1);
-      return $blocks;
-    case 'view' : 
-      switch ($delta) {
-      case 'hosting_queues':
-        return array('title' => t('Queues'),
-                     'content' => hosting_queue_block());
-      case 'hosting_queues_summary':
-        return array('title' => t('Queues summary'),
-                     'content' => hosting_queue_summary_block());
-      }
+function hosting_block_info() {
+  $blocks['hosting_summary'] = array(
+    'info' => t('Hosting summary'),
+    'cache' => DRUPAL_NO_CACHE, // DRUPAL_CACHE_PER_ROLE is the default
+    'enabled' => 1,
+    'region' => 'left',
+    'weight' => 10,
+  );
+
+  $blocks['hosting_queues'] = array(
+    'info' => t('Hosting queues'),
+    'cache' => DRUPAL_NO_CACHE, // DRUPAL_CACHE_PER_ROLE is the default
+    'enabled' => 1,
+    'region' => 'right',
+    'weight' => 0,
+  );
+
+  $blocks['hosting_queues_summary'] = array(
+    'info' => t('Hosting queues summary'),
+    'cache' => DRUPAL_NO_CACHE, // DRUPAL_CACHE_PER_ROLE is the default
+    'enabled' => 1,
+    'region' => 'right',
+    'weight' => 1,
+  );
+
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function hosting_block_view($delta = '') {
+  $block = array();
+
+  switch ($delta) {
+    case 'hosting_queues':
+      $block['subject'] = t('Queues');
+      $block['content'] = hosting_queue_block();
       break;
+
+    case 'hosting_queues_summary':
+      $block['subject'] = t('Queues summary');
+      $block['content'] = hosting_queue_summary_block();
+      break;
+
   }
+
+  return $block;
 }
 
 /**
