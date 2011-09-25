@@ -122,8 +122,8 @@ function hosting_run_queue() {
   $queue = $cmd['queue'];
   $count = drush_get_option(array('i', 'items'), 5); # process a default of 5 items at a time.
 
-  variable_set('hosting_queue_' . $queue . '_last_run', $t = mktime());
-  variable_set('hosting_queue_' . $queue . '_running', $t);
+  variable_set('hosting_queue_' . $queue . '_last_run', REQUEST_TIME);
+  variable_set('hosting_queue_' . $queue . '_running', REQUEST_TIME);
 
   $func = "hosting_" . $queue . "_queue";
 
@@ -159,7 +159,7 @@ function _hosting_queue_next_run($queue) {
   }
   $freq = $queue['frequency'];
   $last = $queue['last_run'];
-  $now = time();
+  $now = REQUEST_TIME;
   return max($last + $freq,
     ( $now - ( ($now - $last) % $freq ) ) + $freq );
 }
