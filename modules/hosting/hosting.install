@@ -5,6 +5,21 @@
  */
 
 /**
+ * Implements hook_requirements().
+ */
+function hosting_requirements($phase) {
+  $requirements = array();
+  if ($phase === 'runtime' && defined('HOSTMASTER_VERSION')) {
+    $requirements['hostmaster'] = array(
+      'title' => 'Hostmaster (Aegir) version',
+      'value' => check_plain(HOSTMASTER_VERSION),
+      'severity' => REQUIREMENT_OK,
+    );
+  }
+  return $requirements;
+}
+
+/**
  * Implementation of hook_schema().
  */
 function hosting_schema() {
