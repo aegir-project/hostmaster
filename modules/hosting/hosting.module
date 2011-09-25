@@ -6,7 +6,7 @@
  *
  * Contains just about all the interface magic of hostmaster.
  */
- 
+
 /**
  * Not split for performance reasons. Just to keep code together.
  */
@@ -71,7 +71,7 @@ function hosting_menu() {
     'access arguments' => array('administer hosting settings'),
     'file' => 'hosting.admin.inc',
   );
-  
+
   $items['hosting/queues'] = array(
      'page callback' => 'hosting_queues',
      'type' => MENU_CALLBACK,
@@ -85,7 +85,7 @@ function hosting_menu() {
  * Implementats hook_menu_alter().
  */
 function hosting_menu_alter(&$items) {
-  
+
   $items['node/add']['page callback'] = '_hosting_node_add';
 
   $types = hosting_feature_node_types(TRUE);
@@ -94,11 +94,11 @@ function hosting_menu_alter(&$items) {
     $items[$path]['access callback'] = 'hosting_menu_access';
     $items[$path]['access arguments'] = array(str_replace('_', ' ', $type), $feature);
   }
-  
+
   // These node types should remain hidden, and provide no user interface.
   unset($items['node/add/package']);
   unset($items['node/add/task']);
-  
+
 }
 
 /**
@@ -195,6 +195,8 @@ function hosting_permission() {
 /**
  * Per node type description text. To be stored in the node_type table.
  *
+ * @todo Move this out to the modules that implement the nodes.
+ *
  * @param $type
  *   The node type.
  * @return
@@ -204,7 +206,7 @@ function hosting_node_help($type) {
   switch ($type) {
     case 'site' :
       return t("<strong>An instance of a hosted site.</strong>
-                It contains information relating to the site, most notably the domain name, database server 
+                It contains information relating to the site, most notably the domain name, database server
                 and platform it is being published on. A site may also have several aliases for additional
                 domains the site needs to be accessible on.");
       break;
@@ -215,10 +217,10 @@ function hosting_node_help($type) {
                 Platforms are most commonly built for specific releases of Drupal.");
       break;
     case 'client' :
-      return t("<strong>The person or group that runs the site.</strong> 
+      return t("<strong>The person or group that runs the site.</strong>
                 This information is usually required for billing and access purposes, to ensure
-                that only certain people are able to view the information for sites they run. 
-                If you do not intend on having more than one client access the system, 
+                that only certain people are able to view the information for sites they run.
+                If you do not intend on having more than one client access the system,
                 you will not need to create any additional clients for your purposes.");
       break;
     case 'server' :
@@ -230,7 +232,7 @@ function hosting_node_help($type) {
                 Each task acts as a command for the back-end, and contains a full log of all changes that have occurred.
                 If a task should fail, the administrator will be notified with an explanation of exactly what went wrong,
                 and how to fix it.");
-      break;      
+      break;
   }
 }
 
@@ -251,7 +253,7 @@ function hosting_init() {
 
   define('HOSTING_OWN_DB_SERVER', variable_get('hosting_own_db_server', 2));
   define('HOSTING_OWN_WEB_SERVER', variable_get('hosting_own_web_server', 3));
-  define('HOSTING_OWN_PLATFORM', variable_get('hosting_own_platform', 6)); 
+  define('HOSTING_OWN_PLATFORM', variable_get('hosting_own_platform', 6));
 
 
   /**
@@ -360,7 +362,7 @@ function hosting_queue_summary_block() {
         } elseif ($key == 'frequency') {
           $info[$key] = t('every @interval', array('@interval' => format_interval($info[$key])));
         }
-        $disp[] = $title . ": " . $info[$key]; 
+        $disp[] = $title . ": " . $info[$key];
       }
       $output .= theme('item_list', $disp, $info['name']);
     }
@@ -464,7 +466,7 @@ function hosting_queues($key='') {
     {
       $output .= "<h1>".$queues[$key]['name']."</h1>";
     }
-  
+
     $func = 'hosting_'.$queues[$key]['singular'].'_list';
     if (function_exists($func)) {
       $output .= $func();
@@ -477,7 +479,7 @@ function hosting_queues($key='') {
     }
     $output .= theme('item_list', $item, t('Queues'));
   }
-  
+
   return $output;
 }
 
@@ -518,7 +520,7 @@ function hosting_queues_configure() {
     strtotime("1 day", 0) => t("Days"),
     strtotime("1 week", 0) => t("Weeks"),
   );
-  
+
   $queues = hosting_get_queues();
   $form['#tree'] = TRUE;
 
@@ -539,7 +541,7 @@ function hosting_queues_configure() {
     );
     $form[$queue]['frequency']['#prefix'] = "<div class='hosting-queue-frequency'>";
     $form[$queue]['frequency']['#suffix'] = "</div>";
-    
+
     if ($info['type'] == 'batch') {
 	  $form[$queue]['frequency']['items'] = array(
         '#value' => t('%count %items every', array("%count" => $info['total_items'],
@@ -559,7 +561,7 @@ function hosting_queues_configure() {
     }
     foreach (array_reverse(array_keys($units)) as $length) {
       $unit = $units[$length];
-      
+
       if (!($info['frequency'] % $length)) {
         $frequency_ticks = $info['frequency'] / $length;
         $frequency_length = $length;
@@ -595,15 +597,15 @@ function theme_hosting_queues_configure($form) {
   $queues = hosting_get_queues();
 
   $rows = array();
-  $header = array('', t('Description'), 
+  $header = array('', t('Description'),
     array('data' => t('Frequency'), 'class' => 'hosting-queue-frequency-head'),
     t('Last run'),);
   foreach ($queues as $key => $info) {
     $row = array();
-    $row[] = drupal_render($form[$key]['enabled']); 
-    $row[] = drupal_render($form[$key]['description']); 
+    $row[] = drupal_render($form[$key]['enabled']);
+    $row[] = drupal_render($form[$key]['description']);
     $row[] = drupal_render($form[$key]['frequency']);
-    $row[] = drupal_render($form[$key]['last_run']); 
+    $row[] = drupal_render($form[$key]['last_run']);
     $rows[] = $row;
   }
   $output = theme('table', $header, $rows);
@@ -687,12 +689,12 @@ function hosting_form_alter(&$form, &$form_state, $form_id) {
 
 /**
  * Hosting version of menu_rebuild() from Drupal 6.15
- * This is needed for the upgrade path of a hostmaster platform from 
- * 6.15 to 6.16. The Hosting module calls update hooks that run 
- * menu_rebuild() which break on a 6.16 platform as the semaphore 
- * table has not yet been introduced by system_update_6054() 
- * It is considered safe enough to ignore the new locking checks in 
- * 6.16's menu_rebuild() to get us past this step to successfully 
+ * This is needed for the upgrade path of a hostmaster platform from
+ * 6.15 to 6.16. The Hosting module calls update hooks that run
+ * menu_rebuild() which break on a 6.16 platform as the semaphore
+ * table has not yet been introduced by system_update_6054()
+ * It is considered safe enough to ignore the new locking checks in
+ * 6.16's menu_rebuild() to get us past this step to successfully
  * complete the hostmaster-migrate task.
  */
 function hosting_menu_rebuild() {
@@ -790,8 +792,7 @@ function hosting_context_node_types() {
  */
 function hosting_views_api() {
   return array(
-    'api' => 2, 
+    'api' => 2,
     'path' => drupal_get_path('module', 'hosting'),
   );
 }
-
