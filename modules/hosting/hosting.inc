@@ -59,7 +59,7 @@ function _hosting_valid_fqdn($fqdn) {
  * @see format_interval()
  */
 function hosting_format_interval($ts) {
-  if ($ts==mktime()) { 
+  if ($ts == REQUEST_TIME) {
     return t('Now');
   }
   if (!$ts) {
@@ -67,7 +67,7 @@ function hosting_format_interval($ts) {
     return t('Never');
   }
 
-  return t("@interval ago", array("@interval" => format_interval(mktime() - $ts, 1)));
+  return t("@interval ago", array("@interval" => format_interval(REQUEST_TIME - $ts, 1)));
 }
 
 /**
