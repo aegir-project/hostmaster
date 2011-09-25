@@ -11,7 +11,7 @@
  * Not split for performance reasons. Just to keep code together.
  */
 include_once('hosting.inc');
-//include_once('hosting.queues.inc');
+include_once('hosting.queues.inc');
 include_once('hosting.features.inc');
 
 /**

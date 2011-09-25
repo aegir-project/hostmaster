@@ -69,12 +69,12 @@ function hosting_get_queues($refresh = false) {
       'enabled' => TRUE,
       'singular' => t('item'),
       'plural' => t('items')
-    );  
+    );
     $queues = module_invoke_all("hosting_queues");
     foreach ($queues as $key => $queue) {
       $queue = array_merge($defaults, $queue);
 
-      // Configurable settings. 
+      // Configurable settings.
       $configured = array(
         'frequency' => variable_get('hosting_queue_' . $key . '_frequency', $queue['frequency']),
         'items' => variable_get('hosting_queue_' . $key . '_items', $queue['items']),
@@ -107,7 +107,7 @@ function hosting_get_queues($refresh = false) {
     }
     $cache = $queues;
   }
-  
+
   return $cache;
 }
 
@@ -118,7 +118,7 @@ function hosting_get_queues($refresh = false) {
  * functionality needed to ensure that the queues are running as scheduled.
  */
 function hosting_run_queue() {
-  $cmd = drush_get_command(); 
+  $cmd = drush_get_command();
   $queue = $cmd['queue'];
   $count = drush_get_option(array('i', 'items'), 5); # process a default of 5 items at a time.
 
