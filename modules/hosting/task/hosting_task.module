@@ -1103,7 +1103,6 @@ function _hosting_task_list($filter_by, $filter_value, $count = 5, $element = 0,
 function hosting_task_fetch_tasks($rid) {
   $node = node_load($rid);
 
-  $tasks = hosting_available_tasks($node->type);
   $result = db_query("SELECT n.nid, t.task_type, t.task_status FROM {node} n LEFT JOIN {hosting_task} t ON n.vid=t.vid 
     WHERE n.type = 'task' AND t.rid = %d
     ORDER BY t.task_status ASC, n.changed DESC", $rid);
