@@ -227,3 +227,21 @@ a.hosting-goto-site-link {
   display: block;
 }
 
+
+.site-form-ajax-processed .form-text {
+  width: 90%;
+}
+
+.site-form-progress {
+  float: right;
+}
+
+.site-form-progress .throbber {
+  background:#FFF url(images/loader.gif) no-repeat center center;
+  width: 19px;
+  height: 19px;
+  vertical-align:middle;
+  float: left;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+}
