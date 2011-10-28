@@ -18,16 +18,23 @@ function hosting_drush_command() {
     'description' => dt('Set up initial configuration settings such as the cron entry for the queue dispatcher and more.'),
   );
 
+  // If we're trying to get help, then try to bootstrap as much as possible.
+  $current_command = drush_get_command();
+  if ($current_command['command'] == 'help') {
+    drush_bootstrap_max();
+  }
 
-
-  $queues = hosting_get_queues();
-  foreach ($queues as $queue => $info) {
-    $dispatch = dt("Dispatched: @items items every @frequency minutes", array('@items' => $info['items'], '@frequency' => round($info['frequency'] / 60)));
-    $items['hosting-' . $queue] = array(
-      'callback' => 'hosting_run_queue', 
-      'description' => $info['description'] . " " . $dispatch,
-      'queue' => $queue,
-    );
+  // If we've not bootstrapped fully, then this function may not be around.
+  if (function_exists('hosting_get_queues')) {
+    $queues = hosting_get_queues();
+    foreach ($queues as $queue => $info) {
+      $dispatch = dt("Dispatched: @items items every @frequency minutes", array('@items' => $info['items'], '@frequency' => round($info['frequency'] / 60)));
+      $items['hosting-' . $queue] = array(
+        'callback' => 'hosting_run_queue',
+        'description' => $info['description'] . " " . $dispatch,
+        'queue' => $queue,
+      );
+    }
   }
 
   $items['hosting-task'] = array(
