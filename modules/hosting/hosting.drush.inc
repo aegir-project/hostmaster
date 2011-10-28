@@ -20,7 +20,7 @@ function hosting_drush_command() {
 
   // If we're trying to get help, then try to bootstrap as much as possible.
   $current_command = drush_get_command();
-  if ($current_command['command'] == 'help') {
+  if (isset($current_command['command']) && ($current_command['command'] == 'help')) {
     drush_bootstrap_max();
   }
 
