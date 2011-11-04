@@ -370,7 +370,7 @@ function hosting_package_sync(&$data) {
   foreach ($data as $plural => $packages) {
     $type = _hosting_package_plural_map($plural);
     foreach ($packages as $short_name => $file) {
-      $name = ($file['info']['name']) ? $file['info']['name'] : $short_name;
+      $name = isset($file['info']['name']) ? $file['info']['name'] : $short_name;
       if (!($package = hosting_get_package($short_name))) {
         // Create a new package.
         $package = new stdClass();
@@ -386,8 +386,8 @@ function hosting_package_sync(&$data) {
       // or when it's a new package.
       if (!$package->nid || 
         ($package->title != $name) || 
-        ($package->description != $file['info']['description']) ||
-	      ($package->old_short_name != $file['info']['old_short_name'])) {
+        (isset($file['info']['description']) && ($package->description != $file['info']['description'])) ||
+	      (isset($file['info']['old_short_name']) && ($package->old_short_name != $file['info']['old_short_name']))) {
 
         $package->title = $name;
         $package->description = $file['info']['description'];
