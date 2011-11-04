@@ -204,8 +204,8 @@ function hosting_task_migrate_form($node) {
  */
 function hosting_migrate_comparison($current, $target) {
 
-  _hosting_package_temporary_table("current", $current);
-  _hosting_package_temporary_table("target", $target);
+  $current_tbl = _hosting_package_temporary_table($current);
+  $target_tbl = _hosting_package_temporary_table($target);
 
   $packages = array();
 
@@ -213,7 +213,7 @@ function hosting_migrate_comparison($current, $target) {
     c.version as current_version, t.version as target_version,
     c.version_code as current_version_code, t.version_code as target_version_code,
     c.schema_version as current_schema, t.schema_version as target_schema, c.status AS enabled 
-    FROM current c LEFT JOIN target t ON c.nid=t.nid ORDER BY c.status DESC, short_name"); 
+    FROM %s c LEFT JOIN %s t ON c.nid = t.nid ORDER BY c.status DESC, short_name", $current_tbl, $target_tbl); 
 
   while ($obj = db_fetch_object($result)) {
     if (isset($obj->current_schema) && ((int) $obj->target_schema > 0) && ((int) $obj->current_schema > (int) $obj->target_schema)) {
@@ -231,9 +231,6 @@ function hosting_migrate_comparison($current, $target) {
     }
     $packages[$obj->nid] = $obj;
   }
-  
-  db_query("DROP TEMPORARY TABLE target");
-  db_query("DROP TEMPORARY TABLE current");
 
   return theme("hosting_migrate_comparison", $packages);
 }
