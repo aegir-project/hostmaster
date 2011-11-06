@@ -154,7 +154,7 @@ function hosting_alias_insert($node) {
  */
 function hosting_alias_update($node) {
   // We need to wipe clean existing aliases if we are not making a new revision
-  if (!$node->revision) {
+  if (empty($node->revision)) {
     hosting_alias_delete_revision($node);
   }
 

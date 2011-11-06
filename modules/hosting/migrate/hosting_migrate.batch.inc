@@ -98,6 +98,16 @@ function hosting_migrate_platform($form_state, $node) {
     }
         
   }
+
+  // Step 3 - All migrate tasks have been created, close the modal if needed.
+  if ($step == 3) {
+    if (!empty($GLOBALS['modalframe_page_template'])) {
+      modalframe_close_dialog();
+    }
+    else {
+      drupal_goto('node/' . $form_state['storage']['target_platform']);
+    }
+  }
   return $form;
 }
 
@@ -138,6 +148,7 @@ function hosting_migrate_platform_submit($form, &$form_state) {
           'init_message' => t('Retrieving list of sites.'),
           'progress_message' => t('Evaluated @current out of @total sites.'),
           'error_message' => t('Bulk migration has encountered an error.'),
+          'file' => drupal_get_path('module', 'hosting_migrate') . '/hosting_migrate.batch.inc',
         );
         batch_set($batch);
 
@@ -155,25 +166,54 @@ function hosting_migrate_platform_submit($form, &$form_state) {
 
       $task = hosting_add_task($current, 'migrate', array('target_platform' => $target), HOSTING_TASK_SUCCESS);
 
+      $operations = array();
       foreach ($form_state['storage']['passed'] as $nid => $url) {
-        $site = node_load($nid);
-        hosting_add_task($nid, 'migrate', array(
-          'target_platform' => $form_state['storage']['target_platform'],
-          'new_uri' => $url,
-          'new_db_server' => $site->db_server,
-        ));
-        hosting_task_log($task->vid, 'success', t("Migrate task for !url created", array('!url' => $url)));
+        $operations[] = array('hosting_migrate_platform_submit_batch',
+          array($nid, $form_state['storage']['target_platform'], $url, $task->vid));
       }
-      $form_state['redirect'] = 'node/' . $form_state['storage']['target_platform'];
-      unset($form_state['rebuild']);
-      unset($form_state['storage']);
-      drupal_set_message(t('The sites have been added to the task queue to be migrated'));
-      modalframe_close_dialog();
-      return false; 
-      // this does not seem to work ?
+
+      if (sizeof($operations)) {
+        $batch = array(
+          'operations' => $operations,
+          'finished' => 'hosting_migrate_platform_submit_finished',
+          'title' => t('Submitting sites for migration.'),
+          'init_message' => t('Retrieving list of sites.'),
+          'progress_message' => t('Submitted @current out of @total sites.'),
+          'error_message' => t('Bulk migration has encountered an error.'),
+          'file' => drupal_get_path('module', 'hosting_migrate') . '/hosting_migrate.batch.inc',
+        );
+        batch_set($batch);
+
+        if (!empty($GLOBALS['modalframe_page_template'])) {
+          $batch =& batch_get();
+          $batch['url'] = 'hosting/js/batch';
+          $batch['source_page'] = 'hosting/js/' . $_GET['q'];
+        }
+      }
+
       break;
    }
   $form_state['storage']['step'] = $step + 1;
+}
+
+/**
+ * Batch callback for platform migration submission.
+ */
+function hosting_migrate_platform_submit_batch($site_id, $target_platform, $url, $platform_task_vid) {
+  $site = node_load($site_id);
+  hosting_add_task($site_id, 'migrate', array(
+    'target_platform' => $target_platform,
+    'new_uri' => $url,
+    'new_db_server' => $site->db_server,
+  ));
+  hosting_task_log($platform_task_vid, 'success', t("Migrate task for !url created", array('!url' => $url)));
+}
+
+/**
+ * Batch finished callback for platform migration submission.
+ */
+function hosting_migrate_platform_submit_finished() {
+  drupal_set_message(t('The sites have been added to the task queue to be migrated'));
 }
 
 /**
