@@ -203,7 +203,7 @@ function hosting_platform_form(&$node) {
   $form['makefile'] = array(
     '#type' => 'textfield',
     '#title' => t('Makefile'),
-    '#description' => t('The absolute path on the filesystem to a makefile that will be used to create the platform in the directory specified above. If the directory already exists, this file will be ignored.'),
+    '#description' => t('The absolute path on the filesystem or public URL of a makefile that will be used to create the platform in the directory specified above. If the directory already exists, this file will be ignored.'),
     '#size' => 40,
     '#default_value' => $node->makefile,
     '#maxlength' => 255,
