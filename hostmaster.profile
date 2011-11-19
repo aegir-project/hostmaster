@@ -12,6 +12,8 @@ function hostmaster_profile_modules() {
     /* core */ 'block', 'color', 'filter', 'help', 'menu', 'node', 'system', 'user',
     /* aegir contrib */ 'hosting', 'hosting_task', 'hosting_client', 'hosting_db_server', 'hosting_package', 'hosting_platform', 'hosting_site', 'hosting_web_server', 'hosting_server', 'hosting_clone', 'hosting_cron', 'hosting_migrate',
     /* other contrib */ 'install_profile_api' /* needs >= 2.1 */, 'jquery_ui', 'modalframe', 'admin_menu',
+    /* Aegir actual contrib */
+    'hosting_platform_pathauto',
   );
 }
 
