@@ -8,6 +8,7 @@ function hosting_client_hosting_feature() {
       'title' => t('Clients'),
       'description' => t('Track and manage ownership of hosted sites.'),
       'status' => HOSTING_FEATURE_DISABLED,
+      'module' => 'hosting_client',
       'node' => 'client',
       'group' => 'experimental',
     );
