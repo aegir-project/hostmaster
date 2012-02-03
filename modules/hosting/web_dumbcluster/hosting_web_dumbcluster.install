@@ -1,8 +1,8 @@
 <?php
 
-function hosting_web_cluster_schema() {
+function hosting_web_dumbcluster_schema() {
   return array(
-    'hosting_web_cluster' => array(
+    'hosting_web_dumbcluster' => array(
       'fields' => array(
         'vid' => array(
           'type' => 'int',
@@ -22,16 +22,21 @@ function hosting_web_cluster_schema() {
           'not null' => TRUE,
           'default' => 0,
         ),
+        'type' => array(
+          'type' => 'varchar',
+          'length' => 60,
+          'not null' => TRUE,
+          'default' => 'slave', // can also be 'master'
       ),
       'primary key' => array('vid', 'web_server_nid'),
     ),
   );
 }
 
-function hosting_web_cluster_install() {
-  drupal_install_schema('hosting_web_cluster');
+function hosting_web_dumbcluster_install() {
+  drupal_install_schema('hosting_web_dumbcluster');
 }
 
-function hosting_web_cluster_uninstall() {
-  drupal_uninstall_schema('hosting_web_cluster');
+function hosting_web_dumbcluster_uninstall() {
+  drupal_uninstall_schema('hosting_web_dumbcluster');
 }

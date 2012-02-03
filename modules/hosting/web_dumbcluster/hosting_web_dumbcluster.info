@@ -1,5 +1,5 @@
-name = Web Cluster
-description = Allow hostmaster to configure web clusters.
+name = Web Dumbcluster
+description = Allow hostmaster to configure web dumbclusters, which have masters and slaves.
 package = Hosting
 dependencies[] = hosting_web_server
 

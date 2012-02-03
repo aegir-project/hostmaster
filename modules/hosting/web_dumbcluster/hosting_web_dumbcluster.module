@@ -1,7 +1,7 @@
 <?php
 
-function hosting_web_cluster_hosting_service() {
+function hosting_web_dumbcluster_hosting_service() {
   return array(
-    'cluster' => 'http',
+    'dumbcluster' => 'http',
   );
 }
