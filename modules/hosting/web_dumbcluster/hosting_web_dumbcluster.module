@@ -1,7 +1,0 @@
-<?php
-
-function hosting_web_dumbcluster_hosting_service() {
-  return array(
-    'dumbcluster' => 'http',
-  );
-}

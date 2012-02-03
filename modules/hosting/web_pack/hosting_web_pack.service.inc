@@ -2,8 +2,8 @@
 
 module_load_include('service.inc', 'hosting_web_server');
 
-class hostingService_http_dumbcluster extends hostingService_http {
-  public $type = 'dumbcluster';
+class hostingService_http_pack extends hostingService_http {
+  public $type = 'pack';
 
   function view(&$render) {
     $render['master_servers'] = array(
@@ -44,7 +44,7 @@ class hostingService_http_dumbcluster extends hostingService_http {
     $ssl_enabled = TRUE;
 
     $master_servers = array();
-    $result = db_query('SELECT web_server_nid, type FROM {hosting_web_dumbcluster} WHERE vid = %d', $this->server->vid);
+    $result = db_query('SELECT web_server_nid, type FROM {hosting_web_pack} WHERE vid = %d', $this->server->vid);
     while ($web_server = db_fetch_object($result)) {
       if ($web_server->type == 'master') {
         $master_servers[] = $web_server->web_server_nid;
@@ -69,7 +69,7 @@ class hostingService_http_dumbcluster extends hostingService_http {
         'web_server_nid' => $web_server,
         'type' => 'master',
       );
-      drupal_write_record('hosting_web_dumbcluster', $record);
+      drupal_write_record('hosting_web_pack', $record);
     }
     foreach (array_filter($this->slave_servers) as $web_server) {
       $record = array(
@@ -78,18 +78,18 @@ class hostingService_http_dumbcluster extends hostingService_http {
         'web_server_nid' => $web_server,
         'type' => 'slave',
       );
-      drupal_write_record('hosting_web_dumbcluster', $record);
+      drupal_write_record('hosting_web_pack', $record);
     }
   }
 
   function delete() {
     parent::delete();
-    db_query('DELETE FROM {hosting_web_dumbcluster} WHERE nid = %d', $this->server->nid);
+    db_query('DELETE FROM {hosting_web_pack} WHERE nid = %d', $this->server->nid);
   }
 
   function delete_revision() {
     parent::delete_revision();
-    db_query('DELETE FROM {hosting_web_dumbcluster} WHERE vid = %d', $this->server->vid);
+    db_query('DELETE FROM {hosting_web_pack} WHERE vid = %d', $this->server->vid);
   }
 
   function context_options($task_type, $ref_type, &$task) {

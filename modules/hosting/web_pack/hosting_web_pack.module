@@ -1,0 +1,7 @@
+<?php
+
+function hosting_web_pack_hosting_service() {
+  return array(
+    'pack' => 'http',
+  );
+}
