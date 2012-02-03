@@ -58,6 +58,7 @@ class hostingService_http_pack extends hostingService_http {
 
     $this->ssl_enabled = $ssl_enabled;
     $this->setValues(array('master_servers' => drupal_map_assoc($master_servers)));
+    $this->setValues(array('slave_servers' => drupal_map_assoc($slave_servers)));
   }
 
   function insert() {
