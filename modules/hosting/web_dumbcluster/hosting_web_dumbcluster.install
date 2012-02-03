@@ -1,0 +1,37 @@
+<?php
+
+function hosting_web_cluster_schema() {
+  return array(
+    'hosting_web_cluster' => array(
+      'fields' => array(
+        'vid' => array(
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+        ),
+        'nid' => array(
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+        ),
+        'web_server_nid' => array(
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+        ),
+      ),
+      'primary key' => array('vid', 'web_server_nid'),
+    ),
+  );
+}
+
+function hosting_web_cluster_install() {
+  drupal_install_schema('hosting_web_cluster');
+}
+
+function hosting_web_cluster_uninstall() {
+  drupal_uninstall_schema('hosting_web_cluster');
+}
