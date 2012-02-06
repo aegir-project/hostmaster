@@ -39,6 +39,12 @@ function drush_hosting_resume() {
      $platform->publish_path = $platform_root;
      $platform->verified = 0;
      $platform->title = basename(rtrim($platform_root, '/'));
+     if (preg_match("/^([0-9]+)$/i", $platform->title)) {
+       $platform->title = 'Hostmaster ' . $platform->title;
+     }
+     elseif (preg_match("/^(hostmaster)$/i", $platform->title)) {
+       $platform->title = 'Hostmaster A';
+     }
      node_save($platform);
      $platform_id = $platform->nid;
   }
