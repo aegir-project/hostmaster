@@ -42,7 +42,7 @@ function drush_hosting_resume() {
      if (preg_match("/^([0-9]+)$/i", $platform->title)) {
        $platform->title = 'Aegir Hostmaster ' . $platform->title;
      }
-     elseif (preg_match("/^(hostmaster)$/i", $platform->title)) {
+     elseif (preg_match("/hostmaster/i", $platform->title)) {
        $platform->title = 'Aegir Hostmaster';
      }
      node_save($platform);
