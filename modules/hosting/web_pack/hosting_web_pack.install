@@ -27,6 +27,7 @@ function hosting_web_pack_schema() {
           'length' => 60,
           'not null' => TRUE,
           'default' => 'slave', // can also be 'master'
+        ),
       ),
       'primary key' => array('vid', 'web_server_nid'),
     ),
