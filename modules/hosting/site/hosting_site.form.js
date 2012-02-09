@@ -93,7 +93,7 @@ Drupal.hosting.siteFormToggleOptions = function(settings) {
             .find('div.placeholder')
             .removeClass('error')
             .contents()
-            .replaceWith($input_id.parent().text().trim());
+            .replaceWith($.trim($input_id.parent().text()));
         }
       }
       else {
@@ -119,7 +119,7 @@ Drupal.hosting.siteFormToggleOptions = function(settings) {
           $desc_id.show()
             .find('div.placeholder')
             .contents().
-            replaceWith($input_id.val().trim());
+            replaceWith($.trim($input_id.val()));
         }
       }
       else if ((settings[key].toString().length || (settings[key] == true)) && (settings[key] != false)) {
