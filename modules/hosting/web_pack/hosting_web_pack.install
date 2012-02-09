@@ -1,0 +1,43 @@
+<?php
+
+function hosting_web_pack_schema() {
+  return array(
+    'hosting_web_pack' => array(
+      'fields' => array(
+        'vid' => array(
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+        ),
+        'nid' => array(
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+        ),
+        'web_server_nid' => array(
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+        ),
+        'type' => array(
+          'type' => 'varchar',
+          'length' => 60,
+          'not null' => TRUE,
+          'default' => 'slave', // can also be 'master'
+        ),
+      ),
+      'primary key' => array('vid', 'web_server_nid'),
+    ),
+  );
+}
+
+function hosting_web_pack_install() {
+  drupal_install_schema('hosting_web_pack');
+}
+
+function hosting_web_pack_uninstall() {
+  drupal_uninstall_schema('hosting_web_pack');
+}
