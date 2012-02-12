@@ -16,4 +16,3 @@ function drush_hosting_package_pre_hosting_task() {
     }
   }
 }
-
