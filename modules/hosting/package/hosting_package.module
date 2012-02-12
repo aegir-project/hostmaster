@@ -378,20 +378,20 @@ function hosting_package_sync(&$data) {
         $package->uid = 1;
         $package->package_type = $type;
         $package->short_name = $short_name;
-        $package->old_short_name = $file['info']['old_short_name'];
+        $package->old_short_name = isset($file['info']['old_short_name']) ? $file['info']['old_short_name'] : '';
         $package->status = 1;
       }
 
       // we only call node save when the title, description changes
       // or when it's a new package.
-      if (!$package->nid || 
-        ($package->title != $name) || 
+      if (!isset($package->nid) ||
+        (isset($package->title) && ($package->title != $name)) ||
         (isset($file['info']['description']) && ($package->description != $file['info']['description'])) ||
 	      (isset($file['info']['old_short_name']) && ($package->old_short_name != $file['info']['old_short_name']))) {
 
         $package->title = $name;
-        $package->description = $file['info']['description'];
-        $package->old_short_name = $file['info']['old_short_name'];
+        $package->description = isset($file['info']['description']) ? $file['info']['description'] : '';
+        $package->old_short_name = isset($file['info']['old_short_name']) ? $file['info']['old_short_name'] : '';
 
         node_save($package);
       }
