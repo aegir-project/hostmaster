@@ -148,7 +148,7 @@ function hosting_package_update_2() {
 
 
 /**
- * No limit on short_name length 
+ * No limit on short_name length
  */
 function hosting_package_update_3() {
   $ret = array();
@@ -193,7 +193,7 @@ function hosting_package_update_5() {
   $platforms = _hosting_get_platforms();
   foreach ($platforms as $nid => $name) {
     $platform = db_fetch_object(db_query("SELECT release_id FROM {hosting_platform} WHERE nid=%d", $nid));
-    $release = db_fetch_object(db_query("SELECT * FROM {hosting_package_release} WHERE nid = %d", 
+    $release = db_fetch_object(db_query("SELECT * FROM {hosting_package_release} WHERE nid = %d",
       $platform->release_id));
 
     $instance = new stdClass();
@@ -204,7 +204,7 @@ function hosting_package_update_5() {
     // A future step will fill these in from the packages.
     $instance->filename = '';
     $instance->schema_version = 0;
-    
+
     hosting_package_instance_save($instance);
     hosting_add_task($nid, 'verify');
   }
@@ -269,7 +269,7 @@ function hosting_package_update_8() {
       'default' => 0,
     ));
 
-  // The contents of update 9 was originally inside this function, 
+  // The contents of update 9 was originally inside this function,
   // but due to an error in the regular expression the code needs to be
   // executed again, as such it has been moved.
 
@@ -346,7 +346,7 @@ function hosting_package_update_6001() {
 
 /**
  * Add the new old_short_name field which will be used to manage
- * cases where install profiles change names during migrations, 
+ * cases where install profiles change names during migrations,
  * such as drupal 6 'default' profile to drupal 7 'standard' profile.
  *
  * This needs to happen before any interaction with the packaging system
@@ -368,7 +368,7 @@ function hosting_package_update_6002() {
 
 /**
  * The hostmaster and/or hostslave profiles no longer need to be status 0
- * as it prevents the main aegir site node from being edited. Instead, 
+ * as it prevents the main aegir site node from being edited. Instead,
  * just hide the hostmaster/hostslave profiles in the site node form when
  * creating new sites. See #599758
  */
@@ -383,7 +383,7 @@ function hosting_package_update_6004() {
     // we want to enforce that the hostmaster site is always referred to as @hostmaster
     $own_site = db_result(db_query("SELECT s.nid FROM {hosting_site} s LEFT JOIN {hosting_package} p ON s.profile=p.nid WHERE p.short_name='hostmaster'"));
     $records[$own_site] = 'hostmaster';
-    
+
     foreach ($records as $nid => $name) {
       hosting_context_register($nid, $name);
     }
@@ -394,7 +394,7 @@ function hosting_package_update_6004() {
 /**
  * Remove DEFAULT value on a LONGTEXT fields and use VARCHAR on
  * smaller fields to optimise queries.
- * 
+ *
  * This was breaking in MariaDB and preventing installation. On MySQL
  * it was silently ignored, so the installation works, but the
  * defaults are not in the table anyway.

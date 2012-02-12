@@ -19,4 +19,3 @@ class hosting_package_handler_filter_hosting_package_type extends views_handler_
     }
   }
 }
-
