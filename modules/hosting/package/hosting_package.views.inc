@@ -69,5 +69,3 @@ function hosting_package_views_data() {
 
   return $data;
 }
-
-
