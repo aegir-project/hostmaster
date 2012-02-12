@@ -11,8 +11,8 @@ require_once('hosting_package.instance.inc');
 
 function _hosting_package_types() {
   return array(
-    'profile' => t('Installation Profiles'), 
-    'module' => t('Modules'), 
+    'profile' => t('Installation Profiles'),
+    'module' => t('Modules'),
     'theme' => t('Themes')
   );
 }
@@ -25,7 +25,7 @@ function hosting_package_node_info() {
   $types["package"] =  array(
     "type" => 'package', "name" => 'Package',
     "module" => 'hosting_package',
-    "has_title" => FALSE, "title_label" => '', 
+    "has_title" => FALSE, "title_label" => '',
     "description" => hosting_node_help("package"),
     "has_body" => 0, "body_label" => '', "min_word_count" => 0);
 
@@ -45,7 +45,7 @@ function hosting_package_menu() {
     'page arguments' => array(1),
     'type' => MENU_LOCAL_TASK,
     'access arguments' => array('view package'),
-    'weight' => 1, 
+    'weight' => 1,
   );
   $items['node/%hosting_package_node/packages/all'] = array(
     'title' => 'All packages',
@@ -54,7 +54,7 @@ function hosting_package_menu() {
     'page arguments' => array(1),
     'access arguments' => array('view package'),
     'type' => MENU_DEFAULT_LOCAL_TASK,
-    'weight' => -1, 
+    'weight' => -1,
   );
   $x = 0;
   foreach (_hosting_package_types() as $type => $description) {
@@ -65,8 +65,8 @@ function hosting_package_menu() {
       'page arguments' => array(1, $type),
       'access arguments' => array('view package'),
       'type' => MENU_LOCAL_TASK,
-      'weight' => $x++, 
-    );           
+      'weight' => $x++,
+    );
   }
   return $items;
 }
@@ -125,11 +125,11 @@ function hosting_get_profiles($platform = NULL, $field = 'title') {
   }
   else {
    $instances = hosting_package_instances_load(array(
-    'p.package_type' => 'profile', 
-    'n.status' => 1, 
+    'p.package_type' => 'profile',
+    'n.status' => 1,
     'r.type' => 'platform'));
 
-    foreach ($instances as $iid => $instance) { 
+    foreach ($instances as $iid => $instance) {
       $profiles[$instance->package_id] = $instance->$field;
     }
   }
@@ -142,17 +142,17 @@ function hosting_get_profile_platforms($profile, $check_old_short_name = FALSE) 
 
   $platforms = array();
   $instances = hosting_package_instances_load(array(
-    'i.package_id' => $profile, 
+    'i.package_id' => $profile,
     'n.status' => 1,
-    'r.status' => 1, 
+    'r.status' => 1,
     'r.type' => 'platform'));
 
   if ($check_old_short_name) {
     $instances = array_merge($instances, hosting_package_instances_load(array(
-    'p.old_short_name' => $instances[key($instances)]->short_name, 
+    'p.old_short_name' => $instances[key($instances)]->short_name,
     'n.status' => 1,
-    'r.status' => 1, 
-    'r.type' => 'platform'))); 
+    'r.status' => 1,
+    'r.type' => 'platform')));
   }
   foreach ($instances as $iid => $instance) {
     $platform = node_load($instance->rid);
@@ -449,7 +449,7 @@ function hosting_package_list($ref, $type = null) {
  */
 function hosting_package_views_api() {
   return array(
-    'api' => 2, 
+    'api' => 2,
     'path' => drupal_get_path('module', 'hosting_package'),
   );
 }
