@@ -1,10 +1,8 @@
 <?php
-// $Id$
-
 /**
- * @file Site node form.
+ * @file
+ * Site node form.
  */
-
 
 /**
  * Helper function to generate form elements for the site form.
@@ -94,18 +92,18 @@ function hosting_site_available_options($node) {
   $return['site_language'] = array();
 
   if (!hosting_feature('client')) {
-    // Setting the return value of a text field to null, 
+    // Setting the return value of a text field to null,
     // will signal to the front end that the field needs to
     // be displayed, but is not editable.
-    $return['client'] = null;
+    $return['client'] = NULL;
   }
 
   // Load up the user we'll use to check platform and profile access
   $user = user_load($GLOBALS['user']->uid);
 
-  // Install profiles 
+  // Install profiles
   $profiles = hosting_get_profiles();
-  foreach($profiles as $id => $name) {
+  foreach ($profiles as $id => $name) {
 
     // Don't allow a site to be provisioned with hostslave or hostmaster profile
     if (in_array($name, array('Hostslave', 'Hostmaster'))) {
@@ -115,9 +113,9 @@ function hosting_site_available_options($node) {
     // Trim down the list of profiles to those that are available and the user has access to
     // XXX This hack (next 22 lines) hides profiles that can't be accessed
     // Eventually we should lighten up the content of this callback
-    $result = db_query("SELECT l.nid FROM hosting_package_instance i 
-                        JOIN hosting_package p ON p.nid = i.package_id 
-                        JOIN hosting_platform l ON l.nid = i.rid WHERE i.package_id = %d 
+    $result = db_query("SELECT l.nid FROM hosting_package_instance i
+                        JOIN hosting_package p ON p.nid = i.package_id
+                        JOIN hosting_platform l ON l.nid = i.rid WHERE i.package_id = %d
                         AND p.package_type = 'profile' AND l.status = %d;", $id, HOSTING_PLATFORM_ENABLED);
     $allowed_plats = _hosting_get_allowed_platforms($user->uid);
     $access_check = FALSE;
@@ -128,7 +126,7 @@ function hosting_site_available_options($node) {
       }
       // open access if no platform access has been set
       // @todo move this into _hosting_get_allowed_platforms
-      else if (!$unrestricted = db_result(db_query("SELECT cid FROM {hosting_platform_client_access} WHERE pid = '%d' LIMIT 1", $row['nid']))) {
+      elseif (!$unrestricted = db_result(db_query("SELECT cid FROM {hosting_platform_client_access} WHERE pid = '%d' LIMIT 1", $row['nid']))) {
         $access_check = TRUE;
       }
     }
@@ -174,7 +172,7 @@ function hosting_site_available_options($node) {
 
 
 /**
- * Implementation of hook_form
+ * Implements hook_form().
  */
 function hosting_site_form($node) {
   $form['#pre_render'][] = '_hosting_site_form_pre_render';
@@ -198,17 +196,17 @@ function hosting_site_form($node) {
 
   $editable = ((!$node->client || $node->nid) || user_access('administer sites')) && hosting_feature('client');
   _hosting_site_field($form, $node, 'client', array(
-    '#type' => 'textfield',
-    '#required' => TRUE,
-    '#title' => t('Client'),
-    '#default_value' => _hosting_client_site_default($node),
-    '#description' => t('The client who this site belongs to.'),
-    '#autocomplete_path' => 'hosting_client/autocomplete/client',
-  ), 'filter_xss', $editable);
+      '#type' => 'textfield',
+      '#required' => TRUE,
+      '#title' => t('Client'),
+      '#default_value' => _hosting_client_site_default($node),
+      '#description' => t('The client who this site belongs to.'),
+      '#autocomplete_path' => 'hosting_client/autocomplete/client',
+    ), 'filter_xss', $editable);
 
-  // Install profiles 
+  // Install profiles
   $profiles = hosting_get_profiles();
-  foreach($profiles as $id => $name) {
+  foreach ($profiles as $id => $name) {
     // Don't allow a site to be provisioned with hostslave or hostmaster profile
     if (in_array($name, array('Hostslave', 'Hostmaster'))) {
       unset($profiles[$id]);
@@ -230,15 +228,15 @@ function hosting_site_form($node) {
 
 
   _hosting_site_field($form, $node, 'platform', array(
-     '#type' => 'radios',
-     '#title' => t('Platform'),
-     '#required' => TRUE,
-     '#description' => t('The platform you want the site to be hosted on.<br />
+      '#type' => 'radios',
+      '#title' => t('Platform'),
+      '#required' => TRUE,
+      '#description' => t('The platform you want the site to be hosted on.<br />
                           Not seeing a certain platform? Platforms shown are those that support the profile above.
                           If a different profile is selected, this list may change automatically.'),
-     '#options' => _hosting_get_platforms(),
-     '#default_value' => ($node->platform) ? $node->platform : null,
-   ), '_hosting_node_link');
+      '#options' => _hosting_get_platforms(),
+      '#default_value' => ($node->platform) ? $node->platform : NULL,
+    ), '_hosting_node_link');
 
   _hosting_site_field($form, $node, 'site_language', array(
       '#type' => 'radios',
@@ -251,15 +249,15 @@ function hosting_site_form($node) {
     ), '_hosting_language_name');
 
   _hosting_site_field($form, $node, 'db_server', array(
-        '#type' => 'radios',
-        '#title' => t('Database server'),
-        '#required' => TRUE,
-        '#description' => t('The database server the site will use to host its content.'),
-        '#options' => hosting_get_servers('db'),
-        '#default_value' => $node->db_server ? $node->db_server : HOSTING_DEFAULT_DB_SERVER,
-      ), '_hosting_node_link');
+      '#type' => 'radios',
+      '#title' => t('Database server'),
+      '#required' => TRUE,
+      '#description' => t('The database server the site will use to host its content.'),
+      '#options' => hosting_get_servers('db'),
+      '#default_value' => $node->db_server ? $node->db_server : HOSTING_DEFAULT_DB_SERVER,
+    ), '_hosting_node_link');
 
-  foreach(array('verified', 'last_cron', 'site_status') as $extra_attribute) {
+  foreach (array('verified', 'last_cron', 'site_status') as $extra_attribute) {
     $form["$extra_attribute"] = array('#type' => 'value', '#value' => $node->$extra_attribute);
   }
 
@@ -267,18 +265,18 @@ function hosting_site_form($node) {
 }
 
 /**
- * Implementation of hook_validate().
+ * Implements hook_validate().
  */
 function hosting_site_validate($node, &$form) {
   global $user;
 
   $valid_options = hosting_site_available_options($node);
- 
+
   $url = strtolower(trim($node->title)); // domain names are case-insensitive
   if (!_hosting_valid_fqdn($url)) {
     form_set_error('title', t("You have not specified a valid url for this site."));
   }
-   
+
   if (!$node->new_client) {
     $client = hosting_get_client($node->client);
     if (!$node->client || !$client) {
@@ -290,7 +288,7 @@ function hosting_site_validate($node, &$form) {
     $node->client = $client->nid;
   }
 
-  # TODO: maybe we should allow creation of sites that conflict with HOSTING_SITE_DISABLED (which would then need to be renamed before being re-enabled)
+  // TODO: maybe we should allow creation of sites that conflict with HOSTING_SITE_DISABLED (which would then need to be renamed before being re-enabled)
   if (!hosting_domain_allowed($url, (array) $node)) {
     form_set_error('title', t("The domain name you have specified is already in use."));
   }
@@ -312,7 +310,7 @@ function hosting_site_validate($node, &$form) {
     form_set_error('platform', t('Please choose a valid platform'));
   }
 
-  // Check that we are selecting a valid language for this profile, but only when a new site is created. 
+  // Check that we are selecting a valid language for this profile, but only when a new site is created.
   if (!in_array($node->site_language, $valid_options['site_language']) && !$node->nid) {
     form_set_error('site_language', t('Please fill in a valid language'));
   }
@@ -320,7 +318,8 @@ function hosting_site_validate($node, &$form) {
 }
 
 /**
- * Implementation of hook_form_alter().
+ * Implements of hook_form_alter().
+ *
  * Hide the delete button on site nodes
  */
 function hosting_site_form_alter(&$form, &$form_state, $form_id) {
