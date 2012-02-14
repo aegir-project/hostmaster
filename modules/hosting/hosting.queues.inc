@@ -53,8 +53,8 @@
  * Generate a list of queues, and the frequency / amount of items
  * that need to be processed for each of them.
  */
-function hosting_get_queues($refresh = false) {
-  static $cache = null;
+function hosting_get_queues($refresh = FALSE) {
+  static $cache = NULL;
 
   if (is_null($cache) || $refresh) {
     $cache = array();
@@ -69,19 +69,19 @@ function hosting_get_queues($refresh = false) {
       'enabled' => TRUE,
       'singular' => t('item'),
       'plural' => t('items')
-    );  
+    );
     $queues = module_invoke_all("hosting_queues");
     foreach ($queues as $key => $queue) {
       $queue = array_merge($defaults, $queue);
 
-      // Configurable settings. 
+      // Configurable settings.
       $configured = array(
         'frequency' => variable_get('hosting_queue_' . $key . '_frequency', $queue['frequency']),
         'items' => variable_get('hosting_queue_' . $key . '_items', $queue['items']),
         'enabled' => variable_get('hosting_queue_' . $key . '_enabled', $queue['enabled']),
-        'last_run' => variable_get('hosting_queue_' . $key . '_last_run', false),
-        'running' => variable_get('hosting_queue_' . $key . '_running', false),
-        'interval' => variable_get('hosting_queue_' . $key . '_interval', false),
+        'last_run' => variable_get('hosting_queue_' . $key . '_last_run', FALSE),
+        'running' => variable_get('hosting_queue_' . $key . '_running', FALSE),
+        'interval' => variable_get('hosting_queue_' . $key . '_interval', FALSE),
       );
       $queue = array_merge($queue, $configured);
 
@@ -107,7 +107,7 @@ function hosting_get_queues($refresh = false) {
     }
     $cache = $queues;
   }
-  
+
   return $cache;
 }
 
@@ -118,9 +118,9 @@ function hosting_get_queues($refresh = false) {
  * functionality needed to ensure that the queues are running as scheduled.
  */
 function hosting_run_queue() {
-  $cmd = drush_get_command(); 
+  $cmd = drush_get_command();
   $queue = $cmd['queue'];
-  $count = drush_get_option(array('i', 'items'), 5); # process a default of 5 items at a time.
+  $count = drush_get_option(array('i', 'items'), 5); // process a default of 5 items at a time.
 
   variable_set('hosting_queue_' . $queue . '_last_run', $t = mktime());
   variable_set('hosting_queue_' . $queue . '_running', $t);
