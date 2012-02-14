@@ -5,7 +5,7 @@
  */
 
 /**
- * Implementation of hook_user().
+ * Implements hook_user().
  */
 function hosting_client_user($op, &$edit, &$user, $category = NULL) {
   switch ($op) {
@@ -30,7 +30,7 @@ function hosting_client_user($op, &$edit, &$user, $category = NULL) {
     return hosting_client_user_form_validate($edit);
 
   case 'insert':
-  case 'update': 
+  case 'update':
     hosting_client_user_form_submit($edit, $user);
     $edit['hosting_client'] = NULL;
     break;
@@ -50,7 +50,7 @@ function hosting_client_user($op, &$edit, &$user, $category = NULL) {
 function hosting_client_user_view($user) {
   if ($user->client_id) {
 
-    foreach($user->client_id as $client => $type) {
+    foreach ($user->client_id as $client => $type) {
       $rows[] = array(_hosting_node_link($client));
     }
 
@@ -74,7 +74,7 @@ function hosting_client_user_form($edit, $user, $category) {
 
   $clients = array();
   if ($user->client_id) {
-    foreach($user->client_id as $client => $type) {
+    foreach ($user->client_id as $client => $type) {
       $clients[$client] = '';
       $fields[$category]['name'][$client] = array('#type' => 'markup', '#value' => _hosting_node_link($client));
     }
@@ -82,16 +82,16 @@ function hosting_client_user_form($edit, $user, $category) {
   if (user_access('edit client users')) {
     $fields[$category]['clients'] = array('#type' => 'checkboxes', '#options' => $clients);
   }
-  
+
   $fields[$category]['header'] = array('#type' => 'value', '#value' => array(array('data' => t('Accessible clients')), array('data' => t('Remove'))));
-  
+
   if (user_access('edit client users')) {
     $fields[$category]['hosting_client'] = array(
         '#type' => 'textfield',
         '#title' => t('Associate a client to this user'),
         '#weight' => 2,
         '#autocomplete_path' => 'hosting_client/autocomplete/client',
-        '#description' => t('This field allows you to associate an existing client to a user. 
+        '#description' => t('This field allows you to associate an existing client to a user.
                              It does not create a new client, but allows this user
                              to manage sites belonging to the given client.'),
         );
@@ -126,7 +126,7 @@ function theme_hosting_client_user_form($form) {
 
 /**
  * Validate the submission of a user form.
- * 
+ *
  * @see hosting_client_user()
  */
 function hosting_client_user_form_validate($edit) {
@@ -157,7 +157,7 @@ function hosting_client_user_form_submit($edit, $user) {
  * ourselves.
  */
 function hosting_client_disabling($set = NULL) {
-  static $disabling = false;
+  static $disabling = FALSE;
   if ($set !== NULL) {
     $disabling = $set;
   }
@@ -166,24 +166,25 @@ function hosting_client_disabling($set = NULL) {
 
 
 /**
- * Implementation of hook_node_grants().
+ * Implements hook_node_grants().
  */
 function hosting_node_grants($account, $op) {
   $account->client_id = hosting_get_client_from_user($account->uid);
-  $types = array_merge(hosting_feature_node_types(), array('site', 'task', 'package', 'client')); 
+  $types = array_merge(hosting_feature_node_types(), array('site', 'task', 'package', 'client'));
   foreach ($types as $type) {
     if (user_access("administer {$type}s")) {
       $grants["hosting {$type}"] = array(1);
-    } else if (user_access("$op $type")) {
+    }
+    elseif (user_access("$op $type")) {
       // TODO: restrict access to certain op-type based on the user relationship to this client - see content of $client_relations
-      $grants['hosting ' . $type] = array_keys($account->client_id); 
+      $grants['hosting ' . $type] = array_keys($account->client_id);
     }
   }
   return $grants;
 }
 
 /**
- * Implementation of hook_node_access_records().
+ * Implements hook_node_access_records().
  */
 function hosting_client_node_access_records($node) {
   if (hosting_client_disabling()) {
@@ -191,9 +192,9 @@ function hosting_client_node_access_records($node) {
   }
   $grants = array();
   $base_grant = array(
-      'realm' => 'hosting ' . $node->type, 
-      'grant_view' => TRUE, 
-      'grant_update' => TRUE, 
+      'realm' => 'hosting ' . $node->type,
+      'grant_view' => TRUE,
+      'grant_update' => TRUE,
       'grant_delete' => FALSE,
       'priority' => 1,
     );
@@ -216,7 +217,7 @@ function hosting_client_node_access_records($node) {
       break;
     case 'task' :
     case 'server' :
-      // The rest of the node types are configuration, so only admin should see them. 
+      // The rest of the node types are configuration, so only admin should see them.
       $base_grant['gid'] = HOSTING_ADMIN_CLIENT;
       break;
     case 'platform' :
