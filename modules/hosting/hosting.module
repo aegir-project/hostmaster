@@ -760,14 +760,14 @@ function hosting_form_alter(&$form, &$form_state, $form_id) {
   $node_types = array('site', 'platform', 'server', 'client');
   foreach ($node_types as $type) {
     if ($form_id == $type . '_node_form') {
-      unset($form['options']);
-      unset($form['menu']);
-      unset($form['revision_information']);
-      unset($form['author']);
-      unset($form['comment_settings']);
+      $form['options']['#access'] = FALSE;
+      $form['menu']['#access'] = FALSE;
+      $form['revision_information']['#access'] = FALSE;
+      $form['author']['#access'] = FALSE;
+      $form['comment_settings']['#access'] = FALSE;
 
       // because these aren't really posts, 'preview' doesnt make sense in this context.
-      unset($form['buttons']['preview']);
+      $form['buttons']['preview']['#access'] = FALSE;
     }
   }
 }
