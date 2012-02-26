@@ -131,7 +131,7 @@ function hosting_alias_insert($node) {
     $aliases = (is_array($node->aliases)) ? $node->aliases : explode("\n", str_replace(",", "\n", $node->aliases));
     if (is_array($aliases)) {
       foreach ($aliases as $alias) {
-        if (($alias = trim($alias)) && !in_array($alias, $automatic) && _hosting_valid_fqdn($alias)) {
+        if (($alias = trim($alias)) && !in_array($alias, $automatic)) {
           db_query("INSERT INTO {hosting_site_alias} (vid, nid, alias, automatic, redirection) VALUES (%d, %d, '%s', %d, %d)", $node->vid, $node->nid, $alias, HOSTING_ALIAS_CUSTOM, $node->redirection);
         }
       }
@@ -208,6 +208,9 @@ function hosting_alias_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
           if ($alias = trim($alias)) {
             if (!hosting_domain_allowed($alias, array('nid' => $node->nid)) || $alias == $node->title) {
               form_set_error('aliases', t('The domain name @alias is already in use', array('@alias' => $alias)));
+            }
+            if (!_hosting_valid_fqdn($alias)) {
+              form_set_error('aliases', t('The domain name @alias is not a valid url', array('@alias' => $alias)));
             }
           }
         }
