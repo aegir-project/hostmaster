@@ -47,9 +47,9 @@ function hosting_platform_node_info() {
   $types["platform"] =  array(
     "type" => 'platform', "name" => 'Platform',
     "module" => 'hosting_platform',
-    "has_title" => TRUE, "title_label" => t('Name'), 
+    "has_title" => TRUE, "title_label" => t('Name'),
     "description" => hosting_node_help("platform"),
-    "has_body" => 0, "body_label" => '', "min_word_count" => 0);    
+    "has_body" => 0, "body_label" => '', "min_word_count" => 0);
 
   return $types;
 }
@@ -84,7 +84,7 @@ function hosting_platform_hosting_tasks() {
   );
   $tasks['platform']['unlock'] = array(
     'title' => t('Unlock'),
-    'description' => t('Unlocking this platform will allow sites to be provisioned on it. 
+    'description' => t('Unlocking this platform will allow sites to be provisioned on it.
         Are you really sure you want to unlock this platform?'),
     'weight' => 10,
   );
@@ -110,15 +110,15 @@ function hosting_platform_access($op, $node, $account) {
     case 'update':
       return user_access('edit platform', $account);
       break;
-  } 
+  }
 }
 
 /**
  * Small helper function to get platforms that haven't been deleted.
- */ 
+ */
 function _hosting_get_platforms() {
   $return = array();
-  $result = db_query("SELECT n.nid, n.title FROM {node} n LEFT JOIN {hosting_platform} h ON n.nid = h.nid 
+  $result = db_query("SELECT n.nid, n.title FROM {node} n LEFT JOIN {hosting_platform} h ON n.nid = h.nid
                       WHERE n.type='platform' AND n.status=1 AND h.status <> %d ORDER BY n.title", HOSTING_PLATFORM_DELETED);
   while($server = db_fetch_object($result)) {
     $return[$server->nid] = $server->title;
@@ -131,7 +131,7 @@ function _hosting_get_platforms() {
  */
 function _hosting_get_enabled_platforms() {
   $return = array();
-  $result = db_query("SELECT n.nid, n.title FROM {node} n LEFT JOIN {hosting_platform} h ON n.nid = h.nid 
+  $result = db_query("SELECT n.nid, n.title FROM {node} n LEFT JOIN {hosting_platform} h ON n.nid = h.nid
                       WHERE n.type='platform' AND n.status=1 AND h.status <> %d ORDER BY n.title", HOSTING_PLATFORM_LOCKED);
   while($server = db_fetch_object($result)) {
     $return[$server->nid] = $server->title;
@@ -144,7 +144,7 @@ function _hosting_get_enabled_platforms() {
  */
 function _hosting_get_locked_platforms() {
   $return = array();
-  $result = db_query("SELECT n.nid, n.title FROM {node} n LEFT JOIN {hosting_platform} h ON n.nid = h.nid 
+  $result = db_query("SELECT n.nid, n.title FROM {node} n LEFT JOIN {hosting_platform} h ON n.nid = h.nid
                       WHERE n.type='platform' AND n.status=1 AND h.status = %d ORDER BY n.title", HOSTING_PLATFORM_LOCKED);
   while($server = db_fetch_object($result)) {
     $return[$server->nid] = $server->title;
@@ -173,7 +173,7 @@ function hosting_platform_form(&$node) {
     '#type' => 'textfield',
     '#title' => t('Name'),
     '#required' => TRUE,
-    '#description' => t('Choose a unique descriptive name for your platform. You very likely want this to be something like "Drupal 6.20".'),
+    '#description' => t('Choose a unique descriptive name for your platform. You very likely want this to be something like "My Platform v.1.8" etc.'),
     '#size' => 40,
     '#default_value' => $node->title,
     '#maxlength' => 255,
@@ -181,7 +181,7 @@ function hosting_platform_form(&$node) {
   if (!$node->nid) {
     $form['publish_path'] = array(
       '#type' => 'textfield',
-      '#title' => t('Publish path'),
+      '#title' => t('Platform Path'),
       '#required' => TRUE,
       '#description' => t('The absolute path on the filesystem where the sites will be hosted. This needs to be created manually and initialized before your platform works properly. It also needs to be a unique path not already in use by a platform on any server. Your publish path is the absolute path to the directory that gets created. Alternatively, you can specify a makefile below, and the platform will be created automatically if the path specified here does not exist. You are still required to enter the absolute path above, as it will be treated as the target directory by the makefile.', array('%commands' => "cd /var/aegir/platforms\ndrush dl drupal\n")),
       '#size' => 40,
@@ -193,7 +193,7 @@ function hosting_platform_form(&$node) {
     // display it
     $form['info']['publish_path'] = array(
       '#type' => 'item',
-      '#title' => t('Publish path'),
+      '#title' => t('Platform Path'),
       '#value' => $node->publish_path
     );
     // send it on form submission
@@ -203,7 +203,7 @@ function hosting_platform_form(&$node) {
   $form['makefile'] = array(
     '#type' => 'textfield',
     '#title' => t('Makefile'),
-    '#description' => t('The absolute path on the filesystem or public URL of a makefile that will be used to create the platform in the directory specified above. If the directory already exists, this file will be ignored.'),
+    '#description' => t('Wait! Do not confuse this with Platform Path - you need to start typing Platform Name above to see the small Edit link and use it to edit otherwise auto-generated Platform Path, which is required when you are adding already created Platform directory (typical on site import). This Makefile field is for the absolute path on the filesystem or public URL of a makefile that will be used to create the Platform in the directory specified above in the Platform Path field - note that its parent directory must exists and must be group writable. If the Platform directory already exists, the makefile will be ignored.'),
     '#size' => 40,
     '#default_value' => $node->makefile,
     '#maxlength' => 255,
@@ -374,11 +374,11 @@ function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
 
   $node->content['info']['publish_path'] = array(
     '#type' => 'item',
-    '#title' => t('Publish path'),
+    '#title' => t('Platform Path'),
     '#value' => filter_xss($node->publish_path),
     '#weight' => -8
   );
- 
+
   $node->content['info']['web_server'] = array(
     '#type' => 'item',
     '#title' => t('Web server'),
@@ -408,7 +408,7 @@ function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
       '#weight' => -6
     );
   }
-  
+
   if ($page) {
     $node->content['sites_view'] = array(
       '#type' => 'item',
@@ -470,7 +470,7 @@ function hosting_platform_hosting_summary() {
  */
 function hosting_platform_views_api() {
   return array(
-    'api' => 2, 
+    'api' => 2,
     'path' => drupal_get_path('module', 'hosting_platform'),
   );
 }
@@ -487,7 +487,7 @@ function _hosting_platform_list_class($node) {
     HOSTING_PLATFORM_LOCKED => "hosting-warning",
   );
 
-  return $labels[$node->platform_status]; 
+  return $labels[$node->platform_status];
 }
 
 /**
