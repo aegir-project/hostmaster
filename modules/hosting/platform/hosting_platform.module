@@ -203,7 +203,7 @@ function hosting_platform_form(&$node) {
   $form['makefile'] = array(
     '#type' => 'textfield',
     '#title' => t('Makefile'),
-    '#description' => t('Wait! Do not confuse this with Platform Path - you need to start typing Platform Name above to see the small Edit link and use it to edit otherwise auto-generated Platform Path, which is required when you are adding already created Platform directory (typical on site import). This Makefile field is for the absolute path on the filesystem or public URL of a makefile that will be used to create the Platform in the directory specified above in the Platform Path field - note that its parent directory must exists and must be group writable. If the Platform directory already exists, the makefile will be ignored.'),
+    '#description' => t('Wait! Do not confuse this with Platform Path - you need to start typing Platform Name above to see the small Edit link and use it to edit otherwise auto-generated Platform Path, which is required when you are adding already created Platform directory (typically on site import). This Makefile field is for the absolute path on the filesystem or public URL of a makefile that will be used to create the Platform in the directory specified above in the Platform Path field - note that its parent directory must exist and must be group writable. If the Platform directory already exists, the makefile will be ignored.'),
     '#size' => 40,
     '#default_value' => $node->makefile,
     '#maxlength' => 255,
