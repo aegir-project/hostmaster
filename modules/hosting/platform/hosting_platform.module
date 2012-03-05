@@ -183,7 +183,7 @@ function hosting_platform_form(&$node) {
       '#type' => 'textfield',
       '#title' => t('Platform Path'),
       '#required' => TRUE,
-      '#description' => t('The absolute path on the filesystem where the sites will be hosted. This needs to be created manually and initialized before your platform works properly. It also needs to be a unique path not already in use by a platform on any server. Your publish path is the absolute path to the directory that gets created. Alternatively, you can specify a makefile below, and the platform will be created automatically if the path specified here does not exist. You are still required to enter the absolute path above, as it will be treated as the target directory by the makefile.', array('%commands' => "cd /var/aegir/platforms\ndrush dl drupal\n")),
+      '#description' => t('The absolute path on the filesystem where the sites will be hosted. This needs to be created manually and initialized before your platform works properly. It should be group writable: rwxrwxr-x. It also needs to be a unique path not already in use by any other platform on any server. Alternatively, you can specify a makefile below, and the platform will be created automatically if the path specified here does not exist. You are still required to enter the absolute path above, as it will be treated as the target directory by the makefile.', array('%commands' => "cd /var/aegir/platforms\ndrush dl drupal\n")),
       '#size' => 40,
       '#default_value' => $node->publish_path,
       '#maxlength' => 255,
@@ -203,7 +203,7 @@ function hosting_platform_form(&$node) {
   $form['makefile'] = array(
     '#type' => 'textfield',
     '#title' => t('Makefile'),
-    '#description' => t('Wait! Do not confuse this with Platform Path - you need to start typing Platform Name above to see the small Edit link and use it to edit otherwise auto-generated Platform Path, which is required when you are adding already created Platform directory (typically on site import). This Makefile field is for the absolute path on the filesystem or public URL of a makefile that will be used to create the Platform in the directory specified above in the Platform Path field - note that its parent directory must exist and must be group writable. If the Platform directory already exists, the makefile will be ignored.'),
+    '#description' => t('Wait a moment! Do not confuse this field with Platform Path field - you need to start typing Platform Name above to see the small Edit link and use it to edit otherwise auto-generated Platform Path, which is required when you are adding already created Platform directory (typically on site import). This Makefile field is for the absolute path on the filesystem or public URL of a makefile that will be used to create the Platform in the directory specified above in the Platform Path field - note that its parent directory must exist and must be group writable: rwxrwxr-x. If the Platform directory already exists, the makefile will be ignored.'),
     '#size' => 40,
     '#default_value' => $node->makefile,
     '#maxlength' => 255,
