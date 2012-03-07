@@ -17,17 +17,7 @@
  *   TRUE is the $hostname is a valid IP address, FALSE otherwise.
  */
 function _hosting_valid_ip($hostname) {
-  //TODO : provide IPv6 support
-  $parts = explode('.', $hostname);
-  if (sizeof($parts) != 4) {
-    return FALSE;
-  }
-  foreach ($parts as $part) {
-    if (((int) $part < 0) || ((int) $part > 255)) {
-      return FALSE;
-    }
-  }
-  return TRUE;
+  return is_string(inet_pton($hostname));
 }
 
 /**
