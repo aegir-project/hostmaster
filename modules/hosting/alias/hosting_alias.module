@@ -66,6 +66,21 @@ function hosting_alias_form_alter(&$form, $form_state, $form_id) {
  */
 function hosting_alias_form_data(&$form) {
   if (user_access('create site aliases')) {
+
+    // List the automatic aliasses first.
+    $aliases = hosting_alias_get_aliases($form['#node'], HOSTING_ALIAS_AUTOMATIC);
+    if (sizeof($aliases)) {
+      foreach ($aliases as $link) {
+        $links[] = l($link, "http://$link");
+      }
+      $form['aliases_automatic'] = array(
+        '#type' => 'item',
+        '#title' => t('Automatic domain aliases'),
+        '#value' => implode(', ', $links),
+        '#weight' => 10,
+      );
+    }
+
     $form['aliases'] = array(
       '#type' => 'textarea',
       '#title' => t('Domain aliases'),
