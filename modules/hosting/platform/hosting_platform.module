@@ -171,7 +171,7 @@ function hosting_platform_form(&$node) {
   $type = node_get_types('type', $node);
   $form['title'] = array(
     '#type' => 'textfield',
-    '#title' => t('Name'),
+    '#title' => t('Platform Name'),
     '#required' => TRUE,
     '#description' => t('Choose a unique descriptive name for your platform. You very likely want this to be something like "My Platform v.1.8" etc.'),
     '#size' => 40,
@@ -202,8 +202,8 @@ function hosting_platform_form(&$node) {
 
   $form['makefile'] = array(
     '#type' => 'textfield',
-    '#title' => t('Makefile'),
-    '#description' => t('Wait a moment! Do not confuse this field with Platform Path field - you need to start typing Platform Name above to see the small Edit link and use it to edit otherwise auto-generated Platform Path, which is required when you are adding already created Platform directory (typically on site import). This Makefile field is for the absolute path on the filesystem or public URL of a makefile that will be used to create the Platform in the directory specified above in the Platform Path field - note that its parent directory must exist and must be group writable: rwxrwxr-x. If the Platform directory already exists, the makefile will be ignored.'),
+    '#title' => t('Platform Makefile'),
+    '#description' => t('Wait a moment! Do not confuse this field with Platform Path field - you need to start typing Platform Name above to see the small Edit link and use it to edit otherwise auto-generated Platform Path, which is required when you are adding already created Platform directory (typically on site import). This Makefile field is for the absolute path on the filesystem or public URL of a makefile that will be used to create the Platform in the path auto-generated or specified above in the Platform Path field - note that its parent directory must exist and must be group writable: rwxrwxr-x. If the Platform directory already exists, the makefile will be ignored.'),
     '#size' => 40,
     '#default_value' => $node->makefile,
     '#maxlength' => 255,
