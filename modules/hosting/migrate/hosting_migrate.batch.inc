@@ -32,7 +32,7 @@ function hosting_migrate_platform($form_state, $node) {
       $form['#current_platform'] = $node;
       $form['description'] = array(
         '#type' => 'item',
-        '#description' => 'Perform a batch migration of sites from this platform to a target platform.',
+        '#description' => 'You may want to read <a href="http://omega8.cc/node/139" target=_blank>our best recipes for disaster</a> <b>before</b> going further. You can perform a batch migration of sites from this platform to a target platform using this form, but if you wish to do that <b>securely</b>, always Clone them in its <b>current</b> platform with some working subdomain, then test Migration of the cloned copy first and check if the cloned copy works fine, <b>before</b> you will try that with your live sites. As always, remember to re-verify both source and target platforms plus all sites before <b>and</b> after running Clone or Migrate task.',
       );
       $form['target_platform'] = array(
         '#type' => 'radios',

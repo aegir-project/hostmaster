@@ -12,7 +12,7 @@ function hosting_clone_hosting_tasks() {
 
   $options['site']['clone'] = array(
     'title' => t('Clone'),
-    'description' => t('You may want to read <a href="http://omega8.cc/node/139" target=_blank>our best recipes for disaster</a> *before* going further. You can make a copy of your site with some working subdomain using this form, but avoid changing its platform here at the same time! If you wish to *securely* change the platform this site is hosted on, Clone it in its *current* platform first, and then use Migrate task instead. As always, remember to re-verify both source and target platform, plus the site before running Clone or Migrate task. By the way, if you wish to simply change the main domain of your site, use Migrate task, not Clone.'),
+    'description' => t('You may want to read <a href="http://omega8.cc/node/139" target=_blank>our best recipes for disaster</a> <b>before</b> going further. You can make a copy of your site with some working subdomain using this form, but avoid changing its platform here at the same time! If you wish to <b>securely</b> change the platform this site is hosted on, Clone it in its <b>current</b> platform first, and then use Migrate task instead. As always, remember to re-verify both source and target platform, plus the site before <b>and</b> after running Clone or Migrate task. By the way, if you wish to simply change the main domain of your site, use Migrate task, not Clone.'),
     'weight' => 5,
     'dialog' => TRUE
   );
