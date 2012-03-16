@@ -101,8 +101,8 @@ function hostmaster_bootstrap() {
   }
   hosting_services_add($db_node, 'db', $db_server->db_service_type, array(
     'db_type' => $master_db['scheme'],
-    'db_user' => $master_db['user'],
-    'db_passwd' => $master_db['pass'],
+    'db_user' => urldecode($master_db['user']),
+    'db_passwd' => urldecode($master_db['pass']),
     'port' => 3306,
     'available' => 1,
   ));
