@@ -189,7 +189,8 @@ function hosting_ssl_nodeapi_site_presave(&$node) {
   if (!isset($node->ssl_enabled)) {
     $node->ssl_enabled = HOSTING_SSL_DISABLED;
   }
-  if ($node->ssl_key == HOSTING_SSL_CUSTOM_KEY) {
+  // If the user has specified a new SSL key to use, sanitise the name.
+  if (($node->ssl_key == HOSTING_SSL_CUSTOM_KEY) && isset($node->ssl_key_new)) {
     $node->ssl_key = hosting_ssl_filter_key($node->ssl_key_new);
   }
 }
