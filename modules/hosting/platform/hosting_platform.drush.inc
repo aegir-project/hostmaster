@@ -56,12 +56,13 @@ function hosting_platform_post_hosting_verify_task($task, $data) {
     node_save($node);
 
     hosting_package_sync($packages['base']);
-    hosting_package_instance_sync($node->nid, $packages['base']);
+    hosting_package_sync($packages['sites-all']);
+    hosting_package_instance_sync($node->nid, $packages['base'], $packages['sites-all']);
     foreach ($context['profiles'] as $profile) {
       hosting_package_sync($packages['profiles'][$profile]);
       $instance = hosting_package_instance_load(
         array('p.short_name' => $profile, 'i.rid' => $node->nid, 'p.package_type' => 'profile'));
-      hosting_package_instance_sync($instance->iid, $packages['base'], $packages['profiles'][$profile]);
+      hosting_package_instance_sync($instance->iid, $packages['base'], $packages['profiles'][$profile], $packages['sites-all']);
 
       // @todo : package instances of modules to profiles.
     }
