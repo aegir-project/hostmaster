@@ -348,10 +348,16 @@ function hosting_quota_numeric_value($form, $form_state) {
 function hosting_quota_theme($existing, $resource, $theme, $path) {
   return array(
     'hosting_quota_client' => array(
-      'arguments' => array('node' => NULL),
+      'arguments' => array(
+        'node' => NULL
+      ),
     ),
     'hosting_quota_admin_list' => array(
-      'arguments' => array('client_quotas' => array(), 'resources' => array()),
+      'arguments' => array(
+        'client_quotas' => array(),
+        'resources' => array(),
+        'items_per_page' => 25,
+      ),
     ),
   );
 }
@@ -364,7 +370,7 @@ function hosting_quota_theme($existing, $resource, $theme, $path) {
  * @param $resources array
  *   The array of info about resources
  */
-function theme_hosting_quota_admin_list ($client_quotas, $resources) {
+function theme_hosting_quota_admin_list($client_quotas, $resources, $items_per_page = 25) {
   $header = array(t('Client'));
   $rows = array();
 
@@ -389,7 +395,7 @@ function theme_hosting_quota_admin_list ($client_quotas, $resources) {
     }
     $rows[] = $row;
   }
-  return '<p>' . t('Usage information for the last month.') . '</p>' . theme('table', $header, $rows) . theme('pager', NULL, 23, 0);
+  return '<p>' . t('Usage information for the last month.') . '</p>' . theme('table', $header, $rows) . theme('pager', array(), $items_per_page);
 }
 
 /**
