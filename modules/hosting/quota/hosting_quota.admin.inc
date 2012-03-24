@@ -3,9 +3,9 @@
  * Page callback for admin/hosting/quotas
  */
 function hosting_quota_admin_client_list() {
-
+  $items_per_page = 25;
   $all_resources = module_invoke_all('hosting_quota_resource');
-  $result = pager_query('SELECT q.*, n.title FROM {hosting_client_quota} q INNER JOIN {node} n ON n.nid = q.client', 23);
+  $result = pager_query('SELECT q.*, n.title FROM {hosting_client_quota} q INNER JOIN {node} n ON n.nid = q.client', $items_per_page);
   $output = array();
 
   while ($row = db_fetch_object($result)) {
@@ -24,7 +24,7 @@ function hosting_quota_admin_client_list() {
     $output[$row->client]['name'] = $row->title;
   }
 
-  return theme_hosting_quota_admin_list ($output, $all_resources);
+  return theme('hosting_quota_admin_list', $output, $all_resources, $items_per_page);
 }
 
 /**
