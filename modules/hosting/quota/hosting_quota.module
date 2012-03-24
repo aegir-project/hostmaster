@@ -389,7 +389,7 @@ function theme_hosting_quota_admin_list ($client_quotas, $resources) {
     }
     $rows[] = $row;
   }
-  return '<p>' . t('Usage information for the last month.') . '</p>' . theme('table', $header, $rows);
+  return '<p>' . t('Usage information for the last month.') . '</p>' . theme('table', $header, $rows) . theme('pager', NULL, 23, 0);
 }
 
 /**
