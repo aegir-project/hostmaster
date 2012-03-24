@@ -580,7 +580,7 @@ function hosting_available_tasks($type, $reset = FALSE) {
  */
 function hosting_task_insert($node) {
   $node->executed = isset($node->executed) ? $node->executed : NULL;
-  $node->executed = isset($node->delta) ? $node->delta : NULL;
+  $node->delta = isset($node->delta) ? $node->delta : NULL;
   db_query("INSERT INTO {hosting_task} (vid, nid, task_type, task_status, rid, executed, delta) VALUES (%d, %d, '%s', %d, %d, %d, %d)",
     $node->vid, $node->nid, $node->task_type, $node->task_status, $node->rid, $node->executed, $node->delta);
 
