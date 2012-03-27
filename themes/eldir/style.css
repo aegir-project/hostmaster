@@ -227,7 +227,7 @@ div#navigation ul.links li {
     background:#6ac;
     color:#000;
     }
-  
+
   div#navigation ul.links li.active a,
   div#navigation ul.links li a.active {
     background:#e8e8e8;
@@ -261,7 +261,7 @@ div#header-region h2.page-title {
     padding:0px 10px;
     line-height:30px;
 
-    background:#666;
+    background:#4372aa;
     color:#fff;
     }
 
@@ -277,7 +277,7 @@ div#header-region ul.tabs { clear:both; }
     }
 
   div#header-region ul.tabs li a:hover {
-    background:#666;
+    background:#4372aa;
     color:#fff;
     }
 
@@ -445,7 +445,7 @@ div.krumo-root, div.krumo-root a {
  * FOOTER =============================================================
  */
 #footer {
-  background:#666;
+  background:#4372aa;
   padding:20px 0px;
   line-height:40px;
   height:40px;
@@ -494,14 +494,21 @@ input.form-submit {
   border:0px;
   padding:5px 10px;
   color:#fff;
-  background:#666;
-
+  background:#4372aa;
   cursor:pointer;
-
+  text-align:center;
   -moz-border-radius:3px;
   -webkit-border-radius: 3px;
   }
 
+.form-submit {
+  width: 25%;
+  text-align:center;
+  display:block;
+  margin-top:15px;
+  margin-left:auto;
+  margin-right:auto;
+}
 
 input.form-submit[disabled] {
   color:#ddd;
@@ -573,7 +580,7 @@ div.form-item div.description {
   margin:5px 0px;
   line-height:15px;
   font-size:11px;
-  color:#666;
+  color:#4372aa;
   }
 
 /* Fieldsets... what a nightmare */
@@ -674,7 +681,7 @@ div.node h2 {
     margin:5px 10px 0px 0px;
     padding:0px 5px;
 
-    background:#666;
+    background:#4372aa;
     color:#fff;
     }
 
@@ -691,7 +698,7 @@ div.node div.meta {
 
 div.node ul.links {
   float:right;
-  font-size:11px;  
+  font-size:11px;
   }
 
   div.node ul.links li a {
@@ -747,7 +754,7 @@ table.hosting-table td {
 table th,
 table.hosting-table th {
   font-size:11px;
-  background:#666 !important;
+  background:#4372aa !important;
   }
 
  table th.active,
@@ -767,14 +774,14 @@ table.hosting-table th {
   }
 
 /* Node info */
-#hosting-task-list { 
+#hosting-task-list {
   width:290px;
   float:right;
 }
 
 #hosting-server-info,
 #hosting-platform-info,
-#hosting-package-info, 
+#hosting-package-info,
 #hosting-site-info,
 #hosting-task-info,
 #hosting-site-edit-info {
@@ -852,11 +859,17 @@ div.hosting-queue-frequency select {
   font-size:10px;
   }
 
+#edit-backup-queue-frequency-items-wrapper,
 #edit-tasks-frequency-items-wrapper {
     float: left;
     margin: 0 0 5px 0;
 }
 
+#edit-backup-queue-frequency-items-wrapper input,
+#edit-backup-queue-frequency-ticks-wrapper input,
+#edit-backup-gc-frequency-ticks-wrapper input,
+#edit-advanced-cron-frequency-ticks-wrapper input,
+#edit-civicrm-cron-frequency-ticks-wrapper input,
 #edit-cron-frequency-ticks-wrapper input,
 #edit-tasks-frequency-items-wrapper input,
 #edit-tasks-frequency-ticks-wrapper input {
@@ -864,20 +877,29 @@ div.hosting-queue-frequency select {
     margin: 0 5px 0 0;
 }
 
+#edit-backup-gc-frequency-ticks-wrapper,
+#edit-backup-queue-frequency-ticks-wrapper,
+#edit-advanced-cron-frequency-ticks-wrapper,
+#edit-civicrm-cron-frequency-ticks-wrapper,
 #edit-cron-frequency-ticks-wrapper {
     float: left;
 }
 
+#edit-backup-queue-frequency-ticks-wrapper,
 #edit-tasks-frequency-ticks-wrapper {
     float: left;
     clear: both;
 }
 
+#edit-backup-gc-frequency-unit-wrapper,
+#edit-backup-queue-frequency-unit-wrapper,
+#edit-advanced-cron-frequency-unit-wrapper,
+#edit-civicrm-cron-frequency-unit-wrapper,
 #edit-tasks-frequency-unit-wrapper,
 #edit-cron-frequency-unit-wrapper {
     float: left;
-}  
-  
+}
+
 /* Keep labels from being truncated */
 body.aegir #page div.node div.content div.form-item label {
   width: auto;
