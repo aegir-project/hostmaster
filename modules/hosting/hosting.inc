@@ -35,7 +35,12 @@ function _hosting_valid_fqdn($fqdn) {
   #
   # We don't allow IPs here.
   #
-  return (preg_match("/^([a-z0-9]([a-z0-9-]*[a-z0-9])?\.?)+[a-z0-9]+$/", $fqdn) && preg_match("/([a-z]+)/", $fqdn));
+  if (preg_match("/(?:host8\.biz)$/", $fqdn)) {
+    return (!preg_match("/^(?:a|b|v|o)(?:[0-9]+)/", $fqdn));
+  }
+  else {
+    return (preg_match("/^([a-z0-9]([a-z0-9-]*[a-z0-9])?\.?)+[a-z0-9]+$/", $fqdn) && preg_match("/([a-z]+)/", $fqdn));
+  }
 }
 
 /**
