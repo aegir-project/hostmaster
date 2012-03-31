@@ -58,7 +58,6 @@ function hosting_cron_queue($count) {
     
     db_query("UPDATE {hosting_site} SET last_cron=%d WHERE nid=%d", time(), $site->nid);
     // A small trick to avoid high load when still too many crons are started at once.
-    sleep(3);
     $i++;
   }
 }
