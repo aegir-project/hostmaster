@@ -176,7 +176,7 @@ function hosting_site_update_3() {
  */
 function hosting_site_update_4() {
   $ret = array();
-  $now = mktime();
+  $now = time();
   $ret[] = update_sql("ALTER TABLE {hosting_site} ADD COLUMN verified int(10) NOT NULL default '0'");
   db_query("UPDATE {hosting_site} SET verified=%d WHERE status=1", $now);
   return $ret;
