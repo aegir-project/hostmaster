@@ -82,7 +82,7 @@ function hosting_site_post_hosting_install_task($task, $data) {
     $task->ref->site_status = HOSTING_SITE_ENABLED;
     $task->ref->ip_addresses = array_values($data['context']['site_ip_addresses']);
     $task->ref->no_verify = TRUE;
-    $task->ref->verified = mktime();
+    $task->ref->verified = time();
     if ($context['cron_key']) {
       $task->ref->cron_key = $context['cron_key'];
     }
@@ -193,7 +193,7 @@ function hosting_site_post_hosting_import_task($task, $data) {
 
 function hosting_site_post_hosting_verify_task($task, $data) {
   if ($task->ref->type == 'site') {
-    $task->ref->verified = mktime();
+    $task->ref->verified = time();
     $task->ref->no_verify = TRUE;
     $task->ref->ip_addresses = array_values($data['context']['site_ip_addresses']);
     if ($data['context']['cron_key']) {
