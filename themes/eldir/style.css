@@ -870,6 +870,7 @@ div.hosting-queue-frequency select {
 #edit-backup-gc-frequency-ticks-wrapper input,
 #edit-advanced-cron-frequency-ticks-wrapper input,
 #edit-civicrm-cron-frequency-ticks-wrapper input,
+#edit-task-gc-frequency-ticks-wrapper input,
 #edit-cron-frequency-ticks-wrapper input,
 #edit-tasks-frequency-items-wrapper input,
 #edit-tasks-frequency-ticks-wrapper input {
@@ -881,6 +882,7 @@ div.hosting-queue-frequency select {
 #edit-backup-queue-frequency-ticks-wrapper,
 #edit-advanced-cron-frequency-ticks-wrapper,
 #edit-civicrm-cron-frequency-ticks-wrapper,
+#edit-task-gc-frequency-ticks-wrapper,
 #edit-cron-frequency-ticks-wrapper {
     float: left;
 }
@@ -895,6 +897,7 @@ div.hosting-queue-frequency select {
 #edit-backup-queue-frequency-unit-wrapper,
 #edit-advanced-cron-frequency-unit-wrapper,
 #edit-civicrm-cron-frequency-unit-wrapper,
+#edit-task-gc-frequency-unit-wrapper,
 #edit-tasks-frequency-unit-wrapper,
 #edit-cron-frequency-unit-wrapper {
     float: left;
