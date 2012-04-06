@@ -292,11 +292,31 @@ function hosting_task_hosting_queues() {
 }
 
 /**
- * Insert an entry in the task log
+ * Insert an entry in the task log.
+ *
+ * @param $vid
+ *   The vid of the task to add an entry for.
+ * @param $type
+ *   The type of log entry being added.
+ * @param $message
+ *   The message for this log entry.
+ * @param $error
+ *   (optional) The error code associated to this log entry.
+ * @param $timestamp
+ *   (optional) The UNIX timestamp of this log message, this defaults to the
+ *   current time.
  */
-function hosting_task_log($vid, $type, $message, $error = '', $timestamp = null ) {
- $timestamp = ($timestamp) ? $timestamp : mktime();
- db_query("INSERT INTO {hosting_task_log} (vid, type, message, error, timestamp) VALUES (%d, '%s', '%s', '%s', %d)", $vid, $type, $message, $error, $timestamp);
+function hosting_task_log($vid, $type, $message, $error = '', $timestamp = NULL) {
+  // We keep track of nids we've looked up in this request, for faster lookups.
+  static $nids = array();
+  $timestamp = ($timestamp) ? $timestamp : time();
+
+  // We need to insert the nid in addition to the vid, so look it up.
+  if (!isset($nids[$vid])) {
+    $nids[$vid] = (int)db_result(db_query('SELECT nid FROM {hosting_task} WHERE vid = %d', $vid));
+  }
+
+  db_query("INSERT INTO {hosting_task_log} (vid, nid, type, message, error, timestamp) VALUES (%d, %d, '%s', '%s', '%s', %d)", $vid, $nids[$vid], $type, $message, $error, $timestamp);
 }
 
 /**
@@ -738,7 +758,7 @@ function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
  * Display table containing the logged information for this task
  */ 
 function _hosting_task_log_table($vid) {
-  $result = db_query("SELECT * FROM {hosting_task_log} WHERE vid=%d", $vid);
+  $result = db_query("SELECT * FROM {hosting_task_log} WHERE vid = %d ORDER BY lid", $vid);
   if ($result) {
     $header = array('data' => 'Log message');
     while ($entry = db_fetch_object($result)) {
