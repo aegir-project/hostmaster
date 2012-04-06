@@ -81,6 +81,12 @@ function hosting_task_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
       'type' => array(
         'type' => 'varchar',
         'length' => 16,
@@ -238,5 +244,39 @@ function hosting_task_update_6005() {
   $ret = array();
   db_change_field($ret, 'hosting_task_log', 'error', 'error',
                   array('type' => 'text', 'size' => 'big', 'not null' => TRUE));
+  return $ret;
+}
+
+/**
+ * Add nid field to hosting_task_log and remove orphaned log entries.
+ */
+function hosting_task_update_6006() {
+  $ret = array();
+
+  // Add nid field
+  $field = array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      );
+  db_add_field($ret, 'hosting_task_log', 'nid', $field);
+
+  // Populate nid field
+  $query = "SELECT nid, vid FROM {hosting_task}";
+  $result = db_query($query);
+  while ($task = db_fetch_object($result)) {
+    $query = "UPDATE {hosting_task_log} SET nid = %d WHERE vid = %d";
+    db_query($query, $task->nid, $task->vid);
+  }
+
+  // Remove orphaned logs
+  $query = "SELECT DISTINCT h.vid FROM {hosting_task_log} h LEFT OUTER JOIN {node_revisions} n ON h.vid = n.vid WHERE n.vid IS NULL";
+  $result = db_query($query);
+  while ($revision = db_fetch_object($result)) {
+    $query = "DELETE FROM {hosting_task_log} WHERE vid = %d";
+    db_query($query, $revision->vid);
+  }
+
   return $ret;
 }
