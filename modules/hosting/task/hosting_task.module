@@ -604,6 +604,7 @@ function hosting_task_update($node) {
 function hosting_nodeapi_task_delete_revision(&$node) {
   db_query('DELETE FROM {hosting_task} WHERE vid = %d', $node->vid);
   db_query('DELETE FROM {hosting_task_arguments} WHERE vid = %d', $node->vid);
+  db_query('DELETE FROM {hosting_task_log} WHERE vid = %d', $node->vid);
 }
 
 /**
@@ -612,6 +613,7 @@ function hosting_nodeapi_task_delete_revision(&$node) {
 function hosting_task_delete($node) {
   db_query('DELETE FROM {hosting_task} WHERE nid = %d', $node->nid);
   db_query('DELETE FROM {hosting_task_arguments} WHERE nid = %d', $node->nid);
+  db_query('DELETE FROM {hosting_task_log} WHERE nid = %d', $node->nid);
 }
 
 /**
