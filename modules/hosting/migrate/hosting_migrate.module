@@ -48,7 +48,7 @@ function hosting_migrate_hosting_tasks() {
 
   $tasks['site']['migrate'] = array(
     'title' => t('Migrate'),
-    'description' => t('You may want to read <a href="http://omega8.cc/node/139" target=_blank>our best recipes for disaster</a> <b>before</b> going further. You can move your site to a new platform using this form, but if you wish to <b>securely</b> change the platform this site is hosted on, always Clone it in its <b>current</b> platform with some working subdomain, then test Migration of the cloned copy first and check if the cloned copy works fine, <b>before</b> you will try that with your live site. Remember to re-verify both source and target platforms plus the site twice: before <b>and</b> after running Clone or Migrate task.'),
+    'description' => t('You may want to read our <a href="http://omega8.cc/node/139" target=_blank><strong>best recipes for disaster</strong></a> before going further. You can move your site to a new platform using this form, but <b>avoid changing its domain name here at the same time</b>. If you wish to securely change the platform this site is hosted on, always <i>Clone</i> it in its <strong>current</strong> platform, then test <i>Migrate</i> of the cloned copy first and check if the cloned/migrated copy works fine, before you will try that with your live site.'),
     'dialog' => TRUE,
   );
 
