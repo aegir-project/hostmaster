@@ -14,7 +14,7 @@
  * configured from the frontend interface.
  */
 function drush_hosting_dispatch() {
-  $now = mktime();
+  $now = time();
   variable_set("hosting_dispatch_last_run", $now);
   drush_log(t("dispatching queues"));
   $platform = node_load(HOSTING_OWN_PLATFORM);
@@ -26,7 +26,7 @@ function drush_hosting_dispatch() {
       // Check and release too old cron semaphore if exist
       $old_semaphore = variable_get('hosting_queue_' . $queue . '_running', false);
       if ($old_semaphore) {
-        if (mktime() - $old_semaphore > 3600) {
+        if (time() - $old_semaphore > 3600) {
           // Release too old cron semaphore
           variable_del('hosting_queue_' . $queue . '_running', false);
         }

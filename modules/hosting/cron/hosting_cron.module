@@ -55,7 +55,7 @@ function hosting_cron_queue($count) {
     // with the task queue. There exists a chance that they might both try to save the
     // same node at the same time, and then an old record from the cron queue might
     // replace the newly updated record.
-    db_query("UPDATE {hosting_site} SET last_cron=%d WHERE nid=%d", mktime(), $site->nid);
+    db_query("UPDATE {hosting_site} SET last_cron=%d WHERE nid=%d", time(), $site->nid);
     $i++;
   }
 }
