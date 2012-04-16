@@ -328,7 +328,7 @@ function hosting_task_retry($task_id) {
     drupal_set_message(t("The task is being retried and has been added to the hosting queue again"));
     hosting_task_log($node->vid, 'queue', t("The task is being retried and has been added to the hosting queue again"));
     $node->revision = TRUE;
-    $node->changed = mktime();
+    $node->changed = time();
     $node->task_status = HOSTING_TASK_QUEUED;
     node_save($node);
   }
@@ -1090,11 +1090,11 @@ function _hosting_task_list($filter_by, $filter_value, $count = 5, $element = 0,
      );
 
      if (!in_array('created', $skip)) {
-       $row['created'] = t("@interval ago", array('@interval' => format_interval(mktime() - $node->created, 1)));
+       $row['created'] = t("@interval ago", array('@interval' => format_interval(time() - $node->created, 1)));
        $headers[t('Created')] = '';
      }
 
-     $row['executed'] = t("@interval ago", array('@interval' => format_interval(mktime() - $node->changed, 1)));
+     $row['executed'] = t("@interval ago", array('@interval' => format_interval(time() - $node->changed, 1)));
      $headers[t('Executed')] = '';
 
      $headers[t('Actions')] = '';

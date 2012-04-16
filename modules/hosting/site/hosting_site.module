@@ -103,7 +103,7 @@ function hosting_sites() {
  */
 function _hosting_site_goto_link($node) {
   $cache = cache_get("hosting:site:" . $node->nid . ":login_link");
-  if (!is_null($cache) && (mktime() < $cache->data['expire'])) {
+  if (!is_null($cache) && (time() < $cache->data['expire'])) {
     $title = t("Log in to !url" , array('!url' => $node->title));
   }
   else {
@@ -123,7 +123,7 @@ function _hosting_site_goto_link($node) {
 function hosting_site_goto($node) {
   $cid = "hosting:site:" . $node->nid . ":login_link";
   $cache = cache_get($cid);
-  if (!is_null($cache) && (mktime() < $cache->data['expire'])) {
+  if (!is_null($cache) && (time() < $cache->data['expire'])) {
     $theurl = $cache->data['link'];
     cache_clear_all($cid, 'cache');
   }
@@ -345,7 +345,7 @@ function hosting_import_site($site_id, $data, $platform) {
   $site->site_status = 1;
   $site->platform = $platform;
   $site->no_verify = TRUE;
-  $site->verified = mktime();
+  $site->verified = time();
   $site->client = $client->nid;
   $site->ip_addresses = array_values($data['site_ip_addresses']);
   $site->cron_key = ($data['cron_key']) ? $data['cron_key'] : '';
@@ -497,7 +497,7 @@ function hosting_site_list_form($form_state, $filter_by = NULL, $filter_value = 
       $form['site'][$node->nid] = array('#value' => l($node->title, 'node/' . $node->nid));
       $form['profile'][$node->nid] =  array('#value' => ($node->profile) ? _hosting_node_link($node->profile) : t('n/a'));
       $form['language'][$node->nid] = array('#value' => ($node->site_language) ? _hosting_language_name($node->site_language) : t('n/a'));
-      $form['created'][$node->nid] =  array('#value' => t("@interval ago", array('@interval' => format_interval(mktime() - $node->created, 1))));
+      $form['created'][$node->nid] =  array('#value' => t("@interval ago", array('@interval' => format_interval(time() - $node->created, 1))));
       if (sizeof($platforms) > 1) {
         $form['platform'][$node->nid] = array('#value' => ($node->platform) ? _hosting_node_link($node->platform) : t('n/a'));
       }

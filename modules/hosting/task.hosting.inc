@@ -55,8 +55,8 @@ function drush_hosting_task_validate($id, $type = null) {
       'uri' => null,
     );
     $task->args = array();
-    $task->changed = mktime();
-    $task->executed = mktime();
+    $task->changed = time();
+    $task->executed = time();
     /* if not already running, remove the task from the queue
      * this is to avoid concurrent task runs */
     if ($task->task_status == HOSTING_TASK_PROCESSING) {
@@ -120,7 +120,7 @@ function drush_hosting_task() {
 
   // New revision is created at the beginning of function.
   $task->revision = FALSE;
-  $task->delta = mktime() - $task->executed;
+  $task->delta = time() - $task->executed;
   node_save($task);
 }
 

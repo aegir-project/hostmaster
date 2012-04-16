@@ -24,7 +24,7 @@ function hosting_task_backup_form($node) {
  */
 function hosting_site_add_backup($site, $web_server, $filename, $description = '', $size = '') {
   db_query("INSERT INTO {hosting_site_backups} (site, web_server, filename, description, size, timestamp) VALUES (%d, %d, '%s', '%s', %d, %d)",
-    $site, $web_server, $filename, $description, $size, mktime());
+    $site, $web_server, $filename, $description, $size, time());
   $bid = db_last_insert_id('hosting_site_backups', 'bid');
   return $bid;
 }
