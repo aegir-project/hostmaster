@@ -81,6 +81,12 @@ function hosting_task_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
       'type' => array(
         'type' => 'varchar',
         'length' => 16,
@@ -105,6 +111,8 @@ function hosting_task_schema() {
     ),
     'indexes' => array(
       'type' => array('type'),
+      'vid_lid' => array('vid', 'lid'),
+      'nid' => array('nid'),
     ),
     'primary key' => array('lid'),
   );
@@ -238,5 +246,42 @@ function hosting_task_update_6005() {
   $ret = array();
   db_change_field($ret, 'hosting_task_log', 'error', 'error',
                   array('type' => 'text', 'size' => 'big', 'not null' => TRUE));
+  return $ret;
+}
+
+/**
+ * Add nid field to hosting_task_log and remove orphaned log entries.
+ */
+function hosting_task_update_6006() {
+  $ret = array();
+
+  // Add nid field.
+  $field = array(
+    'type' => 'int',
+    'unsigned' => TRUE,
+    'not null' => TRUE,
+    'default' => 0,
+  );
+  // Add some useful indexes.
+  $indexes = array(
+    'indexes' => array(
+      'vid_lid' => array('vid', 'lid'),
+      'nid' => array('nid'),
+    ),
+  );
+  db_add_field($ret, 'hosting_task_log', 'nid', $field, $indexes);
+
+  // Populate nid field.
+  $query = "SELECT nid, vid FROM {hosting_task}";
+  $result = db_query($query);
+  while ($task = db_fetch_object($result)) {
+    $query = "UPDATE {hosting_task_log} SET nid = %d WHERE vid = %d";
+    db_query($query, $task->nid, $task->vid);
+  }
+
+  // Remove orphaned logs, which will have nid == 0 now.
+  $query = "DELETE FROM {hosting_task_log} WHERE nid = %d";
+  db_query($query, 0);
+
   return $ret;
 }
