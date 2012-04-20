@@ -1,5 +1,5 @@
 <?php
-// $Id$ 
+// $Id$
 /**
  * @file General IP address CRUD routines.
  */
@@ -10,7 +10,7 @@
 function _hosting_ip_list($addresses) {
   $return = array();
   $ip_list = is_array($addresses) ? $addresses : explode("\n", $addresses);
-  
+
   foreach ($ip_list as $key => $ip) {
     $ip = trim($ip);
     if (!empty($ip)) {
@@ -25,14 +25,14 @@ function _hosting_ip_list($addresses) {
  * Display the ip address on the node. IP utility function for hook_view.
  */
 function hosting_ip_view(&$node) {
-  $ip_list = _hosting_ip_list($node->ip_addresses);
+  $ip_list = isset($node->ip_addresses) ? _hosting_ip_list($node->ip_addresses) : array();
 
   if (sizeof($ip_list)) {
     $node->content['info']['ip_addresses'] = array(
       '#type' => 'item',
       '#title' => t('IP addresses'),
       '#value' => implode('<br />', $ip_list),
-    );  
+    );
   }
 }
 
@@ -47,14 +47,14 @@ function hosting_ip_save($node, $update = FALSE) {
   }
 
   foreach ($ip_list as $ip) {
-    db_query("INSERT INTO {hosting_ip_addresses} (vid, nid, ip_address) VALUES (%d, %d, '%s')", $node->vid, $node->nid, $ip); 
+    db_query("INSERT INTO {hosting_ip_addresses} (vid, nid, ip_address) VALUES (%d, %d, '%s')", $node->vid, $node->nid, $ip);
   }
 }
 
 /**
  * Validate that IP list is valid. IP utility function for hook_validate.
  */
-function hosting_ip_validate($node) { 
+function hosting_ip_validate($node) {
   foreach (_hosting_ip_list($node->ip_addresses) as $ip) {
     if (!_hosting_valid_ip($ip)) {
       form_set_error('ip_addresses', t('Invalid IP address: %ip.', array(
@@ -90,4 +90,3 @@ function hosting_ip_delete($node) {
 function hosting_ip_delete_revision($node) {
   db_query("DELETE FROM {hosting_ip_addresses} WHERE vid=%d", $node->vid);
 }
-

@@ -72,7 +72,7 @@ function hosting_ssl_hosting_site_options_alter(&$return, $node) {
     if (sizeof($return['ssl_key']) == 1) {
       $node->ssl_key = HOSTING_SSL_CUSTOM_KEY;
     }
-    
+
     // the user has chosen to enter a new key
     if ($node->ssl_key == HOSTING_SSL_CUSTOM_KEY) {
       // default the new key to the site's domain name, after filtering.
@@ -136,7 +136,7 @@ function hosting_ssl_status_options($status = null) {
     return $options[$status];
   }
   return $options;
-  
+
 }
 
 
@@ -183,6 +183,12 @@ function hosting_ssl_nodeapi_site_validate($node, &$form) {
 }
 
 function hosting_ssl_nodeapi_site_presave(&$node) {
+  if (!isset($node->ssl_key)) {
+    $node->ssl_key = HOSTING_SSL_CUSTOM_KEY;
+  }
+  if (!isset($node->ssl_enabled)) {
+    $node->ssl_enabled = HOSTING_SSL_DISABLED;
+  }
   if ($node->ssl_key == HOSTING_SSL_CUSTOM_KEY) {
     $node->ssl_key = hosting_ssl_filter_key($node->ssl_key_new);
   }
@@ -205,7 +211,7 @@ function hosting_ssl_nodeapi_site_update($node) {
 
 function hosting_ssl_nodeapi_site_load($node) {
   $result = db_query("SELECT ssl_enabled, ssl_key FROM {hosting_ssl_site} WHERE vid=%d", $node->vid);
-  $additions = db_fetch_array($result); 
+  $additions = db_fetch_array($result);
   return $additions;
 }
 
@@ -222,7 +228,7 @@ function hosting_ssl_nodeapi_site_delete_revision($node) {
  * Store the SSL Cert key in the database.
  */
 function hosting_ssl_save_key($key, $ssl_enabled = TRUE, $client = null) {
-  if (!$ssl_enabled) {
+  if (empty($ssl_enabled)) {
     return 0;
   }
 
