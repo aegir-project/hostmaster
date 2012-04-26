@@ -283,17 +283,47 @@ function hosting_site_access($op, $node, $account) {
 }
 
 /**
- * Return a count of enabled sites.
+ * Returns a count of sites.
  *
  * This is used by cron and statistics to batch the number of sites that are processed with each call
+ *
+ * It is also used to generate the 'site count' per platform at /hosting/platforms
+ *
+ * By default it only counts enabled sites.
+ * 
+ * Optionally can include an array of site statuses by which to consider in the count.
+ * 
+ * @param $platform
+ *   (optional) A platform nid to only count sites on that specific platform.
+ *
+ * @param $statuses
+ *   (optional) An array of site statuses (defined by their constants) by which to include
+ *   such sites in the site count.
+ *
+ * @return 
+ *   The result of the database query
  */
-function hosting_site_count($platform = null) {
-  $query = "SELECT count(nid) FROM {hosting_site} WHERE status = %d";
-  $args = array(HOSTING_SITE_ENABLED);
+function hosting_site_count($platform = null, $statuses = NULL) {
+  $args = array();
+  $query = "SELECT count(nid) FROM {hosting_site} WHERE";
+  if (is_null($statuses)) {
+    $query .= " status = %d";
+  
+    $args[] = HOSTING_SITE_ENABLED;
+  }
+
+  else {
+    if (count($statuses)) {
+      $query .= ' (status IN (' . db_placeholders($statuses) . '))';
+      $args = array_merge($args, $statuses);
+    }
+  }
+
   if (!is_null($platform)) {
     $query .= " AND platform = %d";
     $args[] = $platform;
   }
+
   return db_result(db_query($query, $args));
 }
 

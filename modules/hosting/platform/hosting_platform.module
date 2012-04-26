@@ -509,7 +509,7 @@ function hosting_platform_listing() {
     $row[] = _hosting_node_link($node->release->nid, $release);
     $row[] = _hosting_node_link($node->web_server);
     $row[] = hosting_format_interval($node->verified);
-    $total += $count = hosting_site_count($nid);
+    $total += $count = hosting_site_count($nid, array(HOSTING_SITE_ENABLED, HOSTING_SITE_DISABLED, HOSTING_SITE_QUEUED));
     $row[] = $count;
     $rows[] = array('data' => $row, 'class' => _hosting_platform_list_class($node));
   }
