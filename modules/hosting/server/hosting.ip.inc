@@ -25,7 +25,7 @@ function _hosting_ip_list($addresses) {
  * Display the ip address on the node. IP utility function for hook_view.
  */
 function hosting_ip_view(&$node) {
-  $ip_list = _hosting_ip_list($node->ip_addresses);
+  $ip_list = isset($node->ip_addresses) ? _hosting_ip_list($node->ip_addresses) : array();
 
   if (sizeof($ip_list)) {
     $node->content['info']['ip_addresses'] = array(
@@ -90,4 +90,3 @@ function hosting_ip_delete($node) {
 function hosting_ip_delete_revision($node) {
   db_query("DELETE FROM {hosting_ip_addresses} WHERE vid=%d", $node->vid);
 }
-

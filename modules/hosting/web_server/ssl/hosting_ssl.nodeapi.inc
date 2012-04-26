@@ -183,6 +183,12 @@ function hosting_ssl_nodeapi_site_validate($node, &$form) {
 }
 
 function hosting_ssl_nodeapi_site_presave(&$node) {
+  if (!isset($node->ssl_key)) {
+    $node->ssl_key = HOSTING_SSL_CUSTOM_KEY;
+  }
+  if (!isset($node->ssl_enabled)) {
+    $node->ssl_enabled = HOSTING_SSL_DISABLED;
+  }
   if ($node->ssl_key == HOSTING_SSL_CUSTOM_KEY) {
     $node->ssl_key = hosting_ssl_filter_key($node->ssl_key_new);
   }
@@ -222,7 +228,7 @@ function hosting_ssl_nodeapi_site_delete_revision($node) {
  * Store the SSL Cert key in the database.
  */
 function hosting_ssl_save_key($key, $ssl_enabled = TRUE, $client = null) {
-  if (!$ssl_enabled) {
+  if (empty($ssl_enabled)) {
     return 0;
   }
 
