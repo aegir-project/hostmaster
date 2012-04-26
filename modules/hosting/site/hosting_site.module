@@ -328,7 +328,15 @@ function hosting_get_site_by_url($url) {
 }
 
 /**
- * Helper function to generate new site node during import
+ * Helper function to generate update a site node during import.
+ *
+ * @param $site_id
+ *   The node ID of the existing site node to update.
+ * @param $data
+ *  An associative array of data to add to the site node. Keys should correspond
+ *  to properties on the node object to overwrite.
+ * @param $platform
+ *   The node ID of the platform that the site is deployed on.
  */
 function hosting_import_site($site_id, $data, $platform) {
   global $user;
