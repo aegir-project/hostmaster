@@ -788,20 +788,21 @@ function _hosting_task_log_table($vid) {
  */
 function _hosting_task_log_class($type) {
   switch (strtolower($type)) {
-    case "warning" :
+    case "warning":
       $type = "warning";
       break;
-    case "error" : 
+    case "error":
+    case "failed":
       $type = "error";
       break;
-    case "queue" :
+    case "queue":
       $type = "queue";
       break;
-    case "command" : 
-    case "notice" : 
+    case "command":
+    case "notice":
       $type = "info";
       break;
-    default: 
+    default:
       $type = 'success';
       break;
   }
