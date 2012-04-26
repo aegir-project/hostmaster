@@ -32,7 +32,7 @@ function hosting_migrate_platform($form_state, $node) {
       $form['#current_platform'] = $node;
       $form['description'] = array(
         '#type' => 'item',
-        '#description' => 'You may want to read our <a href="http://omega8.cc/node/139" target=_blank><strong>best recipes for disaster</strong></a> before going further. You can perform a batch migration of sites from this source platform to a different target platform using this form, but if you wish to do that securely, always <i>Clone</i> one of them in its <strong>current</strong> platform, then test <i>Migrate</i> of the cloned copy first and check if the cloned copy works fine, before you will try that with your live sites. This seems tedious, but it is much easier and faster than recovering from some disaster.',
+        '#description' => 'You may want to read our <a href="http://community.aegirproject.org/node/1381" target=_blank><strong>best recipes for disaster</strong></a> before going further. You can perform a batch migration of sites from this source platform to a different target platform using this form, but if you wish to do that securely, always <i>Clone</i> one of them in its <strong>current</strong> platform, then test <i>Migrate</i> of the cloned copy first and check if the cloned copy works fine, before you will try that with your live sites. This seems tedious, but it is much easier and faster than recovering from some disaster.',
       );
       $form['target_platform'] = array(
         '#type' => 'radios',
