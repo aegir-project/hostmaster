@@ -12,7 +12,7 @@ function hosting_clone_hosting_tasks() {
 
   $options['site']['clone'] = array(
     'title' => t('Clone'),
-    'description' => t('You may want to read our <a href="http://omega8.cc/node/139" target=_blank><strong>best recipes for disaster</strong></a> before going further. You can make a copy of your site using this form, but <strong>avoid changing its platform here at the same time</strong>. If you wish to securely change the platform this site (or its cloned copy) is hosted on, <i>Clone</i> it in its <strong>current</strong> platform first and then use <i>Migrate</i> to move it to the new platform. Hint: if you wish to change only the main domain of your site, use <i>Migrate</i>, not <i>Clone</i>.'),
+    'description' => t('You may want to read our <a href="http://community.aegirproject.org/node/1381" target=_blank><strong>best recipes for disaster</strong></a> before going further. You can make a copy of your site using this form, but <strong>avoid changing its platform here at the same time</strong>. If you wish to securely change the platform this site (or its cloned copy) is hosted on, <i>Clone</i> it in its <strong>current</strong> platform first and then use <i>Migrate</i> to move it to the new platform. Hint: if you wish to change only the main domain of your site, use <i>Migrate</i>, not <i>Clone</i>.'),
     'weight' => 5,
     'dialog' => TRUE
   );
