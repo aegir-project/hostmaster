@@ -43,6 +43,9 @@ function hosting_drush_command() {
       '@context_name' => 'Context to work on',
       'command' => 'provision-[command] to invoke',
     ),
+    'options' => array(
+      'force' => "Force the specified task to execute even if it's not queued to run.",
+    ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL
   );
 
