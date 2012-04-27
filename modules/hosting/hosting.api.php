@@ -298,10 +298,10 @@ function hook_post_hosting_TASK_TYPE_task($task, $data) {
  * module to determine which items it wishes to process.
  *
  * If you wish to process multiple items at the same time you will need to fork
- * the process by calling drush_backend_fork(), specifying a drush command with
- * the arguments required to process your task. Otherwise you can do all your
- * processing in this function, or similarly call drush_backend_invoke(), which
- * won't fork the process.
+ * the process by calling drush_invoke_process() with the 'fork' option,
+ * specifying a drush command with the arguments required to process your task.
+ * Otherwise you can do all your processing in this function, or similarly call
+ * drush_invoke_process() without the 'fork' option.
  *
  * @param $count
  *   The maximum number of items to process.
@@ -316,7 +316,7 @@ function hosting_QUEUE_TYPE_queue($count = 5) {
   drush_log(dt("Running tasks queue"));
   $tasks = _hosting_get_new_tasks($count);
   foreach ($tasks as $task) {
-    drush_backend_fork("hosting-task", array($task->nid));
+    drush_invoke_process('@self', "hosting-task", array($task->nid), array(), array('fork' => TRUE));
   }
 }
 

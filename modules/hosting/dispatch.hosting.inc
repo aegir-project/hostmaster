@@ -41,7 +41,7 @@ function drush_hosting_dispatch() {
               drush_log(dt("maximum number of tasks (@count) already running", array('@count' => $info['running_items'])));
             } else {
               drush_log(dt("found @running running tasks, starting @count out of @max items", array('@running' => $info['running_items'], '@count' => $count, '@max' => $info['calc_items'])));
-              drush_backend_fork("hosting-" . $queue, array('items' => $count));
+              drush_invoke_process('@self', "hosting-" . $queue, array(), array('items' => $count), array('fork' => TRUE));
             }
           } else {
             drush_log(dt("too early for queue @queue", array('@queue' => $queue)));

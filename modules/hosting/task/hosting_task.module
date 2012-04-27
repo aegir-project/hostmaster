@@ -518,7 +518,7 @@ function hosting_tasks_queue($count = 20) {
   drush_log(dt("Running tasks queue"));
   $tasks = _hosting_get_new_tasks($count);
   foreach ($tasks as $task) {
-    drush_backend_fork("hosting-task", array($task->nid));
+    drush_invoke_process('@self', "hosting-task", array($task->nid), array(), array('fork' => TRUE));
   }
 }
 
