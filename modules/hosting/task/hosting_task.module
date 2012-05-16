@@ -771,8 +771,8 @@ function _hosting_task_log_table($vid) {
         $message = $summary . "<span class='hosting-task-full'>" . filter_xss($entry->message) . '</span>';
       }
       else {
-        $message = $entry->message;
-      } 
+        $message = filter_xss($entry->message);
+      }
       $row =  array(array('data' => $message, 'class' => 'hosting-status'));
       $rows[] = array('data' => $row, 'class' => _hosting_task_log_class($entry->type));
     }
