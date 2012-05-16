@@ -139,8 +139,10 @@ function hosting_menu_alter(&$items) {
   }
   
   // These node types should remain hidden, and provide no user interface.
-  unset($items['node/add/package']);
-  unset($items['node/add/task']);
+  $items['node/add/package']['page callback'] = 'drupal_access_denied';
+  $items['node/add/task']['page callback'] = 'drupal_access_denied';
+  $items['node/add/package']['type'] = MENU_CALLBACK;
+  $items['node/add/task']['type'] = MENU_CALLBACK;
 }
 
 /**
@@ -489,7 +491,6 @@ function _hosting_setup_cron() {
   }
 }
 
-
 /**
  * Replacement node/add page.
  *
@@ -503,9 +504,6 @@ function _hosting_node_add($type = '') {
   $types = node_get_types();
   $type = ($type) ? str_replace('-', '_', $type) : NULL;
 
-  if ($type == 'package') {
-    drupal_access_denied();
-  }
   // If a node type has been specified, validate its existence.
   if (isset($types[$type]) && user_access('create ' .  $type) && (hosting_feature($type) !== HOSTING_FEATURE_DISABLED)) {
     // Initialize settings:
@@ -740,6 +738,12 @@ function hosting_queues_configure_submit($form, &$form_state) {
  * Implementation of hook_form_alter().
  */
 function hosting_form_alter(&$form, &$form_state, $form_id) {
+  // Do not allow package or task nodes to be edited through the interface.
+  if ($form_id == 'package_node_form' || $form_id == 'task_node_form') {
+    drupal_access_denied();
+    exit;
+  }
+
   // Alter the 'Add User' form to remind users that this is not the New Client form
   if ($form_id == 'user_register') {
     $form[user_registration_help] = array(
@@ -750,11 +754,6 @@ function hosting_form_alter(&$form, &$form_state, $form_id) {
       '#weight' => '-10'
     );
   }
-
-  if ($form_id == 'package_node_form') {
-    drupal_access_denied();
-  }
-
 
   // Remove additional UI added by core modules, that conflict with the hosting UI.
   $node_types = array('site', 'platform', 'server', 'client');
