@@ -70,7 +70,7 @@ function hosting_client_access($op, $node, $account) {
   else {
 
     switch ($op) {
-      case 'create': 
+      case 'create':
         return user_access('create client', $account);
         break;
       case 'view':
@@ -165,7 +165,7 @@ function hosting_client_form(&$node) {
     '#size' => 40,
     '#default_value' => $node->email,
     '#maxlength' => 100,
-  ); 
+  );
 
     $form['email_confirm'] = array(
       '#type' => 'textfield',
@@ -173,7 +173,7 @@ function hosting_client_form(&$node) {
       '#required' => FALSE,
       '#size' => 40,
       '#maxlength' => 100,
-    ); 
+    );
   }
 
   if ($node->nid) {
@@ -192,8 +192,8 @@ function hosting_client_form(&$node) {
         '#title' => t('Associate a user to this Client'),
         '#weight' => 2,
         '#autocomplete_path' => 'user/autocomplete',
-        '#description' => t('This field allows you to associate an existing system user to this Client. 
-                             It does not create a new system user, but allows an existing user 
+        '#description' => t('This field allows you to associate an existing system user to this Client.
+                             It does not create a new system user, but allows an existing user
                              to manage sites belonging to the Client.'),
         );
     }
@@ -284,7 +284,7 @@ function hosting_client_insert($node) {
   }
   db_query("INSERT INTO {hosting_client} (vid, nid, uname) VALUES (%d, %d, '%s' )",
            $node->vid, $node->nid, $node->uname);
-  if (variable_get('hosting_client_register_user', FALSE) 
+  if (variable_get('hosting_client_register_user', FALSE)
     && !user_load(array('mail' => $node->email))) {
     $user = hosting_client_register_user($node);
     $node->uid = $user->uid;
@@ -341,14 +341,14 @@ function hosting_client_register_user($node) {
     }
 
     $params = array(
-      '!username' => $user->name, 
-      '!site' => variable_get('site_name', 'Drupal'), 
-      '!password' => $pass, 
-      '!uri' => $GLOBALS['base_url'], 
-      '!uri_brief' => substr($base_url, strlen('http://')), 
-      '!date' => format_date(time()), 
-      '!login_uri' => url('user', array('absolute' => TRUE)), 
-      '!edit_uri' => url('user/'. $user->uid .'/edit', array('absolute' => TRUE)), 
+      '!username' => $user->name,
+      '!site' => variable_get('site_name', 'Drupal'),
+      '!password' => $pass,
+      '!uri' => $GLOBALS['base_url'],
+      '!uri_brief' => substr($base_url, strlen('http://')),
+      '!date' => format_date(time()),
+      '!login_uri' => url('user', array('absolute' => TRUE)),
+      '!edit_uri' => url('user/'. $user->uid .'/edit', array('absolute' => TRUE)),
       '!login_url' => user_pass_reset_url($user));
     // No e-mail verification is required, create new user account, and login user immediately.
     $language = user_preferred_language($user);
@@ -450,7 +450,7 @@ function hosting_client_node_load($arg) {
  *
  * @param $node
  *   Client node (as nid or node object).
- * @return 
+ * @return
  *   Array of user names indexed by uid.
  *
  */
@@ -562,8 +562,8 @@ function hosting_client_menu() {
 
   $items['hosting_client/autocomplete'] = array(
     'title' => 'hosting client get client autocomplete',
-    'page callback' => 'hosting_client_autocomplete', 
-    'access arguments' => array('access content'), 
+    'page callback' => 'hosting_client_autocomplete',
+    'access arguments' => array('access content'),
     'type' => MENU_CALLBACK
   );
 
@@ -709,19 +709,19 @@ function hosting_client_configure() {
     '#default_value' => variable_get('hosting_client_send_welcome', FALSE)
   );
   $form['email']['hosting_client_mail_welcome_subject'] = array(
-    '#type' => 'textfield', 
-    '#title' => t('Subject of welcome e-mail'), 
-    '#default_value' => _hosting_client_mail_text('welcome_subject'), 
-    '#maxlength' => 180, 
-    '#description' => t('Customize the subject of your welcome e-mail, which is sent to new members upon registering.') 
+    '#type' => 'textfield',
+    '#title' => t('Subject of welcome e-mail'),
+    '#default_value' => _hosting_client_mail_text('welcome_subject'),
+    '#maxlength' => 180,
+    '#description' => t('Customize the subject of your welcome e-mail, which is sent to new members upon registering.')
     .' '. t('Available variables are:') .' !username, !site, !password, !uri, !uri_brief, !date, !login_uri, !edit_uri, !login_url.'
   );
   $form['email']['hosting_client_mail_welcome_body'] = array(
-    '#type' => 'textarea', 
+    '#type' => 'textarea',
     '#title' => t('Body of welcome e-mail'),
-    '#default_value' => _hosting_client_mail_text('welcome_body'), 
+    '#default_value' => _hosting_client_mail_text('welcome_body'),
     '#rows' => 15,
-    '#description' => t('Customize the body of the welcome e-mail, which is sent to new members upon registering.') 
+    '#description' => t('Customize the body of the welcome e-mail, which is sent to new members upon registering.')
     .' '. t('Available variables are:') .' !username, !site, !password, !uri, !uri_brief, !login_uri, !edit_uri, !login_url.');
 
 
@@ -761,10 +761,10 @@ function hosting_client_block($op = 'list', $delta = 0, $edit = array()) {
   $blocks = array();
   switch ($op) {
     case 'list' :
-      $blocks['hosting_clients'] = array('info' => t('Hosting clients'), 
+      $blocks['hosting_clients'] = array('info' => t('Hosting clients'),
       'enabled' => 1, 'region' => 'left', 'weight' => 10);
       break;
-    case 'view' : 
+    case 'view' :
       switch ($delta) {
         case 'hosting_clients':
           if (user_access('view client')) {
@@ -782,14 +782,14 @@ function hosting_client_block($op = 'list', $delta = 0, $edit = array()) {
  */
 function hosting_client_autocomplete($type, $keyword) {
   $matches = array();
-  
+
   if ($type == 'client') {
     $query = db_query(db_rewrite_sql('SELECT * FROM {node} n WHERE type = "%s" AND title LIKE "%s"'), $type, $keyword. "%");
     while ($result = db_fetch_object($query)) {
       $matches[$result->title] = $result->title;
     }
   }
- 
+
   drupal_json($matches);
   exit();
 }
@@ -948,7 +948,7 @@ function hosting_client_sanitize($title) {
  */
 function hosting_client_views_api() {
   return array(
-    'api' => 2, 
+    'api' => 2,
     'path' => drupal_get_path('module', 'hosting_client'),
   );
-} 
+}
