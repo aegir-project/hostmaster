@@ -343,7 +343,7 @@ function hosting_block($op = 'list', $delta = 0, $edit = array()) {
       $blocks['hosting_queues'] = array('info' => t('Hosting queues'),
             'enabled' => 1, 'region' => 'right', 'weight' => 0);
       $blocks['hosting_queues_summary'] = array('info' => t('Hosting queues summary'),
-            'enabled' => 1, 'region' => 'right', 'weight' => 1);
+            'enabled' => 1, 'region' => 'right', 'weight' => 1, 'cache' => BLOCK_NO_CACHE);
       return $blocks;
     case 'view' : 
       switch ($delta) {
