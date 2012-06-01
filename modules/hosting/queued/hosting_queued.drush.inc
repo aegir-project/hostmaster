@@ -14,23 +14,23 @@ declare(ticks=1);
 /**
  * Implementation of hook_drush_command().
  */
-function hosting_queue_runner_drush_command() {
+function hosting_queued_drush_command() {
   $items = array();
 
-  $items['hosting-queue-runner'] = array(
+  $items['hosting-queued'] = array(
     'description' => 'Runs the tasks queue',
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL,
     'drupal dependencies' => array(
-      'hosting_queue_runner',
+      'hosting_queued',
     ),
     // We need this get around a drush bug, see: http://drupal.org/node/704848
     // But we remove it below for Drush 4.5 and above.
-    'callback' => 'drush_hosting_queue_runner',
+    'callback' => 'drush_hosting_queued',
   );
 
   // We don't need the callback defined for Drush > 4.4
   if (defined('DRUSH_VERSION') && version_compare(DRUSH_VERSION, '4.4', '>')) {
-    unset($items['hosting-queue-runner']['callback']);
+    unset($items['hosting-queued']['callback']);
   }
 
   return $items;
@@ -39,12 +39,12 @@ function hosting_queue_runner_drush_command() {
 /**
  * Drush command to execute hosting tasks.
  */
-function drush_hosting_queue_runner() {
+function drush_hosting_queued() {
   if (function_exists('pcntl_signal')) {
     // reload the server on SIGHUP
-    pcntl_signal(SIGHUP, 'hosting_queue_runner_restart');
-    pcntl_signal(SIGINT, 'hosting_queue_runner_stop');
-    pcntl_signal(SIGTERM, 'hosting_queue_runner_stop');
+    pcntl_signal(SIGHUP, 'hosting_queued_restart');
+    pcntl_signal(SIGINT, 'hosting_queued_stop');
+    pcntl_signal(SIGTERM, 'hosting_queued_stop');
   }
 
   // Set a nice high time limit, if we can:
@@ -63,13 +63,13 @@ function drush_hosting_queue_runner() {
     }
   }
 
-  $end_time = variable_get('hosting_queue_runner_process_lifetime', 3600)  + time();
+  $end_time = variable_get('hosting_queued_process_lifetime', 3600)  + time();
 
   // Record the fact that we're running, so we can give some feedback in the
   // frontend.
-  variable_set('hosting_queue_runner_process_started', time());
+  variable_set('hosting_queued_process_started', time());
 
-  watchdog('hosting_queue_runner', 'Started Hosting queue runner, waiting for new tasks');
+  watchdog('hosting_queued', 'Started Hosting queue daemon, waiting for new tasks');
 
   while (TRUE) {
     // Sleep for a second before we look for new tasks.
@@ -78,7 +78,7 @@ function drush_hosting_queue_runner() {
     // Should we terminate.
     if (time() > $end_time) {
       // Restart the daemon to recycle leaked memory
-      hosting_queue_runner_restart();
+      hosting_queued_restart();
     }
 
     // Get some tasks to run
@@ -97,7 +97,7 @@ function drush_hosting_queue_runner() {
       drush_log(dt('Finished executing task.'));
 
       // Delay for a configurable amount of time.
-      $delay = variable_get('hosting_queue_runner_post_task_delay', 0);
+      $delay = variable_get('hosting_queued_post_task_delay', 0);
       if (!empty($delay)) {
         drush_log(dt('Going to sleep for @count seconds after completing task.', array('@count' => $delay)));
         sleep($delay);
@@ -109,7 +109,7 @@ function drush_hosting_queue_runner() {
       // Should we terminate.
       if (time() > $end_time) {
         // Restart the daemon to recycle leaked memory
-        hosting_queue_runner_restart();
+        hosting_queued_restart();
       }
     }
     unset($tasks);
@@ -122,21 +122,21 @@ function drush_hosting_queue_runner() {
  * We do not want to interrupt children tasks, so we wait for them
  * before stopping.
  */
-function hosting_queue_runner_stop($signal) {
-  watchdog('hosting_queue_runner', 'Received signal @signal, waiting for children to die.', array('@signal' => $signal));
+function hosting_queued_stop($signal) {
+  watchdog('hosting_queued', 'Received signal @signal, waiting for children to die.', array('@signal' => $signal));
   $status = NULL;
   pcntl_wait($status);
-  watchdog('hosting_queue_runner', 'Stopped daemon');
+  watchdog('hosting_queued', 'Stopped daemon');
   exit($status);
 }
 
 /**
  * Restart the dispatcher to work around memory leaks
  */
-function hosting_queue_runner_restart($signal = NULL) {
+function hosting_queued_restart($signal = NULL) {
   // If we received a singal, process it.
   if (!is_null($signal)) {
-    watchdog('hosting_queue_runner', 'Received signal @signal, waiting for children to die.', array('@signal' => $signal));
+    watchdog('hosting_queued', 'Received signal @signal, waiting for children to die.', array('@signal' => $signal));
     $status = NULL;
     pcntl_wait($status);
   }
@@ -144,11 +144,11 @@ function hosting_queue_runner_restart($signal = NULL) {
   // We need the PCNTL extension to be able to auto restart.
   if (function_exists('pcntl_exec')) {
     $drush_command = drush_get_command();
-    // should be hosting-queue-runner unless something is very wrong
+    // should be hosting-queued unless something is very wrong
     $command = $drush_command['command'];
 
     // Get the drush executable and any arguments it needs.
-    $args = hosting_queue_runner_drush_find_drush();
+    $args = hosting_queued_drush_find_drush();
     $drush = array_shift($args);
 
     // Get the original options passed to this command.
@@ -168,13 +168,13 @@ function hosting_queue_runner_restart($signal = NULL) {
     }
 
     array_push($args, '@hostmaster', $command);
-    watchdog('hosting_queue_runner', 'Restarting queue runner with @drush @args.', array('@drush' => $drush, '@args' => implode(" ", $args)));
+    watchdog('hosting_queued', 'Restarting queue daemon with @drush @args.', array('@drush' => $drush, '@args' => implode(" ", $args)));
     pcntl_exec($drush, $args, $_ENV);
-    watchdog('hosting_queue_runner', 'Could not restart the queue runner, aborting.', array(), WATCHDOG_ERROR);
+    watchdog('hosting_queued', 'Could not restart the queue daemon, aborting.', array(), WATCHDOG_ERROR);
     /* NOTREACHED */
   }
   else {
-    watchdog('hosting_queue_runner', 'PCNTL not installed, unable to auto-restart.', array(), WATCHDOG_WARNING);
+    watchdog('hosting_queued', 'PCNTL not installed, unable to auto-restart.', array(), WATCHDOG_WARNING);
   }
   
   // Explicit exit in case we're handling a signal
@@ -189,7 +189,7 @@ function hosting_queue_runner_restart($signal = NULL) {
  *
  * @see drush_find_drush()
  */
-function hosting_queue_runner_drush_find_drush() {
+function hosting_queued_drush_find_drush() {
  $php = drush_get_option('php');
  if (isset($php)) {
     $php = trim($php, "'");

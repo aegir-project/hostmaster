@@ -1,0 +1,26 @@
+<?php
+
+/**
+ * Implementation of hook_enable().
+ */
+function hosting_queued_enable() {
+  // Disable Aegir's dispatch of the tasks queue.
+  variable_set('hosting_queue_tasks_enabled', FALSE);
+}
+
+/**
+ * Implementation of hook_disable().
+ */
+function hosting_queued_disable() {
+  // Enable Aegir's dispatch of the tasks queue.
+  variable_set('hosting_queue_tasks_enabled', TRUE);
+}
+
+/**
+ * Rename the module variables to hosting_queued
+ */
+function hosting_queued_update_6200() {
+  $ret = array();
+  $ret[] = update_sql("UPDATE {variable} SET name = REPLACE(name, 'hosting_queue_runner', 'hosting_queued') WHERE name LIKE 'hosting_queue_runner%'");
+  return $ret;
+}
