@@ -93,7 +93,7 @@ function drush_hosting_queue_runner() {
       sleep(1);
 
       // Execute the task in the backend
-      drush_backend_invoke("hosting-task", array($task->nid));
+      drush_invoke_process('@self', 'hosting-task', array($task->nid));
       drush_log(dt('Finished executing task.'));
 
       // Delay for a configurable amount of time.
