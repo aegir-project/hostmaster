@@ -1,0 +1,5 @@
+name = Hosting queue runner
+description = Allows the hosting queue to be run in a daemon.
+package = Hosting
+dependencies[] = hosting
+core = 6.x
