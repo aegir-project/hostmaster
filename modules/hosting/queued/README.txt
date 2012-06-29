@@ -3,8 +3,9 @@ Hosting queue daemon
 
 Simple Drupal module intended to make it easy to run the Aegir tasks
 queue with near-instant execution times. The daemon is designed to run
-standalone, and started through regular services (e.g. there's an
-init.d script available).
+standalone, and started through regular services: there's an init.d
+script available, which is installed with the Debian package, but that
+you will need to manually install in other platforms.
 
 Note that before the service is setup and the daemon can be started,
 it needs to be enabled as a module in the frontend.
