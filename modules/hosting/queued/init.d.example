@@ -42,10 +42,10 @@ NICE=10
 #
 do_start()
 {
-        su - $USER $DAEMON $DAEMON_ARGS &
-        ret=$?
-        echo $! > $PIDFILE
-        return $ret
+    su - $USER $DAEMON $DAEMON_ARGS &
+    ret=$?
+    echo $! > $PIDFILE
+    return $ret
 }
 
 #
@@ -53,41 +53,41 @@ do_start()
 #
 do_stop()
 {
-        if [ -e $PIDFILE ]; then
-                kill `cat $PIDFILE`
-                ret=$?
-                rm -f $PIDFILE
-        else
-                ret=1
-        fi
-        return $ret
+    if [ -e $PIDFILE ]; then
+        kill `cat $PIDFILE`
+        ret=$?
+        rm -f $PIDFILE
+    else
+        ret=1
+    fi
+    return $ret
 }
 
 #
 # Function that sends a SIGHUP to the daemon/service
 #
 do_reload() {
-	kill -HUP `cat $PIDFILE`
+    kill -HUP `cat $PIDFILE`
 }
 
 case "$1" in
-  start)
-    [ "$VERBOSE" != no ] && echo "Starting $DESC... "
-    do_start
-    case "$?" in
-                0|1) [ "$VERBOSE" != no ] && echo "ok" ;;
-                2) [ "$VERBOSE" != no ] && echo "FAIL" ;;
+    start)
+        [ "$VERBOSE" != no ] && echo "Starting $DESC... "
+        do_start
+        case "$?" in
+            0|1) [ "$VERBOSE" != no ] && echo "ok" ;;
+            2) [ "$VERBOSE" != no ] && echo "FAIL" ;;
         esac
-  ;;
-  stop)
+        ;;
+    stop)
         [ "$VERBOSE" != no ] && echo "Stopping $DESC... "
         do_stop
         case "$?" in
-                0|1) [ "$VERBOSE" != no ] && echo ok ;;
-                2) [ "$VERBOSE" != no ] && echo FAIL ;;
+            0|1) [ "$VERBOSE" != no ] && echo ok ;;
+            2) [ "$VERBOSE" != no ] && echo FAIL ;;
         esac
         ;;
-  status)
+    status)
         if [ -r $PIDFILE ] && ps `cat $PIDFILE` > /dev/null; then
             [ "$VERBOSE" != no ] && echo $DESC is running
             exit 0
@@ -96,12 +96,12 @@ case "$1" in
             [ "$VERBOSE" != no ] && echo "$DESC is not running"
             exit $ret
         fi
-       ;;
-  reload|force-reload)
+        ;;
+    reload|force-reload)
 	[ "$VERBOSE" != no ] && echo "Reloading $DESC"
 	do_reload
 	;;
-  restart)
+    restart)
 	#
 	# If the "reload" option is implemented then remove the
 	# 'force-reload' alias
@@ -109,10 +109,10 @@ case "$1" in
 	[ "$VERBOSE" != no ] && echo "Restarting $DESC"
 	do_stop
 	case "$?" in
-	  0|1)
+	    0|1)
 		do_start
 		;;
-	  *)
+	    *)
 	  	# Failed to stop
                 ret=$?
 		[ "$VERBOSE" != no ] && echo " FAIL"
@@ -120,7 +120,7 @@ case "$1" in
 		;;
 	esac
 	;;
-  *)
+    *)
 	echo "Usage: $SCRIPTNAME {start|stop|status|restart|reload|force-reload}" >&2
 	exit 3
 	;;
