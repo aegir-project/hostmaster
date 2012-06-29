@@ -72,15 +72,15 @@ do_reload() {
 
 case "$1" in
     start)
-        [ "$VERBOSE" != no ] && echo "Starting $DESC... "
+        [ "$VERBOSE" != no ] && printf "Starting $DESC... "
         do_start
         case "$?" in
-            0|1) [ "$VERBOSE" != no ] && echo "ok" ;;
-            2) [ "$VERBOSE" != no ] && echo "FAIL" ;;
+            0|1) [ "$VERBOSE" != no ] && echo ok ;;
+            2) [ "$VERBOSE" != no ] && echo FAIL ;;
         esac
         ;;
     stop)
-        [ "$VERBOSE" != no ] && echo "Stopping $DESC... "
+        [ "$VERBOSE" != no ] && printf "Stopping $DESC... "
         do_stop
         case "$?" in
             0|1) [ "$VERBOSE" != no ] && echo ok ;;
@@ -98,15 +98,15 @@ case "$1" in
         fi
         ;;
     reload|force-reload)
-	[ "$VERBOSE" != no ] && echo "Reloading $DESC"
-	do_reload
+	[ "$VERBOSE" != no ] && printf "Reloading $DESC... "
+	do_reload && echo ok || echo FAIL
 	;;
     restart)
 	#
 	# If the "reload" option is implemented then remove the
 	# 'force-reload' alias
 	#
-	[ "$VERBOSE" != no ] && echo "Restarting $DESC"
+	[ "$VERBOSE" != no ] && printf "Restarting $DESC... "
 	do_stop
 	case "$?" in
 	    0|1)
@@ -115,7 +115,7 @@ case "$1" in
 	    *)
 	  	# Failed to stop
                 ret=$?
-		[ "$VERBOSE" != no ] && echo " FAIL"
+		[ "$VERBOSE" != no ] && echo FAIL
                 return $ret
 		;;
 	esac
