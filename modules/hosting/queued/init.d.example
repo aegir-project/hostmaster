@@ -88,7 +88,7 @@ case "$1" in
         esac
         ;;
   status)
-        if ps `cat $PIDFILE` > /dev/null; then
+        if [ -r $PIDFILE ] && ps `cat $PIDFILE` > /dev/null; then
             [ "$VERBOSE" != no ] && echo $DESC is running
             exit 0
         else
