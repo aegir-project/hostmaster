@@ -59,7 +59,6 @@ do_stop()
                 rm -f $PIDFILE
         else
                 ret=1
-                echo "no pid file found"
         fi
         return $ret
 }
@@ -73,7 +72,7 @@ do_reload() {
 
 case "$1" in
   start)
-    [ "$VERBOSE" != no ] && echo "Starting $DESC " "$NAME"
+    [ "$VERBOSE" != no ] && echo "Starting $DESC... "
     do_start
     case "$?" in
                 0|1) [ "$VERBOSE" != no ] && echo "ok" ;;
@@ -81,7 +80,7 @@ case "$1" in
         esac
   ;;
   stop)
-        [ "$VERBOSE" != no ] && echo "Stopping $DESC" "$NAME"
+        [ "$VERBOSE" != no ] && echo "Stopping $DESC... "
         do_stop
         case "$?" in
                 0|1) [ "$VERBOSE" != no ] && echo ok ;;
@@ -90,15 +89,15 @@ case "$1" in
         ;;
   status)
         if ps `cat $PIDFILE`; then
-            echo $DESC is running
+            [ "$VERBOSE" != no ] && echo $DESC is running
             exit 0
-       else
+        else
             ret=$?
-            echo "$DESC is not running"
+            [ "$VERBOSE" != no ] && echo "$DESC is not running"
             exit $ret
        ;;
   reload|force-reload)
-	echo "Reloading $DESC"
+	[ "$VERBOSE" != no ] && echo "Reloading $DESC"
 	do_reload
 	;;
   restart)
@@ -106,20 +105,17 @@ case "$1" in
 	# If the "reload" option is implemented then remove the
 	# 'force-reload' alias
 	#
-	echo "Restarting $DESC"
+	[ "$VERBOSE" != no ] && echo "Restarting $DESC"
 	do_stop
 	case "$?" in
 	  0|1)
 		do_start
-		case "$?" in
-			0) log_end_msg 0 ;;
-			1) log_end_msg 1 ;; # Old process is still running
-			*) log_end_msg 1 ;; # Failed to start
-		esac
 		;;
 	  *)
 	  	# Failed to stop
-		log_end_msg 1
+                ret=$?
+		[ "$VERBOSE" != no ] && echo " FAIL"
+                return $ret
 		;;
 	esac
 	;;
