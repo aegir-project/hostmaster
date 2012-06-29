@@ -89,12 +89,17 @@ case "$1" in
         esac
         ;;
   status)
-       status_of_proc -p $PIDFILE "$DAEMON" "$NAME" && exit 0 || exit $?
+        if ps `cat $PIDFILE`; then
+            echo $DESC is running
+            exit 0
+       else
+            ret=$?
+            echo "$DESC is not running"
+            exit $ret
        ;;
   reload|force-reload)
 	echo "Reloading $DESC"
 	do_reload
-	log_end_msg $?
 	;;
   restart)
 	#
