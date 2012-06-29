@@ -88,13 +88,14 @@ case "$1" in
         esac
         ;;
   status)
-        if ps `cat $PIDFILE`; then
+        if ps `cat $PIDFILE` > /dev/null; then
             [ "$VERBOSE" != no ] && echo $DESC is running
             exit 0
         else
             ret=$?
             [ "$VERBOSE" != no ] && echo "$DESC is not running"
             exit $ret
+        fi
        ;;
   reload|force-reload)
 	[ "$VERBOSE" != no ] && echo "Reloading $DESC"
