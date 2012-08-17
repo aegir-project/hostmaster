@@ -53,6 +53,12 @@ function hosting_platform_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'make_working_copy' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
     ),
     'primary key' => array('vid'),
   );
@@ -140,4 +146,23 @@ function hosting_platform_update_6004() {
     }
     variable_set('hosting_platform_update_6004_run', true);
   }
+}
+
+/**
+ * Add the 'make_working_copy' column.
+ */
+function hosting_platform_update_6205() {
+  $ret = array();
+  $spec = array(
+    'make_working_copy' => array(
+      'type' => 'int',
+      'unsigned' => TRUE,
+      'not null' => TRUE,
+      'default' => 0,
+    ),
+  );
+  foreach ($spec as $field => $field_spec) {
+    db_add_field($ret, 'hosting_platform', $field, $field_spec);
+  }
+  return $ret;
 }

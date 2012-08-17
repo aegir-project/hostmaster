@@ -208,6 +208,18 @@ function hosting_platform_form(&$node) {
     '#default_value' => $node->makefile,
     '#maxlength' => 255,
   );
+  
+  $form['make_working_copy'] = array(
+    '#type' => 'radios',
+    '#title' => t('Drush make option'),
+    '#default_value' => isset($form['#node']->make_working_copy) ? $form['#node']->make_working_copy : FALSE,
+    '#options' => array(
+      FALSE => t('Normal - Discards SCM files'),
+      TRUE => t('Working copy - preserves SCM files'),
+    ),
+  );
+  
+  $form['#after_build'][] = 'hosting_platform_form_platform_after_build';
 
   $servers = hosting_get_servers('http');
   if (sizeof($servers) > 1) {
@@ -233,6 +245,26 @@ function hosting_platform_form(&$node) {
   return $form;
 }
 
+function hosting_platform_form_platform_after_build($form) {
+  
+  drupal_add_js(drupal_get_path('module', 'hosting_platform') . '/hosting_platform.js');
+  if (isset($form['makefile']['#attributes']['class'])) {
+    $form['makefile']['#attributes']['class'] .= ' hosting-platform-working-copy-source';
+  }
+  else {
+    $form['makefile']['#attributes']['class'] = ' hosting-platform-working-copy-source';
+  }
+  
+  if (isset($form['make_working_copy']['#attributes']['class'])) {
+    $form['make_working_copy']['#attributes']['class'] .= ' hosting-platform-working-copy-target';
+  }
+  else {
+    $form['make_working_copy']['#attributes']['class'] = ' hosting-platform-working-copy-target';
+  }
+  
+  return $form;
+}
+
 /**
  * Hide the delete button on platform nodes.
  */
@@ -253,8 +285,8 @@ function hosting_platform_insert($node) {
   if (!isset($node->no_verify)) {
     hosting_add_task($node->nid, 'verify');
   }
-  db_query("INSERT INTO {hosting_platform} (vid, nid, publish_path, makefile, verified, web_server, status) VALUES (%d, %d, '%s', '%s', %d, %d, %d)",
-    $node->vid, $node->nid, $node->publish_path, $node->makefile, $node->verified, $node->web_server, $node->platform_status);
+  db_query("INSERT INTO {hosting_platform} (vid, nid, publish_path, makefile, verified, web_server, status, make_working_copy) VALUES (%d, %d, '%s', '%s', %d, %d, %d, %d)",
+    $node->vid, $node->nid, $node->publish_path, $node->makefile, $node->verified, $node->web_server, $node->platform_status, $node->make_working_copy);
   if (!$node->old_vid) {
     hosting_context_register($node->nid, 'platform_' . preg_replace("/[!\W]/", "", $node->title));
   }
@@ -275,8 +307,8 @@ function hosting_platform_update($node) {
     if ($node->platform_status == HOSTING_PLATFORM_DELETED) {
       $node->no_verify = TRUE;
     }
-    db_query("UPDATE {hosting_platform} SET publish_path = '%s', makefile = '%s', web_server = %d, verified = %d, status= %d WHERE nid=%d",
-              $node->publish_path, $node->makefile, $node->web_server, $node->verified, $node->platform_status, $node->nid);
+    db_query("UPDATE {hosting_platform} SET publish_path = '%s', makefile = '%s', web_server = %d, verified = %d, status= %d, make_working_copy = %d WHERE nid=%d",
+              $node->publish_path, $node->makefile, $node->web_server, $node->verified, $node->platform_status, $node->make_working_copy, $node->nid);
   }
   if (!$node->no_verify) {
     hosting_add_task($node->nid, 'verify');
@@ -329,7 +361,7 @@ function hosting_platform_validate($node, &$form) {
  *    Node object
  */
 function hosting_platform_load($node) {
-  $additions = db_fetch_object(db_query('SELECT publish_path, makefile, verified, web_server, status AS platform_status FROM {hosting_platform} WHERE vid = %d', $node->vid));
+  $additions = db_fetch_object(db_query('SELECT publish_path, makefile, verified, web_server, status AS platform_status, make_working_copy FROM {hosting_platform} WHERE vid = %d', $node->vid));
   $iid = db_result(db_query("SELECT iid FROM {hosting_package_instance} i left join {hosting_package} p on p.nid=i.package_id WHERE p.package_type='platform' AND i.rid=%d", $node->nid));
   $additions->release = hosting_package_instance_load($iid);
   $additions->profiles = hosting_get_profiles($node->nid, 'short_name');
