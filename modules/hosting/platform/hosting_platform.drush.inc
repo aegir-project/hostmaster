@@ -15,6 +15,12 @@ function hosting_hosting_platform_context_options(&$task) {
   if ($task->ref->makefile) {
     $task->context_options['makefile'] = $task->ref->makefile;
   }
+  if (isset($task->ref->make_working_copy) && !empty($task->ref->make_working_copy)) {
+    $task->context_options['make_working_copy'] = $task->ref->make_working_copy;
+  }
+  else {
+    $task->context_options['make_working_copy'] = 'null';
+  }
 }
 
 /**
@@ -25,7 +31,10 @@ function hosting_platform_drush_context_import($context, &$node) {
     $node->title = str_replace('platform_', '', trim($context->name, '@'));
     $node->web_server = hosting_drush_import($context->web_server);
     $node->publish_path = $context->root;
-    $node->makefile = $context->makefile; 
+    $node->makefile = $context->makefile;
+    if (isset($context->make_working_copy) && !empty($context->make_working_copy)) {
+      $node->make_working_copy = $context->make_working_copy;
+    }
   }
 }
 
