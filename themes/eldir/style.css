@@ -997,6 +997,13 @@ dl.multiselect div.form-item { margin:0px 0px 10px; }
   float: none;
 }
 
+body.admin-menu table.sticky-header, table.sticky-enabled thead {
+  margin-top: 25px !important;
+}
+table.sticky-header {
+  z-index: 10;
+}
+
 /**
  * ERROR PAGES ========================================================
  */
