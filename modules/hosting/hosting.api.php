@@ -260,7 +260,11 @@ function hook_provision_args($task, $task_type) {
  * Perform actions when a task has completed succesfully.
  *
  * Replace TASK_TYPE with the type of task that if completed you will be
- * notified of.
+ * notified of. This is a good place to hook in and record changes in the
+ * frontend as a result of the task executing in the backend. If you just want
+ * to hook into the backend then you probably want to consider using the
+ * 'standard' Drush hooks there, i.e. host_post_provision_verify(),
+ * hook_post_provision_install() etc.
  *
  * @param $task
  *   The hosting task that has completed.
