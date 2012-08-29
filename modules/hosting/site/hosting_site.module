@@ -40,6 +40,22 @@ function hosting_site_menu() {
     'description' => 'Display a list of sites',
     'page callback' => 'hosting_sites',
     'access arguments' => array('view site'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['hosting/sites/list'] = array(
+    'title' => 'List',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+  );
+
+  $items['hosting/sites/add'] = array(
+    'title' => 'Add site',
+    'type' => MENU_LOCAL_TASK,
+    'page callback' => 'drupal_goto',
+    'page arguments' => array('node/add/site'),
+    'access callback' => 'node_access',
+    'access arguments' => array('create', 'site'),
   );
 
   $items['hosting/hosting_site_form_check'] = array(

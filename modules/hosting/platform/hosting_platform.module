@@ -30,11 +30,29 @@ define('HOSTING_PLATFORM_ENABLED', 1);
  */
 function hosting_platform_menu() {
   $items = array();
+
   $items['hosting/platforms'] = array(
     'title' => 'Platforms',
     'description' => 'List of platforms',
     'page callback' => 'hosting_platform_listing',
-    'access arguments' => array('view platform'));
+    'access arguments' => array('view platform'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['hosting/platforms/list'] = array(
+    'title' => 'List',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+  );
+
+  $items['hosting/platforms/add'] = array(
+    'title' => 'Add platform',
+    'type' => MENU_LOCAL_TASK,
+    'page callback' => 'drupal_goto',
+    'page arguments' => array('node/add/platform'),
+    'access callback' => 'node_access',
+    'access arguments' => array('create', 'platform'),
+  );
 
   return $items;
 }
