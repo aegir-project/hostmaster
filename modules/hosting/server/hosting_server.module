@@ -21,11 +21,28 @@ function hosting_server_node_info() {
  */
 function hosting_server_menu() {
   $items = array();
+
   $items['hosting/servers'] = array(
     'title' => 'Servers',
     'description' => 'List of servers',
     'page callback' => 'hosting_server_listing',
     'access arguments' => array('view server'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  
+  $items['hosting/servers/list'] = array(
+    'title' => 'List',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+  );
+
+  $items['hosting/servers/add'] = array(
+    'title' => 'Add server',
+    'type' => MENU_LOCAL_TASK,
+    'page callback' => 'drupal_goto',
+    'page arguments' => array('node/add/server'),
+    'access callback' => 'node_access',
+    'access arguments' => array('create', 'server'),
   );
 
   return $items;
