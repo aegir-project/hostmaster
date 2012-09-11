@@ -136,10 +136,10 @@ function hosting_task_menu_access($node, $task) {
       if (hosting_task_outstanding($node->nid, 'delete') || ($node->site_status ==  HOSTING_SITE_DELETED)) {
         return FALSE;
       }
-      if (($task == 'login_reset') && ($node->site_status != HOSTING_SITE_ENABLED)) {
+      if (($task == 'login-reset') && ($node->site_status != HOSTING_SITE_ENABLED)) {
         return FALSE;
       }
-      $safe_tasks = array('backup', 'backup_delete', 'verify', 'enable');
+      $safe_tasks = array('backup', 'backup-delete', 'verify', 'enable');
       if (!in_array($task, $safe_tasks)) {
         // Don't show certain tasks if the site is the 'special' main aegir site
         $profile = node_load($node->profile);
@@ -261,8 +261,8 @@ function hosting_task_perm() {
     'create verify task',
     'create lock task',
     'create unlock task',
-    'create login_reset task',
-    'create backup_delete task',
+    'create login-reset task',
+    'create backup-delete task',
     'view own tasks',
     'view task',
     'access task logs',
@@ -390,7 +390,7 @@ function hosting_task_confirm_form($form_state, $node, $task) {
   $form['nid'] = array('#type' => 'value', '#value' => $node->nid);
   $form['task'] = array('#type' => 'value', '#value' => $task); 
   $form['parameters'] = array('#tree' => TRUE);
-  $func = 'hosting_task_' . $task . '_form';
+  $func = 'hosting_task_' . str_replace('-', '_', $task) . '_form';
   if (function_exists($func)) {
     $form['parameters'] += $func($node);
   }
@@ -976,7 +976,7 @@ function hosting_task_queue_block() {
   foreach ($nodes as $node) {
     $row = array();
     $row['type'] = array(
-      'data' => drupal_ucfirst(str_replace('_', ' ', $node->task_type)) . ' ' . _hosting_node_link($node->rid),
+      'data' => drupal_ucfirst(str_replace(array('_', '-'), ' ', $node->task_type)) . ' ' . _hosting_node_link($node->rid),
       'class' => 'hosting-status'
     );
 
