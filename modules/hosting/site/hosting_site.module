@@ -245,12 +245,12 @@ function hosting_site_hosting_tasks() {
     'dialog' => TRUE,
   );
 
-  $tasks['site']['login_reset'] = array(
+  $tasks['site']['login-reset'] = array(
      'title' => t('Reset password'),
      'description' => t('Generate a one-time login reset url for this site.'),
   );
 
-  $tasks['site']['backup_delete'] = array(
+  $tasks['site']['backup-delete'] = array(
      'title' => t('Delete backups'),
      'description' => t('Delete one or more backup files of a site.'),
      'dialog' => TRUE,

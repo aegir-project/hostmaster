@@ -269,3 +269,46 @@ function hosting_site_update_6008() {
   return $ret;
 }
 
+/**
+ *  Implements hook_update_N().
+ */
+function hosting_site_update_6200() {
+  $ret = array();
+  // We re-named 'login_reset' tasks to 'login-reset' and 'backup_delete' to
+  // 'backup-delete'.
+  
+  $replacements = array(
+    'backup_delete' => 'backup-delete',
+    'login_reset' => 'login-reset',
+  );
+  
+  foreach ($replacements as $old => $new) {
+    db_query("UPDATE {hosting_task} SET task_type = '%s' where task_type = '%s'", $new, $old);
+  }
+  
+  return $ret;
+}
+
+/**
+ *  Implements hook_update_N().
+ */
+function hosting_site_update_6201() {
+  $ret = array();
+  // We re-named 'login_reset' tasks to 'login-reset' and 'backup_delete' to
+  // 'backup-delete' and so we need to fix any roles using those permissions.
+
+  $replacements = array(
+    'create backup_delete task' => 'create backup-delete task',
+    'create login_reset task' => 'create login-reset task',
+  );
+
+  // Process all the roles.
+  $roles = db_query('SELECT rid, perm FROM {permission}');
+  while ($role = db_fetch_object($roles)) {
+    $perms = explode(', ', $role->perm);
+    $perms = str_replace(array_keys($replacements), array_values($replacements), $perms);
+    db_query("UPDATE {permission} SET perm = '%s' where rid = %d", implode(', ', $perms), $role->rid);
+  }
+
+  return $ret;
+}

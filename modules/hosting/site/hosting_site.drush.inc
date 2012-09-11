@@ -58,7 +58,7 @@ function drush_hosting_site_pre_hosting_task($task) {
     $task->args[1] = $backup['filename'];
   }
 
-  if ($task->task_type == 'backup_delete') {
+  if ($task->task_type == 'backup-delete') {
     foreach ($task->task_args as $bid => $filename) {
       if ($filename !== '0') {
         $backups[] = $filename;
