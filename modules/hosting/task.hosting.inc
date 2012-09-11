@@ -129,7 +129,7 @@ function drush_hosting_task() {
  *
  * @see hook_hosting_TASK_TYPE_task_rollback()
  */
-function drush_hosting_hosting_task_rollback() {
+function drush_hosting_task_rollback() {
   $task =& drush_get_context('HOSTING_TASK');
   module_invoke_all(sprintf("hosting_%s_task_rollback", str_replace('-', '_', $task->task_type)), $task, drush_get_context('HOSTING_DRUSH_OUTPUT'));
 }
