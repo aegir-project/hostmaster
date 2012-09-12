@@ -75,6 +75,14 @@ function drush_hosting_task_validate($id, $type = null) {
   else {
     drush_set_error('HOSTING_INVALID_TASK', t("This task is not valid"));
   }
+
+  // Load Task Info
+  $tasks_info = hosting_available_tasks($task->ref->type);
+
+  // Find task type and pass through if it needs provision_save
+  if (isset($tasks_info[$task->task_type])){
+    $task->task_info = $tasks_info[$task->task_type];
+  }
 }
 
 /**
@@ -85,6 +93,7 @@ function drush_hosting_task_validate($id, $type = null) {
  * are attached to the task for reference.
  *
  * @see drush_hosting_task_validate()
+ * @see hook_hosting_TASK_OBJECT_context_options()
  */
 function drush_hosting_task() {
   $task =& drush_get_context('HOSTING_TASK');
@@ -94,9 +103,10 @@ function drush_hosting_task() {
   // Make sure argument order is correct
   ksort($task->args);
 
-  // On install/verify, save the named context
-  if ($task->task_type === 'install' || $task->task_type === 'verify' || $task->task_type === 'import') {
-    // XXX: we copy module_invoke_all() here because it doesn't pass by
+  // If this task type needs it, run provision-save to create the named context.
+  if (!empty($task->task_info['provision_save'])) {
+    // Invoke hook_hosting_TASK_OBJECT_context_options()
+    // We copy module_invoke_all() here because it doesn't pass by
     // reference and it breaks under PHP 5.3
     $hook = 'hosting_' . $task->ref->type . '_context_options';
     foreach (module_implements($hook) as $module) {
@@ -106,10 +116,12 @@ function drush_hosting_task() {
 
     $output = drush_invoke_process('@none', 'provision-save', array('@' . $task->ref->hosting_name), $task->context_options, array('method' => $mode));
   }
+ 
   // Run the actual command. Adding alias here to work aorund Drush API.
   $output = provision_backend_invoke($task->ref->hosting_name, 'provision-' . $task->task_type, $task->args, $task->options, $mode);
   drush_set_context('HOSTING_DRUSH_OUTPUT', $output);
   $code = drush_get_error();
+ 
   // We return 0 on success, so anything else is an error.
   $task->task_status = ($code) ? HOSTING_TASK_ERROR : HOSTING_TASK_SUCCESS;
 
