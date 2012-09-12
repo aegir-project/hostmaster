@@ -28,6 +28,12 @@
  *      task will still be available for execution by the front-end however.
  *   - 'access callback' (optional) An access callback to determine if the user
  *      can access the task, defaults to 'hosting_task_menu_access'.
+ *   - 'provision_save' (optional, defaults to FALSE) A flag that tells
+ *      provision that a "provision-save" command needs to happen before this
+ *      task can be run, used for tasks like Verify, Install, and Import.
+ *      If you implement this option, you should implement
+ *      hook_hosting_TASK_OBJECT_context_options() in order to pass parameters
+ *      to the provision-save command.
  *
  * @see hosting_available_tasks()
  */
