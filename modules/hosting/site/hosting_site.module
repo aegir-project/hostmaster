@@ -269,7 +269,7 @@ function hosting_site_hosting_tasks() {
     'description' => t('Import an existing site into Aegir'), 
     'hidden' => TRUE,
     'provision_save' => TRUE,
-);
+  );
 
   return $tasks;
 }
