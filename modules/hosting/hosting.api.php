@@ -138,11 +138,9 @@ function hook_hosting_queues() {
  * Add or change context options before a hosting task runs.
  *
  * This hook is invoked just before any task that has the 'provision_save' flag
- * equal to TRUE.  These include the 'install', 'verify' and 'import' tasks.
+ * equal to TRUE. These include the 'install', 'verify' and 'import' tasks.
  *
  * The TASK_OBJECT will be either: 'server', 'platform' or 'site'.
- *
- * @see hook_hosting_tasks()
  *
  * This gives other modules the chance to send data to the backend to be
  * persisted by services there. The entire task is sent so that you have access
@@ -166,6 +164,7 @@ function hook_hosting_queues() {
  *
  * @see drush_hosting_task()
  * @see hook_drush_context_import()
+ * @see hook_hosting_tasks()
  */
 function hook_hosting_TASK_OBJECT_context_options(&$task) {
   // From hosting_hosting_platform_context_options().
