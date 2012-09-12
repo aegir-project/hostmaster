@@ -224,6 +224,7 @@ function hosting_site_hosting_tasks() {
   $tasks['site']['verify'] = array(
     'title' => t('Verify'),
     'description' => t('Confirm that the site has been correctly installed and regenerate all configuration files to match the hosting front end.'),
+    'provision_save' => TRUE,
   );
 
   $tasks['site']['disable'] = array(
@@ -259,14 +260,16 @@ function hosting_site_hosting_tasks() {
   $tasks['site']['install'] = array(
     'title' => t('Install'), 
     'description' => t('Install a site'), 
-    'hidden' => TRUE 
+    'hidden' => TRUE,
+    'provision_save' => TRUE,
   );
 
   $tasks['site']['import'] = array(
     'title' => t('Import'), 
     'description' => t('Import an existing site into Aegir'), 
-    'hidden' => TRUE
-  );
+    'hidden' => TRUE,
+    'provision_save' => TRUE,
+);
 
   return $tasks;
 }
