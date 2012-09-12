@@ -137,8 +137,12 @@ function hook_hosting_queues() {
 /**
  * Add or change context options before a hosting task runs.
  *
- * This hook is invoked just before an 'install', 'verify' or 'import' task, and
- * the TASK_OBJECT will be either: 'server', 'platform' or 'site'.
+ * This hook is invoked just before any task that has the 'provision_save' flag
+ * equal to TRUE.  These include the 'install', 'verify' and 'import' tasks.
+ *
+ * The TASK_OBJECT will be either: 'server', 'platform' or 'site'.
+ *
+ * @see hook_hosting_tasks()
  *
  * This gives other modules the chance to send data to the backend to be
  * persisted by services there. The entire task is sent so that you have access
