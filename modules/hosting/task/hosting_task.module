@@ -570,6 +570,7 @@ function hosting_available_tasks($type, $reset = FALSE) {
 
   if (!sizeof($cache) || $reset) {
     $cache = module_invoke_all('hosting_tasks');
+    drupal_alter('hosting_tasks', $cache);
   }
   return $cache[$type];
 

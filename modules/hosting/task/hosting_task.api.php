@@ -51,5 +51,22 @@ function hook_hosting_tasks() {
 }
 
 /**
+ * Alter front-end tasks defined by other modules.
+ *
+ * @param $tasks
+ *   An array of tasks defined by other modules. Keys of the outer array are the
+ *   types of objects that the tasks operate on, e.g. 'site', 'platform' or
+ *   'server', values are arrays of the tasks that apply to those objects.
+ *
+ * @see hook_hosting_tasks
+ */
+function hook_hosting_tasks_alter(&$tasks) {
+  // Change the title of the site's clone task.
+  if (isset($tasks['site']['clone'])) {
+    $tasks['site']['clone']['title'] = t('Site clone');
+  }
+}
+
+/**
  * @} End of "addtogroup hooks".
  */
