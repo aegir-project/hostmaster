@@ -436,7 +436,7 @@ function hosting_server_view(&$node, $teaser = FALSE, $page = FALSE) {
   $services = hosting_server_services();
 
   $node->content['info'] = array(
-    '#prefix' => '<div id="hosting-server-info">',
+    '#prefix' => '<div id="hosting-server-info" class="hosting-info-list">',
     '#suffix' => '</div>'
   );
 
