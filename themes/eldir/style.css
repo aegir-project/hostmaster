@@ -819,7 +819,7 @@ table.hosting-table th {
       padding-bottom:5px;
       }
 
-  body.aegir #page div.node div.content div.form-item label {
+  .hosting-info-list div.form-item label {
     position:absolute;
     left:0px;
     width:95px;

@@ -412,7 +412,7 @@ function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
   modalframe_parent_js();
 
   $node->content['info'] = array(
-    '#prefix' => '<div id="hosting-platform-info">',
+    '#prefix' => '<div id="hosting-platform-info" class="hosting-info-list">',
     '#suffix' => '</div>'
   );
 
