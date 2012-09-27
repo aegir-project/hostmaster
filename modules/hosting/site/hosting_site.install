@@ -270,12 +270,13 @@ function hosting_site_update_6008() {
 }
 
 /**
- *  Implements hook_update_N().
+ * Rename tasks login_reset and backup_delete to use dashes
+ *
+ * We re-named 'login_reset' tasks to 'login-reset' and 'backup_delete' to
+ * 'backup-delete'.
  */
 function hosting_site_update_6200() {
   $ret = array();
-  // We re-named 'login_reset' tasks to 'login-reset' and 'backup_delete' to
-  // 'backup-delete'.
   
   $replacements = array(
     'backup_delete' => 'backup-delete',
@@ -290,12 +291,13 @@ function hosting_site_update_6200() {
 }
 
 /**
- *  Implements hook_update_N().
+ * Fix permissions for renamed tasks
+ *
+ * We re-named 'login_reset' tasks to 'login-reset' and 'backup_delete' to
+ * 'backup-delete' and so we need to fix any roles using those permissions.
  */
 function hosting_site_update_6201() {
   $ret = array();
-  // We re-named 'login_reset' tasks to 'login-reset' and 'backup_delete' to
-  // 'backup-delete' and so we need to fix any roles using those permissions.
 
   $replacements = array(
     'create backup_delete task' => 'create backup-delete task',
