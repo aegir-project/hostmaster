@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Pass options for the server verification to the backend.
+ *
+ * Here we pass the hostname, IP addresses, and setup the services for
+ * this server (?).
+ */
 function hosting_hosting_server_context_options(&$task) {
   $task->context_options['remote_host'] = $task->ref->title;
   $ip_list = _hosting_ip_list($task->ref->ip_addresses);
