@@ -50,6 +50,11 @@ function hosting_ssl_schema() {
           'not null' => TRUE,
           'default' => 0,
         ),
+        'ip_address' => array(
+          'type' => 'text',
+          'size' => 'small',
+          'not null' => TRUE,
+        ),
       ),
       'primary key' => array('cid'),
       'indexes' => array('ssl_key' => array(array('ssl_key', 50)))
@@ -96,4 +101,16 @@ function hosting_ssl_uninstall() {
   db_query("DELETE FROM {hosting_service} WHERE service='http' and type='apache_ssl'");
   db_query("DELETE FROM {hosting_service} WHERE service='http' and type='nginx_ssl'");
   drupal_uninstall_schema('hosting_ssl');
+}
+
+/**
+ * Add SSL to IP address mapping in the frontend
+ *
+ * We need this mapping because allocation is in the frontend now and we need
+ * to make sure we track which certificate uses which IP on which server.
+ */
+function hosting_ssl_update_6200() {
+  $ret = array();
+  db_add_field($ret, 'hosting_ssl_cert', 'ip_address', array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0));
+  return $ret;
 }
