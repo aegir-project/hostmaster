@@ -28,7 +28,7 @@ function hosting_server_schema() {
 
   $schema['hosting_ip_addresses'] = array(
    'fields' => array(
-      'vid' => array(
+      'id' => array(
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
@@ -46,8 +46,10 @@ function hosting_server_schema() {
         'not null' => TRUE,
       ),
     ),
+    'primary key' => array('id'),
     'indexes' => array(
       'vid' => array('vid'),
+      'ip_address' => array('ip_address'),
     ),
 
   );
@@ -207,5 +209,20 @@ function hosting_server_update_6004() {
 function hosting_server_update_6005() {
   $ret = array();
   db_rename_table($ret, 'hosting_server_ip', 'hosting_ip_addresses');
+  return $ret;
+}
+
+/**
+ * Add primary key for IPs, drop versionning
+ */
+function hosting_server_update_6200() {
+  $ret = array();
+  db_add_field($ret, "hosting_ip_addresses", "id", array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0));
+  db_drop_field($ret, "hosting_ip_addresses", "vid");
+  $r = db_query("SELECT nid, ip_address FROM {hosting_ip_addresses}");
+  for ($i = 0; $row = db_fetch_object($r); $i++) {
+    $ret[] = update_sql("UPDATE {hosting_ip_addresses} SET id=$i WHERE nid={$row->nid} AND ip_address='{$row->ip_address}'");
+  }
+  db_add_primary_key($ret, 'hosting_ip_addresses', array('id'));
   return $ret;
 }
