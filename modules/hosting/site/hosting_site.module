@@ -405,6 +405,7 @@ function hosting_import_site($site_id, $data, $platform) {
   $site->no_verify = TRUE;
   $site->verified = time();
   $site->client = $client->nid;
+  // XXX: check if the IP is allocated in the server??
   $site->ip_addresses = array_values($data['site_ip_addresses']);
   $site->cron_key = ($data['cron_key']) ? $data['cron_key'] : '';
 

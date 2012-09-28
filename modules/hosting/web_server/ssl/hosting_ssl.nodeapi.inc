@@ -193,10 +193,12 @@ function hosting_ssl_nodeapi_site_presave(&$node) {
   if (($node->ssl_key == HOSTING_SSL_CUSTOM_KEY) && isset($node->ssl_key_new)) {
     $node->ssl_key = hosting_ssl_filter_key($node->ssl_key_new);
   }
+  // allocate the site's IP here
+  $node->ssl_key = hosting_ssl_save_key($node);
 }
 
 function hosting_ssl_nodeapi_site_insert($node) {
-  db_query("INSERT INTO {hosting_ssl_site} (vid, nid, ssl_enabled, ssl_key) VALUES (%d, %d, %d, %d)", $node->vid, $node->nid, $node->ssl_enabled, hosting_ssl_save_key($node->ssl_key, $node->ssl_enabled, $node->client));
+  db_query("INSERT INTO {hosting_ssl_site} (vid, nid, ssl_enabled, ssl_key) VALUES (%d, %d, %d, %d)", $node->vid, $node->nid, $node->ssl_enabled, $node->ssl_key);
 }
 
 function hosting_ssl_nodeapi_site_update($node) {
@@ -206,7 +208,7 @@ function hosting_ssl_nodeapi_site_update($node) {
     hosting_ssl_nodeapi_site_insert($node);
   }
   else {
-    db_query("UPDATE {hosting_ssl_site} SET ssl_enabled=%d, ssl_key=%d WHERE vid=%d", $node->ssl_enabled, hosting_ssl_save_key($node->ssl_key, $node->ssl_enabled, $node->client), $node->vid);
+    db_query("UPDATE {hosting_ssl_site} SET ssl_enabled=%d, ssl_key=%d WHERE vid=%d", $node->ssl_enabled, $node->ssl_key, $node->vid);
   }
 }
 
@@ -228,34 +230,35 @@ function hosting_ssl_nodeapi_site_delete_revision($node) {
 /**
  * Store the SSL Cert key in the database.
  */
-function hosting_ssl_save_key($key, $ssl_enabled = TRUE, $client = null) {
-  if (empty($ssl_enabled)) {
+function hosting_ssl_save_key($node) {
+  if (empty($node->ssl_enabled)) {
     return 0;
   }
 
   // we only save the new key if it's a string
-  if (!is_numeric($key)) {
-    $result = db_query("SELECT * FROM {hosting_ssl_cert} WHERE ssl_key = '%s'", $key);
+  if (!is_numeric($node->key)) {
+    $result = db_query("SELECT * FROM {hosting_ssl_cert} WHERE ssl_key = '%s'", $node->key);
     if ($obj = db_fetch_object($result)) {
       // update
-      if ($client != null) {
-        $obj->client = $client;
+      if ($node->client != null) {
+        $obj->client = $node->client;
       }
       drupal_write_record("hosting_ssl_cert", $obj, 'cid');
     }
     else {
       // insert
       $obj = new stdClass();
-      $obj->ssl_key = $key;
-      $obj->client = $client;
+      $obj->ssl_key = $node->key;
+      $obj->client = $node->client;
       $obj->status = 0;
+      $obj->ip_address = hosting_ip_allocate($node);
       drupal_write_record("hosting_ssl_cert", $obj);
     }
 
     return $obj->cid;
   }
 
-  return $key;
+  return $node->key;
 }
 
 /**

@@ -147,8 +147,6 @@ function hosting_site_insert(&$node) {
   // Ensure that the last_cron value is set.
   $node->last_cron = isset($node->last_cron) ? $node->last_cron : 0;
 
-  hosting_ip_save($node, FALSE);
-
   db_query("INSERT INTO {hosting_site} (vid, nid, client, db_server, platform, profile, language, last_cron, cron_key, status, verified) VALUES (%d, %d, %d, %d, %d, %d, '%s', %d, '%s', %d, %d)",
            $node->vid, $node->nid, $node->client, $node->db_server, $node->platform, $node->profile, $node->site_language, $node->last_cron, $node->cron_key, $node->site_status, $node->verified);
   if ((empty($node->old_vid))) {
