@@ -38,7 +38,7 @@ cvs up -dP sites
 echo "fixing perms on settings.php for drupal install"
 chmod 666 sites/default/settings.php
 
-echo updating install profile source
+echo updating installation profile source
 cd profiles/hostmaster; cvs up
 echo updating hosting source
 (cd modules/hosting;  cvs up -C )

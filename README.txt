@@ -1,7 +1,7 @@
 The Aegir system
 ================
 
-This install profile is part of the front end of the Aegir hosting
+This installation profile is part of the front end of the Aegir hosting
 system that also consists of the hosting framework (front end) and the
 provisioning framework (backend).
 

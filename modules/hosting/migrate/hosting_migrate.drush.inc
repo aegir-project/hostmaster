@@ -26,13 +26,13 @@ function drush_hosting_migrate_pre_hosting_task($task) {
       $task->options['profile'] = $profile_instance->short_name;
     }
     else {
-      drush_set_error("HOSTING_NO_VALID_PROFILE", dt("There are no valid install profiles on the target platform to migrate to"));
+      drush_set_error("HOSTING_NO_VALID_PROFILE", dt("There are no valid installation profiles on the target platform to migrate to"));
     }
   }
 }
 
 function _hosting_migrate_get_target_profile_name($task) {
-  // load the original install profile
+  // load the original installation profile
   $profile = node_load($task->ref->profile);
 
   // get the profile instance we are migrating to.

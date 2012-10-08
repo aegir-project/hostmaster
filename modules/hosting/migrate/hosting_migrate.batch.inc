@@ -227,7 +227,7 @@ function hosting_migrate_platform_batch($site_id, $target_platform, $context) {
   $site = node_load($site_id);
   $profile = node_load($site->profile);
   $batch =& batch_get();
-  // Determine whether the install profile is available on the target platform
+  // Determine whether the installation profile is available on the target platform
   $profile_instance = hosting_package_instance_load(
     array('i.rid' => $target_platform,
           'r.type' => 'platform',

@@ -56,7 +56,7 @@ function hosting_site_view(&$node, $teaser = false) {
   if ($node->profile) {
     $node->content['info']['profile'] = array(
       '#type' => 'item',
-      '#title' => t('Install profile'),
+      '#title' => t('Installation profile'),
       '#value' => _hosting_node_link($node->profile),
     );
   }

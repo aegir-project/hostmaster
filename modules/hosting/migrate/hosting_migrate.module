@@ -145,8 +145,8 @@ function hosting_task_migrate_form($node) {
   $profile_platform_instances = hosting_package_instances_load(
     array('r.type' => 'platform', 'n.nid' => $node->profile, 'h.status' => HOSTING_PLATFORM_ENABLED));
 
-  // In the list of possible targets, we also include install profiles on platforms that
-  // USED to be named the same as our current install profile. Such as the d6 -> d7 rename
+  // In the list of possible targets, we also include installation profiles on platforms that
+  // USED to be named the same as our current installation profile. Such as the d6 -> d7 rename
   // of the default profile to standard.
   $profile_platform_instances = array_merge($profile_platform_instances, hosting_package_instances_load(
     array('r.type' => 'platform', 'p.old_short_name' => $site_profile->short_name)));

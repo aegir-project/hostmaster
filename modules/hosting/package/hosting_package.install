@@ -346,7 +346,7 @@ function hosting_package_update_6001() {
 
 /**
  * Add the new old_short_name field which will be used to manage
- * cases where install profiles change names during migrations,
+ * cases where installation profiles change names during migrations,
  * such as drupal 6 'default' profile to drupal 7 'standard' profile.
  *
  * This needs to happen before any interaction with the packaging system
