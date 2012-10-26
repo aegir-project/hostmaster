@@ -61,7 +61,7 @@ function hook_hosting_site_options_alter(&$return, $node) {
 
 /**
  * @see hosting_task_confirm_form()
- * @see hosting_site_list_form()
+ * @see hosting_site_list()
  */
 function hosting_task_TASK_TYPE_form($node) {
 
