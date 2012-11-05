@@ -531,7 +531,7 @@ function hosting_client_view($node, $teaser = FALSE, $page = FALSE) {
  *   The nid of the generated client.
  */
 function hosting_import_client($name) {
-  $client = hosting_get_client($name);
+  $client = hosting_get_client_by_uname($name);
 
   if (!$client) {
     $client = new stdClass();
