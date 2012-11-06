@@ -166,3 +166,24 @@ function hosting_platform_update_6205() {
   }
   return $ret;
 }
+
+/**
+ * Remove duplicate, failed platforms nodes.
+ */
+function hosting_platform_update_6206() {
+  $ret = array();
+  $type = "platform";
+  $result = db_query("SELECT nid, verified, status FROM {hosting_platform} WHERE verified = 0 AND status = 0");
+  if (db_affected_rows($result)) {
+    while ($record = db_fetch_object($result)) {
+      if ($record->verified == 0 && $record->status == 0) {
+        $exists = db_query("SELECT nid, type FROM {node} WHERE nid = %d AND type = '%s'", $record->nid, $type);
+        if (db_affected_rows($exists)) {
+          node_delete($record->nid);
+        }
+      }
+    }
+  }
+  $ret[0]['success'] = TRUE; // never fail
+  return $ret;
+}
