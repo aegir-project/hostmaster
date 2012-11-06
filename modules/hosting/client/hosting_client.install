@@ -297,37 +297,3 @@ function hosting_client_update_6002() {
   $ret[0]['success'] = TRUE; // never fail
   return $ret;
 }
-
-/**
- * Remove duplicate client nodes.
- */
-function hosting_client_update_6003() {
-  $ret = array();
-  $type = "client";
-  $result = db_query("SELECT nid, uid, type FROM {node} WHERE uid = 1 AND nid != 1 AND type = '%s'", $type);
-  if (!db_affected_rows($result)) {
-    while ($record = db_fetch_object($result)) {
-      if ($record->uid == 1 && $record->type == 'client' && $record->nid != 1) {
-        $exists = db_query("SELECT nid FROM {hosting_client} WHERE nid = %d", $record->nid);
-        if (!db_affected_rows($exists)) {
-          $ret[] = node_delete($record->nid);
-        }
-      }
-    }
-  }
-  return $ret;
-}
-
-/**
- * Make all sites with client relationship lost, owned by the default client.
- */
-function hosting_client_update_6004() {
-  $ret = array();
-  $lost = "0";
-  $found = $client_id ? $client_id : HOSTING_DEFAULT_CLIENT;
-  $result = db_query("SELECT nid, client FROM {hosting_site} WHERE client = 0");
-  if (!db_affected_rows($result)) {
-    $ret[] = db_query("UPDATE {hosting_site} SET client = %d WHERE client = %d", $found, $lost);
-  }
-  return $ret;
-}
