@@ -297,3 +297,26 @@ function hosting_client_update_6002() {
   $ret[0]['success'] = TRUE; // never fail
   return $ret;
 }
+
+/**
+ * Remove duplicate client nodes.
+ *
+ * Those may have been created in development versions of 2.x code, see
+ * https://drupal.org/node/1146014
+ */
+function hosting_client_update_6003() {
+  $q = db_query("SELECT n.nid FROM {node} n LEFT JOIN {hosting_client} hc ON n.nid = hc.nid WHERE n.type = 'client' AND hc.nid IS NULL;");
+  while ($nid = db_result($q)) {
+    node_delete($nid);
+  }
+  return array(); // never fail
+}
+
+/**
+ * Make all sites with client relationship lost owned by the default client.
+ */
+function hosting_client_update_6004() {
+  $ret = array();
+  $ret[] = update_sql("UPDATE {hosting_site} SET client = %d WHERE client = 0", HOSTING_DEFAULT_CLIENT);
+  return $ret;
+}
