@@ -85,6 +85,28 @@ function hosting_ssl_schema() {
       ),
       'primary key' => array('vid', 'nid'),
     );
+
+  $schema['hosting_ssl_cert_ips'] = array(
+    'fields' => array(
+      // cert id
+      'cid' => array( 
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      // reference to the hosting_ip_addresses table
+      'ip_address' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'indexes' => array(
+      'cid' => array('cid'),
+      'ip_address' => array('ip_address'),
+    ));
   return $schema;
 }
 

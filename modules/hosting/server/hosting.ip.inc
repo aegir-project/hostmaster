@@ -88,42 +88,24 @@ function hosting_ip_delete($node) {
  * IP Utility function for hook_delete_revision.
  */
 function hosting_ip_delete_revision($node) {
-  db_query("DELETE FROM {hosting_ip_addresses} WHERE vid=%d", $node->vid);
-}
-
-/**
- * Pick an IP for a site on a given server.
- *
- * XXX: this needs to be re-written to rely on the hosting_ssl_cert table
- *
- * @return the first available IP on the server, or FALSE if no IP is available
- */
-function hosting_ip_pick($node) {
-  // basically, we do a double-left-join on the ip_address table but then
-  // restrict the left table to the server we're interested in and the
-  // right tables to only sites (using a subselect, because I couldn't
-  // figure out how to do it with a join).
-  //
-  // took me about 40 minutes to figure out that bastard.
-  return db_result(db_query("SELECT server.ip_address FROM {hosting_ip_addresses} AS server 
-                             LEFT JOIN {hosting_ip_addresses} AS site ON site.ip_address = server.ip_address 
-                                       and site.nid IN (SELECT nid FROM {node} WHERE type = 'site')
-                             WHERE server.vid=%d AND site.nid IS NULL", $node->vid));
+  db_query("DELETE FROM {hosting_ip_addresses} WHERE nid=%d", $node->nid);
 }
 
 /**
  * Allocate an IP for a given site on a given server.
  */
-function hosting_ip_allocate($node) {
-  db_query("LOCK TABLES {hosting_ip_addresses}"); // make sure the IP is
-                                                // not allocated after
-                                                // the pick
+function hosting_ip_allocate($cert, $site) {
+  // make sure the IP is not allocated while we pick ours
+  db_query("LOCK TABLES {hosting_ssl_cert_ips} WRITE");
   $platform = node_load($node->platform);
   $server = node_load($platform->web_server);
-  $ip = hosting_ip_pick($server);
+  // guess the next available IP
+  $ip = db_result(db_query("SELECT server.ip_address FROM hosting_ip_addresses AS server
+                             LEFT JOIN hosting_ssl_cert_ips AS certs ON server.id = certs.ip_address
+                             WHERE certs.ip_address IS NULL AND nid = %d LIMIT 1;", $node->nid));
   if ($ip) {
-    db_query("INSERT INTO {hosting_ip_addresses} (vid, nid, ip_address) VALUES (%d, %d, '%s')", $node->vid, $node->nid, $ip);
+    db_query("INSERT INTO {hosting_ssl_cert_ips} (cid, ip_address) VALUES (%d, %d)", $cert->nid, $ip);
   }
-  db_query("UNLOCK TABLES {hosting_ip_addresses}");
+  db_query("UNLOCK TABLES {hosting_ssl_cert_ips}");
   return $ip;
 }

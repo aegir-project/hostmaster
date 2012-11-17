@@ -226,3 +226,87 @@ function hosting_server_update_6200() {
   db_add_primary_key($ret, 'hosting_ip_addresses', array('id'));
   return $ret;
 }
+
+/**
+ * Create SSL cert to IP mapping table.
+ *
+ * We create the SSL cert to IP mapping table here instead of in the ssl
+ * module as we need to cleanup the ip_address table after and we can't sync
+ * across modules. Since this module is a dependency of hosting_site_ssl, this
+ * is not a problem.
+ */
+function hosting_server_update_6201() {
+  $ret = array();
+  $schema = array(
+    'fields' => array(
+      // cert id
+      'cid' => array( 
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      // reference to the hosting_ip_addresses table
+      'ip_address' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'indexes' => array(
+      'cid' => array('cid'),
+      'ip_address' => array('ip_address'),
+    ));
+  db_create_table($ret, 'hosting_ssl_cert_ips', $schema);
+  return $ret;
+}
+
+/**
+ * Migrate site-specific IPs to server-specific IPs.
+ *
+ * This is the meat of the migration path.
+ */
+function hosting_server_update_6202() {
+  $ret = array();
+  /* now we need to insert a IP/ssl cert mapping in here
+     here's a request that gives a list of IP/site/key mapping:
+
+SELECT n.nid,ip_address, site.status, title, ssl_enabled, cid, c.ssl_key 
+       FROM hosting_ssl_site s
+       INNER JOIN hosting_ssl_cert c ON c.cid = s.ssl_key 
+       INNER JOIN node n ON n.nid = s.nid
+       INNER JOIN hosting_ip_addresses ip ON ip.nid = n.nid
+       INNER JOIN hosting_site site ON site.nid = n.nid
+       WHERE site.status > 0
+       ORDER BY c.cid, n.nid;
+
+SELECT ip_address, cid, c.ssl_key FROM hosting_ssl_site s INNER JOIN hosting_ssl_cert c ON c.cid = s.ssl_key INNER JOIN hosting_ip_addresses ip ON ip.nid = s.nid INNER JOIN hosting_site site ON site.nid = s.nid WHERE site.status > 0 GROUP BY cid ORDER BY c.cid, s.nid;
+
+  */
+
+  // XXX: this is broken, as it inserts the site-specific IP instead of the
+  // server-level IP. that IP gets removed in the next update, so this fucks
+  // up.
+  $ret[] = update_sql("INSERT INTO {hosting_ssl_cert_ips} (cid, ip_address) 
+  SELECT cid, ip.id FROM {hosting_ssl_site} s 
+    INNER JOIN {hosting_ssl_cert c ON c.cid = s.ssl_key 
+    INNER JOIN {hosting_ip_addresses}} ip ON ip.nid = s.nid 
+    INNER JOIN {hosting_site site} ON site.nid = s.nid 
+    INNER JOIN {hosting_platform} p ON p.nid = site.platform
+    WHERE ssl_enabled > %d AND site.status > %d
+    GROUP BY cid ORDER BY c.cid, s.nid",
+                HOSTING_SSL_DISABLED, HOSTING_SITE_DELETED);
+  return $ret;
+}
+
+/**
+ * Cleanup site-specific IP mappings.
+ *
+ * Those are now associated to certificates.
+ */
+function hosting_server_update_6202() {
+  $ret = array();
+  $ret[] = update_sql("DELETE {hosting_ip_addresses} FROM {hosting_ip_addresses} JOIN {node} ON hosting_ip_addresses.nid = node.nid WHERE node.type <> 'server';");
+  return $ret;
+}

@@ -193,7 +193,7 @@ function hosting_ssl_nodeapi_site_presave(&$node) {
   if (($node->ssl_key == HOSTING_SSL_CUSTOM_KEY) && isset($node->ssl_key_new)) {
     $node->ssl_key = hosting_ssl_filter_key($node->ssl_key_new);
   }
-  // allocate the site's IP here
+  // this creates the SSL key for the site, if required
   $node->ssl_key = hosting_ssl_save_key($node);
 }
 
@@ -251,8 +251,8 @@ function hosting_ssl_save_key($node) {
       $obj->ssl_key = $node->key;
       $obj->client = $node->client;
       $obj->status = 0;
-      $obj->ip_address = hosting_ip_allocate($node);
       drupal_write_record("hosting_ssl_cert", $obj);
+      hosting_ip_allocate($cert, $node);
     }
 
     return $obj->cid;
