@@ -47,7 +47,7 @@ function hosting_ip_save($node, $update = FALSE) {
   }
 
   foreach ($ip_list as $ip) {
-    db_query("INSERT INTO {hosting_ip_addresses} (vid, nid, ip_address) VALUES (%d, %d, '%s')", $node->vid, $node->nid, $ip); 
+    db_query("INSERT INTO {hosting_ip_addresses} (nid, ip_address) VALUES (%d, '%s')", $node->nid, $ip);
   }
 }
 
@@ -69,7 +69,7 @@ function hosting_ip_validate($node) {
  */
 function hosting_ip_load($node) {
   $ip_list = array();
-  $result = db_query("SELECT ip_address FROM {hosting_ip_addresses} WHERE vid=%d", $node->vid);
+  $result = db_query("SELECT ip_address FROM {hosting_ip_addresses} WHERE nid=%d", $node->nid);
   while ($obj = db_fetch_object($result)) {
     $ip_list[] = $obj->ip_address;
   }
