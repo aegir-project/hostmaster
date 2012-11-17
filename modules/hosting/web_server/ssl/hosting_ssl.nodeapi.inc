@@ -252,7 +252,12 @@ function hosting_ssl_save_key($node) {
       $obj->client = $node->client;
       $obj->status = 0;
       drupal_write_record("hosting_ssl_cert", $obj);
-      hosting_ip_allocate($cert, $node);
+      if (!hosting_ip_allocate($cert, $node)) {
+        form_set_error('ssl_key_new', t("Unable to allocate IP address for certificate, disabling SSL"));
+        db_query("DELETE FROM {hosting_ssl_cert} WHERE cid = %d", $obj->cid);
+        $obj->cid = FALSE;
+        $node->ssl_enabled = HOSTING_SSL_DISABLED;
+      }
     }
 
     return $obj->cid;
