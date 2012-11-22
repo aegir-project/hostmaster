@@ -290,9 +290,9 @@ SELECT ip_address, cid, c.ssl_key FROM hosting_ssl_site s INNER JOIN hosting_ssl
   // up.
   $ret[] = update_sql("INSERT INTO {hosting_ssl_cert_ips} (cid, ip_address) 
   SELECT cid, ip.id FROM {hosting_ssl_site} s 
-    INNER JOIN {hosting_ssl_cert c ON c.cid = s.ssl_key 
-    INNER JOIN {hosting_ip_addresses}} ip ON ip.nid = s.nid 
-    INNER JOIN {hosting_site site} ON site.nid = s.nid 
+    INNER JOIN {hosting_ssl_cert} c ON c.cid = s.ssl_key
+    INNER JOIN {hosting_ip_addresses} ip ON ip.nid = s.nid
+    INNER JOIN {hosting_site} site ON site.nid = s.nid
     INNER JOIN {hosting_platform} p ON p.nid = site.platform
     WHERE ssl_enabled > %d AND site.status > %d
     GROUP BY cid ORDER BY c.cid, s.nid",
