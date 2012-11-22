@@ -41,7 +41,9 @@
       <div class='page-content'>
         <?php if ($mission): print '<div id="mission">'. $mission .'</div>'; endif; ?>
         <?php if ($help): print $help; endif; ?>
+        <?php print $content_top ?>
         <?php print $content ?>
+        <?php print $content_bottom ?>
         <?php print $feed_icons ?>
       </div>
     </div><!-- /main -->
