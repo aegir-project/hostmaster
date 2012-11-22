@@ -265,37 +265,28 @@ function hosting_server_update_6201() {
 /**
  * Migrate site-specific IPs to server-specific IPs.
  *
- * This is the meat of the migration path.
+ * We inject into the new certificate to IP mapping table the correct
+ * associations, by looking at the server IPs matching the IPs allocated to
+ * sites.
  */
 function hosting_server_update_6202() {
   $ret = array();
-  /* now we need to insert a IP/ssl cert mapping in here
-     here's a request that gives a list of IP/site/key mapping:
 
-SELECT n.nid,ip_address, site.status, title, ssl_enabled, cid, c.ssl_key 
-       FROM hosting_ssl_site s
-       INNER JOIN hosting_ssl_cert c ON c.cid = s.ssl_key 
-       INNER JOIN node n ON n.nid = s.nid
-       INNER JOIN hosting_ip_addresses ip ON ip.nid = n.nid
-       INNER JOIN hosting_site site ON site.nid = n.nid
-       WHERE site.status > 0
-       ORDER BY c.cid, n.nid;
-
-SELECT ip_address, cid, c.ssl_key FROM hosting_ssl_site s INNER JOIN hosting_ssl_cert c ON c.cid = s.ssl_key INNER JOIN hosting_ip_addresses ip ON ip.nid = s.nid INNER JOIN hosting_site site ON site.nid = s.nid WHERE site.status > 0 GROUP BY cid ORDER BY c.cid, s.nid;
-
-  */
-
-  // XXX: this is broken, as it inserts the site-specific IP instead of the
-  // server-level IP. that IP gets removed in the next update, so this fucks
-  // up.
-  $ret[] = update_sql("INSERT INTO {hosting_ssl_cert_ips} (cid, ip_address) 
-  SELECT cid, ip.id FROM {hosting_ssl_site} s 
-    INNER JOIN {hosting_ssl_cert} c ON c.cid = s.ssl_key
-    INNER JOIN {hosting_ip_addresses} ip ON ip.nid = s.nid
-    INNER JOIN {hosting_site} site ON site.nid = s.nid
-    INNER JOIN {hosting_platform} p ON p.nid = site.platform
-    WHERE ssl_enabled > %d AND site.status > %d
-    GROUP BY cid ORDER BY c.cid, s.nid",
+  /* this is rather complicated:
+   *
+   * we need to first find the SSL certificate of the site, then look at the
+   * IP of the sites with SSL certs, match that IP with the IP of a server (we
+   * assume it's the same server!).
+   */
+  $ret[] = update_sql("INSERT INTO {hosting_ssl_cert_ips} (cid, ip_address)
+  SELECT cid, server_ip.nid FROM {hosting_ssl_site} ssl_site
+    INNER JOIN {hosting_ssl_cert} cert ON cert.cid = ssl_site.ssl_key
+    INNER JOIN {hosting_ip_addresses} site_ip ON site_ip.nid = ssl_site.nid
+    INNER JOIN {hosting_site} site ON site.nid = ssl_site.nid
+    INNER JOIN {hosting_ip_addresses} server_ip ON server_ip.ip_address = site_ip.ip_address
+    INNER JOIN {node} servers ON server_ip.nid = servers.nid
+    WHERE ssl_enabled > %d AND site.status > %d AND servers.type = 'server'
+    GROUP BY cid ORDER BY cert.cid, site.nid",
                 HOSTING_SSL_DISABLED, HOSTING_SITE_DELETED);
   return $ret;
 }
