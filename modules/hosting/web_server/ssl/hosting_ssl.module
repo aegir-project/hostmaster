@@ -83,3 +83,71 @@ function hosting_ssl_form_alter(&$form, &$form_state, $form_id) {
     hosting_ssl_site_form($form, $form_state, $form_id);
   }
 }
+
+/**
+ * Per-server, per-ip certificate listing
+ */
+function hosting_ssl_menu() {
+  $items = array();
+  $items['node/%hosting_ssl_cert_node/ssl'] = array(
+    'title' => 'Certificates',
+    'description' => 'SSL certificates deployed on this server',
+    'page callback' => 'hosting_ssl_server_cert_list',
+    'page arguments' => array(1),
+    'type' => MENU_LOCAL_TASK,
+    'access arguments' => array('view server'),
+  );
+  return $items;
+}
+
+/**
+ * Implementation of the hook_load() from hook_menu().
+ *
+ * This is a weird hook that is not well documented but allows loads from the
+ * menu system. This is *not* the regular hook_load().
+ *
+ * @see hosting_ssl_menu()
+ */
+function hosting_ssl_cert_node_load($arg) {
+  if (!is_numeric($arg)) {
+    return FALSE;
+  }
+  if ($node = node_load($arg)) {
+    if ($node->type == 'server') {
+      return $node;
+    }
+  }
+  return FALSE;
+}
+
+/**
+ * List SSL certificates associated with the given server
+ */
+function hosting_ssl_server_cert_list($node) {
+  $args = array($node->nid);
+  drupal_set_title(t('Certificates installed on server @server', array('@server' => $node->title)));
+  $header = array(
+    array('data' => t('Domain'), 'field' => 'domain'),
+    array('data' => t('IP address'), 'field' => 'ip_address'),
+    array('data' => t('Client'), 'field' => 'client'),
+  );
+  $sql = 'SELECT ips.ip_address, cert.ssl_key AS domain, cert.status, client.title AS client
+            FROM {hosting_ip_addresses} ips
+            INNER JOIN {hosting_ssl_cert_ips} cert_ip ON cert_ip.ip_address = ips.id
+            INNER JOIN {hosting_ssl_cert} cert ON cert.cid = cert_ip.cid
+            INNER JOIN {node} client ON client.nid = cert.client
+            WHERE ips.nid = %d';
+  $sql .= tablesort_sql($header);
+  $result = pager_query(db_rewrite_sql($sql, 'cert'), 25, 2, null, $args);
+  $rows = array();
+  while($cert = db_fetch_object($result)) {
+    // XXX: not in use?
+    //$row_class = ($cert->status == 1) ? 'hosting-success' : 'hosting-info';
+    $row = array();
+    $row[] = $cert->domain;
+    $row[] = $cert->ip_address;
+    $row[] = filter_xss($cert->client);
+    $rows[] = $row;
+  }
+  return theme('table', $header, $rows, array('class' => 'hostign-table')) . theme('pager', null, 25, 2);
+}
