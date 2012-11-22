@@ -234,8 +234,13 @@ function hosting_server_update_6200() {
  * module as we need to cleanup the ip_address table after and we can't sync
  * across modules. Since this module is a dependency of hosting_site_ssl, this
  * is not a problem.
+ *
+ * If SSL is not installed, this is a noop.
  */
 function hosting_server_update_6201() {
+  if (!db_table_exists('hosting_ssl_site')) {
+    return array(array('success' => TRUE));
+  }
   $ret = array();
   $schema = array(
     'fields' => array(
@@ -268,8 +273,13 @@ function hosting_server_update_6201() {
  * We inject into the new certificate to IP mapping table the correct
  * associations, by looking at the server IPs matching the IPs allocated to
  * sites.
+ *
+ * If SSL is not installed, this is a noop.
  */
 function hosting_server_update_6202() {
+  if (!db_table_exists('hosting_ssl_site')) {
+    return array(array('success' => TRUE));
+  }
   $ret = array();
 
   /* this is rather complicated:
@@ -294,7 +304,8 @@ function hosting_server_update_6202() {
 /**
  * Cleanup site-specific IP mappings.
  *
- * Those are now associated to certificates.
+ * Those are now associated only to servers again, and different modules
+ * should manage their own mappings.
  */
 function hosting_server_update_6202() {
   $ret = array();
