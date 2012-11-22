@@ -306,9 +306,13 @@ function hosting_server_update_6202() {
  *
  * Those are now associated only to servers again, and different modules
  * should manage their own mappings.
+ *
+ * @todo enable this in 3.x? or maybe after the RC cycle of 2.x? we keep the
+ * data right now because the above request is quite error-prone and we are
+ * not sure we cover all cases.
  */
-function hosting_server_update_6202() {
-  $ret = array();
-  $ret[] = update_sql("DELETE {hosting_ip_addresses} FROM {hosting_ip_addresses} JOIN {node} ON hosting_ip_addresses.nid = node.nid WHERE node.type <> 'server';");
-  return $ret;
-}
+/* function hosting_server_update_6203() { */
+/*   $ret = array(); */
+/*   $ret[] = update_sql("DELETE {hosting_ip_addresses} FROM {hosting_ip_addresses} JOIN {node} ON hosting_ip_addresses.nid = node.nid WHERE node.type <> 'server';"); */
+/*   return $ret; */
+/* } */
