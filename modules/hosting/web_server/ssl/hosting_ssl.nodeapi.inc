@@ -118,6 +118,10 @@ function hosting_ssl_get_key($cid) {
   return $cache[$cid];
 }
 
+function hosting_ssl_get_ip($cid) {
+  return db_result(db_query("SELECT ips.ip_address FROM {hosting_ssl_cert_ips} cert INNER JOIN {hosting_ip_addresses} ips ON cert.cid = ips.cid WHERE cid=%d", $cid));
+}
+
 function hosting_ssl_output_key($cid) {
   return filter_xss(hosting_ssl_get_key($cid));
 }
