@@ -119,7 +119,7 @@ function hosting_ssl_get_key($cid) {
 }
 
 function hosting_ssl_get_ip($cid) {
-  return db_result(db_query("SELECT ips.ip_address FROM {hosting_ssl_cert_ips} cert INNER JOIN {hosting_ip_addresses} ips ON cert.cid = ips.cid WHERE cid=%d", $cid));
+  return db_result(db_query("SELECT ips.ip_address FROM {hosting_ssl_cert_ips} cert INNER JOIN {hosting_ip_addresses} ips ON cert.ip_address = ips.id WHERE cid=%d", $cid));
 }
 
 function hosting_ssl_output_key($cid) {
@@ -239,35 +239,39 @@ function hosting_ssl_save_key($node) {
     return 0;
   }
 
-  // we only save the new key if it's a string
-  if (!is_numeric($node->key)) {
-    $result = db_query("SELECT * FROM {hosting_ssl_cert} WHERE ssl_key = '%s'", $node->key);
+  $client = hosting_get_client($node->client);
+
+  $ssl_key = $node->ssl_key_new;
+  if ($ssl_key) {
+    $result = db_query("SELECT * FROM {hosting_ssl_cert} WHERE ssl_key = '%s'", $ssl_key);
     if ($obj = db_fetch_object($result)) {
       // update
       if ($node->client != null) {
-        $obj->client = $node->client;
+        $obj->client = $client->nid;
       }
       drupal_write_record("hosting_ssl_cert", $obj, 'cid');
+      $node->ssl_key = $obj->cid;
     }
     else {
       // insert
       $obj = new stdClass();
-      $obj->ssl_key = $node->key;
-      $obj->client = $node->client;
+      $obj->ssl_key = $ssl_key;
+      $obj->client = $client->nid;
       $obj->status = 0;
       drupal_write_record("hosting_ssl_cert", $obj);
-      if (!hosting_ip_allocate($cert, $node)) {
-        form_set_error('ssl_key_new', t("Unable to allocate IP address for certificate, disabling SSL"));
+      if (!hosting_ip_allocate($obj, $node)) {
+        form_set_error('ssl_key_new', t("Unable to allocate IP address for certificate, disabling SSL. Allocate more IP addresses to this server then try to enable SSL again."));
         db_query("DELETE FROM {hosting_ssl_cert} WHERE cid = %d", $obj->cid);
         $obj->cid = FALSE;
         $node->ssl_enabled = HOSTING_SSL_DISABLED;
       }
+      $node->ssl_key = $obj->cid;
     }
 
     return $obj->cid;
   }
 
-  return $node->key;
+  return $node->ssl_key;
 }
 
 /**
