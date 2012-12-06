@@ -6,6 +6,8 @@
 function hosting_queued_enable() {
   // Disable Aegir's dispatch of the tasks queue.
   variable_set('hosting_queue_tasks_enabled', FALSE);
+  module_disable(array('hosting_queue_runner'));
+  drupal_uninstall_module('hosting_queue_runner');
 }
 
 /**
@@ -23,4 +25,13 @@ function hosting_queued_update_6200() {
   $ret = array();
   $ret[] = update_sql("UPDATE {variable} SET name = REPLACE(name, 'hosting_queue_runner', 'hosting_queued') WHERE name LIKE 'hosting_queue_runner%'");
   return $ret;
+}
+
+/**
+ * Properly remove/uninstall the queue runner.
+ */
+function hosting_queued_update_6201() {
+  module_disable(array('hosting_queue_runner'));
+  drupal_uninstall_module('hosting_queue_runner');
+  return array();
 }
