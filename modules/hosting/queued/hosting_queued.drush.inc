@@ -26,6 +26,7 @@ function hosting_queued_drush_command() {
     // We need this get around a drush bug, see: http://drupal.org/node/704848
     // But we remove it below for Drush 4.5 and above.
     'callback' => 'drush_hosting_queued',
+    'options' => array('onetime' => array('description' => dt('exit if there are no more tasks queued after the 1 second poll timeout.'))),
   );
 
   // We don't need the callback defined for Drush > 4.4
@@ -72,9 +73,6 @@ function drush_hosting_queued() {
   watchdog('hosting_queued', 'Started Hosting queue daemon, waiting for new tasks');
 
   while (TRUE) {
-    // Sleep for a second before we look for new tasks.
-    sleep(1);
-
     // Should we terminate.
     if (time() > $end_time) {
       // Restart the daemon to recycle leaked memory
@@ -111,6 +109,15 @@ function drush_hosting_queued() {
         // Restart the daemon to recycle leaked memory
         hosting_queued_restart();
       }
+    }
+    // wait here only if we didn't process tasks
+    // this is to avoid an infinite loop if there are no tasks in the queue
+    if (!$tasks) {
+      sleep(1);
+    }
+    if (drush_get_option('onetime')) {
+      drush_log(dt("exiting after processing all tasks, as requested by --onetime"));
+      break;
     }
     unset($tasks);
   }
