@@ -98,12 +98,11 @@ function hosting_ssl_nodeapi_site_view(&$node, $teaser = false) {
   );
 
   if ($node->ssl_enabled != 0) {
-    $path = sprintf("config/ssl.d/%s/", hosting_ssl_get_key($node->ssl_key));
     $node->content['info']['ssl_key'] = array(
       '#type' => 'item',
       '#title' => t('Encryption key'),
       '#value' => hosting_ssl_output_key($node->ssl_key),
-      '#description' => t("This site is using the SSL certificate and SSL key located at %crt_file and %key_file.", array('%crt_file' => $path . 'openssl.crt', '%key_file' => $path . 'openssl.key')),
+      '#description' => hosting_ssl_get_key($node->ssl_key) ? t("This site is using SSL certificates located at %path.", array('%path' => sprintf("config/ssl.d/%s/", hosting_ssl_output_key($node->ssl_key)))) : t("(key deleted)"),
       '#weight' => 7
     );
   }
