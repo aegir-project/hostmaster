@@ -213,6 +213,7 @@ function hosting_ssl_nodeapi_site_update($node) {
   else {
     db_query("UPDATE {hosting_ssl_site} SET ssl_enabled=%d, ssl_key=%d WHERE vid=%d", $node->ssl_enabled, $node->ssl_key, $node->vid);
   }
+  hosting_ssl_clean_keys($node);
 }
 
 function hosting_ssl_nodeapi_site_load($node) {
@@ -223,6 +224,7 @@ function hosting_ssl_nodeapi_site_load($node) {
 
 function hosting_ssl_nodeapi_site_delete($node) {
   db_query("DELETE FROM {hosting_ssl_site} WHERE nid=%d", $node->nid);
+  hosting_ssl_clean_keys($node);
 }
 
 function hosting_ssl_nodeapi_site_delete_revision($node) {
@@ -307,4 +309,18 @@ function hosting_ssl_get_keys($client = null, $ask_custom = FALSE) {
   }
 
   return $keys;
+}
+
+/**
+ * Remove unused SSL keys from the system (but not from the backend).
+ *
+ * This is designed to be ran on a site's delete task or the site node's deletion.
+ */
+function hosting_ssl_clean_keys($node) {
+  // check if there are still sites using this site's certificate
+  if (!db_result(db_query("SELECT * FROM hosting_ssl_site siteA INNER JOIN hosting_ssl_site siteB ON siteA.ssl_key = siteB.ssl_key INNER JOIN hosting_site s ON s.nid = siteA.nid WHERE siteA.ssl_enabled = 1 AND s.status <> %d AND siteB.nid = %d;", HOSTING_SITE_DELETED, $node->nid))) {
+    drupal_set_message(t("cleaning up unused certificate associated with site"));
+    db_query("DELETE FROM {hosting_ssl_cert} WHERE cid = %d", $node->ssl_key);
+    db_query("DELETE FROM {hosting_ssl_cert_ips} WHERE cid = %d", $node->ssl_key);
+  }
 }
