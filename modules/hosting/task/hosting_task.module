@@ -566,15 +566,19 @@ function hosting_task_count_running() {
  * @see hook_hosting_tasks()
  * @see hosting_task_menu_access()
  */
-function hosting_available_tasks($type, $reset = FALSE) {
+function hosting_available_tasks($type = NULL, $reset = FALSE) {
   static $cache = array();
 
   if (!sizeof($cache) || $reset) {
     $cache = module_invoke_all('hosting_tasks');
     drupal_alter('hosting_tasks', $cache);
   }
-  return $cache[$type];
-
+  if (isset($type)) {
+    return $cache[$type];
+  }
+  else {
+    return $cache;
+  }
 }
 
 /**
