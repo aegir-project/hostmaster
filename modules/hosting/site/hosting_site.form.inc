@@ -219,6 +219,7 @@ function hosting_site_form($node) {
       unset($profiles[$id]);
     }
   }
+  asort($profiles);
   reset($profiles);
 
   _hosting_site_field($form, $node, 'profile', array(
