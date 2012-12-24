@@ -556,14 +556,29 @@ function hosting_task_count_running() {
 }
 
 /**
- * User-driven task descriptions
+ * Get a list of tasks that can be invoked by the user.
  *
- * This is the list of tasks that can be invoked by the user. This doesn't
- * check permissions or relevance of the tasks.
+ * Note this does not check permissions or relevance of the tasks.
  *
- * Modules can extend this list using hook_hosting_tasks()
+ * Modules can extend this list using hook_hosting_tasks().
+ *
+ * @param $type
+ *   Tasks are grouped by the type of thing that the task is performed on. This
+ *   parameter should either be NULL, or a string indicating the type of thing
+ *   that you want possible tasks to operate on.
+ * @param $reset
+ *   This function has an internal static cache, to reset the cache, pass in
+ *   TRUE.
+ *
+ * @return
+ *   Depending on the value of the $type parameter, you will either be returned:
+ *   - If $type is NULL: an associative array whose keys are things that can be
+ *     acted upon by the tasks defined in the corresponding values.
+ *   - If $type is a string, then an associative array whose keys are task types
+ *     and whose values are definitions for those tasks.
  *
  * @see hook_hosting_tasks()
+ * @see hook_hosting_tasks_alter()
  * @see hosting_task_menu_access()
  */
 function hosting_available_tasks($type = NULL, $reset = FALSE) {
