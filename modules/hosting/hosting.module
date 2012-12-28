@@ -193,7 +193,7 @@ function hosting_nodeapi(&$node, $op, $arg1, $arg2) {
   if (in_array($node->type, hosting_context_node_types())) {
     switch ($op) {
       case 'presave':
-        if (!$node->uid) {
+        if (!isset($node->uid)) {
           $node->uid = $user->uid;
         }
         break;

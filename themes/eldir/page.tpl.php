@@ -35,7 +35,7 @@
 
   <div id='page'><div class='limiter clear-block'>
 
-    <?php if ($tabs2) print $tabs2 ?>
+    <?php if (isset($tabs2)) print $tabs2 ?>
 
     <div id='main'>
       <div class='page-content'>

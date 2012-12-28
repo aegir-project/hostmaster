@@ -1048,12 +1048,12 @@ function hosting_task_table($node) {
     else {
       $actions['run'] = _hosting_task_button(t('Run'), sprintf("node/%d/%s_%s", $node->nid, $node->type, $task), $info['description'], 'hosting-button-run', $info['task_permitted'], $info['dialog']);
     }
-     
-    $actions['log'] = _hosting_task_button(t('View'), 'node/' . $info['nid'], t("Display the task log"), 'hosting-button-log', isset($info['nid']) &&  user_access('access task logs'), TRUE, FALSE);
-     $row['actions'] = array(
-        'data' => implode('', $actions),
-       'class' => 'hosting-actions'
-     );
+
+    $actions['log'] = _hosting_task_button(t('View'), isset($info['nid'])? 'node/' . $info['nid']: '<front>', t("Display the task log"), 'hosting-button-log', isset($info['nid']) &&  user_access('access task logs'), TRUE, FALSE);
+    $row['actions'] = array(
+      'data' => implode('', $actions),
+      'class' => 'hosting-actions'
+    );
 
     $rows[] = array('data' => $row, 'class' => $info['class']);
   }
@@ -1172,8 +1172,18 @@ function hosting_task_fetch_tasks($rid) {
     $task = array_merge($return[$type], $hook_task);
 
     $allowed = (isset($task['exists']) && !in_array($task['task_status'], array(HOSTING_TASK_QUEUED, HOSTING_TASK_PROCESSING))) || !isset($task['exists']);
-    if ($allowed && !$task['hidden'] && $access_callback($node, $type)) {
+    if ($allowed && empty($task['hidden']) && $access_callback($node, $type)) {
       $task['task_permitted'] = TRUE;
+    }
+    else {
+      $task['task_permitted'] = FALSE;
+    }
+    // @TODO: Use task defaults array to prevent notices.
+    if (empty($task['dialog'])) {
+      $task['dialog'] = FALSE;
+    }
+    if (empty($task['task_status'])) {
+      $task['task_status'] = NULL;
     }
     $task['class'] = hosting_task_status_class($task['task_status']);
 

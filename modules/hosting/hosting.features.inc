@@ -34,11 +34,11 @@ function hosting_feature($feature) {
   if (!sizeof($features)) {
     $features = hosting_get_features();
   }
-  if ($features[$feature]['module']) {
+  if (isset($features[$feature]['module'])) {
     $return = (module_exists($features[$feature]['module'])) ? HOSTING_FEATURE_ENABLED : HOSTING_FEATURE_DISABLED;
   }
   else {
-    $return = variable_get('hosting_feature_' . $feature, $features[$feature]['status']);
+    $return = variable_get('hosting_feature_' . $feature, !empty($features[$feature]['status']));
   }
   return $return;
 }

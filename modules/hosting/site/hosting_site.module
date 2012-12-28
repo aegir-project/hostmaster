@@ -119,7 +119,7 @@ function hosting_sites() {
  */
 function _hosting_site_goto_link($node) {
   $cache = cache_get("hosting:site:" . $node->nid . ":login_link");
-  if (!is_null($cache) && (time() < $cache->data['expire'])) {
+  if ($cache && (time() < $cache->data['expire'])) {
     $title = t("Log in to !url" , array('!url' => $node->title));
   }
   else {
