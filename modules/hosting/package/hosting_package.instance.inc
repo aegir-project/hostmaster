@@ -90,14 +90,36 @@ function hosting_package_instance_create(&$instance) {
    _hosting_package_instance_languages($instance);
 }
 
+/**
+ * Get the first package instance object that maches given parameters.
+ *
+ * @see hosting_package_instances_load()
+ */
 function hosting_package_instance_load($param) {
   return _hosting_package_instances_load($param);
 }
 
+/**
+ * Get an array of all package instance objects that match given parameters.
+ *
+ * @param mixed $param
+ *   If $param is an integer it will be matched against an instance iid. If
+ *   $param is an array then the key/value pairs will be used as a WHERE clause
+ *   in the form "WHERE key0 = value0 AND ... AND keyN = valueN". Both the keys
+ *   and values of the $param array must be strings.
+ *
+ * @return mixed
+ *   Returns an array of instance objects keyed by the instance iid. If there
+ *   are no matches an empty array will be returned. If there was an error FALSE
+ *   will be returned.
+ */
 function hosting_package_instances_load($param) {
   return _hosting_package_instances_load($param, TRUE);
 }
 
+/**
+ * Internal function for hosting_package_instance(s)_load.
+ */
 function _hosting_package_instances_load($param, $multiple = FALSE) {
   $arguments = array();
   if (is_numeric($param)) {
