@@ -1179,10 +1179,10 @@ function hosting_task_fetch_tasks($rid) {
       $task['task_permitted'] = FALSE;
     }
     // @TODO: Use task defaults array to prevent notices.
-    if (empty($task['dialog'])) {
+    if (!isset($task['dialog'])) {
       $task['dialog'] = FALSE;
     }
-    if (empty($task['task_status'])) {
+    if (!isset($task['task_status'])) {
       $task['task_status'] = NULL;
     }
     $task['class'] = hosting_task_status_class($task['task_status']);
