@@ -46,8 +46,8 @@ Drupal.hosting.siteFormToggleOptions = function(settings) {
   var can_submit = true;
 
   for (var key in settings) {
-    css_key = key.replace(/_/g, '-');
-    $desc_id = $('div#hosting-site-field-' + css_key + '-description');
+    var css_key = key.replace(/_/g, '-');
+    var $desc_id = $('div#hosting-site-field-' + css_key + '-description');
 
     // Generate an css id to retrieve the value, based on the field type.
     var $id = $('div#hosting-site-field-' + css_key);
@@ -63,10 +63,10 @@ Drupal.hosting.siteFormToggleOptions = function(settings) {
         $desc_id.hide();
         $id.show();
         $id.find('div.form-radios div.form-item').hide();
-        checked = false
+        var checked = false
         for (var option in settings[key]) {
           // modify the definition to get the right css id
-          option_css_key = settings[key][option].toString().replace(/[\]\[\ _]/g, '-')
+          var option_css_key = settings[key][option].toString().replace(/[\]\[\ _]/g, '-')
           var $input_id = $('input[@name=' + key + '][@value=' + settings[key][option] + ']');
           $id.find('div.form-radios div#edit-' + css_key + '-' + option_css_key +'-wrapper').show();
 
