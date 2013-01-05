@@ -566,7 +566,6 @@ form div.form-item {
 div.form-item label.option,
 div.form-item label.option * {
   font-size:1em;
-  vertical-align:middle;
   }
 
 div.form-item div.description {
