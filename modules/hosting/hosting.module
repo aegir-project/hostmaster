@@ -640,6 +640,9 @@ function hosting_queues_configure() {
         '#maxlength' => 3,
         '#default_value' => $info['items'],
         '#suffix' => t(' %items every ', array('%items' => $info['plural'])),
+        '#attributes' => array(
+          'class' => 'hosting-select-frequency-items'
+        ),
       );
     }
     foreach (array_reverse(array_keys($units)) as $length) {
@@ -655,12 +658,18 @@ function hosting_queues_configure() {
       '#type' => 'textfield',
       '#default_value' => $frequency_ticks,
       '#maxlength' => 5,
-      '#size' => 5
+      '#size' => 5,
+      '#attributes' => array(
+        'class' => 'hosting-select-frequency-ticks'
+      ),
     );
     $form[$queue]['frequency']["unit"] = array(
       '#type' => 'select',
       '#options' => $units,
       '#default_value' => $frequency_length,
+      '#attributes' => array(
+        'class' => 'hosting-select-frequency-unit'
+      ),
     );
   }
   $form['help'] = array(
