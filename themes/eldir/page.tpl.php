@@ -29,7 +29,7 @@
 
   <div id='header-region'><div class='limiter clear-block'>
     <?php print $header; ?>
-    <?php if ($title): ?><h2 class='page-title'><?php print $title ?></h2><?php endif; ?>
+    <?php if ($title): ?><h1 class='page-title'><?php print $title ?></h1><?php endif; ?>
     <?php if ($tabs) print $tabs ?>
   </div></div>
 
