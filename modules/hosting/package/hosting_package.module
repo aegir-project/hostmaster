@@ -138,7 +138,7 @@ function hosting_get_profiles($platform = NULL, $field = 'title') {
 }
 
 function hosting_get_profile_platforms($profile, $check_old_short_name = FALSE) {
-  $defaults = array('default', 'standard', 'minimal');
+  $defaults = array('default', 'standard', 'minimal', 'testing');
 
   $platforms = array();
   $instances = hosting_package_instances_load(array(
