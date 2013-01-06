@@ -329,6 +329,13 @@ function hosting_package_view($node, $teaser = FALSE, $page = FALSE) {
 }
 
 /**
+ * Implements hook_hosting_site_site_list_filters().
+ */
+function hosting_package_hosting_site_site_list_filters() {
+  return array('profile');
+}
+
+/**
  * Return names of the languages available
  */
 function _hosting_language_names($languages) {

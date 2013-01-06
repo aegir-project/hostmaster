@@ -490,6 +490,13 @@ function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
   return $node;
 }
 
+/**
+ * Implements hook_hosting_site_site_list_filters().
+ */
+function hosting_platform_hosting_site_site_list_filters() {
+  return array('platform');
+}
+
 function _hosting_platform_status($node) {
   static $labels = array(
     HOSTING_PLATFORM_QUEUED => "Queued",

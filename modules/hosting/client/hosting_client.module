@@ -523,6 +523,13 @@ function hosting_client_view($node, $teaser = FALSE, $page = FALSE) {
 }
 
 /**
+ * Implements hook_hosting_site_site_list_filters().
+ */
+function hosting_client_hosting_site_site_list_filters() {
+  return array('client');
+}
+
+/**
  * Helper function to generate new client node during import.
  *
  * @param $name

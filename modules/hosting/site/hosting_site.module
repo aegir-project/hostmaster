@@ -102,10 +102,40 @@ function hosting_site_node_load($arg) {
 }
 
 /**
+ * Get all possible filters types that could be applied to the site list.
+ *
+ * This list will be used to sanitise the selected filters in the query string.
+ *
+ * @return
+ *   An array of the possible filters.
+ */
+function hosting_site_get_possible_site_list_filters() {
+  $filters = module_invoke_all('hosting_site_site_list_filters');
+  if (!is_array($filters)) {
+    $filters = array();
+  }
+  drupal_alter('hosting_site_site_list_filters', $filters);
+  return $filters;
+}
+
+/**
  * Page handler for displaying list of hosted sites on front page
  */
 function hosting_sites() {
-  if ($list = drupal_get_form('hosting_site_list_form')) {
+  $filter_by = isset($_GET['filter_by']) ? $_GET['filter_by'] : NULL;
+  $filter_value = isset($_GET['filter_value']) ? $_GET['filter_value'] : NULL;
+  // Now, we need to be incredibly careful with what values of $filter_by and
+  // $filter_value that we let through. First ensure that $filter_by is one of
+  // the possible values that we send through.
+  if (!in_array($filter_by, hosting_site_get_possible_site_list_filters(), TRUE)) {
+    $filter_by = NULL;
+  }
+  // Now ensure that $filter_value is numeric.
+  if (!is_numeric($filter_value)) {
+    $filter_value = NULL;
+  }
+
+  if ($list = drupal_get_form('hosting_site_list_form', $filter_by, $filter_value)) {
     return $list;
   }
   $create_site_link = l(t('Create a site now?'), 'node/add/site');
@@ -564,7 +594,17 @@ function hosting_site_list_form($form_state, $filter_by = NULL, $filter_value = 
     $form['sites'] = array('#type' => 'checkboxes', '#options' => $sites);
     $form['pager'] = array('#value' => theme('pager', NULL, 25, 1));
     $form['#theme'] = 'hosting_site_list';
-    $form['#action'] = url('hosting/sites');
+    $query = array();
+    if (isset($_GET['page'])) {
+      $query['page'] = $_GET['page'];
+    }
+    if (isset($filter_by)) {
+      $query['filter_by'] = $filter_by;
+    }
+    if (isset($filter_value)) {
+      $query['filter_value'] = $filter_value;
+    }
+    $form['#action'] = url('hosting/sites', array('query' => $query));
     return $form;
   }
   elseif ($step == 2) {
