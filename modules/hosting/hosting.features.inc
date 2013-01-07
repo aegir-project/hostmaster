@@ -34,7 +34,10 @@ function hosting_feature($feature) {
   if (!sizeof($features)) {
     $features = hosting_get_features();
   }
-  if (isset($features[$feature]['module'])) {
+  if (isset($features[$feature]['status']) && ($features[$feature]['status'] == HOSTING_FEATURE_REQUIRED)) {
+    $return = HOSTING_FEATURE_REQUIRED;
+  }
+  elseif (isset($features[$feature]['module'])) {
     $return = (module_exists($features[$feature]['module'])) ? HOSTING_FEATURE_ENABLED : HOSTING_FEATURE_DISABLED;
   }
   else {
@@ -76,6 +79,7 @@ function hosting_features_form() {
       '#description' => $info['description'],
       '#default_value' => hosting_feature($feature),
       '#required' => hosting_feature($feature) == HOSTING_FEATURE_REQUIRED,
+      '#disabled' => hosting_feature($feature) == HOSTING_FEATURE_REQUIRED,
     );
     if ($info['group'] == 'experimental') {
       $experimental[$feature] = $element;
@@ -117,18 +121,10 @@ function hosting_features_form_submit($form, &$form_state) {
         include_once('includes/install.inc');
 
         $modules = array($module);
-        $files = module_rebuild_cache();
-        $file = $files[$module];
-        if (isset($file->info['dependencies']) && is_array($file->info['dependencies'])) {
-          foreach ($file->info['dependencies'] as $dependency) {
-            $modules[] = $dependency;
-          }
-        }
 
-        // turn on module
+        // Enable the module.
         drupal_set_message(t("Enabling %module module", array('%module' => implode(",", $modules))));
         drupal_install_modules($modules);
-        module_enable($modules);
       }
       if (function_exists($callback = $features[$feature]['enable'])) {
         $callback();
@@ -148,7 +144,7 @@ function hosting_features_form_submit($form, &$form_state) {
         }
 
         if ($dependencies) {
-          form_set_error('', t("You cannot disable %module because %dep depends on it", array('%module' => $module, '%dep' => implode(',', $dependencies))));
+          form_set_error('', t("You cannot disable %module because %dep depends on it", array('%module' => $module, '%dep' => implode(', ', $dependencies))));
         }
         else {
           drupal_set_message(t("Disabling %module module", array('%module' => implode(",", $modules))));
