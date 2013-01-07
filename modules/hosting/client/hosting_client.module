@@ -231,7 +231,7 @@ function hosting_client_validate(&$node) {
   } else {
     $node->uname = hosting_client_sanitize($node->title);
   }
-  $nid = db_result(db_query("SELECT nid FROM {hosting_client} WHERE uname LIKE '%s'", $node->uname));
+  $nid = db_result(db_query("SELECT nid FROM {hosting_client} WHERE uname LIKE '%s'", addcslashes($node->uname, '\%_')));
   if ($nid && $node->nid != $nid) {
     $suggestion = hosting_client_validate_suggest($node);
     if ($suggestion) {
@@ -264,7 +264,7 @@ function hosting_client_validate(&$node) {
 function hosting_client_validate_suggest($node) {
   $suggestion = FALSE;
   for ($i = 0; $i < 10; $i++) {
-    $nid = db_result(db_query("SELECT nid FROM {hosting_client} WHERE uname LIKE '%s'", hosting_client_sanitize($node->title) . $i));
+    $nid = db_result(db_query("SELECT nid FROM {hosting_client} WHERE uname LIKE '%s%%'", addcslashes(hosting_client_sanitize($node->title) . $i, '\%_')));
     if (!$nid) {
       $suggestion = $node->title . $i;
       break;
@@ -294,7 +294,7 @@ function hosting_client_insert($node) {
   if (isset($node->new_user)) {
     $user = user_load(array('name' => $node->new_user));
     if ($user) {
-      db_query('INSERT INTO {hosting_client_user} (client, user, contact_type) VALUES (%d, %d, "%s")', $node->nid, $user->uid, '');
+      db_query("INSERT INTO {hosting_client_user} (client, user, contact_type) VALUES (%d, %d, '%s')", $node->nid, $user->uid, '');
     }
   }
 }
@@ -791,7 +791,7 @@ function hosting_client_autocomplete($type, $keyword) {
   $matches = array();
 
   if ($type == 'client') {
-    $query = db_query(db_rewrite_sql('SELECT * FROM {node} n WHERE type = "%s" AND title LIKE "%s"'), $type, $keyword. "%");
+    $query = db_query(db_rewrite_sql("SELECT * FROM {node} n WHERE type = '%s' AND title LIKE '%s%%'"), $type, addcslashes($keyword, '\%_'));
     while ($result = db_fetch_object($query)) {
       $matches[$result->title] = $result->title;
     }
