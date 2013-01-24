@@ -371,6 +371,9 @@ function hosting_platform_validate($node, &$form) {
   if ($node->op != t('Delete') && $result = db_fetch_object(db_query("SELECT n.title AS name FROM {hosting_platform} AS h INNER JOIN {node} AS n ON n.nid = h.nid WHERE publish_path = '%s' AND n.nid <> %d AND h.status >= %d", hosting_path_normalize($node->publish_path), $node->nid, HOSTING_PLATFORM_QUEUED))) {
     form_set_error('publish_path', t('Path is already in use by platform %name. Platform paths must be unique across all servers.', array('%name' => $result->name)));
   }
+  if (is_null($node->web_server)) {
+    form_set_error('web_server', t('Platform needs to be associated with a webserver. Make sure you have a verified webserver on this Aegir install!'));
+  }
 }
 
 /**
