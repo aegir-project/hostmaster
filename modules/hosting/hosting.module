@@ -871,6 +871,9 @@ function hosting_context_delete($nid) {
  */
 function hosting_context_name($nid) {
   $node = node_load($nid);
+  if (!$node) {
+    drupal_set_message(t('Error: cannot load node id %nid to find its context', array('%nid' => $nid)), 'error');
+  }
   return '@' . $node->hosting_name;
 }
 
