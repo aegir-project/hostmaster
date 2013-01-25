@@ -197,7 +197,13 @@ function hosting_platform_form(&$node) {
     '#default_value' => $node->title,
     '#maxlength' => 255,
   );
-  if (!$node->nid) {
+
+  // allow edition if the node is in creation, or if wasn't verified correctly
+  // *and* we're not using a makefile. The reason while we don't allow editing
+  // the path if the makefile was specified is that there's the possibility
+  // that the platform path was actually created when the node was saved the
+  // first time and we have cruft lying around to cleanup.
+  if (!$node->nid || (!$node->verified && !$node->makefile)) {
     $form['publish_path'] = array(
       '#type' => 'textfield',
       '#title' => t('Publish path'),
