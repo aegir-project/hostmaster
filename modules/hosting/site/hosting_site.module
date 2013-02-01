@@ -435,7 +435,6 @@ function hosting_import_site($site_id, $data, $platform) {
   $site->no_verify = TRUE;
   $site->verified = time();
   $site->client = $client->nid ? $client->nid : HOSTING_DEFAULT_CLIENT;
-  $site->ip_addresses = array_values($data['site_ip_addresses']);
   $site->cron_key = ($data['cron_key']) ? $data['cron_key'] : '';
 
   $site->aliases = ($data['aliases']) ? $data['aliases'] : array();

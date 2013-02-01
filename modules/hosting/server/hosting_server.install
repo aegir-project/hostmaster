@@ -28,7 +28,7 @@ function hosting_server_schema() {
 
   $schema['hosting_ip_addresses'] = array(
    'fields' => array(
-      'vid' => array(
+      'id' => array(
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
@@ -46,8 +46,10 @@ function hosting_server_schema() {
         'not null' => TRUE,
       ),
     ),
+    'primary key' => array('id'),
     'indexes' => array(
       'vid' => array('vid'),
+      'ip_address' => array('ip_address'),
     ),
 
   );
@@ -209,3 +211,108 @@ function hosting_server_update_6005() {
   db_rename_table($ret, 'hosting_server_ip', 'hosting_ip_addresses');
   return $ret;
 }
+
+/**
+ * Add primary key for IPs, drop versionning
+ */
+function hosting_server_update_6200() {
+  $ret = array();
+  db_add_field($ret, "hosting_ip_addresses", "id", array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0));
+  db_drop_field($ret, "hosting_ip_addresses", "vid");
+  $r = db_query("SELECT nid, ip_address FROM {hosting_ip_addresses}");
+  for ($i = 0; $row = db_fetch_object($r); $i++) {
+    $ret[] = update_sql("UPDATE {hosting_ip_addresses} SET id=$i WHERE nid={$row->nid} AND ip_address='{$row->ip_address}'");
+  }
+  db_add_primary_key($ret, 'hosting_ip_addresses', array('id'));
+  return $ret;
+}
+
+/**
+ * Create SSL cert to IP mapping table.
+ *
+ * We create the SSL cert to IP mapping table here instead of in the ssl
+ * module as we need to cleanup the ip_address table after and we can't sync
+ * across modules. Since this module is a dependency of hosting_site_ssl, this
+ * is not a problem.
+ *
+ * If SSL is not installed, this is a noop.
+ */
+function hosting_server_update_6201() {
+  if (!db_table_exists('hosting_ssl_site')) {
+    return array(array('success' => TRUE));
+  }
+  $ret = array();
+  $schema = array(
+    'fields' => array(
+      // cert id
+      'cid' => array( 
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      // reference to the hosting_ip_addresses table
+      'ip_address' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'indexes' => array(
+      'cid' => array('cid'),
+      'ip_address' => array('ip_address'),
+    ));
+  db_create_table($ret, 'hosting_ssl_cert_ips', $schema);
+  return $ret;
+}
+
+/**
+ * Migrate site-specific IPs to server-specific IPs.
+ *
+ * We inject into the new certificate to IP mapping table the correct
+ * associations, by looking at the server IPs matching the IPs allocated to
+ * sites.
+ *
+ * If SSL is not installed, this is a noop.
+ */
+function hosting_server_update_6202() {
+  if (!db_table_exists('hosting_ssl_site')) {
+    return array(array('success' => TRUE));
+  }
+  $ret = array();
+
+  /* this is rather complicated:
+   *
+   * we need to first find the SSL certificate of the site, then look at the
+   * IP of the sites with SSL certs, match that IP with the IP of a server (we
+   * assume it's the same server!).
+   */
+  $ret[] = update_sql("INSERT INTO {hosting_ssl_cert_ips} (cid, ip_address)
+  SELECT cid, server_ip.nid FROM {hosting_ssl_site} ssl_site
+    INNER JOIN {hosting_ssl_cert} cert ON cert.cid = ssl_site.ssl_key
+    INNER JOIN {hosting_ip_addresses} site_ip ON site_ip.nid = ssl_site.nid
+    INNER JOIN {hosting_site} site ON site.nid = ssl_site.nid
+    INNER JOIN {hosting_ip_addresses} server_ip ON server_ip.ip_address = site_ip.ip_address
+    INNER JOIN {node} servers ON server_ip.nid = servers.nid
+    WHERE ssl_enabled > %d AND site.status > %d AND servers.type = 'server'
+    GROUP BY cid ORDER BY cert.cid, site.nid",
+                HOSTING_SSL_DISABLED, HOSTING_SITE_DELETED);
+  return $ret;
+}
+
+/**
+ * Cleanup site-specific IP mappings.
+ *
+ * Those are now associated only to servers again, and different modules
+ * should manage their own mappings.
+ *
+ * @todo enable this in 3.x? or maybe after the RC cycle of 2.x? we keep the
+ * data right now because the above request is quite error-prone and we are
+ * not sure we cover all cases.
+ */
+/* function hosting_server_update_6203() { */
+/*   $ret = array(); */
+/*   $ret[] = update_sql("DELETE {hosting_ip_addresses} FROM {hosting_ip_addresses} JOIN {node} ON hosting_ip_addresses.nid = node.nid WHERE node.type <> 'server';"); */
+/*   return $ret; */
+/* } */

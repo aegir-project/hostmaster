@@ -98,12 +98,11 @@ function hosting_ssl_nodeapi_site_view(&$node, $teaser = false) {
   );
 
   if ($node->ssl_enabled != 0) {
-    $path = sprintf("config/ssl.d/%s/", hosting_ssl_get_key($node->ssl_key));
     $node->content['info']['ssl_key'] = array(
       '#type' => 'item',
       '#title' => t('Encryption key'),
       '#value' => hosting_ssl_output_key($node->ssl_key),
-      '#description' => t("This site is using the SSL certificate and SSL key located at %crt_file and %key_file.", array('%crt_file' => $path . 'openssl.crt', '%key_file' => $path . 'openssl.key')),
+      '#description' => hosting_ssl_get_key($node->ssl_key) ? t("This site is using SSL certificates located at %path.", array('%path' => sprintf("config/ssl.d/%s/", hosting_ssl_output_key($node->ssl_key)))) : t("(key deleted)"),
       '#weight' => 7
     );
   }
@@ -116,6 +115,10 @@ function hosting_ssl_get_key($cid) {
     $cache[$cid] = db_result(db_query("SELECT ssl_key FROM {hosting_ssl_cert} WHERE cid=%d", $cid));
   }
   return $cache[$cid];
+}
+
+function hosting_ssl_get_ip($cid) {
+  return db_result(db_query("SELECT ips.ip_address FROM {hosting_ssl_cert_ips} cert INNER JOIN {hosting_ip_addresses} ips ON cert.ip_address = ips.id WHERE cid=%d", $cid));
 }
 
 function hosting_ssl_output_key($cid) {
@@ -193,10 +196,12 @@ function hosting_ssl_nodeapi_site_presave(&$node) {
   if (($node->ssl_key == HOSTING_SSL_CUSTOM_KEY) && isset($node->ssl_key_new)) {
     $node->ssl_key = hosting_ssl_filter_key($node->ssl_key_new);
   }
+  // this creates the SSL key for the site, if required
+  $node->ssl_key = hosting_ssl_save_key($node);
 }
 
 function hosting_ssl_nodeapi_site_insert($node) {
-  db_query("INSERT INTO {hosting_ssl_site} (vid, nid, ssl_enabled, ssl_key) VALUES (%d, %d, %d, %d)", $node->vid, $node->nid, $node->ssl_enabled, hosting_ssl_save_key($node->ssl_key, $node->ssl_enabled, $node->client));
+  db_query("INSERT INTO {hosting_ssl_site} (vid, nid, ssl_enabled, ssl_key) VALUES (%d, %d, %d, %d)", $node->vid, $node->nid, $node->ssl_enabled, $node->ssl_key);
 }
 
 function hosting_ssl_nodeapi_site_update($node) {
@@ -206,7 +211,10 @@ function hosting_ssl_nodeapi_site_update($node) {
     hosting_ssl_nodeapi_site_insert($node);
   }
   else {
-    db_query("UPDATE {hosting_ssl_site} SET ssl_enabled=%d, ssl_key=%d WHERE vid=%d", $node->ssl_enabled, hosting_ssl_save_key($node->ssl_key, $node->ssl_enabled, $node->client), $node->vid);
+    db_query("UPDATE {hosting_ssl_site} SET ssl_enabled=%d, ssl_key=%d WHERE vid=%d", $node->ssl_enabled, $node->ssl_key, $node->vid);
+  }
+  if ($node->site_status == HOSTING_SITE_DELETED) {
+    hosting_ssl_clean_keys($node);
   }
 }
 
@@ -218,6 +226,7 @@ function hosting_ssl_nodeapi_site_load($node) {
 
 function hosting_ssl_nodeapi_site_delete($node) {
   db_query("DELETE FROM {hosting_ssl_site} WHERE nid=%d", $node->nid);
+  hosting_ssl_clean_keys($node);
 }
 
 function hosting_ssl_nodeapi_site_delete_revision($node) {
@@ -228,34 +237,44 @@ function hosting_ssl_nodeapi_site_delete_revision($node) {
 /**
  * Store the SSL Cert key in the database.
  */
-function hosting_ssl_save_key($key, $ssl_enabled = TRUE, $client = null) {
-  if (empty($ssl_enabled)) {
+function hosting_ssl_save_key($node) {
+  if (empty($node->ssl_enabled)) {
     return 0;
   }
 
-  // we only save the new key if it's a string
-  if (!is_numeric($key)) {
-    $result = db_query("SELECT * FROM {hosting_ssl_cert} WHERE ssl_key = '%s'", $key);
+  $client = hosting_get_client($node->client);
+
+  $ssl_key = $node->ssl_key_new;
+  if ($ssl_key) {
+    $result = db_query("SELECT * FROM {hosting_ssl_cert} WHERE ssl_key = '%s'", $ssl_key);
     if ($obj = db_fetch_object($result)) {
       // update
-      if ($client != null) {
-        $obj->client = $client;
+      if ($node->client != null) {
+        $obj->client = $client->nid;
       }
       drupal_write_record("hosting_ssl_cert", $obj, 'cid');
+      $node->ssl_key = $obj->cid;
     }
     else {
       // insert
       $obj = new stdClass();
-      $obj->ssl_key = $key;
-      $obj->client = $client;
+      $obj->ssl_key = $ssl_key;
+      $obj->client = $client->nid;
       $obj->status = 0;
       drupal_write_record("hosting_ssl_cert", $obj);
+      if (!hosting_ip_allocate($obj, $node)) {
+        form_set_error('ssl_key_new', t("Unable to allocate IP address for certificate, disabling SSL. Allocate more IP addresses to this server then try to enable SSL again."));
+        db_query("DELETE FROM {hosting_ssl_cert} WHERE cid = %d", $obj->cid);
+        $obj->cid = FALSE;
+        $node->ssl_enabled = HOSTING_SSL_DISABLED;
+      }
+      $node->ssl_key = $obj->cid;
     }
 
     return $obj->cid;
   }
 
-  return $key;
+  return $node->ssl_key;
 }
 
 /**
@@ -292,4 +311,18 @@ function hosting_ssl_get_keys($client = null, $ask_custom = FALSE) {
   }
 
   return $keys;
+}
+
+/**
+ * Remove unused SSL keys from the system (but not from the backend).
+ *
+ * This is designed to be ran on a site's delete task or the site node's deletion.
+ */
+function hosting_ssl_clean_keys($node) {
+  // check if there are still sites using this site's certificate
+  if (!db_result(db_query("SELECT * FROM hosting_ssl_site siteA INNER JOIN hosting_ssl_site siteB ON siteA.ssl_key = siteB.ssl_key INNER JOIN hosting_site s ON s.nid = siteA.nid WHERE siteA.ssl_enabled = 1 AND s.status <> %d AND siteB.nid = %d;", HOSTING_SITE_DELETED, $node->nid))) {
+    drupal_set_message(t("cleaning up unused certificate associated with site"));
+    db_query("DELETE FROM {hosting_ssl_cert} WHERE cid = %d", $node->ssl_key);
+    db_query("DELETE FROM {hosting_ssl_cert_ips} WHERE cid = %d", $node->ssl_key);
+  }
 }

@@ -47,7 +47,7 @@ function hosting_ip_save($node, $update = FALSE) {
   }
 
   foreach ($ip_list as $ip) {
-    db_query("INSERT INTO {hosting_ip_addresses} (vid, nid, ip_address) VALUES (%d, %d, '%s')", $node->vid, $node->nid, $ip); 
+    db_query("INSERT INTO {hosting_ip_addresses} (nid, ip_address) VALUES (%d, '%s')", $node->nid, $ip);
   }
 }
 
@@ -69,7 +69,7 @@ function hosting_ip_validate($node) {
  */
 function hosting_ip_load($node) {
   $ip_list = array();
-  $result = db_query("SELECT ip_address FROM {hosting_ip_addresses} WHERE vid=%d", $node->vid);
+  $result = db_query("SELECT ip_address FROM {hosting_ip_addresses} WHERE nid=%d", $node->nid);
   while ($obj = db_fetch_object($result)) {
     $ip_list[] = $obj->ip_address;
   }
@@ -88,5 +88,24 @@ function hosting_ip_delete($node) {
  * IP Utility function for hook_delete_revision.
  */
 function hosting_ip_delete_revision($node) {
-  db_query("DELETE FROM {hosting_ip_addresses} WHERE vid=%d", $node->vid);
+  db_query("DELETE FROM {hosting_ip_addresses} WHERE nid=%d", $node->nid);
+}
+
+/**
+ * Allocate an IP for a given site on a given server.
+ */
+function hosting_ip_allocate($cert, $site) {
+  // make sure the IP is not allocated while we pick ours
+  db_query("LOCK TABLES {hosting_ssl_cert_ips} WRITE, {hosting_ip_addresses} WRITE");
+  $platform = node_load($site->platform);
+  $server = node_load($platform->web_server);
+  // guess the next available IP
+  $ip = db_result(db_query("SELECT hosting_ip_addresses.id FROM {hosting_ip_addresses}
+                             LEFT JOIN {hosting_ssl_cert_ips} ON hosting_ip_addresses.id = hosting_ssl_cert_ips.ip_address
+                             WHERE hosting_ssl_cert_ips.ip_address IS NULL AND nid = %d LIMIT 1;", $server->nid));
+  if ($ip) {
+    db_query("INSERT INTO {hosting_ssl_cert_ips} (cid, ip_address) VALUES (%d, %d)", $cert->cid, $ip);
+  }
+  db_query("UNLOCK TABLES");
+  return $ip;
 }
