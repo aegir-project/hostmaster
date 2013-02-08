@@ -49,7 +49,6 @@ function hosting_server_schema() {
     'primary key' => array('id'),
     'indexes' => array(
       'nid' => array('nid'),
-      'ip_address' => array('ip_address'),
     ),
 
   );
