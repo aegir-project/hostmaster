@@ -10,6 +10,7 @@ projects[modalframe][version] = "1.6"
 
 ; These are contrib modules, but come under the Aegir 'umbrella' of control.
 projects[hosting_platform_pathauto][version] = "2.0-beta1"
+projects[eldir][version] = "2.0-alpha1"
 
 ; Libraries
 libraries[jquery_ui][download][type] = "get"
