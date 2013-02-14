@@ -1,7 +1,2 @@
-modules/admin_menu/
-modules/install_profile_api/
-modules/jquery_ui/
-modules/modalframe/
-modules/openidadmin/
-modules/hosting_platform_pathauto
-modules/contrib/*
+modules/*
+!modules/hosting
