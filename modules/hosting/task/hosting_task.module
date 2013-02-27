@@ -917,7 +917,14 @@ define('HOSTING_TASK_SUCCESS', 1);
 define('HOSTING_TASK_ERROR', 2);
 
 /**
- * @} End of "name Error status defintions".
+ * The command was completed successfully, but with warnings. This is requires
+ * attention.
+ */
+define('HOSTING_TASK_WARNING', 3);
+
+
+/**
+ * @} End of "name Error status definitions".
  */
 
 /**
@@ -929,6 +936,7 @@ function _hosting_parse_error_code($code) {
     HOSTING_TASK_QUEUED => t('Queued'),
     HOSTING_TASK_ERROR => t('Failed'),
     HOSTING_TASK_PROCESSING => t('Processing'),
+    HOSTING_TASK_WARNING => t('Warning'),
   );
   return $messages[$code];
 }
@@ -1208,6 +1216,9 @@ function hosting_task_status_class($status = null) {
         break;
       case HOSTING_TASK_PROCESSING :
         $class = 'hosting-processing';
+        break;
+      case HOSTING_TASK_WARNING :
+        $class = 'hosting-warning';
         break;
     }
   }
