@@ -5,7 +5,7 @@
  */
 function hosting_queued_menu() {
   $items['admin/hosting/queued'] = array(
-    'title' => 'Queue runner settings',
+    'title' => 'Queue daemon',
     'description' => 'Configure the daemonized tasks queue daemon.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('hosting_queued_settings_form'),
