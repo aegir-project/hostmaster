@@ -40,10 +40,9 @@ function hosting_server_schema() {
         'not null' => TRUE,
       ),
       'id' => array(
-        'type' => 'int',
+        'type' => 'serial',
         'unsigned' => TRUE,
         'not null' => TRUE,
-        'default' => 0,
       ),
     ),
     'primary key' => array('id'),
@@ -216,7 +215,7 @@ function hosting_server_update_6005() {
  */
 function hosting_server_update_6200() {
   $ret = array();
-  db_add_field($ret, "hosting_ip_addresses", "id", array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0));
+  db_add_field($ret, "hosting_ip_addresses", "id", array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE));
   db_drop_field($ret, "hosting_ip_addresses", "vid");
   $r = db_query("SELECT nid, ip_address FROM {hosting_ip_addresses}");
   for ($i = 0; $row = db_fetch_object($r); $i++) {
