@@ -223,6 +223,7 @@ function hosting_server_update_6200() {
     $ret[] = update_sql("UPDATE {hosting_ip_addresses} SET id=$i WHERE nid={$row->nid} AND ip_address='{$row->ip_address}'");
   }
   db_add_primary_key($ret, 'hosting_ip_addresses', array('id'));
+  db_add_index($ret, 'hosting_ip_addresses', 'nid', array('nid'));
   return $ret;
 }
 
