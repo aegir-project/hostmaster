@@ -28,12 +28,6 @@ function hosting_server_schema() {
 
   $schema['hosting_ip_addresses'] = array(
    'fields' => array(
-      'id' => array(
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
-      ),
       'nid' => array(
         'type' => 'int',
         'unsigned' => TRUE,
@@ -44,6 +38,12 @@ function hosting_server_schema() {
         'type' => 'text',
         'size' => 'small',
         'not null' => TRUE,
+      ),
+      'id' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
       ),
     ),
     'primary key' => array('id'),
