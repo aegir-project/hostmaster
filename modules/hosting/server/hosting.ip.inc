@@ -43,7 +43,7 @@ function hosting_ip_save($node, $update = FALSE) {
   $ip_list = _hosting_ip_list($node->ip_addresses);
 
   if ($update) {
-    hosting_ip_delete_revision($node);
+    hosting_ip_delete($node);
   }
 
   foreach ($ip_list as $ip) {
@@ -86,9 +86,12 @@ function hosting_ip_delete($node) {
 
 /**
  * IP Utility function for hook_delete_revision.
+ *
+ * @deprecated
+ * @see hosting_ip_delete()
  */
 function hosting_ip_delete_revision($node) {
-  db_query("DELETE FROM {hosting_ip_addresses} WHERE nid=%d", $node->nid);
+  return hosting_ip_delete($node);
 }
 
 /**
