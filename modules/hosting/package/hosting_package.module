@@ -325,7 +325,57 @@ function hosting_package_view($node, $teaser = FALSE, $page = FALSE) {
       '#weight' => 10
     );
   }
+  else {  // For modules & themes
+
+    $node->content['hosting-package-usage'] = array(
+      '#prefix' => '<div id="hosting-package-usage">',
+      '#suffix' => '</div>',
+      '#value' => _hosting_package_list_package_usage($node),
+      '#weight' => 99,
+    );
+  }
   return $node;
+}
+
+/**
+ * Return a themed table showing where a package is used.
+ */
+function _hosting_package_list_package_usage($node) {
+  $header = array(
+    array('data' => t('Package version'), 'field' => 'package_version', 'sort' => 'DESC'),
+    array('data' => t('Platform'), 'field' => 'platform_name'),
+    array('data' => t('Site'), 'field' => 'site_name'),
+  );
+
+  $sql = "SELECT s.client AS client_nid,
+            n2.title AS platform_name,
+            s.platform AS platform_nid,
+            n.title AS site_name,
+            n.nid AS site_nid,
+            pi.version AS package_version
+          FROM {node} AS n
+            LEFT JOIN {hosting_package_instance} AS pi ON (pi.rid = n.nid)
+            LEFT JOIN {hosting_package} AS p ON (p.nid = pi.package_id)
+            LEFT JOIN {hosting_site} AS s ON (s.nid = n.nid)
+            LEFT JOIN {node} AS n2 ON (n2.nid = s.platform)
+          WHERE pi.status=1 AND s.status >= " . HOSTING_SITE_DISABLED . " AND pi.package_id=%d";
+
+  $sql .= tablesort_sql($header);
+  $result = pager_query(db_rewrite_sql($sql, 'n'), 100, 2, null, array($node->nid));
+
+  if (!$result) {
+    return t('No packages are associated with @reference', array('@reference' => $node->title));
+  }
+  $rows = array();
+  while ($package = db_fetch_object($result)) {
+    $rows[] = array('data' => array(
+      $package->package_version,
+      l(filter_xss($package->platform_name), 'node/' . $package->platform_nid),
+      l(filter_xss($package->site_name), 'node/' . $package->site_nid),
+    ));
+  }
+
+  return theme('table', $header, $rows) . theme('pager', null, 100, 2);
 }
 
 /**
