@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_ssl_hosting_site_context_options(&$task) {
   $node = $task->ref;
 

@@ -1,5 +1,5 @@
 <?php
-// $Id$ 
+// $Id$
 /**
  * @file General IP address CRUD routines.
  */
@@ -10,7 +10,7 @@
 function _hosting_ip_list($addresses) {
   $return = array();
   $ip_list = is_array($addresses) ? $addresses : explode("\n", $addresses);
-  
+
   foreach ($ip_list as $key => $ip) {
     $ip = trim($ip);
     if (!empty($ip)) {
@@ -32,7 +32,7 @@ function hosting_ip_view(&$node) {
       '#type' => 'item',
       '#title' => t('IP addresses'),
       '#value' => implode('<br />', $ip_list),
-    );  
+    );
   }
 }
 
@@ -47,18 +47,26 @@ function hosting_ip_save($node, $update = FALSE) {
   }
 
   foreach ($ip_list as $ip) {
-    db_query("INSERT INTO {hosting_ip_addresses} (nid, ip_address) VALUES (%d, '%s')", $node->nid, $ip);
+    // TODO Please review the conversion of this statement to the D7 database API syntax.
+    /* db_query("INSERT INTO {hosting_ip_addresses} (nid, ip_address) VALUES (%d, '%s')", $node->nid, $ip) */
+    $id = db_insert('hosting_ip_addresses')
+  ->fields(array(
+    'nid' => $node->nid,
+    'ip_address' => $ip,
+  ))
+  ->execute();
   }
 }
 
 /**
  * Validate that IP list is valid. IP utility function for hook_validate.
  */
-function hosting_ip_validate($node) { 
+function hosting_ip_validate($node) {
   foreach (_hosting_ip_list($node->ip_addresses) as $ip) {
     if (!_hosting_valid_ip($ip)) {
       form_set_error('ip_addresses', t('Invalid IP address: %ip.', array(
-        '%ip' => $ip )));
+        '%ip' => $ip,
+      )));
     }
   }
 }
@@ -69,7 +77,7 @@ function hosting_ip_validate($node) {
  */
 function hosting_ip_load($node) {
   $ip_list = array();
-  $result = db_query("SELECT ip_address FROM {hosting_ip_addresses} WHERE nid=%d", $node->nid);
+  $result = db_query("SELECT ip_address FROM {hosting_ip_addresses} WHERE nid = :nid", array(':nid' => $node->nid));
   while ($obj = db_fetch_object($result)) {
     $ip_list[] = $obj->ip_address;
   }
@@ -81,7 +89,11 @@ function hosting_ip_load($node) {
  * IP Utility function for hook_delete.
  */
 function hosting_ip_delete($node) {
-  db_query("DELETE FROM {hosting_ip_addresses} WHERE nid=%d", $node->nid);
+  // TODO Please review the conversion of this statement to the D7 database API syntax.
+  /* db_query("DELETE FROM {hosting_ip_addresses} WHERE nid=%d", $node->nid) */
+  db_delete('hosting_ip_addresses')
+  ->condition('nid', $node->nid)
+  ->execute();
 }
 
 /**
@@ -103,11 +115,18 @@ function hosting_ip_allocate($cert, $site) {
   $platform = node_load($site->platform);
   $server = node_load($platform->web_server);
   // guess the next available IP
-  $ip = db_result(db_query("SELECT hosting_ip_addresses.id FROM {hosting_ip_addresses}
+  $ip = db_query("SELECT hosting_ip_addresses.id FROM {hosting_ip_addresses}
                              LEFT JOIN {hosting_ssl_cert_ips} ON hosting_ip_addresses.id = hosting_ssl_cert_ips.ip_address
-                             WHERE hosting_ssl_cert_ips.ip_address IS NULL AND nid = %d LIMIT 1;", $server->nid));
+                             WHERE hosting_ssl_cert_ips.ip_address IS NULL AND nid = :nid LIMIT 1;", array(':nid' => $server->nid))->fetchField();
   if ($ip) {
-    db_query("INSERT INTO {hosting_ssl_cert_ips} (cid, ip_address) VALUES (%d, %d)", $cert->cid, $ip);
+    // TODO Please review the conversion of this statement to the D7 database API syntax.
+    /* db_query("INSERT INTO {hosting_ssl_cert_ips} (cid, ip_address) VALUES (%d, %d)", $cert->cid, $ip) */
+    $id = db_insert('hosting_ssl_cert_ips')
+  ->fields(array(
+    'cid' => $cert->cid,
+    'ip_address' => $ip,
+  ))
+  ->execute();
   }
   db_query("UNLOCK TABLES");
   return $ip;

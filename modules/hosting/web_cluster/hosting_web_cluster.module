@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_web_cluster_hosting_service() {
   return array(
     'cluster' => 'http',

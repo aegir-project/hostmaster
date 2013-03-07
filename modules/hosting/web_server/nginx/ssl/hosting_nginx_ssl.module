@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_nginx_ssl_hosting_service() {
   return array(
     'nginx_ssl' => 'http',

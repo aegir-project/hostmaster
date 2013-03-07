@@ -53,43 +53,67 @@ class hostingService {
   }
 
   public function insert() {
-    db_query("INSERT INTO {hosting_service} (nid, vid, service, type, port, restart_cmd, available) VALUES (%d, %d, '%s', '%s', %d, '%s', %d)",
-      $this->server->nid, $this->server->vid, $this->service, $this->type, $this->port, $this->restart_cmd, $this->available);
+    // TODO Please review the conversion of this statement to the D7 database API syntax.
+    /* db_query("INSERT INTO {hosting_service} (nid, vid, service, type, port, restart_cmd, available) VALUES (%d, %d, '%s', '%s', %d, '%s', %d)", $this->server->nid, $this->server->vid, $this->service, $this->type, $this->port, $this->restart_cmd, $this->available) */
+    $id = db_insert('hosting_service')
+  ->fields(array(
+    'nid' => $this->server->nid,
+    'vid' => $this->server->vid,
+    'service' => $this->service,
+    'type' => $this->type,
+    'port' => $this->port,
+    'restart_cmd' => $this->restart_cmd,
+    'available' => $this->available,
+  ))
+  ->execute();
   }
 
   public function update() {
     $this->delete_revision();
     $this->insert();
   }
-  
+
   public function delete() {
-    db_query("DELETE FROM {hosting_service} WHERE service = '%s' AND nid=%d", $this->service, $this->server->nid);
+    // TODO Please review the conversion of this statement to the D7 database API syntax.
+    /* db_query("DELETE FROM {hosting_service} WHERE service = '%s' AND nid=%d", $this->service, $this->server->nid) */
+    db_delete('hosting_service')
+  ->condition('service', $this->service)
+  ->condition('nid', $this->server->nid)
+  ->execute();
   }
 
   public function delete_revision() {
-    db_query("DELETE FROM {hosting_service} WHERE service = '%s' AND vid=%d", $this->service, $this->server->vid);
+    // TODO Please review the conversion of this statement to the D7 database API syntax.
+    /* db_query("DELETE FROM {hosting_service} WHERE service = '%s' AND vid=%d", $this->service, $this->server->vid) */
+    db_delete('hosting_service')
+  ->condition('service', $this->service)
+  ->condition('vid', $this->server->vid)
+  ->execute();
   }
 
   public function form(&$form) {
     if ($this->has_restart_cmd) {
       $form['restart_cmd'] = array(
-          '#type' => 'textfield',
-          '#title' => t('Restart command'),
-          '#required' => $this->available,
-          '#description' => t('The command to run to restart this service.'),
-          '#default_value' => (!is_null($this->restart_cmd)) ? $this->restart_cmd : $this->default_restart_cmd(),
-          '#size' => 40,
-          '#maxlength' => 255,
-          '#weight' => -7,
+        '#type' => 'textfield',
+        '#title' => t('Restart command'),
+        '#required' => $this->available,
+        '#description' => t('The command to run to restart this service.'),
+        '#default_value' => (!is_null($this->restart_cmd)) ? $this->restart_cmd : $this->default_restart_cmd(),
+        '#size' => 40,
+        '#maxlength' => 255,
+        '#weight' => -7,
       );
     }
     else {
-      $form['restart_cmd'] = array('#type' => 'value', '#value' => null);
+      $form['restart_cmd'] = array(
+        '#type' => 'value',
+        '#value' => null,
+      );
     }
- 
+
 
     if ($this->has_port) {
-     $form['port'] = array(
+      $form['port'] = array(
         '#type' => 'textfield',
         '#title' => t('Port'),
         '#required' => $this->available,
@@ -105,8 +129,8 @@ class hostingService {
         '#type' => 'value',
         '#value' => '0',
       );
-    } 
- 
+    }
+
   }
 
   public function view(&$render) {
@@ -117,15 +141,15 @@ class hostingService {
         '#value' => filter_xss($this->restart_cmd),
       );
 
-    } 
-   
+    }
+
     if ($this->has_port) {
       $render['port'] = array(
         '#type' => 'item',
         '#title' => t('Port'),
         '#value' => filter_xss($this->port),
       );
-    } 
+    }
   }
 
 

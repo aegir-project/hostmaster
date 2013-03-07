@@ -4,4 +4,4 @@ package = Hosting
 dependencies[] = hosting
 dependencies[] = hosting_package
 
-core = 6.x
+core = 7.x

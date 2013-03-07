@@ -7,7 +7,7 @@
 /**
  * Helper function to generate form elements for the site form.
  */
-function _hosting_site_field(&$form, $node, $item, $element, $filter_display ='filter_xss', $editable = FALSE, $show_desc = TRUE) {
+function _hosting_site_field(&$form, $node, $item, $element, $filter_display = 'filter_xss', $editable = FALSE, $show_desc = TRUE) {
   $css_id = str_replace("_", "-", $item);
 
   $type = $element['#type'];
@@ -15,7 +15,10 @@ function _hosting_site_field(&$form, $node, $item, $element, $filter_display ='f
   if (!$node->nid || $editable) {
     // create it
     if (($element['#type'] == 'radios') && !sizeof($element['#options'])) {
-      $form[$item] = array('#type' => 'hidden', '#value' => key($element['#options']));
+      $form[$item] = array(
+        '#type' => 'hidden',
+        '#value' => key($element['#options']),
+      );
     }
     else {
       $form[$item] = $element;
@@ -53,7 +56,10 @@ function _hosting_site_field(&$form, $node, $item, $element, $filter_display ='f
       }
     }
 
-    $form[$item] = array('#type' => 'hidden', '#value' => $element['#default_value']);
+    $form[$item] = array(
+      '#type' => 'hidden',
+      '#value' => $element['#default_value'],
+    );
   }
 
   $form[$item]['#hosting_site_field'] = $item;
@@ -73,7 +79,7 @@ function _hosting_site_form_pre_render($elements) {
     $settings_added = TRUE;
     $setting = array();
     $setting['hosting']['site']['form_check_url'] = url('hosting/hosting_site_form_check');
-    drupal_add_js($setting, 'setting');
+    drupal_add_js($setting, array('type' => 'setting', 'scope' => JS_DEFAULT));
   }
 
   drupal_add_js(drupal_get_path('module', 'hosting_site') . '/hosting_site.form.js');
@@ -106,6 +112,9 @@ function hosting_site_available_options($node) {
   }
 
   // Load up the user we'll use to check platform and profile access
+  // TODO Convert "user_load" to "user_load_multiple" if "$GLOBALS['user']->uid" is other than a uid.
+  // To return a single user object, wrap "user_load_multiple" with "array_shift" or equivalent.
+  // Example: array_shift(user_load_multiple(array(), $GLOBALS['user']->uid))
   $user = user_load($GLOBALS['user']->uid);
 
   // Install profiles
@@ -122,8 +131,8 @@ function hosting_site_available_options($node) {
     // Eventually we should lighten up the content of this callback
     $result = db_query("SELECT l.nid FROM hosting_package_instance i
                         JOIN hosting_package p ON p.nid = i.package_id
-                        JOIN hosting_platform l ON l.nid = i.rid WHERE i.package_id = %d
-                        AND p.package_type = 'profile' AND l.status = %d;", $id, HOSTING_PLATFORM_ENABLED);
+                        JOIN hosting_platform l ON l.nid = i.rid WHERE i.package_id = :i.package_id
+                        AND p.package_type = :p.package_type AND l.status = :l.status;", array(':i.package_id' => $id, ':p.package_type' => 'profile', ':l.status' => HOSTING_PLATFORM_ENABLED));
     $allowed_plats = _hosting_get_allowed_platforms($user->uid);
     $access_check = FALSE;
 
@@ -133,7 +142,7 @@ function hosting_site_available_options($node) {
       }
       // open access if no platform access has been set
       // @todo move this into _hosting_get_allowed_platforms
-      elseif (!$unrestricted = db_result(db_query("SELECT cid FROM {hosting_platform_client_access} WHERE pid = '%d' LIMIT 1", $row['nid']))) {
+      elseif (!$unrestricted = db_query("SELECT cid FROM {hosting_platform_client_access} WHERE pid = :pid LIMIT 1", array(':pid' => $row['nid']))->fetchField()) {
         $access_check = TRUE;
       }
     }
@@ -194,22 +203,22 @@ function hosting_site_form($node) {
   }
 
   _hosting_site_field($form, $node, 'title', array(
-      '#type' => 'textfield',
-      '#title' => t('Domain name'),
-      '#required' => TRUE,
-      '#default_value' => strtolower(trim($node->title)),
-      '#weight' => -10
-    ));
+    '#type' => 'textfield',
+    '#title' => t('Domain name'),
+    '#required' => TRUE,
+    '#default_value' => strtolower(trim($node->title)),
+    '#weight' => -10,
+  ));
 
   $editable = ((!$node->client || $node->nid) || user_access('administer sites')) && hosting_feature('client');
   _hosting_site_field($form, $node, 'client', array(
-      '#type' => 'textfield',
-      '#required' => TRUE,
-      '#title' => t('Client'),
-      '#default_value' => _hosting_client_site_default($node),
-      '#description' => t('The client who this site belongs to.'),
-      '#autocomplete_path' => 'hosting_client/autocomplete/client',
-    ), 'filter_xss', $editable);
+    '#type' => 'textfield',
+    '#required' => TRUE,
+    '#title' => t('Client'),
+    '#default_value' => _hosting_client_site_default($node),
+    '#description' => t('The client who this site belongs to.'),
+    '#autocomplete_path' => 'hosting_client/autocomplete/client',
+  ), 'filter_xss', $editable);
 
   // Install profiles
   $profiles = hosting_get_profiles();
@@ -223,50 +232,53 @@ function hosting_site_form($node) {
   reset($profiles);
 
   _hosting_site_field($form, $node, 'profile', array(
-      '#type' => 'radios',
-      '#title' => t('Install profile'),
-      '#description' => t('The type of site to install.<br />
+    '#type' => 'radios',
+    '#title' => t('Install profile'),
+    '#description' => t('The type of site to install.<br />
                            The profile selected here determines the list of supported platforms below.'),
-      '#options' => $profiles,
-      '#default_value' => $node->profile ? $node->profile : hosting_get_default_profile(key($profiles)),
-      '#required' => TRUE,
-      '#attributes' => array('class' => "hosting-site-form-profile-options"),
-    ), '_hosting_node_link');
+    '#options' => $profiles,
+    '#default_value' => $node->profile ? $node->profile : hosting_get_default_profile(key($profiles)),
+    '#required' => TRUE,
+    '#attributes' => array('class' => "hosting-site-form-profile-options"),
+  ), '_hosting_node_link');
 
 
 
   _hosting_site_field($form, $node, 'platform', array(
-      '#type' => 'radios',
-      '#title' => t('Platform'),
-      '#required' => TRUE,
-      '#description' => t('The platform you want the site to be hosted on.<br />
+    '#type' => 'radios',
+    '#title' => t('Platform'),
+    '#required' => TRUE,
+    '#description' => t('The platform you want the site to be hosted on.<br />
                           Not seeing a certain platform? Platforms shown are those that support the profile above.
                           If a different profile is selected, this list may change automatically.'),
-      '#options' => _hosting_get_platforms(),
-      '#default_value' => ($node->platform) ? $node->platform : NULL,
-    ), '_hosting_node_link');
+    '#options' => _hosting_get_platforms(),
+    '#default_value' => ($node->platform) ? $node->platform : NULL,
+  ), '_hosting_node_link');
 
   _hosting_site_field($form, $node, 'site_language', array(
-      '#type' => 'radios',
-      '#title' => t('Language'),
-      '#description' => t('The language of site being installed.'),
-      '#options' => hosting_get_profile_languages(),
-      '#required' => TRUE,
-      '#default_value' => $node->site_language ? $node->site_language : 'en',
-      '#attributes' => array('class' => "hosting-site-form-site-language-options"),
-    ), '_hosting_language_name');
+    '#type' => 'radios',
+    '#title' => t('Language'),
+    '#description' => t('The language of site being installed.'),
+    '#options' => hosting_get_profile_languages(),
+    '#required' => TRUE,
+    '#default_value' => $node->site_language ? $node->site_language : 'en',
+    '#attributes' => array('class' => "hosting-site-form-site-language-options"),
+  ), '_hosting_language_name');
 
   _hosting_site_field($form, $node, 'db_server', array(
-      '#type' => 'radios',
-      '#title' => t('Database server'),
-      '#required' => TRUE,
-      '#description' => t('The database server the site will use to host its content.'),
-      '#options' => hosting_get_servers('db'),
-      '#default_value' => $node->db_server ? $node->db_server : HOSTING_DEFAULT_DB_SERVER,
-    ), '_hosting_node_link');
+    '#type' => 'radios',
+    '#title' => t('Database server'),
+    '#required' => TRUE,
+    '#description' => t('The database server the site will use to host its content.'),
+    '#options' => hosting_get_servers('db'),
+    '#default_value' => $node->db_server ? $node->db_server : HOSTING_DEFAULT_DB_SERVER,
+  ), '_hosting_node_link');
 
   foreach (array('verified', 'last_cron', 'site_status') as $extra_attribute) {
-    $form["$extra_attribute"] = array('#type' => 'value', '#value' => $node->$extra_attribute);
+    $form["$extra_attribute"] = array(
+      '#type' => 'value',
+      '#value' => $node->$extra_attribute,
+    );
   }
 
   return $form;
@@ -326,7 +338,7 @@ function hosting_site_validate($node, &$form) {
 }
 
 /**
- * Implements of hook_form_alter().
+ * Implements hook_form_alter().
  *
  * Hide the delete button on site nodes
  */

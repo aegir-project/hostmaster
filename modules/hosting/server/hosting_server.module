@@ -1,23 +1,28 @@
 <?php
-include_once("hosting_server.service.inc");
-include_once("hosting.ip.inc");
+include_once DRUPAL_ROOT . '/' . "hosting_server.service.inc";
+include_once DRUPAL_ROOT . '/' . "hosting.ip.inc";
 
 /**
- * Implementation of hook_node_info().
+ * Implements hook_node_info().
  */
 function hosting_server_node_info() {
   $types["server"] =  array(
-    "type" => 'server', "name" => 'Server',
-    "module" => 'hosting_server',
-    "has_title" => true, "title_label" => t('Host name'), 
+    "type" => 'server',
+    "name" => 'Server',
+    'base' => 'hosting_server',
+    "has_title" => true,
+    "title_label" => t('Host name'),
     "description" => hosting_node_help("server"),
-    "has_body" => 0, "body_label" => '', "min_word_count" => 0);
+    "has_body" => 0,
+    "body_label" => '',
+    "min_word_count" => 0,
+  );
   return $types;
 }
 
 
 /**
- * Implementation of hook_menu().
+ * Implements hook_menu().
  */
 function hosting_server_menu() {
   $items = array();
@@ -29,7 +34,7 @@ function hosting_server_menu() {
     'access arguments' => array('view server'),
     'type' => MENU_NORMAL_ITEM,
   );
-  
+
   $items['hosting/servers/list'] = array(
     'title' => 'List',
     'type' => MENU_DEFAULT_LOCAL_TASK,
@@ -49,7 +54,7 @@ function hosting_server_menu() {
 }
 
 /**
- * Implementation of hook_hosting_feature().
+ * Implements hook_hosting_feature().
  */
 function hosting_server_hosting_feature() {
   $features['server'] = array(
@@ -57,12 +62,12 @@ function hosting_server_hosting_feature() {
     'description' => t('Manage multiple servers.'),
     'status' => HOSTING_FEATURE_ENABLED,
     'node' => 'server',
-    );
+  );
   return $features;
 }
 
 /**
- * Implementation of hook_hosting_tasks()
+ * Implements hook_hosting_tasks().
  */
 function hosting_server_hosting_tasks() {
   $tasks = array();
@@ -75,26 +80,43 @@ function hosting_server_hosting_tasks() {
 
   /**
    * @TODO: support various other tasks like Delete
-    $tasks['server']['delete'] = array(
-      'title' => t('Delete'),
-      'description' => t('Delete the server.'),
-    );
+   $tasks['server']['delete'] = array(
+   'title' => t('Delete'),
+   'description' => t('Delete the server.'),
+   );
    */
 
   return $tasks;
 }
 
 /**
- * Implementation of hook_perm()
+ * Implements hook_permission().
  */
-function hosting_server_perm() {
-  return array('create server', 'view server', 'edit server', 'delete server');
+function hosting_server_permission() {
+  return array(
+    'create server' => array(
+      'title' => t('create server'),
+      'description' => t('TODO Add a description for \'create server\''),
+    ),
+    'view server' => array(
+      'title' => t('view server'),
+      'description' => t('TODO Add a description for \'view server\''),
+    ),
+    'edit server' => array(
+      'title' => t('edit server'),
+      'description' => t('TODO Add a description for \'edit server\''),
+    ),
+    'delete server' => array(
+      'title' => t('delete server'),
+      'description' => t('TODO Add a description for \'delete server\''),
+    ),
+  );
 }
 
 /**
- * Implementation of hook_access()
+ * Implements hook_node_access().
  */
-function hosting_server_access($op, $node, $account) {
+function hosting_server_node_access($node, $op, $account) {
   if (!hosting_feature('server')) {
     return FALSE;
   }
@@ -169,7 +191,7 @@ function hosting_services_add(&$node, $name, $type, $values = array()) {
  */
 function hosting_server_init_services(&$node) {
   $node->services = array();
-  $result = db_query("SELECT service, type FROM {hosting_service} WHERE vid=%d AND available=1", $node->vid);
+  $result = db_query("SELECT service, type FROM {hosting_service} WHERE vid = :vid AND available = :available", array(':vid' => $node->vid, ':available' => 1));
   while ($record = db_fetch_object($result)) {
     $name = $record->service;
     if ($service_object = hosting_services_new_object($name, $record->type, $node)) {
@@ -219,10 +241,10 @@ function hosting_server_invoke_services(&$node, $method, &$arg1 = null, &$arg2 =
 
 
 /**
- * Implementation of hook_form().
+ * Implements hook_form().
  */
 function hosting_server_form(&$node) {
-  drupal_add_js(drupal_get_path('module','hosting_server') . '/hosting_server.js');
+  drupal_add_js(drupal_get_path('module', 'hosting_server') . '/hosting_server.js');
 
   $form['title'] = array(
     '#type' => 'textfield',
@@ -230,19 +252,22 @@ function hosting_server_form(&$node) {
     '#required' => TRUE,
     '#default_value' => $node->title,
     '#description' => t('The host name of the server. This is the address that will be used by Hostmaster to connect to the server to issue commands. It is to resolve to the internal network, if you have such a separation.<br /><strong>Be careful when changing the node title, it is used to create the SQL users if the IP address, below, is not set.</strong>'),
-    '#weight' => -10
+    '#weight' => -10,
   );
 
   $form['ip_addresses'] = array(
-      '#type' => 'textarea',
-      '#title' => t('Ip addresses'),
-      '#description' => t('A list of IP addresses this server is publicly available under, one per line. If none is specified, a DNS lookup will be performed based on the server hostname above. <br /><strong>This should point to the public network, if you have such a separation.</strong>'),
-      '#default_value' => implode("\n", _hosting_ip_list($node->ip_addresses)),
-      '#weight' => -9,
-    );
+    '#type' => 'textarea',
+    '#title' => t('Ip addresses'),
+    '#description' => t('A list of IP addresses this server is publicly available under, one per line. If none is specified, a DNS lookup will be performed based on the server hostname above. <br /><strong>This should point to the public network, if you have such a separation.</strong>'),
+    '#default_value' => implode("\n", _hosting_ip_list($node->ip_addresses)),
+    '#weight' => -9,
+  );
 
 
-  $form['services'] = array('#weight' => -5, '#tree' => TRUE);
+  $form['services'] = array(
+    '#weight' => -5,
+    '#tree' => TRUE,
+  );
 
   if (!$node->nid) {
     $node->services = array();
@@ -296,7 +321,8 @@ function hosting_nodeapi_server_presave(&$node) {
     if ($ips) {
       drupal_set_message(t('Initialized the IP to %ip based on hostname %name. If an HTTP service is enabled, this will be used to create database grants so make sure it is the right address, as seen from the database server.', array('%ip' => join(',', $ips), '%name' => $node->title)), 'message');
       $node->ip_addresses = $ips;
-    } else {
+    }
+    else {
       drupal_set_message(t("Could not resolve IP address of server %name, not automatically setting IP address. DNS may fail.", array('%name' => $node->title)));
     }
   }
@@ -304,16 +330,16 @@ function hosting_nodeapi_server_presave(&$node) {
 }
 
 /**
- * Implementation of hook_validate().
-  */
+ * Implements hook_validate().
+ */
 function hosting_server_validate(&$node, &$form) {
 
-  hosting_ip_validate($node); 
+  hosting_ip_validate($node);
   if (!_hosting_valid_fqdn($node->title)) {
     form_set_error('title', t('Invalid hostname. Use a proper hostname or an IP address.'));
   }
 
-  if (!$node->nid && db_result(db_query("SELECT COUNT(nid) FROM {node} WHERE type='server' AND title='%s'", $node->title))) {
+  if (!$node->nid && db_query("SELECT COUNT(nid) FROM {node} WHERE type = :type AND title = :title", array(':type' => 'server', ':title' => $node->title))->fetchField()) {
     form_set_error('title', t("The hostname you have specified is already in use."));
   }
 
@@ -324,7 +350,7 @@ function hosting_server_validate(&$node, &$form) {
 
 
 /**
- * Implementation of hook_update().
+ * Implements hook_update().
  *
  * As an existing node is being updated in the database, we need to do our own
  * database updates.
@@ -340,7 +366,12 @@ function hosting_server_update($node) {
 
     // Remove disabled services
     foreach (array_diff(array_keys(hosting_server_services()), array_keys($node->services)) as $name) {
-      db_query("DELETE FROM {hosting_service} WHERE service = '%s' AND nid = %d", $name, $node->nid);
+      // TODO Please review the conversion of this statement to the D7 database API syntax.
+      /* db_query("DELETE FROM {hosting_service} WHERE service = '%s' AND nid = %d", $name, $node->nid) */
+      db_delete('hosting_service')
+  ->condition('service', $name)
+  ->condition('nid', $node->nid)
+  ->execute();
     }
   }
 
@@ -353,7 +384,7 @@ function hosting_server_update($node) {
 }
 
 /**
- * Implementation of hook_insert().
+ * Implements hook_insert().
  */
 function hosting_server_insert($node) {
   if (!$node->revision) {
@@ -361,9 +392,15 @@ function hosting_server_insert($node) {
     hosting_context_register($node->nid, $hosting_name );
   }
 
-  db_query("INSERT INTO {hosting_server} (vid, nid) 
-        VALUES (%d, %d)", 
-        $node->vid, $node->nid);
+  // TODO Please review the conversion of this statement to the D7 database API syntax.
+  /* db_query("INSERT INTO {hosting_server} (vid, nid)
+   VALUES (%d, %d)", $node->vid, $node->nid) */
+  $id = db_insert('hosting_server')
+  ->fields(array(
+    'vid' => $node->vid,
+    'nid' => $node->nid,
+  ))
+  ->execute();
 
   hosting_ip_save($node, FALSE);
 
@@ -379,32 +416,44 @@ function hosting_server_insert($node) {
  * Implementation of hook_delete_revision().
  */
 function hosting_nodeapi_server_delete_revision(&$node) {
-  db_query('DELETE FROM {hosting_server} WHERE vid = %d', $node->vid);
+  // TODO Please review the conversion of this statement to the D7 database API syntax.
+  /* db_query('DELETE FROM {hosting_server} WHERE vid = %d', $node->vid) */
+  db_delete('hosting_server')
+  ->condition('vid', $node->vid)
+  ->execute();
   hosting_ip_delete_revision($node);
   hosting_server_invoke_services($node, 'delete_revision');
 }
 
 /**
- * Implementation of hook_delete().
+ * Implements hook_delete().
  */
 function hosting_server_delete($node) {
-  db_query('DELETE FROM {hosting_server} WHERE nid = %d', $node->nid);
+  // TODO Please review the conversion of this statement to the D7 database API syntax.
+  /* db_query('DELETE FROM {hosting_server} WHERE nid = %d', $node->nid) */
+  db_delete('hosting_server')
+  ->condition('nid', $node->nid)
+  ->execute();
   hosting_ip_delete($node);
   hosting_context_delete($node->nid);
   hosting_server_invoke_services($node, 'delete_revision');
 }
 
 /**
- * Implementation of hook_load().
+ * Implements hook_load().
  */
-function hosting_server_load($node) {
-  hosting_server_init_services($node);
-  hosting_server_invoke_services($node, 'load');
-  $additions = new stdClass();
-  $additions->services = $node->services;
-  $additions->ip_addresses = hosting_ip_load($node);
+function hosting_server_load($nodes) {
+  foreach ($nodes as $nid => &$node) {
+    hosting_server_init_services($node);
+    hosting_server_invoke_services($node, 'load');
+    $additions = new stdClass();
+    $additions->services = $node->services;
+    $additions->ip_addresses = hosting_ip_load($node);
 
-  return $additions;
+    foreach ($additions as $property => &$value) {
+      $node->$property = $value;
+    }
+  }
 }
 
 /**
@@ -426,7 +475,7 @@ function hosting_server_node_load($arg) {
 
 
 /**
- * Implementation of hook_view().
+ * Implements hook_view().
  */
 function hosting_server_view(&$node, $teaser = FALSE, $page = FALSE) {
   hosting_set_breadcrumb($node);
@@ -437,7 +486,7 @@ function hosting_server_view(&$node, $teaser = FALSE, $page = FALSE) {
 
   $node->content['info'] = array(
     '#prefix' => '<div id="hosting-server-info" class="hosting-info-list">',
-    '#suffix' => '</div>'
+    '#suffix' => '</div>',
   );
 
   hosting_ip_view($node);
@@ -456,8 +505,9 @@ function hosting_server_view(&$node, $teaser = FALSE, $page = FALSE) {
 
     $title = $services[$name]['title'] . ' : ' . $service->type;
 
-    $node->content['info'][$name]['title'] = array('#value' => '<h3>' . $title . '</h3>',
-      '#weight' => -20
+    $node->content['info'][$name]['title'] = array(
+      '#value' => '<h3>' . $title . '</h3>',
+      '#weight' => -20,
     );
 
     $service->view($node->content['info'][$name]);
@@ -477,9 +527,9 @@ function hosting_server_view(&$node, $teaser = FALSE, $page = FALSE) {
         'nid' => $node->nid,
         'changed' => $node->changed,
       );
-      drupal_add_js($settings, 'setting');
+      drupal_add_js($settings, array('type' => 'setting', 'scope' => JS_DEFAULT));
 
-      drupal_add_js(drupal_get_path('module','hosting_task') . '/hosting_task.js');
+      drupal_add_js(drupal_get_path('module', 'hosting_task') . '/hosting_task.js');
     }
   }
 
@@ -490,6 +540,10 @@ function hosting_server_view(&$node, $teaser = FALSE, $page = FALSE) {
  * Output a table of servers with their enabled services.
  */
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_server_listing() {
   $services = hosting_server_services();
   $header = array(t('Server'));
@@ -498,6 +552,7 @@ function hosting_server_listing() {
       $header[] = $data['title'];
     }
   }
+  // TODO Please convert this statement to the D7 database API syntax.
   $result = db_query(db_rewrite_sql("SELECT n.nid FROM {node} n WHERE n.type='server' AND n.status = 1 ORDER BY n.title"));
   $rows = array();
   while ($obj = db_fetch_object($result)) {
@@ -507,17 +562,23 @@ function hosting_server_listing() {
     foreach ($services as $service => $data) {
       if ($service !== 'server') {
         if ($server->services[$service]->available) {
-          $row[] = array('class' => 'hosting-service-available', 'data' => $server->services[$service]->type);
+          $row[] = array(
+            'class' => 'hosting-service-available',
+            'data' => $server->services[$service]->type,
+          );
         }
         else {
-          $row[] = array('class' => 'hosting-service-unavailable', 'data' => t('No'));
+          $row[] = array(
+            'class' => 'hosting-service-unavailable',
+            'data' => t('No'),
+          );
         }
       }
     }
-    $rows[] = $row; 
+    $rows[] = $row;
   }
-  
-  return theme('table',  $header, $rows, array('class' => 'hosting-table'));
+
+  return theme('table', array('header' =>   $header, 'rows' => $rows, 'attributes' => array('class' => 'hosting-table')));
 }
 
 /**
@@ -531,11 +592,11 @@ function hosting_server_listing() {
  *   them, values are the titles of the servers.
  *
  * @see hook_hosting_servers_titles_alter()
- */ 
+ */
 function hosting_get_servers($service) {
   $return = array();
   $result = db_query("SELECT n.nid, n.title FROM {node} n INNER JOIN {hosting_service} s ON n.vid = s.vid AND s.available = 1 AND s.service = '%s'", $service);
-  while($server = db_fetch_object($result)) {
+  while ($server = db_fetch_object($result)) {
     $return[$server->nid] = $server->title;
   }
   drupal_alter('hosting_servers_titles', $return, $service);

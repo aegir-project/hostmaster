@@ -6,12 +6,12 @@
  */
 
 /**
- * Implementation of hook_drush_command().
+ * Implements hook_drush_command().
  */
 function hosting_drush_command() {
   $items['hosting-dispatch'] = array(
     'description' => dt('Centralized command for dispatching the various queue processors (hosting, cron, backup etc.)'),
-    'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL,
   );
 
   $items['hosting-setup'] = array(
@@ -46,7 +46,7 @@ function hosting_drush_command() {
     'options' => array(
       'force' => "Force the specified task to execute even if it's not queued to run.",
     ),
-    'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL,
   );
 
   $items['hosting-import'] = array(
@@ -54,13 +54,14 @@ function hosting_drush_command() {
     'arguments' => array(
       '@context_name' => 'Context to import',
     ),
-    'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL,
   );
 
   $items['hosting-pause'] = array(
     'description' => dt('Prepare the hostmaster site to be migrated to a new platform.'),
     'arguments' => array(
-      'example.com' => dt('The url of the site being migrated.')),
+      'example.com' => dt('The url of the site being migrated.'),
+    ),
   );
 
   /**
@@ -72,13 +73,15 @@ function hosting_drush_command() {
   $items['hostmaster-resume'] = array(
     'description' => dt('Complete the migration of the hostmaster site to a new platform.'),
     'arguments' => array(
-      'example.com' => dt('The url of the site being migrated.')),
+      'example.com' => dt('The url of the site being migrated.'),
+    ),
   );
 
   $items['hosting-resume'] = array(
     'description' => dt('Complete the migration of the hostmaster site to a new platform.'),
     'arguments' => array(
-      'example.com' => dt('The url of the site being migrated.')),
+      'example.com' => dt('The url of the site being migrated.'),
+    ),
   );
 
   return $items;
@@ -105,7 +108,7 @@ function drush_hosting_import($alias) {
  * end, by creating nodes and translating the value.
  *
  * This is bascally the reverse of the context_options hook.
- * 
+ *
  * @param $alias
  *   The name of the provision context to import.
  */

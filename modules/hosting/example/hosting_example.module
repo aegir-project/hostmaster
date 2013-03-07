@@ -6,7 +6,7 @@
  * Example of the Hosting Services API.
  *
  * Aegir introduces an object representation of the provisioned
- * services that need to be implemented in both it's front end 
+ * services that need to be implemented in both it's front end
  * and backend.
  */
 
@@ -46,9 +46,9 @@
  */
 function hosting_example_hosting_service_type() {
   return array(
-    'example' => array(       // Machine name
+    'example' => array(// Machine name
       'title' => t('Example service'), // Human-readable name
-      'weight' => 0,       // Optional, defaults to 0
+      'weight' => 0, // Optional, defaults to 0
     ),
   );
 }
@@ -73,7 +73,7 @@ function hosting_example_hosting_service_type() {
  * @see hosting_server_services()
  */
 function hosting_example_hosting_service() {
-  return array('basic' => 'example');   // Service implementation => service type.
+  return array('basic' => 'example'); // Service implementation => service type.
 }
 
 /**

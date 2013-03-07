@@ -15,7 +15,7 @@ function hosting_migrate_platform($form_state, $node) {
   // Step 1 - choose target platform
   if ($step == 1) {
 
-    $result = db_query("SELECT count(nid) as site_count FROM {hosting_site} WHERE status=%d AND verified > 0 AND platform=%d", HOSTING_SITE_ENABLED, $node->nid);
+    $result = db_query("SELECT count(nid) as site_count FROM {hosting_site} WHERE status = :status AND verified > :verified AND platform = :platform", array(':status' => HOSTING_SITE_ENABLED, ':verified' => 0, ':platform' => $node->nid));
     if ($obj = db_fetch_object($result)) {
       if ($obj->site_count == 0) {
         $form['error'] = array(
@@ -58,7 +58,7 @@ function hosting_migrate_platform($form_state, $node) {
   if ($step == 2) {
     $title = array(
       'passed' => t("The following sites will be migrated"),
-      'failed' => t("The following sites will not be migrated")
+      'failed' => t("The following sites will not be migrated"),
     );
     $header = array(t('Site'), t('Upgrades'), t('Warnings'), t('Errors'), t('Actions'));
     $options['attributes']['class'] = 'hosting-package-comparison-link';
@@ -73,19 +73,25 @@ function hosting_migrate_platform($form_state, $node) {
             '#value' => '<h2>' . $title[$type] . '</h2>',
           );
           $status = $form_state['storage']['status'][$site_id];
-          $row = array( array('data' => $url, 'class' => 'hosting-status'), $status['upgrade'], $status['missing'], $status['error']);
+          $row = array(array(
+              'data' => $url,
+              'class' => 'hosting-status',
+            ), $status['upgrade'], $status['missing'], $status['error']);
           if (isset($form_state['storage']['instance'][$site_id])) {
             $link = l(t('Compare'), 'hosting/migrate/compare/' . $node->nid . '/' . $form_state['storage']['instance'][$site_id], $options);
           }
-          else  {
+          else {
             $link = t('Profile not found');
           }
           $row[] = $link;
-          $rows[] = array('data' => $row, 'class' => 'hosting-' . _hosting_migrate_site_list_class($status));
+          $rows[] = array(
+            'data' => $row,
+            'class' => 'hosting-' . _hosting_migrate_site_list_class($status),
+          );
         }
         $form['output'][$type]['table'] = array(
           '#type' => 'markup',
-          '#value' => theme('table',  $header, $rows, array('class' => 'hosting-table')),
+          '#value' => theme('table', array('header' =>   $header, 'rows' => $rows, 'attributes' => array('class' => 'hosting-table'))),
         );
 
       }
@@ -134,11 +140,13 @@ function hosting_migrate_platform_submit($form, &$form_state) {
       $form_state['storage']['current_platform'] = $form['#current_platform']->nid;
       $form_state['storage']['target_platform'] = $form_state['values']['target_platform'];
       $max_per_batch = 5;
-      $result = db_query("SELECT n.nid, n.title FROM  {hosting_site} s LEFT JOIN {node} n ON n.nid=s.nid WHERE platform = %d AND s.status = %d and s.verified > 0 ORDER BY n.title", $form['#current_platform']->nid, HOSTING_SITE_ENABLED);
+      $result = db_query("SELECT n.nid, n.title FROM  {hosting_site} s LEFT JOIN {node} n ON n.nid=s.nid WHERE platform = :platform AND s.status = :s.status and s.verified > :s.verified ORDER BY n.title", array(':platform' => $form['#current_platform']->nid, ':s.status' => HOSTING_SITE_ENABLED, ':s.verified' => 0));
       $operations = array();
       while ($site = db_fetch_object($result)) {
-        $operations[] = array('hosting_migrate_platform_batch',
-          array($site->nid, $form_state['values']['target_platform'], $form_state));
+        $operations[] = array(
+          'hosting_migrate_platform_batch',
+          array($site->nid, $form_state['values']['target_platform'], $form_state),
+        );
       }
       if (sizeof($operations)) {
         $batch = array(
@@ -153,7 +161,7 @@ function hosting_migrate_platform_submit($form, &$form_state) {
         batch_set($batch);
 
         if (!empty($GLOBALS['modalframe_page_template'])) {
-          $batch =& batch_get();
+          $batch = &batch_get();
           $batch['url'] = 'hosting/js/batch';
           $batch['source_page'] = 'hosting/js/' . $_GET['q'];
         }
@@ -168,8 +176,10 @@ function hosting_migrate_platform_submit($form, &$form_state) {
 
       $operations = array();
       foreach ($form_state['storage']['passed'] as $nid => $url) {
-        $operations[] = array('hosting_migrate_platform_submit_batch',
-          array($nid, $form_state['storage']['target_platform'], $url, $task->vid));
+        $operations[] = array(
+          'hosting_migrate_platform_submit_batch',
+          array($nid, $form_state['storage']['target_platform'], $url, $task->vid),
+        );
       }
 
       if (sizeof($operations)) {
@@ -185,7 +195,7 @@ function hosting_migrate_platform_submit($form, &$form_state) {
         batch_set($batch);
 
         if (!empty($GLOBALS['modalframe_page_template'])) {
-          $batch =& batch_get();
+          $batch = &batch_get();
           $batch['url'] = 'hosting/js/batch';
           $batch['source_page'] = 'hosting/js/' . $_GET['q'];
         }
@@ -226,31 +236,39 @@ function hosting_migrate_platform_batch($site_id, $target_platform, $context) {
   }
   $site = node_load($site_id);
   $profile = node_load($site->profile);
-  $batch =& batch_get();
+  $batch = &batch_get();
   // Determine whether the install profile is available on the target platform
   $profile_instance = hosting_package_instance_load(
-    array('i.rid' => $target_platform,
-          'r.type' => 'platform',
-          'n.nid' => $site->profile));
+    array(
+    'i.rid' => $target_platform,
+    'r.type' => 'platform',
+    'n.nid' => $site->profile,
+  ));
   if (!$profile_instance) {
     // Check if there is a possibly renamed profile available
     $profile_instance = hosting_package_instance_load(
-      array('i.rid' => $target_platform,
-            'r.type' => 'platform',
-            'p.old_short_name' => $profile->short_name));
+      array(
+      'i.rid' => $target_platform,
+      'r.type' => 'platform',
+      'p.old_short_name' => $profile->short_name,
+    ));
   }
   if ($profile_instance) {
     $status = hosting_package_comparison($site->nid, $profile_instance->iid);
     $batch['form_state']['storage']['status'][$site->nid] = $status;
     $batch['form_state']['storage']['instance'][$site->nid] = $profile_instance->iid;
     // If there were no errors, this site passes and can be migrated
-    if (!$status['error'] && $profile->short_name != 'hostmaster') {   // The hostmaster site can not be upgraded via the interface.
+    if (!$status['error'] && $profile->short_name != 'hostmaster') { // The hostmaster site can not be upgraded via the interface.
       $batch['form_state']['storage']['passed'][$site->nid] = strtolower(trim($site->title));
       return TRUE;
     }
   }
   else {
-    $batch['form_state']['storage']['status'][$site->nid] = array('error' => 1, 'missing' => 0, 'upgrade' => 0);
+    $batch['form_state']['storage']['status'][$site->nid] = array(
+      'error' => 1,
+      'missing' => 0,
+      'upgrade' => 0,
+    );
   }
   $batch['form_state']['storage']['failed'][$site->nid] = strtolower(trim($site->title));
 }

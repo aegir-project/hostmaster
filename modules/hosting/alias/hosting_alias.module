@@ -17,7 +17,7 @@ define('HOSTING_ALIAS_CUSTOM', 0);
 define('HOSTING_ALIAS_AUTOMATIC', 1);
 
 /**
- * Implementation of hook_menu().
+ * Implements hook_menu().
  */
 function hosting_alias_menu() {
   $items['admin/hosting/aliases'] = array(
@@ -26,17 +26,17 @@ function hosting_alias_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('hosting_alias_settings'),
     'access arguments' => array('administer hosting aliases'),
-    'type' => MENU_LOCAL_TASK
+    'type' => MENU_LOCAL_TASK,
   );
   return $items;
 }
 
 /**
- * Implementation of hook_help().
+ * Implements hook_help().
  */
 function hosting_alias_help($path, $arg) {
-  switch($path) {
-    case 'admin/hosting/aliases' :
+  switch ($path) {
+    case 'admin/hosting/aliases':
       $output = t('Site aliases allow you to let sites be available through multiple domain addresses.<br /> The most common use of this functionality is to provide automatic aliasing for www.mysite.com and mysite.com variants of the domain name.<br /> ');
       $output .= t('This module will also allow you to provide a "temporary url" that sites will always be accessible from, in case of DNS problems.<br />');
       $output .= t('Settings made here do not take effect automatically for existing sites.<br />');
@@ -47,14 +47,14 @@ function hosting_alias_help($path, $arg) {
 }
 
 /**
- * Implementation of hook_form_alter().
+ * Implements hook_form_alter().
  *
  * Add a textbox to site node forms with a newline
  * separated list of aliases to the site
  */
 function hosting_alias_form_alter(&$form, $form_state, $form_id) {
   if ($form_id == 'site_node_form') {
-      return hosting_alias_form_data($form);
+    return hosting_alias_form_data($form);
   }
 }
 
@@ -147,14 +147,34 @@ function hosting_alias_insert($node) {
     if (is_array($aliases)) {
       foreach ($aliases as $alias) {
         if (($alias = trim($alias)) && !in_array($alias, $automatic)) {
-          db_query("INSERT INTO {hosting_site_alias} (vid, nid, alias, automatic, redirection) VALUES (%d, %d, '%s', %d, %d)", $node->vid, $node->nid, $alias, HOSTING_ALIAS_CUSTOM, $node->redirection);
+          // TODO Please review the conversion of this statement to the D7 database API syntax.
+          /* db_query("INSERT INTO {hosting_site_alias} (vid, nid, alias, automatic, redirection) VALUES (%d, %d, '%s', %d, %d)", $node->vid, $node->nid, $alias, HOSTING_ALIAS_CUSTOM, $node->redirection) */
+          $id = db_insert('hosting_site_alias')
+  ->fields(array(
+            'vid' => $node->vid,
+            'nid' => $node->nid,
+            'alias' => $alias,
+            'automatic' => HOSTING_ALIAS_CUSTOM,
+            'redirection' => $node->redirection,
+          ))
+  ->execute();
         }
       }
     }
     if (sizeof($automatic)) {
       foreach ($automatic as $alias) {
         if (($alias = trim($alias)) && _hosting_valid_fqdn($alias)) {
-          db_query("INSERT INTO {hosting_site_alias} (vid, nid, alias, automatic, redirection) VALUES (%d, %d, '%s', %d, %d)", $node->vid, $node->nid, $alias, HOSTING_ALIAS_AUTOMATIC, $node->redirection);
+          // TODO Please review the conversion of this statement to the D7 database API syntax.
+          /* db_query("INSERT INTO {hosting_site_alias} (vid, nid, alias, automatic, redirection) VALUES (%d, %d, '%s', %d, %d)", $node->vid, $node->nid, $alias, HOSTING_ALIAS_AUTOMATIC, $node->redirection) */
+          $id = db_insert('hosting_site_alias')
+  ->fields(array(
+            'vid' => $node->vid,
+            'nid' => $node->nid,
+            'alias' => $alias,
+            'automatic' => HOSTING_ALIAS_AUTOMATIC,
+            'redirection' => $node->redirection,
+          ))
+  ->execute();
         }
       }
     }
@@ -183,7 +203,11 @@ function hosting_alias_update($node) {
  *   The site node.
  */
 function hosting_alias_delete($node) {
-  db_query("DELETE FROM {hosting_site_alias} WHERE nid=%d", $node->nid);
+  // TODO Please review the conversion of this statement to the D7 database API syntax.
+  /* db_query("DELETE FROM {hosting_site_alias} WHERE nid=%d", $node->nid) */
+  db_delete('hosting_site_alias')
+  ->condition('nid', $node->nid)
+  ->execute();
 }
 
 /**
@@ -193,16 +217,21 @@ function hosting_alias_delete($node) {
  *   The site node.
  */
 function hosting_alias_delete_revision($node) {
-  db_query("DELETE FROM {hosting_site_alias} WHERE nid=%d and vid=%d", $node->nid, $node->vid);
+  // TODO Please review the conversion of this statement to the D7 database API syntax.
+  /* db_query("DELETE FROM {hosting_site_alias} WHERE nid=%d and vid=%d", $node->nid, $node->vid) */
+  db_delete('hosting_site_alias')
+  ->condition('nid', $node->nid)
+  ->execute();
 }
 
 /**
- * Implementation of hook_nodeapi().
+ * Implements hook_nodeapi().
  *
  * For most of the $op's we pass of to a help function that does the heavy
  * lifting.
  */
-function hosting_alias_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+function hosting_alias_nodeapi_OLD(&$node, $op, $a3 = NULL, $a4 = NULL) {
+  // TODO Remaining code in this function needs to be moved to the appropriate new hook function.
   if ($node->type == 'site') {
     switch ($op) {
       case 'insert':
@@ -211,13 +240,13 @@ function hosting_alias_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
       case 'update':
         hosting_alias_update($node);
         break;
-      case 'delete' :
+      case 'delete':
         hosting_alias_delete($node);
         break;
       case 'delete revision':
         hosting_alias_delete_revision($node);
         break;
-      case 'validate' :
+      case 'validate':
         $aliases = explode("\n", $node->aliases);
         foreach ($aliases as $alias) {
           if ($alias = trim($alias)) {
@@ -235,7 +264,7 @@ function hosting_alias_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
         // works since they are all set to the same in hook_insert(),
         // but we should return an associative alias => redirection
         // array instead
-        $additions['redirection'] = db_result(db_query("SELECT redirection FROM {hosting_site_alias} WHERE vid=%d", $node->vid));
+        $additions['redirection'] = db_query("SELECT redirection FROM {hosting_site_alias} WHERE vid = :vid", array(':vid' => $node->vid))->fetchField();
         // Only retrieves custom aliases, as they are all that can be modified.
         $additions['aliases'] = hosting_alias_get_aliases($node, HOSTING_ALIAS_CUSTOM);
         return $additions;
@@ -250,14 +279,14 @@ function hosting_alias_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
           $node->content['info']['aliases'] = array(
             '#type' => 'item',
             '#title' => t('Domain aliases'),
-            '#value' => implode(', ', $links), 
+            '#value' => implode(', ', $links),
             '#weight' => 10,
           );
-          $redirection = db_result(db_query("SELECT redirection FROM {hosting_site_alias} WHERE vid=%d", $node->vid));
+          $redirection = db_query("SELECT redirection FROM {hosting_site_alias} WHERE vid = :vid", array(':vid' => $node->vid))->fetchField();
           $node->content['info']['redirection'] = array(
             '#type' => 'item',
             '#title' => t('Redirection'),
-            '#value' => $redirection['redirection'] ? t('Yes') : t('No'), 
+            '#value' => $redirection['redirection'] ? t('Yes') : t('No'),
             '#weight' => 10,
           );
         }
@@ -267,10 +296,19 @@ function hosting_alias_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
 }
 
 /**
- * Implementation of hook_perm().
+ * Implements hook_permission().
  */
-function hosting_alias_perm() {
-  return array('create site aliases', 'administer hosting aliases');
+function hosting_alias_permission() {
+  return array(
+    'create site aliases' => array(
+      'title' => t('create site aliases'),
+      'description' => t('TODO Add a description for \'create site aliases\''),
+    ),
+    'administer hosting aliases' => array(
+      'title' => t('administer hosting aliases'),
+      'description' => t('TODO Add a description for \'administer hosting aliases\''),
+    ),
+  );
 }
 
 /**
@@ -278,7 +316,7 @@ function hosting_alias_perm() {
  *
  * @see hosting_alias_menu()
  */
-function hosting_alias_settings() {
+function hosting_alias_settings($form, &$form_state) {
   $form['hosting_alias_subdomain'] = array(
     '#type' => 'textfield',
     '#title' => t('Domain used for automatic subdomain hosting'),
@@ -289,20 +327,20 @@ function hosting_alias_settings() {
     '#type' => 'checkbox',
     '#title' => t('Generate www.domain.com alias automatically'),
     '#description' => t('If a domain name does not start with www., automatically create an alias for www.domain?'),
-    '#default_value' => variable_get('hosting_alias_automatic_www', FALSE)
+    '#default_value' => variable_get('hosting_alias_automatic_www', FALSE),
   );
   $form['hosting_alias_automatic_no_www'] = array(
     '#type' => 'checkbox',
     '#title' => t('Generate domain.com alias automatically'),
     '#description' => t('If a domain name starts with www., automatically create an alias for domain.com?'),
-    '#default_value' => variable_get('hosting_alias_automatic_no_www', FALSE)
+    '#default_value' => variable_get('hosting_alias_automatic_no_www', FALSE),
   );
 
   $form['hosting_alias_redirection'] = array(
     '#type' => 'checkbox',
     '#title' => t('Use redirects instead of aliases by default'),
     '#description' => t('Instead of serving the primary domain under a symlinked site alias, this module can also redirect the user to the primary domain from an alias. This setting can be controlled per site. Setting this option here will make redirection the default behavior for site aliases.'),
-    '#default_value' => variable_get('hosting_alias_redirection', FALSE)
+    '#default_value' => variable_get('hosting_alias_redirection', FALSE),
   );
   return system_settings_form($form);
 }
@@ -327,16 +365,16 @@ function hosting_alias_automatic_aliases($url) {
 }
 
 /**
- * Implementation of hook_allow_domain().
+ * Implements hook_allow_domain().
  *
  * This function will check the existing aliases and the automatically
  * generated aliases to ensure that this url has not been used before
  */
 function hosting_alias_allow_domain($url, $params = array()) {
-  $query = "SELECT COUNT(n.nid) FROM {node} n 
-      LEFT JOIN {hosting_site} h ON h.nid=n.nid 
-      LEFT JOIN {hosting_site_alias} a  ON n.vid = a.vid 
-    WHERE 
+  $query = "SELECT COUNT(n.nid) FROM {node} n
+      LEFT JOIN {hosting_site} h ON h.nid=n.nid
+      LEFT JOIN {hosting_site_alias} a  ON n.vid = a.vid
+    WHERE
       type='site' AND alias='%s' AND h.status <> %d";
   $args[] = $url;
   $args[] = HOSTING_SITE_DELETED;
@@ -345,7 +383,7 @@ function hosting_alias_allow_domain($url, $params = array()) {
     $query .= ' AND n.nid <> %d';
     $args[] = $params['nid'];
   }
-  $result = !db_result(db_query($query, $args));
+  $result = !db_query($query, $args)->fetchField();
   return $result;
 
 }

@@ -14,7 +14,7 @@
  * configured from the frontend interface.
  */
 function drush_hosting_dispatch() {
-  $now = time();
+  $now = REQUEST_TIME;
   variable_set("hosting_dispatch_last_run", $now);
   drush_log(t("dispatching queues"));
   $platform = node_load(HOSTING_OWN_PLATFORM);
@@ -26,32 +26,37 @@ function drush_hosting_dispatch() {
       // Check and release too old cron semaphore if exist
       $old_semaphore = variable_get('hosting_queue_' . $queue . '_running', false);
       if ($old_semaphore) {
-        if (time() - $old_semaphore > 3600) {
+        if (REQUEST_TIME - $old_semaphore > 3600) {
           // Release too old cron semaphore
           variable_del('hosting_queue_' . $queue . '_running', false);
         }
       }
       if ($info['running']) {
         drush_log(dt("queue @queue already running", array('@queue' => $queue)));
-      } else {
+      }
+      else {
         if ($info['enabled']) {
           if (($now - $info["last"]) >= $info["calc_frequency"] || drush_get_option('force', false)) {
             $count = $info['calc_items'] - $info['running_items'];
             if ($count <= 0) {
               drush_log(dt("maximum number of tasks (@count) already running", array('@count' => $info['running_items'])));
-            } else {
+            }
+            else {
               drush_log(dt("found @running running tasks, starting @count out of @max items", array('@running' => $info['running_items'], '@count' => $count, '@max' => $info['calc_items'])));
               drush_invoke_process('@self', "hosting-" . $queue, array(), array('items' => $count, 'invoke' => TRUE), array('fork' => TRUE));
             }
-          } else {
+          }
+          else {
             drush_log(dt("too early for queue @queue", array('@queue' => $queue)));
           }
-        } else {
+        }
+        else {
           drush_log(dt("queue @queue disabled", array('@queue' => $queue)));
         }
       }
     }
-  } else {
+  }
+  else {
     drush_log(dt("dispatching disabled"));
   }
 }

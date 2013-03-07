@@ -5,7 +5,7 @@
  */
 
 /**
- * Implementation of hook_schema().
+ * Implements hook_schema().
  */
 function hosting_platform_schema() {
   $schema['hosting_platform'] = array(
@@ -67,11 +67,12 @@ function hosting_platform_schema() {
 }
 
 /**
- * Implementation of hook_install().
+ * Implements hook_install().
  */
-function hosting_platform_install() {  
+function hosting_platform_install() {
   // Create tables.
-  drupal_install_schema('hosting_platform');
+  // TODO The drupal_(un)install_schema functions are called automatically in D7.
+  // drupal_install_schema('hosting_platform')
 }
 
 /**
@@ -80,13 +81,16 @@ function hosting_platform_install() {
  * work correctly.
  */
 function hosting_platform_update_1() {
-  include_once(drupal_get_path('module', 'hosting_task') . '/hosting_task.module');
+  include_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'hosting_task') . '/hosting_task.module';
   $ret = array();
-  $result = db_query("SELECT nid FROM {node} WHERE type='platform' AND status=1");
+  $result = db_query("SELECT nid FROM {node} WHERE type = :type AND status = :status", array(':type' => 'platform', ':status' => 1));
   while ($platform = db_fetch_object($result)) {
     hosting_add_task($platform->nid, 'synch');
   }
-  return $ret;
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
 /**
@@ -94,14 +98,25 @@ function hosting_platform_update_1() {
  */
 function hosting_platform_update_6000() {
   // this update was moved to hosting_update_6002()
-  return array();
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* array() */;
 }
 
 // Add a status field to platforms so we can Delete tasks on them
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_platform_update_6001() {
   $ret = array();
-  $ret[] = update_sql("ALTER TABLE {hosting_platform} ADD COLUMN status int(11) NOT NULL default '1'");
-  return $ret;
+  // TODO update_sql has been removed. Use the database API for any schema or data changes.
+  $ret[] = array() /* update_sql("ALTER TABLE {hosting_platform} ADD COLUMN status int(11) NOT NULL default '1'") */;
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
 /**
@@ -114,7 +129,7 @@ function hosting_platform_update_6002() {
   $menu_name = variable_get('menu_primary_links_source', 'primary-links');
 
   $items = install_menu_get_items('hosting/platforms');
-  $item = db_fetch_array(db_query("SELECT * FROM {menu_links} WHERE mlid = %d", $items[0]['mlid']));
+  $item = db_fetch_array(db_query("SELECT * FROM {menu_links} WHERE mlid = :mlid", array(':mlid' => $items[0]['mlid'])));
   $item['menu_name'] = $menu_name;
   $item['customized'] = 1;
   $item['options'] = unserialize($item['options']);
@@ -122,7 +137,10 @@ function hosting_platform_update_6002() {
 
   hosting_menu_rebuild();
 
-  return $ret;
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
 /**
@@ -130,13 +148,21 @@ function hosting_platform_update_6002() {
  */
 function hosting_platform_update_6003() {
   $ret = array();
-  $ret[] = update_sql("ALTER TABLE {hosting_platform} ADD COLUMN makefile TEXT NOT NULL");
-  return $ret;
+  // TODO update_sql has been removed. Use the database API for any schema or data changes.
+  $ret[] = array() /* update_sql("ALTER TABLE {hosting_platform} ADD COLUMN makefile TEXT NOT NULL") */;
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_platform_update_6004() {
   if (!variable_get('hosting_platform_update_6004_run', false)) {
-    $result = db_query("SELECT n.nid, n.title FROM {node} n LEFT JOIN {hosting_platform} p ON p.nid=n.nid WHERE p.status <> -2 AND n.type='platform'");
+    $result = db_query("SELECT n.nid, n.title FROM {node} n LEFT JOIN {hosting_platform} p ON p.nid=n.nid WHERE p.status <> :p.status AND n.type = :n.type", array(':p.status' => -2, ':n.type' => 'platform'));
     while ($object = db_fetch_object($result)) {
       $records[$object->nid] = 'platform_' . preg_replace("/[!\W]/", "", $object->title);
     }
@@ -162,7 +188,10 @@ function hosting_platform_update_6205() {
     ),
   );
   foreach ($spec as $field => $field_spec) {
-    db_add_field($ret, 'hosting_platform', $field, $field_spec);
+    db_add_field('hosting_platform', $field, $field_spec);
   }
-  return $ret;
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }

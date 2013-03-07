@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Implement hook_hosting_quota_resource
+ * Implements hook_hosting_quota_resource().
  */
-function hosting_site_hosting_quota_resource () {
+function hosting_site_hosting_quota_resource() {
   $resources = array();
 
   $resources['sites'] = array(
@@ -16,18 +16,18 @@ function hosting_site_hosting_quota_resource () {
 }
 
 /**
- * Implement hook_hosting_quota_get_usage
+ * Implements hook_hosting_quota_get_usage().
  */
-function hosting_site_hosting_quota_get_usage ($client, $resource, $start = NULL, $end = NULL) {
+function hosting_site_hosting_quota_get_usage($client, $resource, $start = NULL, $end = NULL) {
   if (hosting_get_client($client) && $resource == 'sites') {
-    return db_result(db_query("SELECT count(*) FROM {hosting_site} WHERE client='%d' AND status <> '%d'", $client, HOSTING_SITE_DELETED));
+    return db_query("SELECT count(*) FROM {hosting_site} WHERE client = :client AND status <> :status", array(':client' => $client, ':status' => HOSTING_SITE_DELETED))->fetchField();
   }
 }
 
 /**
- * Implement hook_hosting_quota_resource_render
+ * Implements hook_hosting_quota_resource_render().
  */
-function hosting_site_hosting_quota_resource_render ($resource, $usage) {
+function hosting_site_hosting_quota_resource_render($resource, $usage) {
   return t('@usage sites', array('@usage' => $usage));
 }
 

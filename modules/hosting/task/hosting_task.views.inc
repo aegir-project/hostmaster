@@ -4,14 +4,14 @@
  */
 
 /**
- * Implementation of hook_views_handlers() to register all of the basic handlers
+ * Implements hook_views_handlers() to register all of the basic handlers().
  * views uses.
  */
 function hosting_task_views_handlers() {
   return array(
     'info' => array(
       'path' => drupal_get_path('module', 'hosting_task'),
-      ),
+    ),
     'handlers' => array(
       'hosting_task_handler_filter_hosting_task_type' => array(
         'parent' => 'views_handler_filter_in_operator',
@@ -20,7 +20,7 @@ function hosting_task_views_handlers() {
   );
 }
 
-/** 
+/**
  * Implements hook_views_data().
  */
 function hosting_task_views_data() {
@@ -29,9 +29,9 @@ function hosting_task_views_data() {
       'group' => 'Hosting Task',
       'title' => 'Task',
       'join' => array(
-         'node' => array(
-           'left_field' => 'vid',
-           'field' => 'vid',
+        'node' => array(
+          'left_field' => 'vid',
+          'field' => 'vid',
         ),
       ),
     ),
@@ -43,13 +43,13 @@ function hosting_task_views_data() {
         'click sortable' => TRUE,
       ),
       'filter' => array(
-       'handler' => 'hosting_task_handler_filter_hosting_task_type',
+        'handler' => 'hosting_task_handler_filter_hosting_task_type',
       ),
     ),
     'rid' => array(
       'title' => t('Reference'),
       'help' => t(''),
-    'relationship' => array(
+      'relationship' => array(
         'handler' => 'views_handler_relationship',
         'base' => 'node',
         'field' => 'nid',

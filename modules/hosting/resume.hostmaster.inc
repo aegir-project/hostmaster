@@ -5,7 +5,7 @@
  *   Drush include for the hostmaster resume command.
  */
 
-include_once('resume.hosting.inc');
+include_once DRUPAL_ROOT . '/' . 'resume.hosting.inc';
 
 /**
  * backward compatibility for pre 1.0

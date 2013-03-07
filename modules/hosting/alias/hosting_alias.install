@@ -5,7 +5,7 @@
  */
 
 /**
- * Implementation of hook_schema().
+ * Implements hook_schema().
  */
 function hosting_alias_schema() {
   $schema['hosting_site_alias'] = array(
@@ -48,19 +48,21 @@ function hosting_alias_schema() {
 }
 
 /**
- * Implementation of hook_install().
+ * Implements hook_install().
  */
 function hosting_alias_install() {
   // Create tables.
-  drupal_install_schema('hosting_alias');
+  // TODO The drupal_(un)install_schema functions are called automatically in D7.
+  // drupal_install_schema('hosting_alias')
 }
 
 /**
- * Implementation of hook_uninstall().
+ * Implements hook_uninstall().
  */
 function hosting_alias_uninstall() {
   // Remove tables.
-  drupal_uninstall_schema('hosting_alias');
+  // TODO The drupal_(un)install_schema functions are called automatically in D7.
+  // drupal_uninstall_schema('hosting_alias')
 }
 
 /**
@@ -68,8 +70,12 @@ function hosting_alias_uninstall() {
  */
 function hosting_alias_update_1() {
   $ret = array();
-  $ret[] = update_sql("DELETE FROM {hosting_site_alias} WHERE alias='Array'");
-  return $ret;
+  // TODO update_sql has been removed. Use the database API for any schema or data changes.
+  $ret[] = array() /* update_sql("DELETE FROM {hosting_site_alias} WHERE alias='Array'") */;
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
 /**
@@ -77,7 +83,10 @@ function hosting_alias_update_1() {
  */
 function hosting_alias_update_2() {
   $ret = array();
-  db_add_field($ret, 'hosting_site_alias', 'redirection', array('type' => 'int', 'not null' => TRUE, 'default' => 0, 'size' => 'tiny'));
-  return $ret;
+  db_add_field('hosting_site_alias', 'redirection', array('type' => 'int', 'not null' => TRUE, 'default' => 0, 'size' => 'tiny'));
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 

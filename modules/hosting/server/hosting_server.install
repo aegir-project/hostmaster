@@ -1,9 +1,15 @@
 <?php
+/**
+ * @file
+ * Install, update and uninstall functions for the hosting_server module.
+ *
+ */
+
 // $Id$
 
 
 /**
- * Implementation of hook_schema().
+ * Implements hook_schema().
  */
 function hosting_server_schema() {
   $schema['hosting_server'] = array(
@@ -20,14 +26,12 @@ function hosting_server_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
-
-
     ),
     'primary key' => array('vid'),
   );
 
   $schema['hosting_ip_addresses'] = array(
-   'fields' => array(
+    'fields' => array(
       'nid' => array(
         'type' => 'int',
         'unsigned' => TRUE,
@@ -50,7 +54,6 @@ function hosting_server_schema() {
     'indexes' => array(
       'nid' => array('nid'),
     ),
-
   );
 
   $schema['hosting_service'] = array(
@@ -90,7 +93,7 @@ function hosting_server_schema() {
       ),
       'available' => array(
         'type' => 'int',
-        'size' => 'small', 
+        'size' => 'small',
         'not null' => TRUE,
         'default' => 1,
       ),
@@ -103,21 +106,38 @@ function hosting_server_schema() {
   return $schema;
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_server_install() {
   // Create tables.
-  drupal_install_schema('hosting_server');
+  // TODO The drupal_(un)install_schema functions are called automatically in D7.
+  // drupal_install_schema('hosting_server')
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_server_uninstall() {
-  drupal_uninstall_schema('hosting_server');
+  // TODO The drupal_(un)install_schema functions are called automatically in D7.
+  // drupal_uninstall_schema('hosting_server')
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_server_update_6000() {
   $return = array();
 
-  db_add_index($return, 'hosting_service', 'vid', array('vid'));
+  db_add_index('hosting_service', 'vid', array('vid'));
 
-  return $return;
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $return */;
 }
 
 
@@ -127,9 +147,12 @@ function hosting_server_update_6000() {
 function hosting_server_update_6001() {
   $ret = array();
 
-  db_drop_field($ret, "hosting_server", "drush_path");
-  db_drop_field($ret, "hosting_server", "backup_path");
-  return $ret;
+  db_drop_field("hosting_server", "drush_path");
+  db_drop_field("hosting_server", "backup_path");
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
 
@@ -139,10 +162,17 @@ function hosting_server_update_6001() {
  */
 function hosting_server_update_6002() {
   $ret = array();
-  db_query("DELETE FROM {hosting_service} WHERE service='server'");
-  db_drop_field($ret, "hosting_server", "script_user");
-  db_drop_field($ret, "hosting_server", "config_path");
-  return $ret;
+  // TODO Please review the conversion of this statement to the D7 database API syntax.
+  /* db_query("DELETE FROM {hosting_service} WHERE service='server'") */
+  db_delete('hosting_service')
+  ->condition('service', 'server')
+  ->execute();
+  db_drop_field("hosting_server", "script_user");
+  db_drop_field("hosting_server", "config_path");
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
 
@@ -150,20 +180,23 @@ function hosting_server_update_6002() {
  * Bring the port and restart command from hosting_web_server into hosting_service.
  */
 function hosting_server_update_6003() {
-  db_add_field($ret, 'hosting_service', 'port', array(
+  db_add_field('hosting_service', 'port', array(
     'type' => 'int',
     'default' => 0,
     'unsigned' => TRUE,
-    'not null' => FALSE
+    'not null' => FALSE,
   ));
 
-  db_add_field($ret, 'hosting_service', 'restart_cmd',array(
+  db_add_field('hosting_service', 'restart_cmd', array(
     'type' => 'text',
     'size' => 'big',
     'not null' => FALSE,
   ));
 
-  return $ret;
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
 /**
@@ -172,10 +205,10 @@ function hosting_server_update_6003() {
 function hosting_server_update_6004() {
 
   $return = array();
-  // create the table so we can rename it. 
+  // create the table so we can rename it.
   // retarded, i know.
   $schema = array(
-   'fields' => array(
+    'fields' => array(
       'vid' => array(
         'type' => 'int',
         'unsigned' => TRUE,
@@ -196,10 +229,14 @@ function hosting_server_update_6004() {
     ),
     'indexes' => array(
       'vid' => array('vid'),
-    ));
-  db_create_table($return, 'hosting_server_ip', $schema);
+    ),
+  );
+  db_create_table('hosting_server_ip', $schema);
 
-  return $return;
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $return */;
 }
 
 /**
@@ -207,8 +244,11 @@ function hosting_server_update_6004() {
  */
 function hosting_server_update_6005() {
   $ret = array();
-  db_rename_table($ret, 'hosting_server_ip', 'hosting_ip_addresses');
-  return $ret;
+  db_rename_table('hosting_server_ip', 'hosting_ip_addresses');
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
 /**
@@ -216,15 +256,19 @@ function hosting_server_update_6005() {
  */
 function hosting_server_update_6200() {
   $ret = array();
-  db_add_field($ret, "hosting_ip_addresses", "id", array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0));
-  db_drop_field($ret, "hosting_ip_addresses", "vid");
+  db_add_field("hosting_ip_addresses", "id", array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0));
+  db_drop_field("hosting_ip_addresses", "vid");
   $r = db_query("SELECT nid, ip_address FROM {hosting_ip_addresses}");
   for ($i = 0; $row = db_fetch_object($r); $i++) {
-    $ret[] = update_sql("UPDATE {hosting_ip_addresses} SET id=$i WHERE nid={$row->nid} AND ip_address='{$row->ip_address}'");
+    // TODO update_sql has been removed. Use the database API for any schema or data changes.
+    $ret[] = array() /* update_sql("UPDATE {hosting_ip_addresses} SET id=$i WHERE nid={$row->nid} AND ip_address='{$row->ip_address}'") */;
   }
-  db_add_primary_key($ret, 'hosting_ip_addresses', array('id'));
-  db_add_index($ret, 'hosting_ip_addresses', 'nid', array('nid'));
-  return $ret;
+  db_add_primary_key('hosting_ip_addresses', array('id'));
+  db_add_index('hosting_ip_addresses', 'nid', array('nid'));
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
 /**
@@ -245,7 +289,7 @@ function hosting_server_update_6201() {
   $schema = array(
     'fields' => array(
       // cert id
-      'cid' => array( 
+      'cid' => array(
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
@@ -262,9 +306,13 @@ function hosting_server_update_6201() {
     'indexes' => array(
       'cid' => array('cid'),
       'ip_address' => array('ip_address'),
-    ));
-  db_create_table($ret, 'hosting_ssl_cert_ips', $schema);
-  return $ret;
+    ),
+  );
+  db_create_table('hosting_ssl_cert_ips', $schema);
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
 /**
@@ -288,7 +336,8 @@ function hosting_server_update_6202() {
    * IP of the sites with SSL certs, match that IP with the IP of a server (we
    * assume it's the same server!).
    */
-  $ret[] = update_sql("INSERT INTO {hosting_ssl_cert_ips} (cid, ip_address)
+  // TODO update_sql has been removed. Use the database API for any schema or data changes.
+  $ret[] = array() /* update_sql("INSERT INTO {hosting_ssl_cert_ips} (cid, ip_address)
   SELECT cid, server_ip.nid FROM {hosting_ssl_site} ssl_site
     INNER JOIN {hosting_ssl_cert} cert ON cert.cid = ssl_site.ssl_key
     INNER JOIN {hosting_ip_addresses} site_ip ON site_ip.nid = ssl_site.nid
@@ -297,8 +346,11 @@ function hosting_server_update_6202() {
     INNER JOIN {node} servers ON server_ip.nid = servers.nid
     WHERE ssl_enabled > %d AND site.status > %d AND servers.type = 'server'
     GROUP BY cid ORDER BY cert.cid, site.nid",
-                HOSTING_SSL_DISABLED, HOSTING_SITE_DELETED);
-  return $ret;
+                HOSTING_SSL_DISABLED, HOSTING_SITE_DELETED) */;
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
 /**

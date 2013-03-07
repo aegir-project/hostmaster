@@ -5,7 +5,7 @@
  */
 
 /**
- * Implementation of hook_hosting_service().
+ * Implements hook_hosting_service().
  */
 function hosting_db_server_hosting_service() {
   return array(
@@ -14,7 +14,7 @@ function hosting_db_server_hosting_service() {
 }
 
 /**
- * Implementation of hook_hosting_service_type().
+ * Implements hook_hosting_service_type().
  */
 function hosting_db_server_hosting_service_type() {
   return array(
@@ -35,7 +35,7 @@ function hosting_get_db_server($hostname) {
   else {
     $ip = gethostbyname($hostname);
   }
-  $result = db_result(db_query("SELECT nid FROM {node} WHERE title in ('%s', '%s') and type='server'", $ip, $hostname));
+  $result = db_query("SELECT nid FROM {node} WHERE title in ('%s', '%s') and type = :type", array(':type' => 'server', '' => $ip, '' => $hostname))->fetchField();
   if ($result) {
     return node_load($result);
   }
@@ -44,7 +44,7 @@ function hosting_get_db_server($hostname) {
 }
 
 /**
- * Implementation of hook_nodeapi_TYPE_OP().
+ * Implements hook_nodeapi_TYPE_OP().
  */
 function hosting_db_server_nodeapi_server_presave(&$node) {
   if (empty($node->db_passwd) && !empty($node->nid)) {
@@ -57,11 +57,11 @@ function hosting_db_server_nodeapi_server_presave(&$node) {
 }
 
 /**
- * Implementation of hook_views_api().
+ * Implements hook_views_api().
  */
 function hosting_db_server_views_api() {
   return array(
-    'api' => 2, 
+    'api' => 2,
     'path' => drupal_get_path('module', 'hosting_db_server'),
   );
 }

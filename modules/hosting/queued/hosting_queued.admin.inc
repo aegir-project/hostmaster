@@ -3,7 +3,7 @@
 /**
  * Configuration form for backup schedules
  */
-function hosting_queued_settings_form() {
+function hosting_queued_settings_form($form, &$form_state) {
 
   $form['description'] = array(
     '#type' => 'markup',
@@ -15,7 +15,7 @@ function hosting_queued_settings_form() {
   $form['hosting_queued_process_started'] = array(
     '#type' => 'item',
     '#title' => t('Runner status'),
-    '#value' => !empty($last_seen) ? t('Last started: @interval ago.', array('@interval' => format_interval(time() - $last_seen))) : t('Never started.'),
+    '#value' => !empty($last_seen) ? t('Last started: @interval ago.', array('@interval' => format_interval(REQUEST_TIME - $last_seen))) : t('Never started.'),
   );
 
   $form['hosting_queued_post_task_delay'] = array(

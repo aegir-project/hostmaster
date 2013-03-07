@@ -68,7 +68,7 @@ function hosting_get_queues($refresh = FALSE) {
       'items' => 5,
       'enabled' => TRUE,
       'singular' => t('item'),
-      'plural' => t('items')
+      'plural' => t('items'),
     );
     $queues = module_invoke_all("hosting_queues");
     foreach ($queues as $key => $queue) {
@@ -89,7 +89,8 @@ function hosting_get_queues($refresh = FALSE) {
         $threads = $queue['total_items'] / $queue['threshold'];
         if ($threads <= $queue['min_threads']) {
           $threads = $queue['min_threads'];
-        } elseif ($thread > $queue['max_threads']) {
+        }
+        elseif ($thread > $queue['max_threads']) {
           $threads = $queue['max_threads'];
         }
         $queue['calc_threads'] = $threads;
@@ -122,7 +123,7 @@ function hosting_run_queue() {
   $queue = $cmd['queue'];
   $count = drush_get_option(array('i', 'items'), 5); // process a default of 5 items at a time.
 
-  variable_set('hosting_queue_' . $queue . '_last_run', $t = time());
+  variable_set('hosting_queue_' . $queue . '_last_run', $t = REQUEST_TIME);
   variable_set('hosting_queue_' . $queue . '_running', $t);
 
   $func = "hosting_" . $queue . "_queue";
@@ -159,7 +160,7 @@ function _hosting_queue_next_run($queue) {
   }
   $freq = $queue['frequency'];
   $last = $queue['last_run'];
-  $now = time();
+  $now = REQUEST_TIME;
   return max($last + $freq,
     ( $now - ( ($now - $last) % $freq ) ) + $freq );
 }
@@ -174,6 +175,10 @@ function _hosting_dispatch_cmd() {
   return $cmd;
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_queues_cron_cmd() {
   $command = _hosting_dispatch_cmd();
   $return = <<<END

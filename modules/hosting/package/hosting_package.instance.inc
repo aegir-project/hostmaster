@@ -16,7 +16,14 @@
  * will be referenced to the node.
  */
 function hosting_package_instance_sync($rid) {
-  db_query("UPDATE {hosting_package_instance} SET status = -1 WHERE rid = %d", $rid);
+  // TODO Please review the conversion of this statement to the D7 database API syntax.
+  /* db_query("UPDATE {hosting_package_instance} SET status = -1 WHERE rid = %d", $rid) */
+  db_update('hosting_package_instance')
+  ->fields(array(
+    'status' =>  -1,
+  ))
+  ->condition('rid', $rid)
+  ->execute();
   $map = _hosting_package_plural_map();
   $args = func_get_args();
   $rid = array_shift($args);
@@ -32,7 +39,8 @@ function hosting_package_instance_sync($rid) {
     foreach ($merged as $name => $package) {
       $instance = hosting_package_instance_load(array(
         'i.rid' => $rid,
-        'i.package_id' => $package['package_id']));
+        'i.package_id' => $package['package_id'],
+      ));
       if (!$instance) {
         $instance = new stdClass();
         $instance->rid = $rid;
@@ -52,14 +60,30 @@ function hosting_package_instance_sync($rid) {
       hosting_package_instance_save($instance);
     }
   }
-  db_query("DELETE FROM {hosting_package_instance} WHERE rid=%d AND status=-1", $rid);
+  // TODO Please review the conversion of this statement to the D7 database API syntax.
+  /* db_query("DELETE FROM {hosting_package_instance} WHERE rid=%d AND status=-1", $rid) */
+  db_delete('hosting_package_instance')
+  ->condition('rid', $rid)
+  ->condition('status', -1)
+  ->execute();
 }
 
 function _hosting_package_instance_languages($instance) {
   if (sizeof($instance->languages)) {
-    db_query("DELETE FROM {hosting_package_languages} WHERE iid=%d", $instance->iid);
+    // TODO Please review the conversion of this statement to the D7 database API syntax.
+    /* db_query("DELETE FROM {hosting_package_languages} WHERE iid=%d", $instance->iid) */
+    db_delete('hosting_package_languages')
+  ->condition('iid', $instance->iid)
+  ->execute();
     foreach ($instance->languages as $language) {
-      db_query("INSERT INTO {hosting_package_languages} (iid, language) VALUES (%d, '%s')", $instance->iid, $language);
+      // TODO Please review the conversion of this statement to the D7 database API syntax.
+      /* db_query("INSERT INTO {hosting_package_languages} (iid, language) VALUES (%d, '%s')", $instance->iid, $language) */
+      $id = db_insert('hosting_package_languages')
+  ->fields(array(
+    'iid' => $instance->iid,
+    'language' => $language,
+  ))
+  ->execute();
     }
   }
 
@@ -67,27 +91,55 @@ function _hosting_package_instance_languages($instance) {
   _hosting_package_instances_load_languages(NULL, TRUE);
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_package_instance_update(&$instance) {
-  db_query("UPDATE {hosting_package_instance} SET
-    rid = %d, package_id = %d, filename = '%s',
-    schema_version = %d, version = '%s', version_code = %f, status = %d
-    WHERE iid = %d",
-    $instance->rid, $instance->package_id, $instance->filename,
-    $instance->schema_version, $instance->version, $instance->version_code, $instance->status,
-    $instance->iid);
+  // TODO Please review the conversion of this statement to the D7 database API syntax.
+  /* db_query("UPDATE {hosting_package_instance} SET
+   rid = %d, package_id = %d, filename = '%s',
+   schema_version = %d, version = '%s', version_code = %f, status = %d
+   WHERE iid = %d", $instance->rid, $instance->package_id, $instance->filename, $instance->schema_version, $instance->version, $instance->version_code, $instance->status, $instance->iid) */
+  db_update('hosting_package_instance')
+  ->fields(array(
+    'rid' => $instance->rid,
+    'package_id' => $instance->package_id,
+    'filename' => $instance->filename,
+    'schema_version' => $instance->schema_version,
+    'version' => $instance->version,
+    'version_code' => $instance->version_code,
+    'status' => $instance->status,
+  ))
+  ->condition('iid', $instance->iid)
+  ->execute();
 
   _hosting_package_instance_languages($instance);
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_package_instance_create(&$instance) {
-   db_query("INSERT INTO {hosting_package_instance} (
-      rid, package_id, filename,
-      schema_version, version, version_code, status)
-      VALUES (%d, %d, '%s', %d, '%s', %f, %d)",
-      $instance->rid, $instance->package_id, $instance->filename,
-      $instance->schema_version, $instance->version, $instance->version_code, $instance->status);
-   $instance->iid = db_last_insert_id('hosting_package_instance', 'iid');
-   _hosting_package_instance_languages($instance);
+  // TODO Please review the conversion of this statement to the D7 database API syntax.
+  /* db_query("INSERT INTO {hosting_package_instance} (
+   rid, package_id, filename,
+   schema_version, version, version_code, status)
+   VALUES (%d, %d, '%s', %d, '%s', %f, %d)", $instance->rid, $instance->package_id, $instance->filename, $instance->schema_version, $instance->version, $instance->version_code, $instance->status) */
+  $id = db_insert('hosting_package_instance')
+  ->fields(array(
+    '       rid' => $instance->rid,
+    'package_id' => $instance->package_id,
+    'filename' => $instance->filename,
+    'schema_version' => $instance->schema_version,
+    'version' => $instance->version,
+    'version_code' => $instance->version_code,
+    'status' => $instance->status,
+  ))
+  ->execute();
+  $instance->iid = db_last_insert_id('hosting_package_instance', 'iid');
+  _hosting_package_instance_languages($instance);
 }
 
 /**
@@ -129,7 +181,7 @@ function _hosting_package_instances_load($param, $multiple = FALSE) {
   elseif (is_array($param)) {
     // Turn the conditions into a query.
     foreach ($param as $key => $value) {
-      $cond[] = $key ." = '%s'";
+      $cond[] = $key . " = '%s'";
       $arguments[] = $value;
     }
     $cond = implode(' AND ', $cond);
@@ -138,6 +190,7 @@ function _hosting_package_instances_load($param, $multiple = FALSE) {
     return FALSE;
   }
   $instances = array();
+  // TODO Please convert this statement to the D7 database API syntax.
   $result = db_query("SELECT
       n.title, r.type, p.package_type, p.nid,
       i.iid, i.version, i.version_code, i.schema_version,
@@ -174,7 +227,7 @@ function _hosting_package_instances_load_languages($instance_id = NULL, $reset =
     $languages = array('en' => 'en');
 
     // load language options: if argument is null, load all language options
-    $lang_result = db_query("SELECT DISTINCT(language) FROM {hosting_package_languages} WHERE iid = %d", $instance_id);
+    $lang_result = db_query("SELECT DISTINCT(language) FROM {hosting_package_languages} WHERE iid = :iid", array(':iid' => $instance_id));
     while ($language = db_fetch_object($lang_result)) {
       $languages[$language->language] = _hosting_language_name($language->language);
     }
@@ -188,6 +241,10 @@ function _hosting_package_instances_load_languages($instance_id = NULL, $reset =
 }
 
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_package_instance_save(&$instance) {
   if (!isset($instance->iid)) {
     hosting_package_instance_create($instance);
@@ -197,9 +254,21 @@ function hosting_package_instance_save(&$instance) {
   }
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_package_instance_delete($instance) {
-  db_query("DELETE FROM {hosting_package_languages} WHERE iid=%d", $instance->iid);
-  db_query("DELETE FROM {hosting_package_instance} WHERE iid = %d", $instance->iid);
+  // TODO Please review the conversion of this statement to the D7 database API syntax.
+  /* db_query("DELETE FROM {hosting_package_languages} WHERE iid=%d", $instance->iid) */
+  db_delete('hosting_package_languages')
+  ->condition('iid', $instance->iid)
+  ->execute();
+  // TODO Please review the conversion of this statement to the D7 database API syntax.
+  /* db_query("DELETE FROM {hosting_package_instance} WHERE iid = %d", $instance->iid) */
+  db_delete('hosting_package_instance')
+  ->condition('iid', $instance->iid)
+  ->execute();
 }
 
 
@@ -227,12 +296,13 @@ function hosting_package_instance_version_code($version) {
     'alpha' => 2,
     'beta' => 3,
     'rc' => 4,
-    'release' => 5
+    'release' => 5,
   );
 
   $regex = array(
     'core' => '/^(?P<platform_major>\d?)\.(?P<platform_minor>[x\d]*)?(-(?P<package_version_type>dev|unstable|alpha|beta|rc)?(?P<package_patch_level>\d)*)?$/',
-    'contrib' => "/(?P<platform_major>\d?)\.(?P<platform_minor>[x\d]*)?(-(?P<package_major>\d*)?\.(?P<package_minor>[x\d]*)?(-(?P<package_version_type>alpha|unstable|beta|rc|dev)?(?P<package_patch_level>[\d]*)?)?)?/");
+    'contrib' => "/(?P<platform_major>\d?)\.(?P<platform_minor>[x\d]*)?(-(?P<package_major>\d*)?\.(?P<package_minor>[x\d]*)?(-(?P<package_version_type>alpha|unstable|beta|rc|dev)?(?P<package_patch_level>[\d]*)?)?)?/",
+  );
 
   $matches = array();
   if (preg_match($regex['core'], $version, $matches)) {
@@ -253,28 +323,32 @@ function hosting_package_instance_version_code($version) {
   return $result;
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_package_comparison($current, $target) {
 
   $current_tbl = _hosting_package_temporary_table($current);
   $target_tbl = _hosting_package_temporary_table($target);
 
   $status = array();
-  $result = db_query("SELECT count(c.nid) AS error FROM %s c LEFT JOIN %s t ON c.nid=t.nid WHERE (t.schema_version > 0) && (c.schema_version > t.schema_version) AND c.status=1", $current_tbl, $target_tbl);
+  $result = db_query("SELECT count(c.nid) AS error FROM %s c LEFT JOIN %s t ON c.nid=t.nid WHERE (t.schema_version > :(t.schema_version && (c.schema_version > :(c.schema_version AND c.status = :c.status", array(':(t.schema_version' => 0, ':(c.schema_version' => t . schema_version, ':c.status' => 1, '' => $current_tbl, '' => $target_tbl));
   while ($obj = db_fetch_object($result)) {
     $status['error'] = $obj->error;
   }
 
-  $result = db_query("SELECT COUNT(c.nid) as missing FROM %s c LEFT JOIN %s t ON c.nid=t.nid WHERE t.nid IS null AND c.status=1", $current_tbl, $target_tbl);
+  $result = db_query("SELECT COUNT(c.nid) as missing FROM %s c LEFT JOIN %s t ON c.nid=t.nid WHERE t.nid IS null AND c.status = :c.status", array(':c.status' => 1, '' => $current_tbl, '' => $target_tbl));
   while ($obj = db_fetch_object($result)) {
     $status['missing'] = $obj->missing;
   }
 
-  $result = db_query("SELECT COUNT(c.nid) as upgrade FROM %s c LEFT JOIN %s t ON c.nid=t.nid WHERE (c.version_code < t.version_code) OR (c.schema_version < t.schema_version) AND c.status=1", $current_tbl, $target_tbl);
+  $result = db_query("SELECT COUNT(c.nid) as upgrade FROM %s c LEFT JOIN %s t ON c.nid=t.nid WHERE (c.version_code < :(c.version_code OR (c.schema_version < :(c.schema_version AND c.status = :c.status", array(':(c.version_code' => t . version_code, ':(c.schema_version' => t . schema_version, ':c.status' => 1, '' => $current_tbl, '' => $target_tbl));
   while ($obj = db_fetch_object($result)) {
     $status['upgrade'] = $obj->upgrade;
   }
 
-  $result = db_query("SELECT count(c.nid) AS downgrade FROM %s c LEFT JOIN %s t ON c.nid=t.nid WHERE (c.version_code > t.version_code)", $current_tbl, $target_tbl);
+  $result = db_query("SELECT count(c.nid) AS downgrade FROM %s c LEFT JOIN %s t ON c.nid=t.nid WHERE (c.version_code > :(c.version_code", array(':(c.version_code' => t . version_code, '' => $current_tbl, '' => $target_tbl));
   while ($obj = db_fetch_object($result)) {
     $status['downgrade'] = $obj->downgrade;
   }

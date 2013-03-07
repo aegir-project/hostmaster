@@ -6,7 +6,7 @@
  */
 
 /**
- * Implementation of hook_hosting_feature().
+ * Implements hook_hosting_feature().
  */
 function hosting_quota_hosting_feature() {
   $features['quota'] = array(

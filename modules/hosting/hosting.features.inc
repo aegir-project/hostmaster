@@ -57,7 +57,7 @@ function hosting_feature($feature) {
  *
  * @see hosting_features_form_submit()
  */
-function hosting_features_form() {
+function hosting_features_form($form, &$form_state) {
   $form['features'] = array(
     '#type' => 'item',
     '#title' => t('Optional system features'),
@@ -69,7 +69,7 @@ function hosting_features_form() {
     '#title' => t('Experimental'),
     '#collapsed' => TRUE,
     '#collapsible' => TRUE,
-     '#description' => t('Features marked experimental have not been completed to a satisfactory level to be considered production ready, so use at your own risk.'),
+    '#description' => t('Features marked experimental have not been completed to a satisfactory level to be considered production ready, so use at your own risk.'),
   );
   $features = hosting_get_features(TRUE);
   foreach ($features as $feature => $info) {
@@ -105,20 +105,20 @@ function hosting_features_form() {
  *   The built form.
  * @param $form_state
  *   The current form state.
- *   
+ *
  * @see hosting_features_form()
  * @see hook_hosting_feature()
  */
 function hosting_features_form_submit($form, &$form_state) {
   $values = $form_state['values'];
   $features = hosting_get_features(TRUE);
-  foreach ($features  as $feature => $info) {
+  foreach ($features   as $feature => $info) {
     $value = $values[$feature];
     $current = hosting_feature($feature);
     variable_set('hosting_feature_' . $feature, $value);
     if ((!$current) && $value) {
       if ($module = $features[$feature]['module']) {
-        include_once('includes/install.inc');
+        include_once DRUPAL_ROOT . '/' . 'includes/install.inc';
 
         $modules = array($module);
 
@@ -134,7 +134,7 @@ function hosting_features_form_submit($form, &$form_state) {
       $dependencies = array();
       if ($module = $features[$feature]['module']) {
         $modules = array($module);
-        $files = module_rebuild_cache();
+        $files = system_rebuild_module_data();
         foreach ($files as $dependency => $file) {
           if (isset($file->info['dependencies']) && is_array($file->info['dependencies'])) {
             if (in_array($module, $file->info['dependencies']) && $file->status) {
@@ -181,10 +181,10 @@ function hosting_get_features($refresh = FALSE) {
 
   if (empty($cache->data) || $refresh) {
     ## include any optional hosting.feature.*.inc files
-    $files = drupal_system_listing("hosting\.feature\.[a-zA-Z_]*\.inc$", "modules");
+    $files = drupal_system_listing("/hosting\.feature\.[a-zA-Z_]*\.inc$/", "modules");
     if (sizeof($files)) {
       foreach ($files as $name => $info) {
-        include_once($info->filename);
+        include_once DRUPAL_ROOT . '/' . $info->filename;
       }
     }
     $functions = get_defined_functions();
@@ -207,7 +207,7 @@ function hosting_get_features($refresh = FALSE) {
 
 /**
  * Determine which node types are provided by Hosting features.
- * 
+ *
  * @param $refresh
  *   (optional) Pass in TRUE to force the list of node types to be rebuilt and
  *   not returned from the cache.

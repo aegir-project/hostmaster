@@ -10,4 +10,6 @@ dependencies[] = modalframe
 #dependencies[] = hosting_site
 #dependencies[] = hosting_web_server
 
-core = 6.x
+core = 7.x
+
+files[] = hosting_views_field_handler_interval.inc

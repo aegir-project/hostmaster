@@ -5,7 +5,7 @@
  *   Drush include for the Hosting module's hosting resume command.
  */
 
-include_once('hosting.inc');
+include_once DRUPAL_ROOT . '/' . 'hosting.inc';
 
 /**
  * Drush command to resume the Aegir frontend site.
@@ -20,27 +20,28 @@ function drush_hosting_resume() {
   $node = hosting_context_load(d()->name);
 
   // fix the old platform first
-  $platform_id = db_result(db_query('SELECT nid FROM {hosting_platform} WHERE publish_path = "%s"', d($old_platform)->root));
+  $platform_id = db_query('SELECT nid FROM {hosting_platform} WHERE publish_path = :publish_path', array(':publish_path' => d($old_platform)->root))->fetchField();
   if ($platform_id) {
     hosting_context_register($platform_id, ltrim($old_platform, '@'));
-  } else {
+  }
+  else {
     drush_log(dt('Old platform not found in path %path, not setting context %context', array('%path' => d($old_platform)->root, '%context' => ltrim($old_platform, '@'))), 'warning');
   }
 
-  // if the new platform doesn't exist, create it. 
+  // if the new platform doesn't exist, create it.
   $platform_root = d()->root;
-  if (!($platform_id = db_result(db_query('SELECT nid FROM {hosting_platform} WHERE publish_path = "%s"', $platform_root)))) {
-     drush_log(dt('Platform not found for path %path, adding platform node', array('%path' => $platform_root)));
-     // inherit settings from current platform node
-     $platform = node_load($node->platform);
-     $platform->type = 'platform';
-     unset($platform->nid);
-     unset($platform->vid);
-     $platform->publish_path = $platform_root;
-     $platform->verified = 0;
-     $platform->title = basename(rtrim($platform_root, '/'));
-     node_save($platform);
-     $platform_id = $platform->nid;
+  if (!($platform_id = db_query('SELECT nid FROM {hosting_platform} WHERE publish_path = :publish_path', array(':publish_path' => $platform_root))->fetchField())) {
+    drush_log(dt('Platform not found for path %path, adding platform node', array('%path' => $platform_root)));
+    // inherit settings from current platform node
+    $platform = node_load($node->platform);
+    $platform->type = 'platform';
+    unset($platform->nid);
+    unset($platform->vid);
+    $platform->publish_path = $platform_root;
+    $platform->verified = 0;
+    $platform->title = basename(rtrim($platform_root, '/'));
+    node_save($platform);
+    $platform_id = $platform->nid;
   }
   else {
     drush_log(dt('Platform found for path %path: #%id', array('%path' => $platform_root, '%id' => $platform_id)));

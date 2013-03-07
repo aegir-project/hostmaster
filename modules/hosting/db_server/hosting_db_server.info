@@ -3,4 +3,6 @@ description = Allow Hostmaster to configure database servers.
 package = Hosting
 dependencies[] = hosting
 
-core = 6.x
+core = 7.x
+files[] = hosting_db_server.service.inc
+files[] = hosting_db_server_handler_filter_db_server_type.inc

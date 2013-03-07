@@ -2,4 +2,6 @@ name = Nginx servers
 description = Allow hostmaster to configure NGINX web servers.
 package = Hosting
 dependencies[] = hosting_web_server
-core = 6.x
+core = 7.x
+
+files[] = hosting_nginx.service.inc

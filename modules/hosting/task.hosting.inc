@@ -27,7 +27,7 @@ function _hosting_task_log($entry) {
  * We do some magic in this command to allow the user to run either a specifc
  * task by specifying a node id or chosen task type by specifying the type of
  * task, e.g. 'verify' or 'migrate'.
- * 
+ *
  * @see drush_hosting_task()
  */
 function drush_hosting_task_validate($id, $type = null) {
@@ -40,7 +40,7 @@ function drush_hosting_task_validate($id, $type = null) {
     $ref = hosting_context_load($id);
     if ($ref->nid) {
       if (!($task = hosting_get_most_recent_task($ref->nid, $type))) {
-        $task = hosting_add_task($ref->nid, $type); 
+        $task = hosting_add_task($ref->nid, $type);
       }
     }
   }
@@ -55,8 +55,8 @@ function drush_hosting_task_validate($id, $type = null) {
       'uri' => null,
     );
     $task->args = array();
-    $task->changed = time();
-    $task->executed = time();
+    $task->changed = REQUEST_TIME;
+    $task->executed = REQUEST_TIME;
     /* if not already running, remove the task from the queue
      * this is to avoid concurrent task runs */
     if ($task->task_status == HOSTING_TASK_PROCESSING) {
@@ -80,7 +80,7 @@ function drush_hosting_task_validate($id, $type = null) {
   $tasks_info = hosting_available_tasks($task->ref->type);
 
   // Find task type and pass through if it needs provision_save
-  if (isset($tasks_info[$task->task_type])){
+  if (isset($tasks_info[$task->task_type])) {
     $task->task_info = $tasks_info[$task->task_type];
   }
 }
@@ -96,7 +96,7 @@ function drush_hosting_task_validate($id, $type = null) {
  * @see hook_hosting_TASK_OBJECT_context_options()
  */
 function drush_hosting_task() {
-  $task =& drush_get_context('HOSTING_TASK');
+  $task = &drush_get_context('HOSTING_TASK');
   $output = array();
   $mode = drush_get_option('debug', FALSE) ? 'GET' : 'POST';
 
@@ -116,7 +116,7 @@ function drush_hosting_task() {
 
     $output = drush_invoke_process('@none', 'provision-save', array('@' . $task->ref->hosting_name), $task->context_options, array('method' => $mode));
   }
- 
+
   // Run the actual command. Adding alias here to work around Drush API.
   $output = provision_backend_invoke($task->ref->hosting_name, 'provision-' . $task->task_type, $task->args, $task->options, $mode);
   drush_set_context('HOSTING_DRUSH_OUTPUT', $output);
@@ -149,7 +149,7 @@ function drush_hosting_task() {
 
   // New revision is created at the beginning of function.
   $task->revision = FALSE;
-  $task->delta = time() - $task->executed;
+  $task->delta = REQUEST_TIME - $task->executed;
   node_save($task);
 }
 
@@ -159,7 +159,7 @@ function drush_hosting_task() {
  * @see hook_hosting_TASK_TYPE_task_rollback()
  */
 function drush_hosting_task_rollback() {
-  $task =& drush_get_context('HOSTING_TASK');
+  $task = &drush_get_context('HOSTING_TASK');
   module_invoke_all(sprintf("hosting_%s_task_rollback", str_replace('-', '_', $task->task_type)), $task, drush_get_context('HOSTING_DRUSH_OUTPUT'));
 }
 
@@ -169,7 +169,7 @@ function drush_hosting_task_rollback() {
  * @see hook_post_hosting_TASK_TYPE_task()
  */
 function drush_hosting_post_hosting_task($task) {
-  $task =& drush_get_context('HOSTING_TASK');
+  $task = &drush_get_context('HOSTING_TASK');
 
   module_invoke_all(sprintf("post_hosting_%s_task", str_replace('-', '_', $task->task_type)), $task, drush_get_context('HOSTING_DRUSH_OUTPUT'));
 }

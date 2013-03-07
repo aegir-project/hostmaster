@@ -4,7 +4,7 @@
  */
 
 /**
- * Implementation of hook_menu
+ * Implements hook_menu().
  */
 function hosting_signup_menu() {
   $items['hosting/signup'] = array(
@@ -16,18 +16,23 @@ function hosting_signup_menu() {
   );
 
   $items['hosting/signup/thanks'] = array(
-    'page callback' =>'hosting_signup_thanks',
+    'page callback' => 'hosting_signup_thanks',
     'type' => MENU_CALLBACK,
     'access arguments' => array('access hosting signup form'),
   );
-  return $items; 
+  return $items;
 }
 
 /**
- * Implementation of hook_perm
+ * Implements hook_permission().
  */
-function hosting_signup_perm() {
-  return array('access hosting signup form');
+function hosting_signup_permission() {
+  return array(
+    'access hosting signup form' => array(
+      'title' => t('access hosting signup form'),
+      'description' => t('TODO Add a description for \'access hosting signup form\''),
+    ),
+  );
 }
 
 /**
@@ -37,16 +42,16 @@ function hosting_signup_thanks($url = '', $email = '', $name = '') {
   return t("<h3>Thank you @name</h3>
     Your site (@url) has been requested, and the moment it is ready you will receive a mail at @email
  with instructions on how to log into it.", array("@name" => $name, "@url" => $url, "@email" => $email));
-} 
+}
 
 /**
  * Form definition
  *
- * This is a mixture of the client form and node form, 
+ * This is a mixture of the client form and node form,
  * and in the future we will be able to configure which
  * forms we want to be present.
  */
-function hosting_signup_form() {
+function hosting_signup_form($form, &$form_state) {
   global $user;
   if (!variable_get('hosting_client_register_user', FALSE) && !$user->uid) {
     drupal_set_message(t("Please login first. We have no way of guessing your email and this site is configured not to register new users. You will not receive the login link for your new site. This is probably a bad configuration."));
@@ -54,17 +59,17 @@ function hosting_signup_form() {
   $node = new stdClass();
   $form['site'] = hosting_site_form($node);
   unset($form['site']['client']);
-  $state = array(); 
+  $state = array();
   foreach (module_implements('form_alter') as $module) {
-    $function = $module .'_form_alter';
+    $function = $module . '_form_alter';
     $function($form['site'], $state, 'site_node_form');
   }
   unset($form['site']['info']['client']);
 
   $form['client'] = hosting_client_form($node);
-  
+
   foreach (module_implements('form_alter') as $module) {
-    $function = $module .'_form_alter';
+    $function = $module . '_form_alter';
 
     $function($form['client'], $state, 'client_node_form');
   }
@@ -76,7 +81,10 @@ function hosting_signup_form() {
 
   unset($form['client']['title']);
 
-  $form['new_client'] = array('#type' => 'value', '#value' => TRUE);
+  $form['new_client'] = array(
+    '#type' => 'value',
+    '#value' => TRUE,
+  );
 
   $form['submit'] = array(
     '#type' => 'submit',
@@ -100,7 +108,7 @@ function hosting_signup_form_validate($form, &$form_state) {
   $site = (object) $form_state['values'];
   $site->type = 'site';
   node_validate($site);
-} 
+}
 
 
 /**

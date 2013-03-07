@@ -5,7 +5,7 @@
  */
 
 /**
- * Implementation of hook_schema().
+ * Implements hook_schema().
  */
 function hosting_db_server_schema() {
   $schema['hosting_db_server'] = array(
@@ -40,11 +40,12 @@ function hosting_db_server_schema() {
 }
 
 /**
- * Implementation of hook_install().
+ * Implements hook_install().
  */
 function hosting_db_server_install() {
   // Create tables.
-  drupal_install_schema('hosting_db_server');
+  // TODO The drupal_(un)install_schema functions are called automatically in D7.
+  // drupal_install_schema('hosting_db_server')
 }
 
 /**
@@ -54,36 +55,79 @@ function hosting_db_server_update_6000() {
   drupal_install_modules(array('hosting_server'));
 
   $ret = array();
-  $result = db_query("SELECT nid, vid, title FROM {node} WHERE type='db_server'");
+  $result = db_query("SELECT nid, vid, title FROM {node} WHERE type = :type", array(':type' => 'db_server'));
   while ($record = db_fetch_object($result)) {
     if ($record->title == 'localhost') {
-      $db_server = db_fetch_object(db_query("SELECT * FROM {hosting_db_server} WHERE nid=%d", $record->nid));
+      $db_server = db_fetch_object(db_query("SELECT * FROM {hosting_db_server} WHERE nid = :nid", array(':nid' => $record->nid)));
 
       // Remove old data to remove collision opportunities.
-      db_query("DELETE FROM {hosting_db_server} WHERE nid=%d", $record->nid);
+      // TODO Please review the conversion of this statement to the D7 database API syntax.
+      /* db_query("DELETE FROM {hosting_db_server} WHERE nid=%d", $record->nid) */
+      db_delete('hosting_db_server')
+  ->condition('nid', $record->nid)
+  ->execute();
 
       // get all the web servers to add the localhost db service to.
-      $web_result = db_query("SELECT n.nid, n.vid FROM {node} n WHERE (n.type='web_server')");
+      $web_result = db_query("SELECT n.nid, n.vid FROM {node} n WHERE (n.type = :(n.type)", array(':(n.type' => 'web_server'));
       while ($web_server = db_fetch_object($web_result)) {
-        db_query("INSERT INTO {hosting_service} (nid, vid, service, type, available) VALUES (%d, %d, 'db', 'mysql', 1)", 
-          $web_server->nid, $web_server->vid);
-        db_query("INSERT INTO {hosting_db_server} (nid, vid, db_user, db_passwd) VALUES (%d, %d, '%s', '%s')", 
-          $web_server->nid, $web_server->vid, $db_server->db_user, $db_server->db_passwd);
+        // TODO Please review the conversion of this statement to the D7 database API syntax.
+        /* db_query("INSERT INTO {hosting_service} (nid, vid, service, type, available) VALUES (%d, %d, 'db', 'mysql', 1)", $web_server->nid, $web_server->vid) */
+        $id = db_insert('hosting_service')
+  ->fields(array(
+    'nid' => $web_server->nid,
+    'vid' => $web_server->vid,
+    'service' => 'db',
+    'type' => 'mysql',
+    'available' => 1,
+  ))
+  ->execute();
+        // TODO Please review the conversion of this statement to the D7 database API syntax.
+        /* db_query("INSERT INTO {hosting_db_server} (nid, vid, db_user, db_passwd) VALUES (%d, %d, '%s', '%s')", $web_server->nid, $web_server->vid, $db_server->db_user, $db_server->db_passwd) */
+        $id = db_insert('hosting_db_server')
+  ->fields(array(
+    'nid' => $web_server->nid,
+    'vid' => $web_server->vid,
+    'db_user' => $db_server->db_user,
+    'db_passwd' => $db_server->db_passwd,
+  ))
+  ->execute();
 
-        db_query("UPDATE {hosting_site} SET db_server = %d WHERE db_server=%d", $web_server->nid, $record->nid);
+        // TODO Please review the conversion of this statement to the D7 database API syntax.
+        /* db_query("UPDATE {hosting_site} SET db_server = %d WHERE db_server=%d", $web_server->nid, $record->nid) */
+        db_update('hosting_site')
+  ->fields(array(
+    'db_server' => $web_server->nid,
+  ))
+  ->condition('db_server', $record->nid)
+  ->execute();
       }
     }
     else {
       // couldn't find a relative web server, so we will need to lose this db server.
-      db_query("DELETE FROM {hosting_db_server} WHERE nid=%d", $record->nid);
+      // TODO Please review the conversion of this statement to the D7 database API syntax.
+      /* db_query("DELETE FROM {hosting_db_server} WHERE nid=%d", $record->nid) */
+      db_delete('hosting_db_server')
+  ->condition('nid', $record->nid)
+  ->execute();
     }
 
-    db_query("DELETE FROM {node_revisions} WHERE nid=%d", $record->nid);
+    // TODO Please review the conversion of this statement to the D7 database API syntax.
+    /* db_query("DELETE FROM {node_revisions} WHERE nid=%d", $record->nid) */
+    db_delete('node_revisions')
+  ->condition('nid', $record->nid)
+  ->execute();
   }
 
-  db_query("DELETE FROM {node} WHERE type='db_server'");
+  // TODO Please review the conversion of this statement to the D7 database API syntax.
+  /* db_query("DELETE FROM {node} WHERE type='db_server'") */
+  db_delete('node')
+  ->condition('type', 'db_server')
+  ->execute();
 
-  return $ret;
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
 /**
@@ -91,6 +135,9 @@ function hosting_db_server_update_6000() {
  */
 function hosting_db_server_update_6001() {
   $ret = array();
-  db_drop_field($ret, 'hosting_db_server', 'db_type');
-  return $ret;
+  db_drop_field('hosting_db_server', 'db_type');
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }

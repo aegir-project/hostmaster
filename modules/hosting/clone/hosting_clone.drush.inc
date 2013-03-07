@@ -5,7 +5,7 @@
  */
 
 function drush_hosting_clone_pre_hosting_task($task) {
-  $task =& drush_get_context('HOSTING_TASK');
+  $task = &drush_get_context('HOSTING_TASK');
   if ($task->ref->type == 'site' && $task->task_type == 'clone') {
     $task->args[2] = '@' . strtolower(trim($task->task_args['new_uri']));
     $platform = node_load($task->task_args['target_platform']);
@@ -32,6 +32,10 @@ function drush_hosting_clone_pre_hosting_task($task) {
 }
 
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_clone_post_hosting_clone_task($task, $data) {
   if ($task->ref->type == 'site') {
     $target = $task->task_args['target_platform'];
@@ -47,14 +51,14 @@ function hosting_clone_post_hosting_clone_task($task, $data) {
     $clone->verified = 0; # ... and it does verify
     $clone->aliases = isset($task->task_args['aliases']) ? $task->task_args['aliases'] : array();
     $clone->redirection = isset($task->task_args['redirection']) ? $task->task_args['redirection'] : FALSE;
-    
+
     if ($clone->db_server != $task->task_args['new_db_server']) {
       $clone->db_server = $task->task_args['new_db_server'];
     }
 
     $profile = hosting_package_instance_load(array(
       'i.rid' => $target,
-      'p.short_name' => $data['context']['profile']
+      'p.short_name' => $data['context']['profile'],
     ));
     if ($profile) {
       $clone->profile = $profile->package_id;

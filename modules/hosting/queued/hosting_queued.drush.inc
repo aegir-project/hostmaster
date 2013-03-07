@@ -9,10 +9,10 @@
  */
 
 // This is necessary for signal handling to work
-declare(ticks=1);
+declare (ticks = 1);
 
 /**
- * Implementation of hook_drush_command().
+ * Implements hook_drush_command().
  */
 function hosting_queued_drush_command() {
   $items = array();
@@ -64,17 +64,17 @@ function drush_hosting_queued() {
     }
   }
 
-  $end_time = variable_get('hosting_queued_process_lifetime', 3600)  + time();
+  $end_time = variable_get('hosting_queued_process_lifetime', 3600)  + REQUEST_TIME;
 
   // Record the fact that we're running, so we can give some feedback in the
   // frontend.
-  variable_set('hosting_queued_process_started', time());
+  variable_set('hosting_queued_process_started', REQUEST_TIME);
 
   watchdog('hosting_queued', 'Started Hosting queue daemon, waiting for new tasks');
 
   while (TRUE) {
     // Should we terminate.
-    if (time() > $end_time) {
+    if (REQUEST_TIME > $end_time) {
       // Restart the daemon to recycle leaked memory
       hosting_queued_restart();
     }
@@ -105,7 +105,7 @@ function drush_hosting_queued() {
       unset($task);
 
       // Should we terminate.
-      if (time() > $end_time) {
+      if (REQUEST_TIME > $end_time) {
         // Restart the daemon to recycle leaked memory
         hosting_queued_restart();
       }
@@ -183,9 +183,9 @@ function hosting_queued_restart($signal = NULL) {
   else {
     watchdog('hosting_queued', 'PCNTL not installed, unable to auto-restart.', array(), WATCHDOG_WARNING);
   }
-  
+
   // Explicit exit in case we're handling a signal
-  exit(1); 
+  exit(1);
 }
 
 /**
@@ -197,11 +197,12 @@ function hosting_queued_restart($signal = NULL) {
  * @see drush_find_drush()
  */
 function hosting_queued_drush_find_drush() {
- $php = drush_get_option('php');
- if (isset($php)) {
+  $php = drush_get_option('php');
+  if (isset($php)) {
     $php = trim($php, "'");
-    $drush = array($php, realpath($_SERVER['argv'][0]) ,  "--php='$php'");
-  } else {
+    $drush = array($php, realpath($_SERVER['argv'][0]), "--php='$php'");
+  }
+  else {
     $drush = array(realpath($_SERVER['argv']['0']));
   }
   return $drush;

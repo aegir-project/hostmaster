@@ -1,30 +1,40 @@
 <?php
+/**
+ * @file
+ * Install, update and uninstall functions for the hosting_ssl module.
+ *
+ */
 
 
+
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_ssl_schema() {
   $schema['hosting_ssl_server'] = array(
-      'fields' => array(
-        'vid' => array(
-          'type' => 'int',
-          'unsigned' => TRUE,
-          'not null' => TRUE,
-          'default' => 0,
-        ),
-        'nid' => array(
-          'type' => 'int',
-          'unsigned' => TRUE,
-          'not null' => TRUE,
-          'default' => 0,
-        ),
-        'ssl_port' => array(
-          'type' => 'int',
-          'unsigned' => TRUE,
-          'not null' => TRUE,
-          'default' => 0,
-        ),
+    'fields' => array(
+      'vid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
       ),
-      'primary key' => array('vid', 'nid'),
-    );
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'ssl_port' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('vid', 'nid'),
+  );
 
   $schema['hosting_ssl_cert'] = array(
     'fields' => array(
@@ -32,64 +42,64 @@ function hosting_ssl_schema() {
         'type' => 'serial',
         'not_null' => TRUE,
         'unsigned' => TRUE,
-      ), 
-        'ssl_key' => array(
-          'type' => 'text',
-          'size' => 'medium',
-          'not null' => TRUE,
-        ),
-        'client' => array(
-          'type' => 'int',
-          'unsigned' => TRUE,
-          'not null' => TRUE,
-          'default' => 0,
-        ),
-        'status' => array(
-          'type' => 'int',
-          'unsigned' => TRUE,
-          'not null' => TRUE,
-          'default' => 0,
-        ),
       ),
-      'primary key' => array('cid'),
-      'indexes' => array('ssl_key' => array(array('ssl_key', 50)))
-    );
+      'ssl_key' => array(
+        'type' => 'text',
+        'size' => 'medium',
+        'not null' => TRUE,
+      ),
+      'client' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'status' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('cid'),
+    'indexes' => array('ssl_key' => array(array('ssl_key', 50))),
+  );
 
 
   $schema['hosting_ssl_site'] = array(
-      'fields' => array(
-        'vid' => array(
-          'type' => 'int',
-          'unsigned' => TRUE,
-          'not null' => TRUE,
-          'default' => 0,
-        ),
-        'nid' => array(
-          'type' => 'int',
-          'unsigned' => TRUE,
-          'not null' => TRUE,
-          'default' => 0,
-        ),
-        'ssl_enabled' => array(
-          'type' => 'int',
-          'unsigned' => TRUE,
-          'not null' => TRUE,
-          'default' => 0,
-        ),
-        'ssl_key' => array(
-          'type' => 'int',
-          'unsigned' => TRUE,
-          'not null' => TRUE,
-          'default' => 0,
-        ),
+    'fields' => array(
+      'vid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
       ),
-      'primary key' => array('vid', 'nid'),
-    );
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'ssl_enabled' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'ssl_key' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('vid', 'nid'),
+  );
 
   $schema['hosting_ssl_cert_ips'] = array(
     'fields' => array(
       // cert id
-      'cid' => array( 
+      'cid' => array(
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
@@ -106,16 +116,35 @@ function hosting_ssl_schema() {
     'indexes' => array(
       'cid' => array('cid'),
       'ip_address' => array('ip_address'),
-    ));
+    ),
+  );
   return $schema;
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_ssl_install() {
-  drupal_install_schema('hosting_ssl');
+  // TODO The drupal_(un)install_schema functions are called automatically in D7.
+  // drupal_install_schema('hosting_ssl')
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_ssl_uninstall() {
-  db_query("DELETE FROM {hosting_service} WHERE service='http' and type='apache_ssl'");
-  db_query("DELETE FROM {hosting_service} WHERE service='http' and type='nginx_ssl'");
-  drupal_uninstall_schema('hosting_ssl');
+  // TODO Please review the conversion of this statement to the D7 database API syntax.
+  /* db_query("DELETE FROM {hosting_service} WHERE service='http' and type='apache_ssl'") */
+  db_delete('hosting_service')
+  ->condition('service', 'http' and type)
+  ->execute();
+  // TODO Please review the conversion of this statement to the D7 database API syntax.
+  /* db_query("DELETE FROM {hosting_service} WHERE service='http' and type='nginx_ssl'") */
+  db_delete('hosting_service')
+  ->condition('service', 'http' and type)
+  ->execute();
+  // TODO The drupal_(un)install_schema functions are called automatically in D7.
+  // drupal_uninstall_schema('hosting_ssl')
 }

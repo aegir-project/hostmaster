@@ -9,7 +9,7 @@ class hostingService_http_cluster extends hostingService_http {
     $render['web_servers'] = array(
       '#type' => 'item',
       '#title' => t('Web servers'),
-      '#value' => theme('item_list', array_map('_hosting_node_link', array_intersect_key($this->web_servers, hosting_get_servers('http')))),
+      '#value' => theme('item_list', array('items' => array_map('_hosting_node_link', array_intersect_key($this->web_servers, hosting_get_servers('http'))))),
     );
   }
 
@@ -33,7 +33,7 @@ class hostingService_http_cluster extends hostingService_http {
     $ssl_enabled = TRUE;
 
     $web_servers = array();
-    $result = db_query('SELECT web_server_nid FROM {hosting_web_cluster} WHERE vid = %d', $this->server->vid);
+    $result = db_query('SELECT web_server_nid FROM {hosting_web_cluster} WHERE vid = :vid', array(':vid' => $this->server->vid));
     while ($web_server = db_fetch_object($result)) {
       $web_servers[] = $web_server->web_server_nid;
       $server = node_load($web_server->web_server_nid);
@@ -58,12 +58,20 @@ class hostingService_http_cluster extends hostingService_http {
 
   function delete() {
     parent::delete();
-    db_query('DELETE FROM {hosting_web_cluster} WHERE nid = %d', $this->server->nid);
+    // TODO Please review the conversion of this statement to the D7 database API syntax.
+    /* db_query('DELETE FROM {hosting_web_cluster} WHERE nid = %d', $this->server->nid) */
+    db_delete('hosting_web_cluster')
+  ->condition('nid', $this->server->nid)
+  ->execute();
   }
 
   function delete_revision() {
     parent::delete_revision();
-    db_query('DELETE FROM {hosting_web_cluster} WHERE vid = %d', $this->server->vid);
+    // TODO Please review the conversion of this statement to the D7 database API syntax.
+    /* db_query('DELETE FROM {hosting_web_cluster} WHERE vid = %d', $this->server->vid) */
+    db_delete('hosting_web_cluster')
+  ->condition('vid', $this->server->vid)
+  ->execute();
   }
 
   function context_options($task_type, $ref_type, &$task) {

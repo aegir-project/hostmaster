@@ -24,13 +24,13 @@ function hosting_quota_admin_client_list() {
     $output[$row->client]['name'] = $row->title;
   }
 
-  return theme('hosting_quota_admin_list', $output, $all_resources, $items_per_page);
+  return theme('hosting_quota_admin_list', array('client_quotas' => $output, 'resources' => $all_resources, 'items_per_page' => $items_per_page));
 }
 
 /**
  * Callback for admin/hosting/quotas/defaults
  */
-function hosting_quota_admin_defaults_form($form_state) {
+function hosting_quota_admin_defaults_form($form, $form_state) {
 
   $form = array();
   $all_resources = module_invoke_all('hosting_quota_resource');
@@ -72,12 +72,13 @@ function hosting_quota_admin_defaults_form($form_state) {
 /**
  * Submit function for hosting_quota_admin_defaults_form
  */
-function hosting_quota_admin_defaults_form_submit ($form, &$form_state) {
+function hosting_quota_admin_defaults_form_submit($form, &$form_state) {
   foreach ($form_state['values']['quota'] as $resource => $quota) {
     // Set the default quota
     variable_set("hosting_quota_default_{$resource}", $quota);
 
     // Set quotas for clients that don't already have them
+    // TODO Please convert this statement to the D7 database API syntax.
     $client_result = db_query('SELECT nid FROM {hosting_client} WHERE nid not in (SELECT client FROM {hosting_client_quota})');
     while ($row = db_fetch_object($client_result)) {
       hosting_quota_set_limit($row->nid, $resource, $quota);

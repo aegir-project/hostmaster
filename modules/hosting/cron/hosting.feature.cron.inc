@@ -5,7 +5,7 @@
  */
 
 /**
- * Implementation of hook_hosting_feature().
+ * Implements hook_hosting_feature().
  */
 function hosting_cron_hosting_feature() {
   $features['cron'] = array(
@@ -13,6 +13,6 @@ function hosting_cron_hosting_feature() {
     'description' => t('Keeps track of running the cron process on all your sites.'),
     'status' => HOSTING_FEATURE_ENABLED,
     'module' => 'hosting_cron',
-    );
+  );
   return $features;
 }

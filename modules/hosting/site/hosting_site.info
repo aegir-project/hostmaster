@@ -3,4 +3,8 @@ description = Allow hostmaster manage hosted sites.
 package = Hosting
 dependencies[] = hosting
 dependencies[] = hosting_client
-core = 6.x
+core = 7.x
+
+files[] = views_handler_field_hosting_language.inc
+files[] = views_handler_field_hosting_site_status.inc
+files[] = views_plugin_style_site_table.inc

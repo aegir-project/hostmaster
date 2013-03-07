@@ -18,6 +18,10 @@ function hosting_hosting_site_context_options(&$task) {
   $task->context_options['client_name'] = $client->uname;
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_site_drush_context_import($context, &$node) {
   if ($context->type == 'site') {
     $node->title = strtolower(trim($context->uri)); // force lowercase for existing uri
@@ -29,12 +33,13 @@ function hosting_site_drush_context_import($context, &$node) {
     // TODO: abstract this to remove duplication with import post hooks.
     $profile = hosting_package_instance_load(array(
       'i.rid' => $platform,
-      'p.short_name' => $context->profile
+      'p.short_name' => $context->profile,
     ));
     if (!$profile) {
       $profile = hosting_package_instance_load(array(
-         'i.rid' => $node->platform,
-         'p.short_name' => 'default'));
+        'i.rid' => $node->platform,
+        'p.short_name' => 'default',
+      ));
     }
     $node->profile = $profile->package_id;
 
@@ -51,7 +56,7 @@ function hosting_site_drush_context_import($context, &$node) {
  * Map values of site node into command line arguments
  */
 function drush_hosting_site_pre_hosting_task($task) {
-  $task =& drush_get_context('HOSTING_TASK');
+  $task = &drush_get_context('HOSTING_TASK');
 
   if ($task->task_type == 'restore') {
     $backup = hosting_site_get_backup($task->task_args['bid']);
@@ -81,7 +86,7 @@ function hosting_site_post_hosting_install_task($task, $data) {
     hosting_package_instance_sync($task->ref->nid, $packages);
     $task->ref->site_status = HOSTING_SITE_ENABLED;
     $task->ref->no_verify = TRUE;
-    $task->ref->verified = time();
+    $task->ref->verified = REQUEST_TIME;
     if ($context['cron_key']) {
       $task->ref->cron_key = $context['cron_key'];
     }
@@ -104,7 +109,7 @@ function hosting_site_post_hosting_install_task($task, $data) {
  * Implementation of the hosting_failed_install hook
  */
 function hosting_site_hosting_install_task_rollback($task, $data) {
-  // @TODO : we need to check the returned list of errors, not the code. 
+  // @TODO : we need to check the returned list of errors, not the code.
   if (drush_cmp_error('PROVISION_DRUPAL_SITE_INSTALLED')) {
     // Site has already been installed. Try to import instead.
     drush_log(dt("This site appears to be installed already. Generating an import task."));
@@ -118,7 +123,7 @@ function hosting_site_hosting_install_task_rollback($task, $data) {
 }
 
 /**
- * implementation of hook_hosting_post_disable
+ * Implements hook_hosting_post_disable().
  * I am not very fond of the use of bitwise operators with negatives.
  */
 function hosting_site_post_hosting_disable_task($task, $data) {
@@ -132,7 +137,7 @@ function hosting_site_post_hosting_disable_task($task, $data) {
 }
 
 /**
- * implementation of hook_hosting_post_restore
+ * Implements hook_hosting_post_restore().
  * I am not very fond of the use of bitwise operators with negatives.
  */
 function hosting_site_post_hosting_restore_task($task, $data) {
@@ -143,7 +148,7 @@ function hosting_site_post_hosting_restore_task($task, $data) {
 }
 
 /**
- * implementation of hook_hosting_post_enable
+ * Implements hook_hosting_post_enable().
  */
 function hosting_site_post_hosting_enable_task($task, $data) {
   $task->ref->site_status = HOSTING_SITE_ENABLED;
@@ -152,7 +157,7 @@ function hosting_site_post_hosting_enable_task($task, $data) {
 }
 
 /**
- * implementation of hook_hosting_post_DELETE
+ * Implements hook_hosting_post_DELETE().
  */
 function hosting_site_post_hosting_delete_task($task, $data) {
   if ($task->ref->type == 'site') {
@@ -164,7 +169,7 @@ function hosting_site_post_hosting_delete_task($task, $data) {
 }
 
 /**
- * Implementation of hook_hosting_post_backup
+ * Implements hook_hosting_post_backup().
  *
  * Adds the data file that was saved to the site backup history.
  * This is needed to be able to restore.
@@ -180,18 +185,26 @@ function hosting_site_post_hosting_backup_task($task, $data) {
 }
 
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_site_post_hosting_import_task($task, $data) {
   hosting_import_site($task->ref->nid, $data['context'], $task->ref->platform);
-  
+
   $packages = $data['context']['packages'];
   hosting_package_sync($packages);
   hosting_package_instance_sync($task->ref->nid, $packages);
 
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_site_post_hosting_verify_task($task, $data) {
   if ($task->ref->type == 'site') {
-    $task->ref->verified = time();
+    $task->ref->verified = REQUEST_TIME;
     $task->ref->no_verify = TRUE;
     if ($data['context']['cron_key']) {
       $task->ref->cron_key = $data['context']['cron_key'];
@@ -249,7 +262,7 @@ function hosting_site_post_hosting_login_reset_task($task, $data) {
   }
 }
 
-/** 
+/**
  * Implementation of the hosting_post_backup_delete hook
  */
 function hosting_site_post_hosting_backup_delete_task($task, $data) {

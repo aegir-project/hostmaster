@@ -7,33 +7,38 @@
  * can be installed onto Drupal sites.
  */
 
-require_once('hosting_package.instance.inc');
+require_once DRUPAL_ROOT . '/' . 'hosting_package.instance.inc';
 
 function _hosting_package_types() {
   return array(
     'profile' => t('Installation Profiles'),
     'module' => t('Modules'),
-    'theme' => t('Themes')
+    'theme' => t('Themes'),
   );
 }
 
 /**
- * Implementation of hook_node_info().
+ * Implements hook_node_info().
  */
 function hosting_package_node_info() {
   #package management
   $types["package"] =  array(
-    "type" => 'package', "name" => 'Package',
-    "module" => 'hosting_package',
-    "has_title" => FALSE, "title_label" => '',
+    "type" => 'package',
+    "name" => 'Package',
+    'base' => 'hosting_package',
+    "has_title" => FALSE,
+    "title_label" => '',
     "description" => hosting_node_help("package"),
-    "has_body" => 0, "body_label" => '', "min_word_count" => 0);
+    "has_body" => 0,
+    "body_label" => '',
+    "min_word_count" => 0,
+  );
 
   return $types;
 }
 
 /**
- * Implementation of hook_menu().
+ * Implements hook_menu().
  */
 function hosting_package_menu() {
   $items = array();
@@ -71,8 +76,12 @@ function hosting_package_menu() {
   return $items;
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_package_node_load($arg) {
- if (!is_numeric($arg)) {
+  if (!is_numeric($arg)) {
     return FALSE;
   }
   if ($node = node_load($arg)) {
@@ -84,31 +93,48 @@ function hosting_package_node_load($arg) {
 }
 
 /**
- * Implementation of hook_perm().
+ * Implements hook_permission().
  */
-function hosting_package_perm() {
-  return array('create package', 'view package', 'edit package', 'delete package');
+function hosting_package_permission() {
+  return array(
+    'create package' => array(
+      'title' => t('create package'),
+      'description' => t('TODO Add a description for \'create package\''),
+    ),
+    'view package' => array(
+      'title' => t('view package'),
+      'description' => t('TODO Add a description for \'view package\''),
+    ),
+    'edit package' => array(
+      'title' => t('edit package'),
+      'description' => t('TODO Add a description for \'edit package\''),
+    ),
+    'delete package' => array(
+      'title' => t('delete package'),
+      'description' => t('TODO Add a description for \'delete package\''),
+    ),
+  );
 }
 
 /**
- * Implementation of hook_access().
+ * Implements hook_node_access().
  */
-function hosting_package_access($op, $node, $account) {
+function hosting_package_node_access($node, $op, $account) {
   switch ($op) {
-  case 'create':
-    return user_access('create package', $account);
-    break;
-  case 'view':
-    return user_access('view package', $account);
-    break;
-  case 'update':
-    return user_access('edit package', $account);
-    break;
-  case 'delete':
-    return user_access('delete package', $account);
-    break;
-  default:
-    break;
+    case 'create':
+      return user_access('create package', $account);
+      break;
+    case 'view':
+      return user_access('view package', $account);
+      break;
+    case 'update':
+      return user_access('edit package', $account);
+      break;
+    case 'delete':
+      return user_access('delete package', $account);
+      break;
+    default:
+      break;
   }
 }
 
@@ -116,18 +142,21 @@ function hosting_get_profiles($platform = NULL, $field = 'title') {
   $profiles = array();
   if (!is_null($platform)) {
     $instances = hosting_package_instances_load(array(
-      'i.rid' => $platform, 'p.package_type' => 'profile',
-      'n.status' => 1));
+      'i.rid' => $platform,
+      'p.package_type' => 'profile',
+      'n.status' => 1,
+    ));
 
     foreach ($instances as $iid => $instance) {
       $profiles[$instance->package_id] = $instance->$field;
     }
   }
   else {
-   $instances = hosting_package_instances_load(array(
-    'p.package_type' => 'profile',
-    'n.status' => 1,
-    'r.type' => 'platform'));
+    $instances = hosting_package_instances_load(array(
+      'p.package_type' => 'profile',
+      'n.status' => 1,
+      'r.type' => 'platform',
+    ));
 
     foreach ($instances as $iid => $instance) {
       $profiles[$instance->package_id] = $instance->$field;
@@ -145,14 +174,16 @@ function hosting_get_profile_platforms($profile, $check_old_short_name = FALSE) 
     'i.package_id' => $profile,
     'n.status' => 1,
     'r.status' => 1,
-    'r.type' => 'platform'));
+    'r.type' => 'platform',
+  ));
 
   if ($check_old_short_name) {
     $instances = array_merge($instances, hosting_package_instances_load(array(
-    'p.old_short_name' => $instances[key($instances)]->short_name,
-    'n.status' => 1,
-    'r.status' => 1,
-    'r.type' => 'platform')));
+      'p.old_short_name' => $instances[key($instances)]->short_name,
+      'n.status' => 1,
+      'r.status' => 1,
+      'r.type' => 'platform',
+    )));
   }
   foreach ($instances as $iid => $instance) {
     $platform = node_load($instance->rid);
@@ -175,7 +206,9 @@ function hosting_get_profile_languages($profile = NULL, $platform = NULL) {
   $languages['en'] = _hosting_language_name('en');
   if ($profile && $platform) {
     $instance = hosting_package_instance_load(array(
-      'i.rid' => $platform, 'i.package_id' => $profile));
+      'i.rid' => $platform,
+      'i.package_id' => $profile,
+    ));
     $languages = array_merge($languages, $instance->languages);
   }
   else {
@@ -204,13 +237,14 @@ function hosting_get_profile_languages($profile = NULL, $platform = NULL) {
 function _hosting_package_load($param) {
   // Turn the conditions into a query.
   foreach ($param as $key => $value) {
-    $cond[] = 'p.'. db_escape_table($key) ." = '%s'";
+    $cond[] = 'p.' . db_escape_table($key) . " = '%s'";
     $arguments[] = $value;
   }
   $cond = implode(' AND ', $cond);
+  // TODO Please convert this statement to the D7 database API syntax.
   $result = db_query('SELECT n.nid FROM {node} n left join {hosting_package} p on n.nid = p.nid WHERE ' . $cond, $arguments);
   while ($nid = db_fetch_object($result)) {
-    $return[$nid->nid] = node_load(array('nid' => $nid->nid));
+    $return[$nid->nid] = node_load($nid->nid);
   }
   if (sizeof($return)) {
     return $return;
@@ -219,43 +253,53 @@ function _hosting_package_load($param) {
 }
 
 function hosting_get_packages_by_type($type) {
-  $result = db_query("SELECT nid FROM {hosting_package} WHERE package_type = '%s'", $type);
+  $result = db_query("SELECT nid FROM {hosting_package} WHERE package_type = :package_type", array(':package_type' => $type));
 
-  if ($nid = db_result($result)) {
+  if ($nid = $result->fetchField()) {
     return node_load($nid);
   }
   return false;
 }
 
 function hosting_get_default_profile($default = null) {
- if ($p = hosting_get_package(variable_get('hosting_default_profile', 'default'))) {
-   return $p->nid;
- }
- elseif ($p = hosting_get_package('standard')) {
-   return $p->nid;
- }
- return $default;
+  if ($p = hosting_get_package(variable_get('hosting_default_profile', 'default'))) {
+    return $p->nid;
+  }
+  elseif ($p = hosting_get_package('standard')) {
+    return $p->nid;
+  }
+  return $default;
 }
 
 function hosting_get_package($short_name) {
-  $result = db_query("SELECT nid FROM {hosting_package} WHERE short_name = '%s'", $short_name);
-  if ($nid = db_result($result)) {
+  $result = db_query("SELECT nid FROM {hosting_package} WHERE short_name = :short_name", array(':short_name' => $short_name));
+  if ($nid = $result->fetchField()) {
     return node_load($nid);
   }
   return false;
 }
 
 /**
- * Implementation of hook_insert().
+ * Implements hook_insert().
  */
 function hosting_package_insert($node) {
-  db_query("INSERT INTO {hosting_package} (vid, nid, package_type, short_name, old_short_name, description ) VALUES (%d, %d, '%s', '%s', '%s', '%s')",
-    $node->vid, $node->nid, $node->package_type, $node->short_name, $node->old_short_name, $node->description );
+  // TODO Please review the conversion of this statement to the D7 database API syntax.
+  /* db_query("INSERT INTO {hosting_package} (vid, nid, package_type, short_name, old_short_name, description ) VALUES (%d, %d, '%s', '%s', '%s', '%s')", $node->vid, $node->nid, $node->package_type, $node->short_name, $node->old_short_name, $node->description) */
+  $id = db_insert('hosting_package')
+  ->fields(array(
+    'vid' => $node->vid,
+    'nid' => $node->nid,
+    'package_type' => $node->package_type,
+    'short_name' => $node->short_name,
+    'old_short_name' => $node->old_short_name,
+    'description ' => $node->description,
+  ))
+  ->execute();
 }
 
 
 /**
- * Implementation of hook_update().
+ * Implements hook_update().
  *
  * As an existing node is being updated in the database, we need to do our own
  * database updates.
@@ -266,32 +310,53 @@ function hosting_package_update($node) {
     hosting_package_insert($node);
   }
   else {
-    db_query("UPDATE {hosting_package} SET package_type = '%s', short_name = '%s', old_short_name = '%s', description = '%s' WHERE nid=%d",
-      $node->package_type, $node->short_name, $node->old_short_name, $node->description, $node->nid);
+    // TODO Please review the conversion of this statement to the D7 database API syntax.
+    /* db_query("UPDATE {hosting_package} SET package_type = '%s', short_name = '%s', old_short_name = '%s', description = '%s' WHERE nid=%d", $node->package_type, $node->short_name, $node->old_short_name, $node->description, $node->nid) */
+    db_update('hosting_package')
+  ->fields(array(
+    'package_type' => $node->package_type,
+    'short_name' => $node->short_name,
+    'old_short_name' => $node->old_short_name,
+    'description' => $node->description,
+  ))
+  ->condition('nid', $node->nid)
+  ->execute();
   }
 }
 
 function hosting_nodeapi_package_delete_revision(&$node) {
-  db_query('DELETE FROM {hosting_package} WHERE vid = %d', $node->vid);
+  // TODO Please review the conversion of this statement to the D7 database API syntax.
+  /* db_query('DELETE FROM {hosting_package} WHERE vid = %d', $node->vid) */
+  db_delete('hosting_package')
+  ->condition('vid', $node->vid)
+  ->execute();
 }
 
 /**
- * Implementation of hook_delete().
+ * Implements hook_delete().
  */
 function hosting_package_delete($node) {
-  db_query('DELETE FROM {hosting_package} WHERE nid = %d', $node->nid);
+  // TODO Please review the conversion of this statement to the D7 database API syntax.
+  /* db_query('DELETE FROM {hosting_package} WHERE nid = %d', $node->nid) */
+  db_delete('hosting_package')
+  ->condition('nid', $node->nid)
+  ->execute();
 }
 
 /**
- * Implementation of hook_load().
+ * Implements hook_load().
  */
-function hosting_package_load($node) {
-  $additions = db_fetch_object(db_query('SELECT package_type, short_name, old_short_name, description FROM {hosting_package} WHERE vid = %d', $node->vid));
-  return $additions;
+function hosting_package_load($nodes) {
+  foreach ($nodes as $nid => &$node) {
+    $additions = db_fetch_object(db_query('SELECT package_type, short_name, old_short_name, description FROM {hosting_package} WHERE vid = :vid', array(':vid' => $node->vid)));
+    foreach ($additions as $property => &$value) {
+      $node->$property = $value;
+    }
+  }
 }
 
 /**
- * Implementation of hook_view().
+ * Implements hook_view().
  */
 function hosting_package_view($node, $teaser = FALSE, $page = FALSE) {
   hosting_set_breadcrumb($node);
@@ -322,11 +387,10 @@ function hosting_package_view($node, $teaser = FALSE, $page = FALSE) {
       '#value' => drupal_get_form('hosting_site_list_form', 'profile', $node->nid),
       '#prefix' => '<div id="hosting-site-list">',
       '#suffix' => '</div>',
-      '#weight' => 10
+      '#weight' => 10,
     );
   }
-  else {  // For modules & themes
-
+  else { // For modules & themes
     $node->content['hosting-package-usage'] = array(
       '#prefix' => '<div id="hosting-package-usage">',
       '#suffix' => '</div>',
@@ -342,9 +406,19 @@ function hosting_package_view($node, $teaser = FALSE, $page = FALSE) {
  */
 function _hosting_package_list_package_usage($node) {
   $header = array(
-    array('data' => t('Package version'), 'field' => 'package_version', 'sort' => 'DESC'),
-    array('data' => t('Platform'), 'field' => 'platform_name'),
-    array('data' => t('Site'), 'field' => 'site_name'),
+    array(
+      'data' => t('Package version'),
+      'field' => 'package_version',
+      'sort' => 'DESC',
+    ),
+    array(
+      'data' => t('Platform'),
+      'field' => 'platform_name',
+    ),
+    array(
+      'data' => t('Site'),
+      'field' => 'site_name',
+    ),
   );
 
   $sql = "SELECT s.client AS client_nid,
@@ -369,13 +443,13 @@ function _hosting_package_list_package_usage($node) {
   $rows = array();
   while ($package = db_fetch_object($result)) {
     $rows[] = array('data' => array(
-      $package->package_version,
-      l(filter_xss($package->platform_name), 'node/' . $package->platform_nid),
-      l(filter_xss($package->site_name), 'node/' . $package->site_nid),
-    ));
+        $package->package_version,
+        l(filter_xss($package->platform_name), 'node/' . $package->platform_nid),
+        l(filter_xss($package->site_name), 'node/' . $package->site_nid),
+      ));
   }
 
-  return theme('table', $header, $rows) . theme('pager', null, 100, 2);
+  return theme('table', array('header' => $header, 'rows' => $rows)) . theme('pager', array('tags' => null, 'element' => 2));
 }
 
 /**
@@ -397,9 +471,9 @@ function _hosting_language_names($languages) {
 }
 
 function _hosting_language_name($language) {
-  include_once './includes/locale.inc';
+  include_once DRUPAL_ROOT . '/' . './includes/locale.inc';
   $locales = _locale_get_predefined_list();
-  return $locales[$language][0] . (isset($locales[$language][1]) ? ' '. t('(@language)', array('@language' => $locales[$language][1])) : '');
+  return $locales[$language][0] . (isset($locales[$language][1]) ? ' ' . t('(@language)', array('@language' => $locales[$language][1])) : '');
 }
 
 
@@ -409,7 +483,7 @@ function _hosting_package_plural_map($key = null) {
     'themes' => 'theme',
     'profiles' => 'profile',
     'engines' => 'engine',
-    'platforms' => 'platform'
+    'platforms' => 'platform',
   );
   if (is_null($key)) {
     return $plural_map;
@@ -463,13 +537,26 @@ function hosting_package_sync(&$data) {
  * @TODO Add paging.
  */
 function hosting_package_list($ref, $type = null) {
-  drupal_set_title(t('Packages on @reference', array('@reference' => $ref->title)));
+  drupal_set_title(t('Packages on @reference', array('@reference' => $ref->title)), PASS_THROUGH);
   $header = array(
-    array('data' => t('Status'), 'field' => 'status', 'sort' => 'DESC'),
-    array('data' => t('Package'), 'field' => 'short_name'),
-    array('data' => t('Release'), 'field' => 'version'),
-    array('data' => t('Package type'), 'field' => 'package_type'),
-    );
+    array(
+      'data' => t('Status'),
+      'field' => 'status',
+      'sort' => 'DESC',
+    ),
+    array(
+      'data' => t('Package'),
+      'field' => 'short_name',
+    ),
+    array(
+      'data' => t('Release'),
+      'field' => 'version',
+    ),
+    array(
+      'data' => t('Package type'),
+      'field' => 'package_type',
+    ),
+  );
   $args[] = $ref->nid;
 
   if (!is_null($type)) {
@@ -491,18 +578,24 @@ function hosting_package_list($ref, $type = null) {
   while ($package = db_fetch_object($result)) {
     $row_class = ($package->status == 1) ? 'hosting-success' : 'hosting-info';
     $row = array();
-    $row[] =  array('data' => ($package->status) ? t('Enabled') : t('Available') , 'class'=> 'hosting-status');
+    $row[] =  array(
+      'data' => ($package->status) ? t('Enabled') : t('Available'),
+      'class' => 'hosting-status',
+    );
     $row[] =  ($view_package_perm) ? l(filter_xss($package->short_name), 'node/' . $package->package) : $package->short_name;
     $row[] =  $package->version;
     $row[] = filter_xss($package->package_type);
-    $rows[] = array('data' => $row, 'class' => $row_class);
+    $rows[] = array(
+      'data' => $row,
+      'class' => $row_class,
+    );
   }
 
-  return theme('table',  $header, $rows, array('class' => 'hosting-table')) . theme('pager', null, 25, 2);
+  return theme('table', array('header' =>   $header, 'rows' => $rows, 'attributes' => array('class' => 'hosting-table'))) . theme('pager', array('tags' => null, 'element' => 2));
 }
 
 /**
- * Implementation of hook_views_api().
+ * Implements hook_views_api().
  */
 function hosting_package_views_api() {
   return array(

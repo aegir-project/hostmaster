@@ -6,7 +6,7 @@
  */
 
 /**
- * Implementation of hook_views_handlers().
+ * Implements hook_views_handlers().
  */
 function hosting_views_handlers() {
   return array(
@@ -16,7 +16,6 @@ function hosting_views_handlers() {
     'handlers' => array(
       // field handlers
       'hosting_views_field_handler_interval' => array(
-
         'parent' => 'views_handler_field',
       ),
     ),

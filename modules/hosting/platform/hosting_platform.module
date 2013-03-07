@@ -26,7 +26,7 @@ define('HOSTING_PLATFORM_QUEUED', 0);
 define('HOSTING_PLATFORM_ENABLED', 1);
 
 /**
- * Implementation of hook_menu().
+ * Implements hook_menu().
  */
 function hosting_platform_menu() {
   $items = array();
@@ -58,22 +58,27 @@ function hosting_platform_menu() {
 }
 
 /**
- * Implementation of hook_node_info().
+ * Implements hook_node_info().
  */
 function hosting_platform_node_info() {
   #configuration
   $types["platform"] =  array(
-    "type" => 'platform', "name" => 'Platform',
-    "module" => 'hosting_platform',
-    "has_title" => TRUE, "title_label" => t('Name'), 
+    "type" => 'platform',
+    "name" => 'Platform',
+    'base' => 'hosting_platform',
+    "has_title" => TRUE,
+    "title_label" => t('Name'),
     "description" => hosting_node_help("platform"),
-    "has_body" => 0, "body_label" => '', "min_word_count" => 0);    
+    "has_body" => 0,
+    "body_label" => '',
+    "min_word_count" => 0,
+  );
 
   return $types;
 }
 
 /**
- * Implementation of hook_hosting_tasks().
+ * Implements hook_hosting_tasks().
  */
 function hosting_platform_hosting_tasks() {
   $tasks = array();
@@ -103,7 +108,7 @@ function hosting_platform_hosting_tasks() {
   );
   $tasks['platform']['unlock'] = array(
     'title' => t('Unlock'),
-    'description' => t('Unlocking this platform will allow sites to be provisioned on it. 
+    'description' => t('Unlocking this platform will allow sites to be provisioned on it.
         Are you really sure you want to unlock this platform?'),
     'weight' => 10,
   );
@@ -112,16 +117,37 @@ function hosting_platform_hosting_tasks() {
 
 
 /**
- * Implementation of hook_perm().
+ * Implements hook_permission().
  */
-function hosting_platform_perm() {
-  return array('create platform', 'view platform', 'edit platform', 'delete platform', 'view locked platforms');
+function hosting_platform_permission() {
+  return array(
+    'create platform' => array(
+      'title' => t('create platform'),
+      'description' => t('TODO Add a description for \'create platform\''),
+    ),
+    'view platform' => array(
+      'title' => t('view platform'),
+      'description' => t('TODO Add a description for \'view platform\''),
+    ),
+    'edit platform' => array(
+      'title' => t('edit platform'),
+      'description' => t('TODO Add a description for \'edit platform\''),
+    ),
+    'delete platform' => array(
+      'title' => t('delete platform'),
+      'description' => t('TODO Add a description for \'delete platform\''),
+    ),
+    'view locked platforms' => array(
+      'title' => t('view locked platforms'),
+      'description' => t('TODO Add a description for \'view locked platforms\''),
+    ),
+  );
 }
 
 /**
- * Implementation of hook_access().
+ * Implements hook_node_access().
  */
-function hosting_platform_access($op, $node, $account) {
+function hosting_platform_node_access($node, $op, $account) {
   switch ($op) {
     case 'create':
       return user_access('create platform', $account);
@@ -129,17 +155,17 @@ function hosting_platform_access($op, $node, $account) {
     case 'update':
       return user_access('edit platform', $account);
       break;
-  } 
+  }
 }
 
 /**
  * Small helper function to get platforms that haven't been deleted.
- */ 
+ */
 function _hosting_get_platforms() {
   $return = array();
-  $result = db_query("SELECT n.nid, n.title FROM {node} n LEFT JOIN {hosting_platform} h ON n.nid = h.nid 
-                      WHERE n.type='platform' AND n.status=1 AND h.status <> %d ORDER BY n.title", HOSTING_PLATFORM_DELETED);
-  while($server = db_fetch_object($result)) {
+  $result = db_query("SELECT n.nid, n.title FROM {node} n LEFT JOIN {hosting_platform} h ON n.nid = h.nid
+                      WHERE n.type = :n.type AND n.status = :n.status AND h.status <> :h.status ORDER BY n.title", array(':n.type' => 'platform', ':n.status' => 1, ':h.status' => HOSTING_PLATFORM_DELETED));
+  while ($server = db_fetch_object($result)) {
     $return[$server->nid] = $server->title;
   }
   return $return;
@@ -150,9 +176,9 @@ function _hosting_get_platforms() {
  */
 function _hosting_get_enabled_platforms() {
   $return = array();
-  $result = db_query("SELECT n.nid, n.title FROM {node} n LEFT JOIN {hosting_platform} h ON n.nid = h.nid 
-                      WHERE n.type='platform' AND n.status=1 AND h.status <> %d ORDER BY n.title", HOSTING_PLATFORM_LOCKED);
-  while($server = db_fetch_object($result)) {
+  $result = db_query("SELECT n.nid, n.title FROM {node} n LEFT JOIN {hosting_platform} h ON n.nid = h.nid
+                      WHERE n.type = :n.type AND n.status = :n.status AND h.status <> :h.status ORDER BY n.title", array(':n.type' => 'platform', ':n.status' => 1, ':h.status' => HOSTING_PLATFORM_LOCKED));
+  while ($server = db_fetch_object($result)) {
     $return[$server->nid] = $server->title;
   }
   return $return;
@@ -163,9 +189,9 @@ function _hosting_get_enabled_platforms() {
  */
 function _hosting_get_locked_platforms() {
   $return = array();
-  $result = db_query("SELECT n.nid, n.title FROM {node} n LEFT JOIN {hosting_platform} h ON n.nid = h.nid 
-                      WHERE n.type='platform' AND n.status=1 AND h.status = %d ORDER BY n.title", HOSTING_PLATFORM_LOCKED);
-  while($server = db_fetch_object($result)) {
+  $result = db_query("SELECT n.nid, n.title FROM {node} n LEFT JOIN {hosting_platform} h ON n.nid = h.nid
+                      WHERE n.type = :n.type AND n.status = :n.status AND h.status = :h.status ORDER BY n.title", array(':n.type' => 'platform', ':n.status' => 1, ':h.status' => HOSTING_PLATFORM_LOCKED));
+  while ($server = db_fetch_object($result)) {
     $return[$server->nid] = $server->title;
   }
   return $return;
@@ -184,10 +210,10 @@ function _hosting_platform_is_locked($node) {
 }
 
 /**
- * Implementation of hook_form().
+ * Implements hook_form().
  */
 function hosting_platform_form(&$node) {
-  $type = node_get_types('type', $node);
+  $type = node_type_get_type($node);
   $form['title'] = array(
     '#type' => 'textfield',
     '#title' => t('Name'),
@@ -219,10 +245,13 @@ function hosting_platform_form(&$node) {
     $form['info']['publish_path'] = array(
       '#type' => 'item',
       '#title' => t('Publish path'),
-      '#value' => $node->publish_path
+      '#value' => $node->publish_path,
     );
     // send it on form submission
-    $form['publish_path'] = array('#type' => 'hidden', '#value' => $node->publish_path);
+    $form['publish_path'] = array(
+      '#type' => 'hidden',
+      '#value' => $node->publish_path,
+    );
   }
 
   $form['makefile'] = array(
@@ -233,7 +262,7 @@ function hosting_platform_form(&$node) {
     '#default_value' => $node->makefile,
     '#maxlength' => 255,
   );
-  
+
   $form['make_working_copy'] = array(
     '#type' => 'radios',
     '#title' => t('Drush make option'),
@@ -243,7 +272,7 @@ function hosting_platform_form(&$node) {
       TRUE => t('Working copy - preserves SCM files'),
     ),
   );
-  
+
   $form['#after_build'][] = 'hosting_platform_form_platform_after_build';
 
   $servers = hosting_get_servers('http');
@@ -260,18 +289,25 @@ function hosting_platform_form(&$node) {
     reset($servers);
     $form['web_server'] = array(
       '#type' => 'hidden',
-      '#value' => key($servers)
+      '#value' => key($servers),
     );
   }
 
-  foreach(array('verified', 'platform_status') as $extra_attribute) {
-    $form["$extra_attribute"] = array('#type' => 'value', '#value' => $node->$extra_attribute);
+  foreach (array('verified', 'platform_status') as $extra_attribute) {
+    $form["$extra_attribute"] = array(
+      '#type' => 'value',
+      '#value' => $node->$extra_attribute,
+    );
   }
   return $form;
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_platform_form_platform_after_build($form) {
-  
+
   drupal_add_js(drupal_get_path('module', 'hosting_platform') . '/hosting_platform.js');
   if (isset($form['makefile']['#attributes']['class'])) {
     $form['makefile']['#attributes']['class'] .= ' hosting-platform-working-copy-source';
@@ -279,14 +315,14 @@ function hosting_platform_form_platform_after_build($form) {
   else {
     $form['makefile']['#attributes']['class'] = ' hosting-platform-working-copy-source';
   }
-  
+
   if (isset($form['make_working_copy']['#attributes']['class'])) {
     $form['make_working_copy']['#attributes']['class'] .= ' hosting-platform-working-copy-target';
   }
   else {
     $form['make_working_copy']['#attributes']['class'] = ' hosting-platform-working-copy-target';
   }
-  
+
   return $form;
 }
 
@@ -304,21 +340,33 @@ function hosting_platform_form_alter(&$form, &$form_state, $form_id) {
 }
 
 /**
- * Implementation of hook_insert().
+ * Implements hook_insert().
  */
 function hosting_platform_insert($node) {
   if (!isset($node->no_verify)) {
     hosting_add_task($node->nid, 'verify');
   }
-  db_query("INSERT INTO {hosting_platform} (vid, nid, publish_path, makefile, verified, web_server, status, make_working_copy) VALUES (%d, %d, '%s', '%s', %d, %d, %d, %d)",
-    $node->vid, $node->nid, $node->publish_path, $node->makefile, $node->verified, $node->web_server, $node->platform_status, $node->make_working_copy);
+  // TODO Please review the conversion of this statement to the D7 database API syntax.
+  /* db_query("INSERT INTO {hosting_platform} (vid, nid, publish_path, makefile, verified, web_server, status, make_working_copy) VALUES (%d, %d, '%s', '%s', %d, %d, %d, %d)", $node->vid, $node->nid, $node->publish_path, $node->makefile, $node->verified, $node->web_server, $node->platform_status, $node->make_working_copy) */
+  $id = db_insert('hosting_platform')
+  ->fields(array(
+    'vid' => $node->vid,
+    'nid' => $node->nid,
+    'publish_path' => $node->publish_path,
+    'makefile' => $node->makefile,
+    'verified' => $node->verified,
+    'web_server' => $node->web_server,
+    'status' => $node->platform_status,
+    'make_working_copy' => $node->make_working_copy,
+  ))
+  ->execute();
   if (!$node->old_vid) {
     hosting_context_register($node->nid, 'platform_' . preg_replace("/[!\W]/", "", $node->title));
   }
 }
 
 /**
- * Implementation of hook_update().
+ * Implements hook_update().
  *
  * As an existing node is being updated in the database, we need to do our own
  * database updates.
@@ -332,8 +380,19 @@ function hosting_platform_update($node) {
     if ($node->platform_status == HOSTING_PLATFORM_DELETED) {
       $node->no_verify = TRUE;
     }
-    db_query("UPDATE {hosting_platform} SET publish_path = '%s', makefile = '%s', web_server = %d, verified = %d, status= %d, make_working_copy = %d WHERE nid=%d",
-              $node->publish_path, $node->makefile, $node->web_server, $node->verified, $node->platform_status, $node->make_working_copy, $node->nid);
+    // TODO Please review the conversion of this statement to the D7 database API syntax.
+    /* db_query("UPDATE {hosting_platform} SET publish_path = '%s', makefile = '%s', web_server = %d, verified = %d, status= %d, make_working_copy = %d WHERE nid=%d", $node->publish_path, $node->makefile, $node->web_server, $node->verified, $node->platform_status, $node->make_working_copy, $node->nid) */
+    db_update('hosting_platform')
+  ->fields(array(
+    'publish_path' => $node->publish_path,
+    'makefile' => $node->makefile,
+    'web_server' => $node->web_server,
+    'verified' => $node->verified,
+    'status' => $node->platform_status,
+    'make_working_copy' => $node->make_working_copy,
+  ))
+  ->condition('nid', $node->nid)
+  ->execute();
   }
   if (!$node->no_verify) {
     hosting_add_task($node->nid, 'verify');
@@ -344,37 +403,49 @@ function hosting_platform_update($node) {
  * Implementation of hook_nodeapi_TYPE_OP().
  */
 function hosting_nodeapi_platform_delete_revision(&$node) {
-  db_query('DELETE FROM {hosting_platform} WHERE vid = %d', $node->vid);
+  // TODO Please review the conversion of this statement to the D7 database API syntax.
+  /* db_query('DELETE FROM {hosting_platform} WHERE vid = %d', $node->vid) */
+  db_delete('hosting_platform')
+  ->condition('vid', $node->vid)
+  ->execute();
 }
 
 /**
- * Implementation of hook_delete().
+ * Implements hook_delete().
  */
 function hosting_platform_delete($node) {
-  db_query('DELETE FROM {hosting_platform} WHERE nid = %d', $node->nid);
-  db_query('DELETE FROM {hosting_package_instance} WHERE rid=%d', $node->nid);
+  // TODO Please review the conversion of this statement to the D7 database API syntax.
+  /* db_query('DELETE FROM {hosting_platform} WHERE nid = %d', $node->nid) */
+  db_delete('hosting_platform')
+  ->condition('nid', $node->nid)
+  ->execute();
+  // TODO Please review the conversion of this statement to the D7 database API syntax.
+  /* db_query('DELETE FROM {hosting_package_instance} WHERE rid=%d', $node->nid) */
+  db_delete('hosting_package_instance')
+  ->condition('rid', $node->nid)
+  ->execute();
 
   hosting_context_delete($node->nid);
-  $result = db_query("SELECT distinct nid FROM {hosting_task} WHERE rid=%d", $node->nid);
+  $result = db_query("SELECT distinct nid FROM {hosting_task} WHERE rid = :rid", array(':rid' => $node->nid));
   while ($nid = db_fetch_object($result)) {
     node_delete($nid->nid);
   }
-  $result = db_query("SELECT distinct nid FROM {hosting_site} WHERE platform=%d", $node->nid);
+  $result = db_query("SELECT distinct nid FROM {hosting_site} WHERE platform = :platform", array(':platform' => $node->nid));
   while ($nid = db_fetch_object($result)) {
     node_delete($nid->nid);
   }
 }
 
 /**
- * Implementation of hook_validate().
+ * Implements hook_validate().
  */
 function hosting_platform_validate($node, &$form) {
   // Make sure the platform name is unique, to avoid context clashes.
-  if ($node->op != t('Delete') && $result = db_fetch_object(db_query("SELECT n.title AS name FROM {hosting_platform} AS h INNER JOIN {node} AS n ON n.nid = h.nid WHERE n.title = '%s' AND n.nid <> %d AND h.status >= %d", $node->title, $node->nid, HOSTING_PLATFORM_QUEUED))) {
+  if ($node->op != t('Delete') && $result = db_fetch_object(db_query("SELECT n.title AS name FROM {hosting_platform} AS h INNER JOIN {node} AS n ON n.nid = h.nid WHERE n.title = :n.title AND n.nid <> :n.nid AND h.status >= :h.status", array(':n.title' => $node->title, ':n.nid' => $node->nid, ':h.status' => HOSTING_PLATFORM_QUEUED)))) {
     form_set_error('title', t('Platform name %name is already defined. Platform names must be unique across all servers.', array('%name' => $result->name)));
   }
   // Make sure the path is unique. Remote servers can't have the same path to a platform that is in use by another server.
-  if ($node->op != t('Delete') && $result = db_fetch_object(db_query("SELECT n.title AS name FROM {hosting_platform} AS h INNER JOIN {node} AS n ON n.nid = h.nid WHERE publish_path = '%s' AND n.nid <> %d AND h.status >= %d", hosting_path_normalize($node->publish_path), $node->nid, HOSTING_PLATFORM_QUEUED))) {
+  if ($node->op != t('Delete') && $result = db_fetch_object(db_query("SELECT n.title AS name FROM {hosting_platform} AS h INNER JOIN {node} AS n ON n.nid = h.nid WHERE publish_path = :publish_path AND n.nid <> :n.nid AND h.status >= :h.status", array(':publish_path' => hosting_path_normalize($node->publish_path), ':n.nid' => $node->nid, ':h.status' => HOSTING_PLATFORM_QUEUED)))) {
     form_set_error('publish_path', t('Path is already in use by platform %name. Platform paths must be unique across all servers.', array('%name' => $result->name)));
   }
   if (is_null($node->web_server)) {
@@ -383,27 +454,31 @@ function hosting_platform_validate($node, &$form) {
 }
 
 /**
- * Implementation of hook_load().
+ * Implements hook_load().
  *
  * @param node
  *    Node object
  */
-function hosting_platform_load($node) {
-  $additions = db_fetch_object(db_query('SELECT publish_path, makefile, verified, web_server, status AS platform_status, make_working_copy FROM {hosting_platform} WHERE vid = %d', $node->vid));
-  $iid = db_result(db_query("SELECT iid FROM {hosting_package_instance} i left join {hosting_package} p on p.nid=i.package_id WHERE p.package_type='platform' AND i.rid=%d", $node->nid));
-  $additions->release = hosting_package_instance_load($iid);
-  $additions->profiles = hosting_get_profiles($node->nid, 'short_name');
-  return $additions;
+function hosting_platform_load($nodes) {
+  foreach ($nodes as $nid => &$node) {
+    $additions = db_fetch_object(db_query('SELECT publish_path, makefile, verified, web_server, status AS platform_status, make_working_copy FROM {hosting_platform} WHERE vid = :vid', array(':vid' => $node->vid)));
+    $iid = db_query("SELECT iid FROM {hosting_package_instance} i left join {hosting_package} p on p.nid=i.package_id WHERE p.package_type = :p.package_type AND i.rid = :i.rid", array(':p.package_type' => 'platform', ':i.rid' => $node->nid))->fetchField();
+    $additions->release = hosting_package_instance_load($iid);
+    $additions->profiles = hosting_get_profiles($node->nid, 'short_name');
+    foreach ($additions as $property => &$value) {
+      $node->$property = $value;
+    }
+  }
 }
 
 /**
- * Implementation of hook_load().
+ * Implements hook_load().
  *
  * @param arg
  *    Node's numeric nid
  */
 function hosting_platform_node_load($arg) {
- if (!is_numeric($arg)) {
+  if (!is_numeric($arg)) {
     return FALSE;
   }
   if ($node = node_load($arg)) {
@@ -415,35 +490,35 @@ function hosting_platform_node_load($arg) {
 }
 
 /**
- * Implementation of hook_view().
+ * Implements hook_view().
  */
 function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
   modalframe_parent_js();
 
   $node->content['info'] = array(
     '#prefix' => '<div id="hosting-platform-info" class="hosting-info-list">',
-    '#suffix' => '</div>'
+    '#suffix' => '</div>',
   );
 
   $node->content['info']['verified'] = array(
     '#type' => 'item',
     '#title' => t('Verified'),
     '#value' => hosting_format_interval($node->verified),
-    '#weight' => -10
+    '#weight' => -10,
   );
 
   $node->content['info']['publish_path'] = array(
     '#type' => 'item',
     '#title' => t('Publish path'),
     '#value' => filter_xss($node->publish_path),
-    '#weight' => -8
+    '#weight' => -8,
   );
- 
+
   $node->content['info']['web_server'] = array(
     '#type' => 'item',
     '#title' => t('Web server'),
     '#value' => _hosting_node_link($node->web_server),
-    '#weight' => -7
+    '#weight' => -7,
   );
   $node->content['info']['status'] = array(
     '#type' => 'item',
@@ -461,21 +536,21 @@ function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
 
   if ($node->release) {
     $release = sprintf("%s %s", $node->release->title, $node->release->version);
-     $node->content['info']['release'] = array(
+    $node->content['info']['release'] = array(
       '#type' => 'item',
       '#title' => t('Release'),
       '#value' => _hosting_node_link($node->release->nid, $release),
-      '#weight' => -6
+      '#weight' => -6,
     );
   }
-  
+
   if ($page) {
     $node->content['sites_view'] = array(
       '#type' => 'item',
       '#value' => drupal_get_form('hosting_site_list_form', 'platform', $node->nid),
       '#prefix' => '<div id="hosting-site-list">',
       '#suffix' => '</div>',
-      '#weight' => 10
+      '#weight' => 10,
     );
 
     // Task list
@@ -491,9 +566,9 @@ function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
         'nid' => $node->nid,
         'changed' => $node->changed,
       );
-      drupal_add_js($settings, 'setting');
+      drupal_add_js($settings, array('type' => 'setting', 'scope' => JS_DEFAULT));
 
-      drupal_add_js(drupal_get_path('module','hosting_task') . '/hosting_task.js');
+      drupal_add_js(drupal_get_path('module', 'hosting_task') . '/hosting_task.js');
     }
   }
   return $node;
@@ -517,27 +592,27 @@ function _hosting_platform_status($node) {
 }
 
 /**
- * Implementation of hook_hosting_summary().
+ * Implements hook_hosting_summary().
  */
 function hosting_platform_hosting_summary() {
   $summary = array();
   if (user_access('view locked platforms')) {
     $platforms = _hosting_get_platforms();
-    $summary['platforms'] = theme('item_list', array_map('_hosting_node_link', array_keys($platforms)), t('Platforms'));
+    $summary['platforms'] = theme('item_list', array('items' => array_map('_hosting_node_link', array_keys($platforms)), 'title' => t('Platforms')));
   }
   else if (user_access('view platform')) {
     $platforms = _hosting_get_enabled_platforms();
-    $summary['platforms'] = theme('item_list', array_map('_hosting_node_link', array_keys($platforms)), t('Platforms'));
+    $summary['platforms'] = theme('item_list', array('items' => array_map('_hosting_node_link', array_keys($platforms)), 'title' => t('Platforms')));
   }
   return $summary;
 }
 
 /**
- * Implementation of hook_views_api().
+ * Implements hook_views_api().
  */
 function hosting_platform_views_api() {
   return array(
-    'api' => 2, 
+    'api' => 2,
     'path' => drupal_get_path('module', 'hosting_platform'),
   );
 }
@@ -554,7 +629,7 @@ function _hosting_platform_list_class($node) {
     HOSTING_PLATFORM_LOCKED => "hosting-warning",
   );
 
-  return $labels[$node->platform_status]; 
+  return $labels[$node->platform_status];
 }
 
 /**
@@ -563,7 +638,7 @@ function _hosting_platform_list_class($node) {
 function hosting_platform_listing() {
   $platforms = _hosting_get_platforms();
 
-  $header = array(t('Platform') , t('Release'), t('Server'), t('Verified'), t('Sites'));
+  $header = array(t('Platform'), t('Release'), t('Server'), t('Verified'), t('Sites'));
 
   $rows[] = array();
 
@@ -571,20 +646,29 @@ function hosting_platform_listing() {
   foreach ($platforms as $nid => $title) {
     $row = array();
     $node = node_load($nid);
-    $row[] = array('class' => 'hosting-status' , 'data' => _hosting_node_link($nid));
+    $row[] = array(
+      'class' => 'hosting-status',
+      'data' => _hosting_node_link($nid),
+    );
     $release = sprintf("%s %s", $node->release->title, $node->release->version);
     $row[] = _hosting_node_link($node->release->nid, $release);
     $row[] = _hosting_node_link($node->web_server);
     $row[] = hosting_format_interval($node->verified);
     $total += $count = hosting_site_count($nid, array(HOSTING_SITE_ENABLED, HOSTING_SITE_DISABLED, HOSTING_SITE_QUEUED));
     $row[] = $count;
-    $rows[] = array('data' => $row, 'class' => _hosting_platform_list_class($node));
+    $rows[] = array(
+      'data' => $row,
+      'class' => _hosting_platform_list_class($node),
+    );
   }
   $row = array();
-  $row[] = array('data' => t('Total sites hosted'), 'colspan' => 4);
+  $row[] = array(
+    'data' => t('Total sites hosted'),
+    'colspan' => 4,
+  );
   $row[] = $total;
   $rows[] = $row;
 
-  return theme('table',  $header, $rows, array('class' => 'hosting-table'));
+  return theme('table', array('header' =>   $header, 'rows' => $rows, 'attributes' => array('class' => 'hosting-table')));
 }
 

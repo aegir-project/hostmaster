@@ -2,4 +2,6 @@ name = Hosting tasks
 description = Allow Hostmaster to keep track of tasks that have been processed on the servers.
 package = Hosting
 dependencies[] = hosting
-core = 6.x
+core = 7.x
+
+files[] = hosting_task_handler_filter_hosting_task_type.inc

@@ -9,12 +9,12 @@ class hostingService_http_pack extends hostingService_http {
     $render['master_servers'] = array(
       '#type' => 'item',
       '#title' => t('Master web servers'),
-      '#value' => theme('item_list', array_map('_hosting_node_link', array_intersect_key($this->master_servers, hosting_get_servers('http')))),
+      '#value' => theme('item_list', array('items' => array_map('_hosting_node_link', array_intersect_key($this->master_servers, hosting_get_servers('http'))))),
     );
     $render['slave_servers'] = array(
       '#type' => 'item',
       '#title' => t('Slave web servers'),
-      '#value' => theme('item_list', array_map('_hosting_node_link', array_intersect_key($this->slave_servers, hosting_get_servers('http')))),
+      '#value' => theme('item_list', array('items' => array_map('_hosting_node_link', array_intersect_key($this->slave_servers, hosting_get_servers('http'))))),
     );
   }
 
@@ -45,7 +45,7 @@ class hostingService_http_pack extends hostingService_http {
 
     $master_servers = array();
     $slave_servers = array();
-    $result = db_query('SELECT web_server_nid, type FROM {hosting_web_pack} WHERE vid = %d', $this->server->vid);
+    $result = db_query('SELECT web_server_nid, type FROM {hosting_web_pack} WHERE vid = :vid', array(':vid' => $this->server->vid));
     while ($web_server = db_fetch_object($result)) {
       if ($web_server->type == 'master') {
         $master_servers[] = $web_server->web_server_nid;
@@ -86,12 +86,20 @@ class hostingService_http_pack extends hostingService_http {
 
   function delete() {
     parent::delete();
-    db_query('DELETE FROM {hosting_web_pack} WHERE nid = %d', $this->server->nid);
+    // TODO Please review the conversion of this statement to the D7 database API syntax.
+    /* db_query('DELETE FROM {hosting_web_pack} WHERE nid = %d', $this->server->nid) */
+    db_delete('hosting_web_pack')
+  ->condition('nid', $this->server->nid)
+  ->execute();
   }
 
   function delete_revision() {
     parent::delete_revision();
-    db_query('DELETE FROM {hosting_web_pack} WHERE vid = %d', $this->server->vid);
+    // TODO Please review the conversion of this statement to the D7 database API syntax.
+    /* db_query('DELETE FROM {hosting_web_pack} WHERE vid = %d', $this->server->vid) */
+    db_delete('hosting_web_pack')
+  ->condition('vid', $this->server->vid)
+  ->execute();
   }
 
   function context_options($task_type, $ref_type, &$task) {

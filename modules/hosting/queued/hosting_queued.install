@@ -1,7 +1,13 @@
 <?php
+/**
+ * @file
+ * Install, update and uninstall functions for the hosting_queued module.
+ *
+ */
+
 
 /**
- * Implementation of hook_enable().
+ * Implements hook_enable().
  */
 function hosting_queued_enable() {
   // Disable Aegir's dispatch of the tasks queue.
@@ -9,11 +15,11 @@ function hosting_queued_enable() {
 
   // Disable the predecessor of this module from the Aegir 1.x world
   module_disable(array('hosting_queue_runner'));
-  drupal_uninstall_module('hosting_queue_runner');
+  drupal_uninstall_modules(array('hosting_queue_runner'));
 }
 
 /**
- * Implementation of hook_disable().
+ * Implements hook_disable().
  */
 function hosting_queued_disable() {
   // Enable Aegir's dispatch of the tasks queue.
@@ -25,8 +31,12 @@ function hosting_queued_disable() {
  */
 function hosting_queued_update_6200() {
   $ret = array();
-  $ret[] = update_sql("UPDATE {variable} SET name = REPLACE(name, 'hosting_queue_runner', 'hosting_queued') WHERE name LIKE 'hosting_queue_runner%'");
-  return $ret;
+  // TODO update_sql has been removed. Use the database API for any schema or data changes.
+  $ret[] = array() /* update_sql("UPDATE {variable} SET name = REPLACE(name, 'hosting_queue_runner', 'hosting_queued') WHERE name LIKE 'hosting_queue_runner%'") */;
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
 /**
@@ -35,6 +45,9 @@ function hosting_queued_update_6200() {
 function hosting_queued_update_6201() {
   // Disable the predecessor of this module from the Aegir 1.x world
   module_disable(array('hosting_queue_runner'));
-  drupal_uninstall_module('hosting_queue_runner');
-  return array();
+  drupal_uninstall_modules(array('hosting_queue_runner'));
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* array() */;
 }

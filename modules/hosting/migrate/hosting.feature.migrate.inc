@@ -5,7 +5,7 @@
  */
 
 /**
- * Implementation of hook_hosting_feature().
+ * Implements hook_hosting_feature().
  */
 function hosting_migrate_hosting_feature() {
   $features['migrate'] = array(
@@ -13,7 +13,7 @@ function hosting_migrate_hosting_feature() {
     'description' => t('Migrate sites to platforms of the same or later version.'),
     'status' => HOSTING_FEATURE_ENABLED,
     'module' => 'hosting_migrate',
-    );
+  );
   return $features;
 }
 

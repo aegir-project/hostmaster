@@ -3,4 +3,5 @@ description = Allow Hostmaster to configure clients.
 package = Hosting
 dependencies[] = hosting
 
-core = 6.x
+core = 7.x
+

@@ -4,19 +4,22 @@
  *   Migrate sites between platforms, performing upgrades when necessary.
  */
 
-include_once('hosting_migrate.batch.inc');
+include_once DRUPAL_ROOT . '/' . 'hosting_migrate.batch.inc';
 
 /**
- * Implementation of hook_perm().
+ * Implements hook_permission().
  */
-function hosting_migrate_perm() {
+function hosting_migrate_permission() {
   return array(
-    'create migrate task',
+    'create migrate task' => array(
+      'title' => t('create migrate task'),
+      'description' => t('TODO Add a description for \'create migrate task\''),
+    ),
   );
 }
 
 /**
- * Implementation of hook_menu().
+ * Implements hook_menu().
  */
 function hosting_migrate_menu() {
   // TODO: add some security here
@@ -24,24 +27,24 @@ function hosting_migrate_menu() {
     'title' => 'Compare packages',
     'page callback' => 'hosting_migrate_comparison',
     'access arguments' => array('create migrate task'),
-    'type' => MENU_CALLBACK
+    'type' => MENU_CALLBACK,
   );
-/*
-  $items['node/%hosting_platform_node/task_migrate'] = array(
-    'title' => t('Migrate'),
-    'description' => t('Migrate sites to a new platform'),
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('hosting_migrate_platform', 1),
-    'access arguments' => array('create migrate task'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => ($info['weight']) ? $info['weight'] : 0, 
-  );
- */
- return $items;
+  /*
+   $items['node/%hosting_platform_node/task_migrate'] = array(
+   'title' => t('Migrate'),
+   'description' => t('Migrate sites to a new platform'),
+   'page callback' => 'drupal_get_form',
+   'page arguments' => array('hosting_migrate_platform', 1),
+   'access arguments' => array('create migrate task'),
+   'type' => MENU_LOCAL_TASK,
+   'weight' => ($info['weight']) ? $info['weight'] : 0,
+   );
+   */
+  return $items;
 }
 
 /**
- * Implementation of hook_hosting_tasks().
+ * Implements hook_hosting_tasks().
  */
 function hosting_migrate_hosting_tasks() {
   $tasks = array();
@@ -100,12 +103,12 @@ function hosting_task_migrate_form_validate($form, &$form_state) {
 }
 
 /**
- * Implementation of hook_theme().
+ * Implements hook_theme().
  */
 function hosting_migrate_theme($existing, $type, $theme, $path) {
   return array(
-  'hosting_migrate_comparison' => array(
-      'arguments' => array('packages' => NULL)
+    'hosting_migrate_comparison' => array(
+      'variables' => array('packages' => NULL),
     ),
   );
 }
@@ -117,13 +120,13 @@ function hosting_task_migrate_form($node) {
   $node->check_profile_migrations =  TRUE;
   $valid_options = hosting_site_available_options($node);
 
-  $form['new_uri'] = array (
+  $form['new_uri'] = array(
     '#title' => t('Domain name'),
     '#description' => t("Changing the domain name when migrating effectively 'renames' the site."),
     '#type' => 'textfield',
     '#required' => TRUE,
     '#weight' => '-1',
-    '#default_value' => strtolower(trim($node->title))
+    '#default_value' => strtolower(trim($node->title)),
   );
 
   $db_servers = hosting_get_servers('db');
@@ -138,11 +141,14 @@ function hosting_task_migrate_form($node) {
     );
   }
   else {
-    $form['new_db_server'] = array('#type' => 'hidden', '#value' => $node->db_server);
-  } 
+    $form['new_db_server'] = array(
+      '#type' => 'hidden',
+      '#value' => $node->db_server,
+    );
+  }
 
 
-  drupal_add_js(drupal_get_path('module','hosting_migrate') . '/hosting_migrate.js');
+  drupal_add_js(drupal_get_path('module', 'hosting_migrate') . '/hosting_migrate.js');
   $packages = array();
 
   $site_profile = node_load($node->profile);
@@ -174,10 +180,11 @@ function hosting_task_migrate_form($node) {
 
       $description = t("Upgrades: !upgrades, Warnings: !missing, Errors: !errors | <a href='!url' class='hosting-package-comparison-link'>Compare platforms</a>",
         array(
-          '!upgrades' => $status['upgrade'],
-          '!missing' => $status['missing'] + $status['downgrade'],
-          '!errors' => $status['error'],
-          '!url' => url('hosting/migrate/compare/' . $node->nid . '/' . $profile_instance->iid))
+        '!upgrades' => $status['upgrade'],
+        '!missing' => $status['missing'] + $status['downgrade'],
+        '!errors' => $status['error'],
+        '!url' => url('hosting/migrate/compare/' . $node->nid . '/' . $profile_instance->iid),
+      )
         );
       $platform = node_load($profile_instance->rid);
 
@@ -209,30 +216,30 @@ function hosting_migrate_comparison($current, $target) {
 
   $packages = array();
 
-  $result = db_query("SELECT c.nid, c.short_name, 
+  $result = db_query("SELECT c.nid, c.short_name,
     c.version as current_version, t.version as target_version,
     c.version_code as current_version_code, t.version_code as target_version_code,
-    c.schema_version as current_schema, t.schema_version as target_schema, c.status AS enabled 
-    FROM %s c LEFT JOIN %s t ON c.nid = t.nid ORDER BY c.status DESC, short_name", $current_tbl, $target_tbl); 
+    c.schema_version as current_schema, t.schema_version as target_schema, c.status AS enabled
+    FROM %s c LEFT JOIN %s t ON c.nid = t.nid ORDER BY c.status DESC, short_name", $current_tbl, $target_tbl);
 
   while ($obj = db_fetch_object($result)) {
     if (isset($obj->current_schema) && ((int) $obj->target_schema > 0) && ((int) $obj->current_schema > (int) $obj->target_schema)) {
       $obj->status = 'downgrade';
     }
-    elseif ( ($obj->current_version_code > $obj->target_version_code) 
-      || is_null($obj->target_version_code)) {
+    elseif ( ($obj->current_version_code > $obj->target_version_code)
+       || is_null($obj->target_version_code)) {
       $obj->status = 'missing';
     }
     elseif (($obj->current_version_code < $obj->target_version_code) || ($obj->current_schema < $obj->target_schema)) {
       $obj->status = 'upgrade';
     }
-    else {  
+    else {
       $obj->status = 'same';
     }
     $packages[$obj->nid] = $obj;
   }
 
-  return theme("hosting_migrate_comparison", $packages);
+  return theme("hosting_migrate_comparison", array('packages' => $packages));
 }
 
 function _hosting_migrate_version_display($version, $schema = null, $status = null) {
@@ -246,26 +253,33 @@ function _hosting_migrate_version_display($version, $schema = null, $status = nu
   if ($schema) {
     $display .= " (" . $schema . ")";
   }
-  
+
   return array('class' => 'hosting-package-' . $status, 'data' => $display);
 }
 
 /**
  * Render a list of compared packages for migration.
  */
-function theme_hosting_migrate_comparison($packages) {
+function theme_hosting_migrate_comparison($variables) {
+  $packages = $variables['packages'];
   $rows = array();
 
   $headers = array(t("Package"), t("Current"), t("Target"));
   foreach ($packages as $key => $instance) {
     $row = array();
-    $row[] = array('data' => $instance->short_name, 'class' => 'hosting-status');
+    $row[] = array(
+      'data' => $instance->short_name,
+      'class' => 'hosting-status',
+    );
     $target_schema = ((int) $instance->target_schema == 0) ? $instance->current_schema : $instance->target_schema;
     $row[] = _hosting_migrate_version_display($instance->current_version, $instance->current_schema);
     $row[] = _hosting_migrate_version_display($instance->target_version, $target_schema, $instance->status);
-    $rows[] = array('data' => $row, 'class' => ($instance->enabled) ? 'hosting-success' : 'hosting-info');
+    $rows[] = array(
+      'data' => $row,
+      'class' => ($instance->enabled) ? 'hosting-success' : 'hosting-info',
+    );
   }
   $options['attributes']['class'] = 'hosting-migrate-comparison-return';
   $link = l(t('Go back'), 'node/' . arg(3) . '/site_migrate', $options);
-  return "<div id='hosting-package-comparison'>" . $link . theme('table', $headers, $rows) . $link . "</div>";
+  return "<div id='hosting-package-comparison'>" . $link . theme('table', array('header' => $headers, 'rows' => $rows)) . $link . "</div>";
 }

@@ -1,9 +1,15 @@
 <?php
+/**
+ * @file
+ * Install, update and uninstall functions for the hosting_site module.
+ *
+ */
+
 // $Id$
 
 
 /**
- * Implementation of hook_schema().
+ * Implements hook_schema().
  */
 function hosting_site_schema() {
   $schema['hosting_site'] = array(
@@ -112,9 +118,14 @@ function hosting_site_schema() {
   return $schema;
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_site_install() {
   // Create tables.
-  drupal_install_schema('hosting_site');
+  // TODO The drupal_(un)install_schema functions are called automatically in D7.
+  // drupal_install_schema('hosting_site')
 }
 
 /**
@@ -122,21 +133,28 @@ function hosting_site_install() {
  */
 function hosting_site_update_1() {
   $ret = array();
-  $ret[] = update_sql("ALTER TABLE {hosting_site} ADD COLUMN language VARCHAR(10) NOT NULL default 'en'");
-  return $ret;
+  // TODO update_sql has been removed. Use the database API for any schema or data changes.
+  $ret[] = array() /* update_sql("ALTER TABLE {hosting_site} ADD COLUMN language VARCHAR(10) NOT NULL default 'en'") */;
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
 /**
  * Retry all failed site installs, to evaluate where they might be successfully imported instead
  */
 function hosting_site_update_2() {
-  include_once( drupal_get_path('module', 'hosting_task') . '/hosting_task.module');
+  include_once DRUPAL_ROOT . '/' .  drupal_get_path('module', 'hosting_task') . '/hosting_task.module';
   $ret = array();
   $result = db_query("select n.nid from {node} n left join {hosting_task} t on n.vid = t.vid where t.task_type = 'install' and t.task_status > 1 and n.type='task'");
   while ($obj = db_fetch_object($result)) {
     hosting_task_retry($obj->nid);
   }
-  return $ret;
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
 /**
@@ -144,31 +162,44 @@ function hosting_site_update_2() {
  */
 function hosting_site_update_3() {
   $ret = array();
-  $ret[] = update_sql("ALTER TABLE {hosting_site} CHANGE COLUMN status status int(11) NOT NULL default '0'");
+  // TODO update_sql has been removed. Use the database API for any schema or data changes.
+  $ret[] = array() /* update_sql("ALTER TABLE {hosting_site} CHANGE COLUMN status status int(11) NOT NULL default '0'") */;
 
-  $ret[] = update_sql("CREATE TEMPORARY TABLE {hosting_site_statuses} SELECT nid, 
-    (status&4) as deleted, NOT (status&2) AS disabled, status&1 AS installed FROM {hosting_site}");
+  // TODO update_sql has been removed. Use the database API for any schema or data changes.
+  $ret[] = array() /* update_sql("CREATE TEMPORARY TABLE {hosting_site_statuses} SELECT nid,
+    (status&4) as deleted, NOT (status&2) AS disabled, status&1 AS installed FROM {hosting_site}") */;
 
 
   // Reset them all to queued
-  $ret[] = update_sql("UPDATE {hosting_site} SET status = 0");
+  // TODO update_sql has been removed. Use the database API for any schema or data changes.
+  $ret[] = array() /* update_sql("UPDATE {hosting_site} SET status = 0") */;
 
   // First, we get rid of the deleted sites.
-  $ret[] = update_sql("UPDATE {hosting_site} SET status = -2 WHERE nid in (SELECT nid FROM {hosting_site_statuses} WHERE deleted > 0)");
-  $ret[] = update_sql("DELETE FROM {hosting_site_statuses} WHERE deleted > 0");
+  // TODO update_sql has been removed. Use the database API for any schema or data changes.
+  $ret[] = array() /* update_sql("UPDATE {hosting_site} SET status = -2 WHERE nid in (SELECT nid FROM {hosting_site_statuses} WHERE deleted > 0)") */;
+  // TODO update_sql has been removed. Use the database API for any schema or data changes.
+  $ret[] = array() /* update_sql("DELETE FROM {hosting_site_statuses} WHERE deleted > 0") */;
 
   // Then the disabled sites.
-  $ret[] = update_sql("UPDATE {hosting_site} SET status = -1 WHERE nid in (SELECT nid FROM {hosting_site_statuses} WHERE disabled > 0)");
-  $ret[] = update_sql("DELETE FROM {hosting_site_statuses} WHERE disabled > 0");
+  // TODO update_sql has been removed. Use the database API for any schema or data changes.
+  $ret[] = array() /* update_sql("UPDATE {hosting_site} SET status = -1 WHERE nid in (SELECT nid FROM {hosting_site_statuses} WHERE disabled > 0)") */;
+  // TODO update_sql has been removed. Use the database API for any schema or data changes.
+  $ret[] = array() /* update_sql("DELETE FROM {hosting_site_statuses} WHERE disabled > 0") */;
 
   // Then the installed sites, which are the same as 'enabled' sites.
-  $ret[] = update_sql("UPDATE {hosting_site} SET status = 1 WHERE nid in (SELECT nid FROM {hosting_site_statuses} WHERE installed > 0)");
-  $ret[] = update_sql("DELETE FROM {hosting_site_statuses} WHERE installed > 0");
+  // TODO update_sql has been removed. Use the database API for any schema or data changes.
+  $ret[] = array() /* update_sql("UPDATE {hosting_site} SET status = 1 WHERE nid in (SELECT nid FROM {hosting_site_statuses} WHERE installed > 0)") */;
+  // TODO update_sql has been removed. Use the database API for any schema or data changes.
+  $ret[] = array() /* update_sql("DELETE FROM {hosting_site_statuses} WHERE installed > 0") */;
 
-  $ret[] = update_sql("DROP TABLE {hosting_site_statuses}");
+  // TODO update_sql has been removed. Use the database API for any schema or data changes.
+  $ret[] = array() /* update_sql("DROP TABLE {hosting_site_statuses}") */;
 
   // Now we rid ourself of 'enabled', we really care about installed.
-  return $ret;
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
 /**
@@ -176,10 +207,21 @@ function hosting_site_update_3() {
  */
 function hosting_site_update_4() {
   $ret = array();
-  $now = time();
-  $ret[] = update_sql("ALTER TABLE {hosting_site} ADD COLUMN verified int(10) NOT NULL default '0'");
-  db_query("UPDATE {hosting_site} SET verified=%d WHERE status=1", $now);
-  return $ret;
+  $now = REQUEST_TIME;
+  // TODO update_sql has been removed. Use the database API for any schema or data changes.
+  $ret[] = array() /* update_sql("ALTER TABLE {hosting_site} ADD COLUMN verified int(10) NOT NULL default '0'") */;
+  // TODO Please review the conversion of this statement to the D7 database API syntax.
+  /* db_query("UPDATE {hosting_site} SET verified=%d WHERE status=1", $now) */
+  db_update('hosting_site')
+  ->fields(array(
+    'verified' => $now,
+  ))
+  ->condition('status', 1)
+  ->execute();
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
 /**
@@ -190,38 +232,69 @@ function hosting_site_update_4() {
 function hosting_site_update_5() {
   $ret = array();
 
-  db_drop_primary_key($ret, 'hosting_site_backups');
-  db_field_set_no_default($ret, 'hosting_site_backups', 'bid');
-  db_change_field($ret, 'hosting_site_backups', 'bid', 'bid',
+  db_drop_primary_key('hosting_site_backups');
+  db_field_set_no_default('hosting_site_backups', 'bid');
+  db_change_field('hosting_site_backups', 'bid', 'bid',
     array('type' => 'serial', 'not null' => TRUE),
     array('primary key' => array('bid')));
 
-  return $ret;
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_site_update_6() {
   $ret = array();
-  db_add_field($ret, 'hosting_site', 'port', array('type' => 'int', 'not null' => TRUE, 'default' => 0));
-  return $ret;
+  db_add_field('hosting_site', 'port', array('type' => 'int', 'not null' => TRUE, 'default' => 0));
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_site_update_6001() {
   $ret = array();
-  db_add_field($ret, 'hosting_site', 'ssl', array('type' => 'int', 'not null' => TRUE, 'default' => 0));
-  return $ret;
+  db_add_field('hosting_site', 'ssl', array('type' => 'int', 'not null' => TRUE, 'default' => 0));
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_site_update_6002() {
   $ret = array();
-  db_add_field($ret, 'hosting_site', 'ssl_redirect', array('type' => 'int', 'not null' => TRUE, 'default' => 0));
-  return $ret;
+  db_add_field('hosting_site', 'ssl_redirect', array('type' => 'int', 'not null' => TRUE, 'default' => 0));
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
 // Update imported sites that have port 0 in the db. See #588072
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_site_update_6003() {
   $ret = array();
   // this is now irrelevant as the ports have been refactored completely.
-  return $ret;
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
 /**
@@ -229,7 +302,10 @@ function hosting_site_update_6003() {
  * hosting_update_6002()
  */
 function hosting_site_update_6004() {
-  return array();
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* array() */;
 }
 
 /**
@@ -237,8 +313,11 @@ function hosting_site_update_6004() {
  */
 function hosting_site_update_6005() {
   $ret = array();
-  db_drop_field($ret, "hosting_site", "port");
-  return $ret;
+  db_drop_field("hosting_site", "port");
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
 /**
@@ -246,9 +325,12 @@ function hosting_site_update_6005() {
  */
 function hosting_site_update_6006() {
   $ret = array();
-  db_drop_field($ret, "hosting_site", "`ssl`");
-  db_drop_field($ret, "hosting_site", "ssl_redirect");
-  return $ret;
+  db_drop_field("hosting_site", "`ssl`");
+  db_drop_field("hosting_site", "ssl_redirect");
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
 /**
@@ -256,8 +338,12 @@ function hosting_site_update_6006() {
  */
 function hosting_site_update_6007() {
   $ret = array();
-  $ret[] = update_sql("ALTER TABLE {hosting_site_backups} ADD COLUMN size INT");
-  return $ret;
+  // TODO update_sql has been removed. Use the database API for any schema or data changes.
+  $ret[] = array() /* update_sql("ALTER TABLE {hosting_site_backups} ADD COLUMN size INT") */;
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
 /**
@@ -265,8 +351,11 @@ function hosting_site_update_6007() {
  */
 function hosting_site_update_6008() {
   $ret = array();
-  db_add_field($ret, 'hosting_site', 'cron_key', array('type' => 'varchar', 'not null' => TRUE, 'length' => 80, 'default' =>''));
-  return $ret;
+  db_add_field('hosting_site', 'cron_key', array('type' => 'varchar', 'not null' => TRUE, 'length' => 80, 'default' => ''));
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
 /**
@@ -277,17 +366,26 @@ function hosting_site_update_6008() {
  */
 function hosting_site_update_6200() {
   $ret = array();
-  
+
   $replacements = array(
     'backup_delete' => 'backup-delete',
     'login_reset' => 'login-reset',
   );
-  
+
   foreach ($replacements as $old => $new) {
-    db_query("UPDATE {hosting_task} SET task_type = '%s' where task_type = '%s'", $new, $old);
+    // TODO Please review the conversion of this statement to the D7 database API syntax.
+    /* db_query("UPDATE {hosting_task} SET task_type = '%s' where task_type = '%s'", $new, $old) */
+    db_update('hosting_task')
+  ->fields(array(
+    'task_type' => $new,
+  ))
+  ->execute();
   }
-  
-  return $ret;
+
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
 /**
@@ -309,8 +407,17 @@ function hosting_site_update_6201() {
   while ($role = db_fetch_object($roles)) {
     $perms = explode(', ', $role->perm);
     $perms = str_replace(array_keys($replacements), array_values($replacements), $perms);
-    db_query("UPDATE {permission} SET perm = '%s' where rid = %d", implode(', ', $perms), $role->rid);
+    // TODO Please review the conversion of this statement to the D7 database API syntax.
+    /* db_query("UPDATE {permission} SET perm = '%s' where rid = %d", implode(', ', $perms), $role->rid) */
+    db_update('permission')
+  ->fields(array(
+    'perm' => implode(', ', $perms),
+  ))
+  ->execute();
   }
 
-  return $ret;
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }

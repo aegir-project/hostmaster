@@ -5,13 +5,13 @@
  */
 
 /**
- * Implementation of hook_views_handlers().
+ * Implements hook_views_handlers().
  */
 function hosting_package_views_handlers() {
   return array(
     'info' => array(
       'path' => drupal_get_path('module', 'hosting_package'),
-      ),
+    ),
     'handlers' => array(
       'hosting_package_handler_filter_hosting_package_type' => array(
         'parent' => 'views_handler_filter_in_operator',
@@ -21,7 +21,7 @@ function hosting_package_views_handlers() {
 }
 
 /**
- * Implementation of hook_views_data().
+ * Implements hook_views_data().
  */
 function hosting_package_views_data() {
   $data['hosting_package'] = array(
@@ -29,9 +29,9 @@ function hosting_package_views_data() {
       'group' => 'Hosting Package',
       'title' => 'Package',
       'join' => array(
-         'node' => array(
-           'left_field' => 'vid',
-           'field' => 'vid',
+        'node' => array(
+          'left_field' => 'vid',
+          'field' => 'vid',
         ),
       ),
     ),

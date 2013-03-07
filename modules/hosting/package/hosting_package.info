@@ -3,4 +3,5 @@ description = Allow Hostmaster to keep track which packages have been installed.
 package = Hosting
 dependencies[] = hosting
 
-core = 6.x
+core = 7.x
+files[] = hosting_package_handler_filter_hosting_package_type.inc

@@ -24,7 +24,7 @@ class hostingService_dns_master extends hostingService_dns {
       $render['slave_servers'] = array(
         '#type' => 'item',
         '#title' => t('Slave servers'),
-        '#value' => theme('item_list', array_map('_hosting_node_link', array_intersect_key($this->slave_servers, hosting_get_servers('dns')))),
+        '#value' => theme('item_list', array('items' => array_map('_hosting_node_link', array_intersect_key($this->slave_servers, hosting_get_servers('dns'))))),
       );
     }
   }
@@ -55,7 +55,7 @@ class hostingService_dns_master extends hostingService_dns {
     parent::load();
 
     $slave_servers = array();
-    $result = db_query('SELECT slave_nid FROM {hosting_dns_slaves} WHERE master_vid = %d', $this->server->vid);
+    $result = db_query('SELECT slave_nid FROM {hosting_dns_slaves} WHERE master_vid = :master_vid', array(':master_vid' => $this->server->vid));
     while ($slave_server = db_fetch_object($result)) {
       $slave_servers[] = $slave_server->slave_nid;
     }
@@ -79,12 +79,20 @@ class hostingService_dns_master extends hostingService_dns {
 
   function delete() {
     parent::delete();
-    db_query('DELETE FROM {hosting_dns_slaves} WHERE master_nid = %d', $this->server->nid);
+    // TODO Please review the conversion of this statement to the D7 database API syntax.
+    /* db_query('DELETE FROM {hosting_dns_slaves} WHERE master_nid = %d', $this->server->nid) */
+    db_delete('hosting_dns_slaves')
+  ->condition('master_nid', $this->server->nid)
+  ->execute();
   }
 
   function delete_revision() {
     parent::delete_revision();
-    db_query('DELETE FROM {hosting_dns_slaves} WHERE master_vid = %d', $this->server->vid);
+    // TODO Please review the conversion of this statement to the D7 database API syntax.
+    /* db_query('DELETE FROM {hosting_dns_slaves} WHERE master_vid = %d', $this->server->vid) */
+    db_delete('hosting_dns_slaves')
+  ->condition('master_vid', $this->server->vid)
+  ->execute();
   }
 
   function context_options($task_type, $ref_type, &$task) {

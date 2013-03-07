@@ -5,7 +5,7 @@
  */
 
 /**
- * Implementation of hook_hosting_tasks().
+ * Implements hook_hosting_tasks().
  */
 function hosting_clone_hosting_tasks() {
   $options = array();
@@ -14,17 +14,20 @@ function hosting_clone_hosting_tasks() {
     'title' => t('Clone'),
     'description' => t('Make a copy of a site.'),
     'weight' => 5,
-    'dialog' => TRUE
+    'dialog' => TRUE,
   );
   return $options;
 }
 
 /**
- * Implementation of hook_perm().
+ * Implements hook_permission().
  */
-function hosting_clone_perm() {
+function hosting_clone_permission() {
   return array(
-    'create clone task',
+    'create clone task' => array(
+      'title' => t('create clone task'),
+      'description' => t('TODO Add a description for \'create clone task\''),
+    ),
   );
 }
 
@@ -44,10 +47,10 @@ function hosting_task_clone_form_validate($form, &$form_state) {
 }
 
 /**
- * Implementation of hook_theme().
+ * Implements hook_theme().
  */
 function hosting_clone_theme($existing, $type, $theme, $path) {
-  return array('hosting_task_clone_form' => array('arguments' => array('form' => NULL)));
+  return array('hosting_task_clone_form' => array('render element' => 'form'));
 }
 
 /**
@@ -62,7 +65,8 @@ function hosting_task_clone_form($node) {
 /**
  * Redner the clone task form.
  */
-function theme_hosting_task_clone_form(&$form) {
+function theme_hosting_task_clone_form($variables) {
+  $form = $variables['form'];
   return theme_hosting_task_migrate_form($form);
 }
 

@@ -5,7 +5,7 @@
  */
 
 /**
- * Implementation of hook_hosting_feature().
+ * Implements hook_hosting_feature().
  */
 function hosting_alias_hosting_feature() {
   $features['alias'] = array(
@@ -13,6 +13,6 @@ function hosting_alias_hosting_feature() {
     'description' => t('Provide multiple domain names for sites to be accessible by.'),
     'status' => HOSTING_FEATURE_DISABLED,
     'module' => 'hosting_alias',
-    );
+  );
   return $features;
 }

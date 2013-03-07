@@ -5,7 +5,7 @@
  */
 
 /**
- * Implementation of hook_views_data().
+ * Implements hook_views_data().
  */
 function hosting_client_views_data() {
   $data['hosting_client'] = array(
@@ -13,9 +13,9 @@ function hosting_client_views_data() {
       'group' => 'Hosting Client',
       'title' => 'Client',
       'join' => array(
-         'node' => array(
-           'left_field' => 'vid',
-           'field' => 'vid',
+        'node' => array(
+          'left_field' => 'vid',
+          'field' => 'vid',
         ),
       ),
     ),

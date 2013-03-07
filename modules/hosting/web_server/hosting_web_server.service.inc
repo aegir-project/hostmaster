@@ -15,7 +15,7 @@ class hostingService_http_public extends hostingService_http {
   function update() {
     parent::update();
   }
-  
+
   public function context_options($task_type, $ref_type, &$task) {
     parent::context_options($task_type, $ref_type, $task);
   }

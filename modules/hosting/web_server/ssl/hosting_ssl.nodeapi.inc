@@ -5,6 +5,10 @@
  */
 define('HOSTING_SSL_CUSTOM_KEY', 'null');
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_ssl_site_form(&$form, &$form_state, $form_id) {
   $node = $form['#node'];
 
@@ -20,37 +24,41 @@ function hosting_ssl_site_form(&$form, &$form_state, $form_id) {
   }
 
   _hosting_site_field($form, $node, 'ssl_enabled', array(
-      '#type' => 'radios',
-      '#title' => t('Encryption'),
-      '#options' => hosting_ssl_status_options(),
-      '#description' => t('Enabling encryption will publish your site on both HTTP and HTTPS ports, allowing you to redirect users to the more secure version for certain pages that require the additional security. Requiring encryption will automatically redirect all unencrypted traffic to your HTTPS site.'),
-      '#required' => TRUE,
-      '#default_value' => (isset($node->ssl_enabled)) ? $node->ssl_enabled : HOSTING_SSL_DISABLED,
-      '#access' => user_access('administer ssl'),
-      '#weight' => -9
-    ), 'hosting_ssl_status_options', $ssl_available);
+    '#type' => 'radios',
+    '#title' => t('Encryption'),
+    '#options' => hosting_ssl_status_options(),
+    '#description' => t('Enabling encryption will publish your site on both HTTP and HTTPS ports, allowing you to redirect users to the more secure version for certain pages that require the additional security. Requiring encryption will automatically redirect all unencrypted traffic to your HTTPS site.'),
+    '#required' => TRUE,
+    '#default_value' => (isset($node->ssl_enabled)) ? $node->ssl_enabled : HOSTING_SSL_DISABLED,
+    '#access' => user_access('administer ssl'),
+    '#weight' => -9,
+  ), 'hosting_ssl_status_options', $ssl_available);
 
   _hosting_site_field($form, $node, 'ssl_key', array(
-      '#type' => 'radios',
-      '#title' => t('Encryption key'),
-      '#description' => t("Choose an existing SSL certificate. If you do not wish to use any of your existing certificates, you may choose to generate a new one."),
-      '#options' => hosting_ssl_get_keys(null, TRUE),
-      '#required' => TRUE,
-      '#default_value' => ($node->ssl_key) ? $node->ssl_key : HOSTING_SSL_CUSTOM_KEY,
-      '#access' => user_access('administer ssl'),
-      '#weight' => -8
-    ), 'hosting_ssl_output_key', $ssl_available, !$node->nid);
+    '#type' => 'radios',
+    '#title' => t('Encryption key'),
+    '#description' => t("Choose an existing SSL certificate. If you do not wish to use any of your existing certificates, you may choose to generate a new one."),
+    '#options' => hosting_ssl_get_keys(null, TRUE),
+    '#required' => TRUE,
+    '#default_value' => ($node->ssl_key) ? $node->ssl_key : HOSTING_SSL_CUSTOM_KEY,
+    '#access' => user_access('administer ssl'),
+    '#weight' => -8,
+  ), 'hosting_ssl_output_key', $ssl_available, !$node->nid);
 
   _hosting_site_field($form, $node, 'ssl_key_new', array(
-      '#type' => 'textfield',
-      '#title' => t('New encryption key'),
-      '#description' => t("This field should only contain lower case alpha-numeric and '_', '-' or '.' characters. If the SSL certificate is not found, Aegir will automatically generate a self-signed certificate for you."),
-      '#default_value' => '',
-      '#access' => user_access('administer ssl'),
-      '#weight' => -7
-    ), 'filter_xss', $ssl_available, FALSE);
+    '#type' => 'textfield',
+    '#title' => t('New encryption key'),
+    '#description' => t("This field should only contain lower case alpha-numeric and '_', '-' or '.' characters. If the SSL certificate is not found, Aegir will automatically generate a self-signed certificate for you."),
+    '#default_value' => '',
+    '#access' => user_access('administer ssl'),
+    '#weight' => -7,
+  ), 'filter_xss', $ssl_available, FALSE);
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_ssl_hosting_site_options_alter(&$return, $node) {
   // Disable the ssl key fields by default.
   if (!sizeof(hosting_ssl_get_servers())) {
@@ -72,7 +80,7 @@ function hosting_ssl_hosting_site_options_alter(&$return, $node) {
     if (sizeof($return['ssl_key']) == 1) {
       $node->ssl_key = HOSTING_SSL_CUSTOM_KEY;
     }
-    
+
     // the user has chosen to enter a new key
     if ($node->ssl_key == HOSTING_SSL_CUSTOM_KEY) {
       // default the new key to the site's domain name, after filtering.
@@ -89,12 +97,16 @@ function hosting_ssl_hosting_site_options_alter(&$return, $node) {
 }
 
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_ssl_nodeapi_site_view(&$node, $teaser = false) {
   $node->content['info']['ssl_enabled'] = array(
     '#type' => 'item',
     '#title' => t('Encryption'),
     '#value' => hosting_ssl_status_options((!is_null($node->ssl_enabled)) ? $node->ssl_enabled : HOSTING_SSL_DISABLED),
-    '#weight' => 6
+    '#weight' => 6,
   );
 
   if ($node->ssl_enabled != 0) {
@@ -103,24 +115,36 @@ function hosting_ssl_nodeapi_site_view(&$node, $teaser = false) {
       '#title' => t('Encryption key'),
       '#value' => hosting_ssl_output_key($node->ssl_key),
       '#description' => hosting_ssl_get_key($node->ssl_key) ? t("This site is using SSL certificates located at %path.", array('%path' => sprintf("config/ssl.d/%s/", hosting_ssl_output_key($node->ssl_key)))) : t("(key deleted)"),
-      '#weight' => 7
+      '#weight' => 7,
     );
   }
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_ssl_get_key($cid) {
   static $cache = array();
 
   if (!isset($cache[$cid])) {
-    $cache[$cid] = db_result(db_query("SELECT ssl_key FROM {hosting_ssl_cert} WHERE cid=%d", $cid));
+    $cache[$cid] = db_query("SELECT ssl_key FROM {hosting_ssl_cert} WHERE cid = :cid", array(':cid' => $cid))->fetchField();
   }
   return $cache[$cid];
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_ssl_get_ip($cid) {
-  return db_result(db_query("SELECT ips.ip_address FROM {hosting_ssl_cert_ips} cert INNER JOIN {hosting_ip_addresses} ips ON cert.ip_address = ips.id WHERE cid=%d", $cid));
+  return db_query("SELECT ips.ip_address FROM {hosting_ssl_cert_ips} cert INNER JOIN {hosting_ip_addresses} ips ON cert.ip_address = ips.id WHERE cid = :cid", array(':cid' => $cid))->fetchField();
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_ssl_output_key($cid) {
   return filter_xss(hosting_ssl_get_key($cid));
 }
@@ -132,14 +156,14 @@ function hosting_ssl_status_options($status = null) {
   $options = array(
     HOSTING_SSL_DISABLED => t('Disabled'),
     HOSTING_SSL_ENABLED => t('Enabled'),
-    HOSTING_SSL_REQUIRED => t('Required')
+    HOSTING_SSL_REQUIRED => t('Required'),
   );
 
   if (!is_null($status)) {
     return $options[$status];
   }
   return $options;
-  
+
 }
 
 
@@ -152,6 +176,10 @@ function hosting_ssl_filter_key($key) {
   return strtolower(preg_replace("/[^\w\.\-]/", "", $key));
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_ssl_nodeapi_site_validate($node, &$form) {
   if ($node->ssl_enabled) {
     // TODO: find a way to avoid calling this function multiple times in hook_validate
@@ -185,6 +213,10 @@ function hosting_ssl_nodeapi_site_validate($node, &$form) {
   }
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_ssl_nodeapi_site_presave(&$node) {
   if (!isset($node->ssl_key)) {
     $node->ssl_key = HOSTING_SSL_CUSTOM_KEY;
@@ -200,37 +232,82 @@ function hosting_ssl_nodeapi_site_presave(&$node) {
   $node->ssl_key = hosting_ssl_save_key($node);
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_ssl_nodeapi_site_insert($node) {
-  db_query("INSERT INTO {hosting_ssl_site} (vid, nid, ssl_enabled, ssl_key) VALUES (%d, %d, %d, %d)", $node->vid, $node->nid, $node->ssl_enabled, $node->ssl_key);
+  // TODO Please review the conversion of this statement to the D7 database API syntax.
+  /* db_query("INSERT INTO {hosting_ssl_site} (vid, nid, ssl_enabled, ssl_key) VALUES (%d, %d, %d, %d)", $node->vid, $node->nid, $node->ssl_enabled, $node->ssl_key) */
+  $id = db_insert('hosting_ssl_site')
+  ->fields(array(
+    'vid' => $node->vid,
+    'nid' => $node->nid,
+    'ssl_enabled' => $node->ssl_enabled,
+    'ssl_key' => $node->ssl_key,
+  ))
+  ->execute();
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_ssl_nodeapi_site_update($node) {
   // check if an existing record is there
-  $result = db_query("SELECT ssl_enabled FROM {hosting_ssl_site} WHERE vid=%d", $node->vid);
+  $result = db_query("SELECT ssl_enabled FROM {hosting_ssl_site} WHERE vid = :vid", array(':vid' => $node->vid));
   if (!($obj = db_fetch_object($result))) {
     hosting_ssl_nodeapi_site_insert($node);
   }
   else {
-    db_query("UPDATE {hosting_ssl_site} SET ssl_enabled=%d, ssl_key=%d WHERE vid=%d", $node->ssl_enabled, $node->ssl_key, $node->vid);
+    // TODO Please review the conversion of this statement to the D7 database API syntax.
+    /* db_query("UPDATE {hosting_ssl_site} SET ssl_enabled=%d, ssl_key=%d WHERE vid=%d", $node->ssl_enabled, $node->ssl_key, $node->vid) */
+    db_update('hosting_ssl_site')
+  ->fields(array(
+    'ssl_enabled' => $node->ssl_enabled,
+    'ssl_key' => $node->ssl_key,
+  ))
+  ->condition('vid', $node->vid)
+  ->execute();
   }
   if ($node->site_status == HOSTING_SITE_DELETED) {
     hosting_ssl_clean_keys($node);
   }
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_ssl_nodeapi_site_load($node) {
-  $result = db_query("SELECT ssl_enabled, ssl_key FROM {hosting_ssl_site} WHERE vid=%d", $node->vid);
-  $additions = db_fetch_array($result); 
+  $result = db_query("SELECT ssl_enabled, ssl_key FROM {hosting_ssl_site} WHERE vid = :vid", array(':vid' => $node->vid));
+  $additions = db_fetch_array($result);
   return $additions;
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_ssl_nodeapi_site_delete($node) {
-  db_query("DELETE FROM {hosting_ssl_site} WHERE nid=%d", $node->nid);
+  // TODO Please review the conversion of this statement to the D7 database API syntax.
+  /* db_query("DELETE FROM {hosting_ssl_site} WHERE nid=%d", $node->nid) */
+  db_delete('hosting_ssl_site')
+  ->condition('nid', $node->nid)
+  ->execute();
   hosting_ssl_clean_keys($node);
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_ssl_nodeapi_site_delete_revision($node) {
-  db_query("DELETE FROM {hosting_ssl_site} WHERE vid=%d", $node->vid);
+  // TODO Please review the conversion of this statement to the D7 database API syntax.
+  /* db_query("DELETE FROM {hosting_ssl_site} WHERE vid=%d", $node->vid) */
+  db_delete('hosting_ssl_site')
+  ->condition('vid', $node->vid)
+  ->execute();
 }
 
 
@@ -246,7 +323,7 @@ function hosting_ssl_save_key($node) {
 
   $ssl_key = $node->ssl_key_new;
   if ($ssl_key) {
-    $result = db_query("SELECT * FROM {hosting_ssl_cert} WHERE ssl_key = '%s'", $ssl_key);
+    $result = db_query("SELECT * FROM {hosting_ssl_cert} WHERE ssl_key = :ssl_key", array(':ssl_key' => $ssl_key));
     if ($obj = db_fetch_object($result)) {
       // update
       if ($node->client != null) {
@@ -264,7 +341,11 @@ function hosting_ssl_save_key($node) {
       drupal_write_record("hosting_ssl_cert", $obj);
       if (!hosting_ip_allocate($obj, $node)) {
         form_set_error('ssl_key_new', t("Unable to allocate IP address for certificate, disabling SSL. Allocate more IP addresses to this server then try to enable SSL again."));
-        db_query("DELETE FROM {hosting_ssl_cert} WHERE cid = %d", $obj->cid);
+        // TODO Please review the conversion of this statement to the D7 database API syntax.
+        /* db_query("DELETE FROM {hosting_ssl_cert} WHERE cid = %d", $obj->cid) */
+        db_delete('hosting_ssl_cert')
+  ->condition('cid', $obj->cid)
+  ->execute();
         $obj->cid = FALSE;
         $node->ssl_enabled = HOSTING_SSL_DISABLED;
       }
@@ -320,9 +401,17 @@ function hosting_ssl_get_keys($client = null, $ask_custom = FALSE) {
  */
 function hosting_ssl_clean_keys($node) {
   // check if there are still sites using this site's certificate
-  if (!db_result(db_query("SELECT * FROM hosting_ssl_site siteA INNER JOIN hosting_ssl_site siteB ON siteA.ssl_key = siteB.ssl_key INNER JOIN hosting_site s ON s.nid = siteA.nid WHERE siteA.ssl_enabled = 1 AND s.status <> %d AND siteB.nid = %d;", HOSTING_SITE_DELETED, $node->nid))) {
+  if (!db_query("SELECT * FROM hosting_ssl_site siteA INNER JOIN hosting_ssl_site siteB ON siteA.ssl_key = siteB.ssl_key INNER JOIN hosting_site s ON s.nid = siteA.nid WHERE siteA.ssl_enabled = :siteA.ssl_enabled AND s.status <> :s.status AND siteB.nid = :siteB.nid;", array(':siteA.ssl_enabled' => 1, ':s.status' => HOSTING_SITE_DELETED, ':siteB.nid' => $node->nid))->fetchField()) {
     drupal_set_message(t("cleaning up unused certificate associated with site"));
-    db_query("DELETE FROM {hosting_ssl_cert} WHERE cid = %d", $node->ssl_key);
-    db_query("DELETE FROM {hosting_ssl_cert_ips} WHERE cid = %d", $node->ssl_key);
+    // TODO Please review the conversion of this statement to the D7 database API syntax.
+    /* db_query("DELETE FROM {hosting_ssl_cert} WHERE cid = %d", $node->ssl_key) */
+    db_delete('hosting_ssl_cert')
+  ->condition('cid', $node->ssl_key)
+  ->execute();
+    // TODO Please review the conversion of this statement to the D7 database API syntax.
+    /* db_query("DELETE FROM {hosting_ssl_cert_ips} WHERE cid = %d", $node->ssl_key) */
+    db_delete('hosting_ssl_cert_ips')
+  ->condition('cid', $node->ssl_key)
+  ->execute();
   }
 }

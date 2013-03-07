@@ -5,42 +5,73 @@
  */
 
 /**
- * Implements hook_user().
+ * Implements hook_user_load().
  */
-function hosting_client_user($op, &$edit, &$user, $category = NULL) {
-  switch ($op) {
+function hosting_client_user_load($users) {
+  $user->client_id = hosting_get_client_from_user($user->uid);
+}
 
-  case 'load':
-    $user->client_id = hosting_get_client_from_user($user->uid);
-    break;
-
-  case 'view':
-    if (hosting_feature('client')) {
-      return hosting_client_user_view($user);
-    }
-    break;
-
-  case 'form':
-    if (hosting_feature('client')) {
-      return hosting_client_user_form($edit, $user, $category);
-    }
-    break;
-
-  case 'validate':
-    return hosting_client_user_form_validate($edit);
-
-  case 'insert':
-  case 'update':
-    hosting_client_user_form_submit($edit, $user);
-    $edit['hosting_client'] = NULL;
-    break;
-  case 'submit':
-    break;
-
-  case 'delete':
-    db_query('DELETE FROM {hosting_client_user} WHERE user = %d', $user->uid);
+/**
+ * Implements hook_user_view().
+ */
+function hosting_client_user_view($account, $view_mode) {
+  if (hosting_feature('client')) {
+    return hosting_client_user_view($user);
   }
 }
+
+/**
+ * Implements hook_user_XXX().
+ */
+function hosting_client_user_XXX($edit, $account) {
+  if (hosting_feature('client')) {
+    return hosting_client_user_form($edit, $user, $category);
+  }
+}
+
+/**
+ * Implements hook_user_presave().
+ */
+function hosting_client_user_presave(&$edit, $account, $category) {
+  return hosting_client_user_form_validate($edit);
+}
+
+/**
+ * Implements hook_user_insert().
+ */
+function hosting_client_user_insert(&$edit, $account, $category) {
+  hosting_client_user_form_submit($edit, $user);
+  $edit['hosting_client'] = NULL;
+}
+
+/**
+ * Implements hook_user_presave().
+ */
+function hosting_client_user_presave(&$edit, $account, $category) {
+  hosting_client_user_form_submit($edit, $user);
+  $edit['hosting_client'] = NULL;
+}
+
+/**
+ * Implements hook_user_presave().
+ */
+function hosting_client_user_presave(&$edit, $account, $category) { }
+
+/**
+ * Implements hook_user_cancel().
+ */
+function hosting_client_user_cancel($edit, $account, $method) {
+  // TODO Please review the conversion of this statement to the D7 database API syntax.
+  /* db_query('DELETE FROM {hosting_client_user} WHERE user = %d', $user->uid) */
+  db_delete('hosting_client_user')
+  ->condition('user', $user->uid)
+  ->execute();
+}
+
+/**
+ * Implements hook_user().
+ */
+function hosting_client_user_OLD($op, &$edit, &$user, $category = NULL) { }
 
 /**
  * Add visible items when viewing a user().
@@ -57,9 +88,9 @@ function hosting_client_user_view($user) {
     // this is a table because we'll have types for clients eventually
     $header = array(t('Hosting client'));
     $items['client_list'] = array(
-        'value' => theme('table', $header, $rows),
-        'class' => 'client',
-        );
+      'value' => theme('table', array('header' => $header, 'rows' => $rows)),
+      'class' => 'client',
+    );
 
     return array(t('Clients') => $items);
   }
@@ -76,25 +107,34 @@ function hosting_client_user_form($edit, $user, $category) {
   if ($user->client_id) {
     foreach ($user->client_id as $client => $type) {
       $clients[$client] = '';
-      $fields[$category]['name'][$client] = array('#type' => 'markup', '#value' => _hosting_node_link($client));
+      $fields[$category]['name'][$client] = array(
+        '#type' => 'markup',
+        '#value' => _hosting_node_link($client),
+      );
     }
   }
   if (user_access('edit client users')) {
-    $fields[$category]['clients'] = array('#type' => 'checkboxes', '#options' => $clients);
+    $fields[$category]['clients'] = array(
+      '#type' => 'checkboxes',
+      '#options' => $clients,
+    );
   }
 
-  $fields[$category]['header'] = array('#type' => 'value', '#value' => array(array('data' => t('Accessible clients')), array('data' => t('Remove'))));
+  $fields[$category]['header'] = array(
+    '#type' => 'value',
+    '#value' => array(array('data' => t('Accessible clients')), array('data' => t('Remove'))),
+  );
 
   if (user_access('edit client users')) {
     $fields[$category]['hosting_client'] = array(
-        '#type' => 'textfield',
-        '#title' => t('Associate a client to this user'),
-        '#weight' => 2,
-        '#autocomplete_path' => 'hosting_client/autocomplete/client',
-        '#description' => t('This field allows you to associate an existing client to a user.
+      '#type' => 'textfield',
+      '#title' => t('Associate a client to this user'),
+      '#weight' => 2,
+      '#autocomplete_path' => 'hosting_client/autocomplete/client',
+      '#description' => t('This field allows you to associate an existing client to a user.
                              It does not create a new client, but allows this user
                              to manage sites belonging to the given client.'),
-        );
+    );
   }
   $fields[$category]['#theme'] = 'hosting_client_user_form';
   return $fields;
@@ -103,7 +143,8 @@ function hosting_client_user_form($edit, $user, $category) {
 /**
  * Returns HTML for the client area on the user form.
  */
-function theme_hosting_client_user_form($form) {
+function theme_hosting_client_user_form($variables) {
+  $form = $variables['form'];
   if (array_key_exists('hosting_client', $form)) {
     $edit_name = drupal_render($form['hosting_client']);
   }
@@ -118,8 +159,8 @@ function theme_hosting_client_user_form($form) {
     }
     $rows[] = $row;
   }
-  $output = drupal_render($form);
-  $output .= theme('table', $form['header']['#value'], $rows);
+  $output = drupal_render_children($form);
+  $output .= theme('table', array('header' => $form['header']['#value'], 'rows' => $rows));
   $output .= $edit_name;
   return $output;
 }
@@ -143,12 +184,25 @@ function hosting_client_user_form_validate($edit) {
 function hosting_client_user_form_submit($edit, $user) {
   if (array_key_exists('clients', $edit)) {
     foreach ($edit['clients'] as $client) {
-      $query = db_query('DELETE FROM {hosting_client_user} WHERE user = %d AND client = %d', $user->uid, $client);
+      // TODO Please review the conversion of this statement to the D7 database API syntax.
+      /* db_query('DELETE FROM {hosting_client_user} WHERE user = %d AND client = %d', $user->uid, $client) */
+      $query = db_delete('hosting_client_user')
+  ->condition('user', $user->uid)
+  ->condition('client', $client)
+  ->execute();
     }
   }
   if (array_key_exists('hosting_client', $edit) && $edit['hosting_client']) {
     $client = hosting_get_client($edit['hosting_client']);
-    $query = db_query('INSERT INTO {hosting_client_user} (client, user, contact_type) VALUES (%d, %d, "%s")', $client->nid, $user->uid, '');
+    // TODO Please review the conversion of this statement to the D7 database API syntax.
+    /* db_query('INSERT INTO {hosting_client_user} (client, user, contact_type) VALUES (%d, %d, "%s")', $client->nid, $user->uid, '') */
+    $query = $id = db_insert('hosting_client_user')
+  ->fields(array(
+    'client' => $client->nid,
+    'user' => $user->uid,
+    'contact_type' => '',
+  ))
+  ->execute();
   }
 }
 
@@ -192,12 +246,12 @@ function hosting_client_node_access_records($node) {
   }
   $grants = array();
   $base_grant = array(
-      'realm' => 'hosting ' . $node->type,
-      'grant_view' => TRUE,
-      'grant_update' => TRUE,
-      'grant_delete' => FALSE,
-      'priority' => 1,
-    );
+    'realm' => 'hosting ' . $node->type,
+    'grant_view' => TRUE,
+    'grant_update' => TRUE,
+    'grant_delete' => FALSE,
+    'priority' => 1,
+  );
 
   // tasks inherit from their parent
   if ($node->type == 'task') {
@@ -206,33 +260,33 @@ function hosting_client_node_access_records($node) {
   }
 
   switch ($node->type) {
-    case 'site' :
+    case 'site':
       $base_grant['gid'] = $node->client;
       break;
-    case 'client' :
+    case 'client':
       $base_grant['gid'] = $node->nid;
       break;
-    case 'package' :
+    case 'package':
       $base_grant['grant_update'] = FALSE;
       break;
-    case 'task' :
-    case 'server' :
+    case 'task':
+    case 'server':
       // The rest of the node types are configuration, so only admin should see them.
       $base_grant['gid'] = HOSTING_ADMIN_CLIENT;
       break;
-    case 'platform' :
+    case 'platform':
       $base_grant['gid'] = HOSTING_ADMIN_CLIENT;
       /*
-      if (sizeof($node->clients)) {
-        foreach ($node->clients as $cid => $client) {
-          if ($cid != HOSTING_ADMIN_CLIENT) {
-            $grants[] = array_merge($base_grant, array('gid' => $cid, 'grant_update' => FALSE));
-          }
-        }
-      }
+       if (sizeof($node->clients)) {
+       foreach ($node->clients as $cid => $client) {
+       if ($cid != HOSTING_ADMIN_CLIENT) {
+       $grants[] = array_merge($base_grant, array('gid' => $cid, 'grant_update' => FALSE));
+       }
+       }
+       }
        */
       break;
-    default :
+    default:
       //Not hosting node, don't change access.
       return;
   }
@@ -261,7 +315,7 @@ function hosting_client_node_access_records($node) {
  */
 function hosting_get_client_from_user($uid) {
   $clients = array();
-  if ($results = db_query("SELECT client, contact_type FROM {hosting_client_user} WHERE user=%d", $uid)) {
+  if ($results = db_query("SELECT client, contact_type FROM {hosting_client_user} WHERE user = :user", array(':user' => $uid))) {
     while ($result = db_fetch_array($results)) {
       $clients[$result['client']] = explode(',', $result['contact_type']);
     }

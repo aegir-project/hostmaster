@@ -10,17 +10,33 @@ class hostingService_http_ssl extends hostingService_http_public {
 
   function insert() {
     parent::insert();
-    db_query("INSERT INTO {hosting_ssl_server} (vid, nid, ssl_port) VALUES (%d, %d, %d)", $this->server->vid, $this->server->nid, $this->ssl_port);
+    // TODO Please review the conversion of this statement to the D7 database API syntax.
+    /* db_query("INSERT INTO {hosting_ssl_server} (vid, nid, ssl_port) VALUES (%d, %d, %d)", $this->server->vid, $this->server->nid, $this->ssl_port) */
+    $id = db_insert('hosting_ssl_server')
+  ->fields(array(
+    'vid' => $this->server->vid,
+    'nid' => $this->server->nid,
+    'ssl_port' => $this->ssl_port,
+  ))
+  ->execute();
   }
 
   function delete() {
     parent::delete();
-    db_query("DELETE FROM {hosting_ssl_server} WHERE nid=%d", $this->server->nid);
+    // TODO Please review the conversion of this statement to the D7 database API syntax.
+    /* db_query("DELETE FROM {hosting_ssl_server} WHERE nid=%d", $this->server->nid) */
+    db_delete('hosting_ssl_server')
+  ->condition('nid', $this->server->nid)
+  ->execute();
   }
 
   function delete_revision() {
     parent::delete_revision();
-    db_query("DELETE FROM {hosting_ssl_server} WHERE vid=%d", $this->server->vid);
+    // TODO Please review the conversion of this statement to the D7 database API syntax.
+    /* db_query("DELETE FROM {hosting_ssl_server} WHERE vid=%d", $this->server->vid) */
+    db_delete('hosting_ssl_server')
+  ->condition('vid', $this->server->vid)
+  ->execute();
   }
 
   function form(&$form) {
@@ -34,7 +50,8 @@ class hostingService_http_ssl extends hostingService_http_public {
       '#default_value' => ($this->ssl_port) ? $this->ssl_port : '443',
       '#description' => t("The port that this service will use for encrypted traffic."),
       '#maxlength' => 255,
-      '#weight' => -7);
+      '#weight' => -7,
+    );
   }
 
   function view(&$render) {
@@ -45,7 +62,7 @@ class hostingService_http_ssl extends hostingService_http_public {
       '#value' => filter_xss($this->ssl_port),
     );
   }
-  
+
   public function validate(&$node, &$form) {
     parent::validate($node, $form);
     if ((int) $this->ssl_port <= 0) {
@@ -69,7 +86,7 @@ class hostingService_http_ssl extends hostingService_http_public {
 class hostingService_http_apache_ssl extends hostingService_http_ssl {
   public $type = 'apache_ssl';
 
-  
+
   protected $has_restart_cmd = TRUE;
 
   function default_restart_cmd() {

@@ -24,6 +24,10 @@ function hosting_hosting_server_context_options(&$task) {
   }
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_server_drush_context_import($context, &$node) {
   if ($context->type == 'server') {
     $node->title = strtolower($context->remote_host);
@@ -38,7 +42,7 @@ function hosting_server_drush_context_import($context, &$node) {
         }
         if (!isset($node->services[$type])) {
           // only support the base configuration things for now.
-          hosting_services_add($node, $type, $service_type, $values); 
+          hosting_services_add($node, $type, $service_type, $values);
         }
 
         $node->services[$type]->context_import($context);
@@ -55,8 +59,8 @@ function hosting_server_post_hosting_verify_task($task, $data) {
   node_save($task->ref);
 
   // Verify the platforms on this server
-  $query = db_query("SELECT nid FROM {hosting_platform} WHERE status <> %d AND web_server = %d", HOSTING_PLATFORM_DELETED, $task->ref->nid);
-  while($nid = db_fetch_object($query)) {
+  $query = db_query("SELECT nid FROM {hosting_platform} WHERE status <> :status AND web_server = :web_server", array(':status' => HOSTING_PLATFORM_DELETED, ':web_server' => $task->ref->nid));
+  while ($nid = db_fetch_object($query)) {
     hosting_add_task($nid->nid, 'verify');
   }
 

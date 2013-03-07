@@ -3,4 +3,6 @@ description = Allow hostmaster to configure servers.
 package = Hosting
 dependencies[] = hosting
 
-core = 6.x
+core = 7.x
+
+files[] = hosting_server.service.inc

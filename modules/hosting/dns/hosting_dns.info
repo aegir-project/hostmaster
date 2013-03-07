@@ -3,4 +3,6 @@ description = Manage DNS records for your hosted sites.
 package = Hosting
 dependencies[] = hosting
 
-core = 6.x
+core = 7.x
+
+files[] = hosting_dns.service.inc

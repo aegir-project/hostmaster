@@ -10,8 +10,7 @@
  *
  * @todo wait for tasks to complete
  */
-function drush_hosting_pause_validate($url) {
-}
+function drush_hosting_pause_validate($url) { }
 
 /**
  * Drush command to pause the Aegir frontend queues.

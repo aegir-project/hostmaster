@@ -5,7 +5,7 @@
  */
 
 function drush_hosting_migrate_pre_hosting_task($task) {
-  $task =& drush_get_context('HOSTING_TASK');
+  $task = &drush_get_context('HOSTING_TASK');
   if ($task->ref->type == 'site' && $task->task_type == 'migrate') {
     $platform = node_load($task->task_args['target_platform']);
     $task->args[2] = hosting_context_name($platform->nid);
@@ -53,6 +53,10 @@ function _hosting_migrate_get_target_profile_name($task) {
 
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_migrate_post_hosting_migrate_task($task, $data) {
   if ($task->ref->type == 'site') {
     $target = $task->task_args['target_platform'];
@@ -69,13 +73,13 @@ function hosting_migrate_post_hosting_migrate_task($task, $data) {
 
     $profile = hosting_package_instance_load(array(
       'i.rid' => $target,
-      'p.short_name' => $data['context']['profile']
+      'p.short_name' => $data['context']['profile'],
     ));
     if ($profile) {
       $site->profile = $profile->package_id;
     }
 
-    $site->verified = time();
+    $site->verified = REQUEST_TIME;
     $site->no_verify = true;
     $site->platform = $target;
     node_save($site);

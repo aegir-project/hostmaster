@@ -6,8 +6,8 @@
  */
 
 /**
- * Implementation of hook_hosting_feature().
- * 
+ * Implements hook_hosting_feature().
+ *
  * Register the example hosting feature with Aegir, initially this feature will
  * be disabled.
  */
@@ -24,7 +24,7 @@ function hosting_example_hosting_feature() {
     // associate with a specific node type.
     //  'node' => 'nodetype',
     // which group to display in ( null , experimental )
-    'group' => 'experimental'
-    );
+    'group' => 'experimental',
+  );
   return $features;
 }

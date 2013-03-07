@@ -42,15 +42,23 @@ class hostingService_db_mysql extends hostingService_db {
       '#required' => FALSE,
       '#description' => $passwd_description . t('The password for the user that will be used to create new mysql users and databases for new sites'),
       '#size' => 30,
-      '#weight' => 10
+      '#weight' => 10,
     );
   }
 
   function insert() {
     parent::insert();
-    db_query("INSERT INTO {hosting_db_server} (vid, nid, db_user, db_passwd) 
-      VALUES (%d, %d, '%s', '%s')", 
-      $this->server->vid, $this->server->nid, $this->db_user, $this->db_passwd);
+    // TODO Please review the conversion of this statement to the D7 database API syntax.
+    /* db_query("INSERT INTO {hosting_db_server} (vid, nid, db_user, db_passwd)
+     VALUES (%d, %d, '%s', '%s')", $this->server->vid, $this->server->nid, $this->db_user, $this->db_passwd) */
+    $id = db_insert('hosting_db_server')
+  ->fields(array(
+    'vid' => $this->server->vid,
+    'nid' => $this->server->nid,
+    'db_user' => $this->db_user,
+    'db_passwd' => $this->db_passwd,
+  ))
+  ->execute();
   }
 
   function update() {
@@ -66,12 +74,20 @@ class hostingService_db_mysql extends hostingService_db {
 
   function delete_revision() {
     parent::delete_revision();
-    db_query('DELETE FROM {hosting_db_server} WHERE vid = %d', $this->server->vid);
+    // TODO Please review the conversion of this statement to the D7 database API syntax.
+    /* db_query('DELETE FROM {hosting_db_server} WHERE vid = %d', $this->server->vid) */
+    db_delete('hosting_db_server')
+  ->condition('vid', $this->server->vid)
+  ->execute();
   }
 
   function delete() {
     parent::delete();
-    db_query('DELETE FROM {hosting_db_server} WHERE nid = %d', $this->server->nid);
+    // TODO Please review the conversion of this statement to the D7 database API syntax.
+    /* db_query('DELETE FROM {hosting_db_server} WHERE nid = %d', $this->server->nid) */
+    db_delete('hosting_db_server')
+  ->condition('nid', $this->server->nid)
+  ->execute();
   }
 
 

@@ -5,7 +5,7 @@
  */
 
 /**
- * Implementation of hook_hosting_feature().
+ * Implements hook_hosting_feature().
  */
 function hosting_web_cluster_hosting_feature() {
   $features['web_cluster'] = array(

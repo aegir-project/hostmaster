@@ -24,7 +24,7 @@ function hosting_hosting_platform_context_options(&$task) {
 }
 
 /**
- * Implementation of hook_drush_context_import().
+ * Implements hook_drush_context_import().
  */
 function hosting_platform_drush_context_import($context, &$node) {
   if ($context->type == 'platform') {
@@ -39,7 +39,7 @@ function hosting_platform_drush_context_import($context, &$node) {
 }
 
 /**
- * Implementation hook_post_verify().
+ * Implements hook_post_verify().
  *
  * Sets the platform verified timestamp, to discren when it was verified.
  * Imports all the profiles and modules into package and package release nodes.
@@ -50,11 +50,11 @@ function hosting_platform_post_hosting_verify_task($task, $data) {
     $context = $data['context'];
     $packages = $context['packages'];
 
-    $node->verified = time(); // set verified flag on platform, to let it know it has been checked.
+    $node->verified = REQUEST_TIME; // set verified flag on platform, to let it know it has been checked.
     /**
-     * If we are verifying a Locked platform (i.e if the publish_path has changed), 
-     * don't reset the status to Enabled. We don't need to check whether a platform 
-     * is deleted here for the same reason, because we don't allow a deleted platform 
+     * If we are verifying a Locked platform (i.e if the publish_path has changed),
+     * don't reset the status to Enabled. We don't need to check whether a platform
+     * is deleted here for the same reason, because we don't allow a deleted platform
      * to be reverified.
      */
     if ($node->platform_status != HOSTING_PLATFORM_LOCKED) {
@@ -75,7 +75,7 @@ function hosting_platform_post_hosting_verify_task($task, $data) {
 
       // @todo : package instances of modules to profiles.
     }
- 
+
     foreach ($context['sites'] as $url) {
       if (hosting_domain_allowed($url)) {
         // Import any sites that have not been created yet.
@@ -96,22 +96,34 @@ function hosting_platform_post_hosting_verify_task($task, $data) {
 }
 
 /**
- * Implementation of hook_hosting_post_DELETE().
+ * Implements hook_hosting_post_DELETE().
  */
 function hosting_platform_post_hosting_delete_task($task, $data) {
   $task->ref->platform_status = HOSTING_PLATFORM_DELETED;
   $task->ref->no_verify = TRUE;
   node_save($task->ref);
   hosting_context_delete($task->ref->nid);
-  db_query("DELETE FROM {hosting_platform_client_access} WHERE pid = %d", $task->ref->nid);
+  // TODO Please review the conversion of this statement to the D7 database API syntax.
+  /* db_query("DELETE FROM {hosting_platform_client_access} WHERE pid = %d", $task->ref->nid) */
+  db_delete('hosting_platform_client_access')
+  ->condition('pid', $task->ref->nid)
+  ->execute();
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_platform_post_hosting_lock_task($task, $data) {
   $task->ref->platform_status = HOSTING_PLATFORM_LOCKED;
   $task->ref->no_verify = TRUE;
   node_save($task->ref);
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_platform_post_hosting_unlock_task($task, $data) {
   $task->ref->platform_status = HOSTING_PLATFORM_ENABLED;
   $task->ref->no_verify = TRUE;
