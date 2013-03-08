@@ -4,7 +4,7 @@
  *   Migrate sites between platforms, performing upgrades when necessary.
  */
 
-include_once DRUPAL_ROOT . '/' . 'hosting_migrate.batch.inc';
+include_once 'hosting_migrate.batch.inc';
 
 /**
  * Implements hook_permission().

@@ -81,7 +81,7 @@ function hosting_platform_install() {
  * work correctly.
  */
 function hosting_platform_update_1() {
-  include_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'hosting_task') . '/hosting_task.module';
+  include_once drupal_get_path('module', 'hosting_task') . '/hosting_task.module';
   $ret = array();
   $result = db_query("SELECT nid FROM {node} WHERE type = :type AND status = :status", array(':type' => 'platform', ':status' => 1));
   while ($platform = db_fetch_object($result)) {

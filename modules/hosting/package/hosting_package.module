@@ -7,7 +7,7 @@
  * can be installed onto Drupal sites.
  */
 
-require_once DRUPAL_ROOT . '/' . 'hosting_package.instance.inc';
+require_once 'hosting_package.instance.inc';
 
 function _hosting_package_types() {
   return array(
@@ -471,7 +471,7 @@ function _hosting_language_names($languages) {
 }
 
 function _hosting_language_name($language) {
-  include_once DRUPAL_ROOT . '/' . './includes/locale.inc';
+  include_once './includes/locale.inc';
   $locales = _locale_get_predefined_list();
   return $locales[$language][0] . (isset($locales[$language][1]) ? ' ' . t('(@language)', array('@language' => $locales[$language][1])) : '');
 }

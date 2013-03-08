@@ -1,6 +1,6 @@
 <?php
-include_once DRUPAL_ROOT . '/' . "hosting_server.service.inc";
-include_once DRUPAL_ROOT . '/' . "hosting.ip.inc";
+include_once "hosting_server.service.inc";
+include_once "hosting.ip.inc";
 
 /**
  * Implements hook_node_info().

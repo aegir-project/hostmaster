@@ -5,7 +5,7 @@
  *   Drush include for the Hosting module's hosting resume command.
  */
 
-include_once DRUPAL_ROOT . '/' . 'hosting.inc';
+include_once 'hosting.inc';
 
 /**
  * Drush command to resume the Aegir frontend site.

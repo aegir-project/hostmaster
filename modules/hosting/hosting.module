@@ -110,7 +110,7 @@ function hosting_js_page() {
   if ($router_item = menu_get_item($path)) {
     if ($router_item['access']) {
       if ($router_item['file']) {
-        require_once DRUPAL_ROOT . '/' . $router_item['file'];
+        require_once $router_item['file'];
       }
       $return = call_user_func_array($router_item['page_callback'], $router_item['page_arguments']);
     }
@@ -928,7 +928,7 @@ function hosting_context_register($nid, $name) {
   // We include the file instead of enabling the module,
   // because we do not want the overhead of having all the
   // path UI stuff on nodes.
-  require_once DRUPAL_ROOT . '/' . "./modules/path/path.module";
+  require_once "./modules/path/path.module";
   path_set_alias("node/$nid", "hosting/c/$name");
 }
 

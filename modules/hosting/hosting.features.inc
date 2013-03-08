@@ -118,7 +118,7 @@ function hosting_features_form_submit($form, &$form_state) {
     variable_set('hosting_feature_' . $feature, $value);
     if ((!$current) && $value) {
       if ($module = $features[$feature]['module']) {
-        include_once DRUPAL_ROOT . '/' . 'includes/install.inc';
+        include_once 'includes/install.inc';
 
         $modules = array($module);
 
@@ -184,7 +184,7 @@ function hosting_get_features($refresh = FALSE) {
     $files = drupal_system_listing("/hosting\.feature\.[a-zA-Z_]*\.inc$/", "modules");
     if (sizeof($files)) {
       foreach ($files as $name => $info) {
-        include_once DRUPAL_ROOT . '/' . $info->filename;
+        include_once $info->filename;
       }
     }
     $functions = get_defined_functions();

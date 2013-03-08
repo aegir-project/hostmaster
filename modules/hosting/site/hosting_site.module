@@ -20,13 +20,13 @@ define('HOSTING_SITE_QUEUED', 0);
  */
 define('HOSTING_SITE_ENABLED', 1);
 
-include_once DRUPAL_ROOT . '/' . 'hosting_site.nodeapi.inc';
-include_once DRUPAL_ROOT . '/' . 'hosting_site.form.inc';
-include_once DRUPAL_ROOT . '/' . 'hosting_site.backups.inc';
+include_once 'hosting_site.nodeapi.inc';
+include_once 'hosting_site.form.inc';
+include_once 'hosting_site.backups.inc';
 
 //Conditonally include site quotas
 if (module_exists('hosting_quota')) {
-  include_once DRUPAL_ROOT . '/' . 'hosting_site.quota.inc';
+  include_once 'hosting_site.quota.inc';
 }
 
 /**

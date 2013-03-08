@@ -4,8 +4,8 @@
  *   Allow clients to be created and granted permissions over sites, tasks etc.
  */
 
-include DRUPAL_ROOT . '/' . 'hosting_client.access.inc';
-include DRUPAL_ROOT . '/' . drupal_get_path( 'module', 'node' ) . '/node.pages.inc';
+include 'hosting_client.access.inc';
+include drupal_get_path( 'module', 'node' ) . '/node.pages.inc';
 
 /**
  * The maximum length of a UNIX group

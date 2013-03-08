@@ -176,7 +176,7 @@ function hosting_package_update_3() {
  * Package languages are associated to package instances, not packages
  */
 function hosting_package_update_4() {
-  include_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'hosting_task') . '/hosting_task.module';
+  include_once drupal_get_path('module', 'hosting_task') . '/hosting_task.module';
   $ret = array();
   // TODO update_sql has been removed. Use the database API for any schema or data changes.
   $ret[] = array() /* update_sql("DROP TABLE {hosting_package_languages}") */;
@@ -319,7 +319,7 @@ function hosting_package_update_7() {
  * @see http://drupal.org/node/1354
  */
 function hosting_package_update_8() {
-  include_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'hosting_package') . '/hosting_package.instance.inc';
+  include_once drupal_get_path('module', 'hosting_package') . '/hosting_package.instance.inc';
   $ret = array();
   db_add_field('hosting_package_instance', 'version_code', array(
     'type' => 'int',

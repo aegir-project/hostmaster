@@ -15,7 +15,7 @@ define('HOSTING_SSL_ENABLED', 1);
  */
 define('HOSTING_SSL_REQUIRED', 2);
 
-include_once DRUPAL_ROOT . '/' . 'hosting_ssl.nodeapi.inc';
+include_once 'hosting_ssl.nodeapi.inc';
 
 /**
  * @todo Please document this function.
