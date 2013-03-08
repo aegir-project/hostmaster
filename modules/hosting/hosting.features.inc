@@ -81,7 +81,7 @@ function hosting_features_form($form, &$form_state) {
       '#required' => hosting_feature($feature) == HOSTING_FEATURE_REQUIRED,
       '#disabled' => hosting_feature($feature) == HOSTING_FEATURE_REQUIRED,
     );
-    if ($info['group'] == 'experimental') {
+    if (isset($info['group']) && $info['group'] == 'experimental') {
       $experimental[$feature] = $element;
     }
     else {
