@@ -201,17 +201,16 @@ function hosting_nodeapi_OLD(&$node, $op, $arg1, $arg2) {
 
       case 'load':
         $return = db_fetch_array(db_query("SELECT name AS hosting_name FROM {hosting_context} WHERE nid = :nid", array(':nid' => $node->nid)));
-        if ($return === FALSE) { // Should only happen on install
+        if ($return === FALSE) {
+          // Should only happen on install.
           $return = array();
         }
         break;
 
       case 'delete':
-        // TODO Please review the conversion of this statement to the D7 database API syntax.
-        /* db_query("DELETE FROM {hosting_context} WHERE nid = %d", $node->nid) */
         db_delete('hosting_context')
-  ->condition('nid', $node->nid)
-  ->execute();
+          ->condition('nid', $node->nid)
+          ->execute();
         break;
     }
   }
