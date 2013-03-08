@@ -903,33 +903,29 @@ function hosting_context_load($name) {
  */
 function hosting_context_register($nid, $name) {
   // Check first to see if this nid exists in the system. If so, update its name
-  $result = db_query("SELECT nid FROM {hosting_context} WHERE nid = :nid", array(':nid' => $nid));
-  if ($obj = db_fetch_object($result)) {
-    // TODO Please review the conversion of this statement to the D7 database API syntax.
-    /* db_query("UPDATE {hosting_context} SET name = '%s' WHERE nid = %d", $name, $nid) */
+  if ($result = db_query("SELECT nid FROM {hosting_context} WHERE nid = :nid", array(':nid' => $nid))->fetch()) {
     db_update('hosting_context')
-  ->fields(array(
-    'name' => $name,
-  ))
-  ->condition('nid', $nid)
-  ->execute();
+      ->fields(array(
+        'name' => $name,
+      ))
+      ->condition('nid', $nid)
+      ->execute();
   }
   else {
     // It's a new item
-    // TODO Please review the conversion of this statement to the D7 database API syntax.
-    /* db_query("INSERT INTO {hosting_context} (nid, name) VALUES (%d, '%s')", $nid, $name) */
     $id = db_insert('hosting_context')
-  ->fields(array(
-    'nid' => $nid,
-    'name' => $name,
-  ))
-  ->execute();
+      ->fields(array(
+        'nid' => $nid,
+        'name' => $name,
+      ))
+      ->execute();
   }
   // We include the file instead of enabling the module,
   // because we do not want the overhead of having all the
   // path UI stuff on nodes.
   require_once "./modules/path/path.module";
-  path_set_alias("node/$nid", "hosting/c/$name");
+  $path = array('source' => "node/$nid", 'alias' => "hosting/c/$name");
+  path_save($path);
 }
 
 /**
