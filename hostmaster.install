@@ -1,0 +1,16 @@
+<?php
+
+/**
+ * Implement hook_install().
+ *
+ * Perform actions to set up the site for this profile.
+ */
+function hostmaster_install() {
+
+  // Enable Eldir, and set is as default theme
+  theme_enable(array('theme_default' => 'eldir'));
+
+  // Disable the default Bartik theme
+  theme_disable(array('bartik'));
+
+}
