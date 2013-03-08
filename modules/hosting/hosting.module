@@ -10,9 +10,9 @@
 /**
  * Not split for performance reasons. Just to keep code together.
  */
-include_once DRUPAL_ROOT . '/' . 'hosting.inc';
-include_once DRUPAL_ROOT . '/' . 'hosting.queues.inc';
-include_once DRUPAL_ROOT . '/' . 'hosting.features.inc';
+include_once dirname(__FILE__) . '/hosting.inc';
+include_once dirname(__FILE__) . '/hosting.queues.inc';
+include_once dirname(__FILE__) . '/hosting.features.inc';
 
 /**
  * Implements hook_menu().
