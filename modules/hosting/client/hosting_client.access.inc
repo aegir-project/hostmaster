@@ -16,7 +16,7 @@ function hosting_client_user_load($users) {
  */
 function hosting_client_user_view($account, $view_mode) {
   if (hosting_feature('client')) {
-    return hosting_client_user_view($user);
+    return hosting_client_view_user($user);
   }
 }
 
@@ -45,19 +45,6 @@ function hosting_client_user_insert(&$edit, $account, $category) {
 }
 
 /**
- * Implements hook_user_presave().
- */
-function hosting_client_user_presave(&$edit, $account, $category) {
-  hosting_client_user_form_submit($edit, $user);
-  $edit['hosting_client'] = NULL;
-}
-
-/**
- * Implements hook_user_presave().
- */
-function hosting_client_user_presave(&$edit, $account, $category) { }
-
-/**
  * Implements hook_user_cancel().
  */
 function hosting_client_user_cancel($edit, $account, $method) {
@@ -78,7 +65,7 @@ function hosting_client_user_OLD($op, &$edit, &$user, $category = NULL) { }
  *
  * @see hosting_client_user()
  */
-function hosting_client_user_view($user) {
+function hosting_client_view_user($user) {
   if ($user->client_id) {
 
     foreach ($user->client_id as $client => $type) {
@@ -316,8 +303,8 @@ function hosting_client_node_access_records($node) {
 function hosting_get_client_from_user($uid) {
   $clients = array();
   if ($results = db_query("SELECT client, contact_type FROM {hosting_client_user} WHERE user = :user", array(':user' => $uid))) {
-    while ($result = db_fetch_array($results)) {
-      $clients[$result['client']] = explode(',', $result['contact_type']);
+    foreach ($results as $result) {
+      $clients[$result->client] = explode(',', $result->contact_type);
     }
   }
   return $clients;
