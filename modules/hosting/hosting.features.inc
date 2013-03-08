@@ -124,7 +124,7 @@ function hosting_features_form_submit($form, &$form_state) {
 
         // Enable the module.
         drupal_set_message(t("Enabling %module module", array('%module' => implode(",", $modules))));
-        drupal_install_modules($modules);
+        module_enable($modules);
       }
       if (function_exists($callback = $features[$feature]['enable'])) {
         $callback();
