@@ -1,39 +1,6 @@
 <?php
-// $Id$
-
-/**
- * Return an array of the modules to be enabled when this profile is installed.
- *
- * @return
- *  An array of modules to be enabled.
- */
-function hostmaster_profile_modules() {
-  return array(
-    /* core */ 'block', 'color', 'filter', 'help', 'menu', 'node', 'system', 'user',
-    /* aegir contrib */ 'hosting', 'hosting_task', 'hosting_client', 'hosting_db_server', 'hosting_package', 'hosting_platform', 'hosting_site', 'hosting_web_server', 'hosting_server', 'hosting_clone', 'hosting_cron', 'hosting_migrate',
-    /* other contrib */ 'install_profile_api' /* needs >= 2.1 */, 'jquery_ui', 'modalframe', 'admin_menu',
-    /* Aegir actual contrib */
-    'hosting_platform_pathauto',
-  );
-}
-
-/**
- * Return a description of the profile for the initial installation screen.
- *
- * @return
- *   An array with keys 'name' and 'description' describing this profile.
- */
-function hostmaster_profile_details() {
-  return array(
-    'name' => 'Hostmaster',
-    'description' => 'Select this profile to manage the installation and maintenance of hosted Drupal sites.'
-  );
-}
 
 function hostmaster_profile_tasks(&$task, $url) {
-  // Install dependencies
-  install_include(hostmaster_profile_modules());
-
   // add support for nginx
   if (d()->platform->server->http_service_type === 'nginx') {
     drupal_install_modules(array('hosting_nginx'));
