@@ -184,7 +184,7 @@ function hosting_get_features($refresh = FALSE) {
     $files = drupal_system_listing("/hosting\.feature\.[a-zA-Z_]*\.inc$/", "modules");
     if (sizeof($files)) {
       foreach ($files as $name => $info) {
-        include_once $info->filename;
+        include_once DRUPAL_ROOT . '/' . $info->uri;
       }
     }
     $functions = get_defined_functions();
