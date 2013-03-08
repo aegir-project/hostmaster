@@ -237,27 +237,27 @@ function hosting_permission() {
   return array(
     'access hosting wizard' => array(
       'title' => t('access hosting wizard'),
-      'description' => t('TODO Add a description for \'access hosting wizard\''),
+      'description' => t("TODO Remove 'access hosting wizard', as it is not checked anywhere."),
     ),
     'administer hosting queues' => array(
       'title' => t('administer hosting queues'),
-      'description' => t('TODO Add a description for \'administer hosting queues\''),
+      'description' => t('Configure the frequency that cron, backup and task events are process.'),
     ),
     'administer hosting features' => array(
       'title' => t('administer hosting features'),
-      'description' => t('TODO Add a description for \'administer hosting features\''),
+      'description' => t('Configure the exposed functionality of the hosting system.'),
     ),
     'administer hosting' => array(
       'title' => t('administer hosting'),
-      'description' => t('TODO Add a description for \'administer hosting\''),
+      'description' => t('Configure and manage the hosting system.'),
     ),
     'access disabled sites' => array(
       'title' => t('access disabled sites'),
-      'description' => t('TODO Add a description for \'access disabled sites\''),
+      'description' => t('Access disabled sites.'),
     ),
     'administer hosting settings' => array(
       'title' => t('administer hosting settings'),
-      'description' => t('TODO Add a description for \'administer hosting settings\''),
+      'description' => t('Configure general hosting settings.'),
     ),
   );
 }
