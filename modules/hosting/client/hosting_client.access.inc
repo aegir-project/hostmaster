@@ -8,7 +8,7 @@
  * Implements hook_user_load().
  */
 function hosting_client_user_load($users) {
-  $user->client_id = hosting_get_client_from_user($user->uid);
+  $users['1']->client_id = hosting_get_client_from_user($users['1']->uid);
 }
 
 /**
