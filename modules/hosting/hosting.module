@@ -389,11 +389,6 @@ function hosting_block_view($delta) {
 }
 
 /**
- * Implements hook_block().
- */
-function hosting_block_OLD($op = 'list', $delta = 0, $edit = array()) { }
-
-/**
  * Build a block summarising the hosting queues.
  */
 function hosting_queue_summary_block() {
