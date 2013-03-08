@@ -2,8 +2,8 @@ core = 7.x
 api = 2
 
 ; Contrib modules
-projects[admin_menu][version] = "7.x-3.0-rc4"
-projects[openidadmin][version] = "7.x-1.0"
+projects[admin_menu][version] = "3.0-rc4"
+projects[openidadmin][version] = "1.0"
 
 ; These are contrib modules, but come under the Aegir 'umbrella' of control.
 ; projects[hosting_platform_pathauto][version] = "2.0-beta1"
