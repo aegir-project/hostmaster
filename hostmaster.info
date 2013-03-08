@@ -13,7 +13,7 @@ dependencies[] = system
 dependencies[] = user
 
 ;; Aegir core ;;
-;dependencies[] = hosting
+dependencies[] = hosting
 ;dependencies[] = hosting_task
 ;dependencies[] = hosting_client
 ;dependencies[] = hosting_db_server
