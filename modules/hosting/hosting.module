@@ -378,7 +378,7 @@ function hosting_block_info() {
     'enabled' => 1,
     'region' => 'right',
     'weight' => 1,
-    'cache' => BLOCK_NO_CACHE,
+    'cache' => 'BLOCK_NO_CACHE',
   );
   return $blocks;
 }
