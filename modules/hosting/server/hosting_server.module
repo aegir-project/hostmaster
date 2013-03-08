@@ -366,17 +366,14 @@ function hosting_server_update($node) {
 
     // Remove disabled services
     foreach (array_diff(array_keys(hosting_server_services()), array_keys($node->services)) as $name) {
-      // TODO Please review the conversion of this statement to the D7 database API syntax.
-      /* db_query("DELETE FROM {hosting_service} WHERE service = '%s' AND nid = %d", $name, $node->nid) */
       db_delete('hosting_service')
-  ->condition('service', $name)
-  ->condition('nid', $node->nid)
-  ->execute();
+        ->condition('service', $name)
+        ->condition('nid', $node->nid)
+        ->execute();
     }
   }
 
   hosting_ip_save($node, TRUE);
-
 
   if (!$node->no_verify) {
     hosting_add_task($node->nid, 'verify');
@@ -392,15 +389,12 @@ function hosting_server_insert($node) {
     hosting_context_register($node->nid, $hosting_name );
   }
 
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query("INSERT INTO {hosting_server} (vid, nid)
-   VALUES (%d, %d)", $node->vid, $node->nid) */
   $id = db_insert('hosting_server')
-  ->fields(array(
-    'vid' => $node->vid,
-    'nid' => $node->nid,
-  ))
-  ->execute();
+    ->fields(array(
+      'vid' => $node->vid,
+      'nid' => $node->nid,
+    ))
+    ->execute();
 
   hosting_ip_save($node, FALSE);
 
@@ -416,11 +410,9 @@ function hosting_server_insert($node) {
  * Implementation of hook_delete_revision().
  */
 function hosting_nodeapi_server_delete_revision(&$node) {
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query('DELETE FROM {hosting_server} WHERE vid = %d', $node->vid) */
   db_delete('hosting_server')
-  ->condition('vid', $node->vid)
-  ->execute();
+    ->condition('vid', $node->vid)
+    ->execute();
   hosting_ip_delete_revision($node);
   hosting_server_invoke_services($node, 'delete_revision');
 }
@@ -429,11 +421,9 @@ function hosting_nodeapi_server_delete_revision(&$node) {
  * Implements hook_delete().
  */
 function hosting_server_delete($node) {
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query('DELETE FROM {hosting_server} WHERE nid = %d', $node->nid) */
   db_delete('hosting_server')
-  ->condition('nid', $node->nid)
-  ->execute();
+    ->condition('nid', $node->nid)
+    ->execute();
   hosting_ip_delete($node);
   hosting_context_delete($node->nid);
   hosting_server_invoke_services($node, 'delete_revision');
