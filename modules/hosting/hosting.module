@@ -2,7 +2,7 @@
 
 /**
  * @file
- *   Hosting module.
+ * Hosting module.
  *
  * Contains just about all the interface magic of hostmaster.
  */
@@ -21,7 +21,6 @@ function hosting_menu() {
   global $user;
   $items = array();
 
-
   $items['hosting/disabled'] = array(
     'title' => 'Site disabled',
     'page callback' => 'hosting_disabled_site',
@@ -30,7 +29,7 @@ function hosting_menu() {
   );
 
   $items['hosting/js'] = array(
-    'title' => t('ahah callback'),
+    'title' => 'ahah callback',
     'page callback' => 'hosting_js_page',
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
@@ -42,8 +41,6 @@ function hosting_menu() {
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
   );
-
-
 
   $items['admin/hosting'] = array(
     'title' => 'Hosting',
@@ -100,12 +97,12 @@ function hosting_js_page() {
   $args = func_get_args();
   $path = implode('/', $args);
 
-  // Incase Aegir is running in a sub-directory the base_path should be stripped away here
-//    Remove the leading slash from base_path as $path doesn't have one either
+  // In case Aegir is running in a sub-directory, the base_path should be
+  // stripped away here. Remove the leading slash from base_path as $path
+  // doesn't have one either.
   $path = str_replace(ltrim(base_path(), '/'), '', $path);
 
   menu_set_active_item($path);
-  #  $_SERVER['REQUEST_URI'] = str_replace('/hosting/js', '', $_SERVER['REQUEST_URI']);
 
   if ($router_item = menu_get_item($path)) {
     if ($router_item['access']) {
@@ -135,7 +132,10 @@ function hosting_menu_alter(&$items) {
   foreach ($types as $feature => $type) {
     $path = sprintf('node/add/%s', str_replace('_', '-', $type));
     $items[$path]['access callback'] = 'hosting_menu_access';
-    $items[$path]['access arguments'] = array(str_replace('_', ' ', $type), $feature);
+    $items[$path]['access arguments'] = array(
+      str_replace('_', ' ', $type),
+      $feature,
+    );
   }
 
   // These node types should remain hidden, and provide no user interface.
@@ -153,6 +153,7 @@ function hosting_menu_alter(&$items) {
  * @param $feature
  *   The machine name of the host feature that should be additionally checked to
  *   see if it's enabled.
+ *
  * @return
  *   TRUE if the user can access, FALSE otherwise.
  */
@@ -223,7 +224,7 @@ function hosting_nodeapi_OLD(&$node, $op, $arg1, $arg2) {
     if (isset($result) && is_array($result)) {
       $return = array_merge_recursive($return, $result);
     }
-    else if (isset($result)) {
+    elseif (isset($result)) {
       $return[] = $result;
     }
   }
@@ -267,40 +268,27 @@ function hosting_permission() {
  *
  * @param $type
  *   The node type.
+ *
  * @return
  *   Description text for the node type.
  */
 function hosting_node_help($type) {
   switch ($type) {
     case 'site':
-      return t("<strong>An instance of a hosted site.</strong>
-                It contains information relating to the site, most notably the domain name, database server
-                and platform it is being published on. A site may also have several aliases for additional
-                domains the site needs to be accessible on.");
-      break;
+      return t("<strong>An instance of a hosted site.</strong>\nIt contains information relating to the site, most notably the domain name, database server and platform it is being published on. A site may also have several aliases for additional domains the site needs to be accessible on.");
+
     case 'platform':
-      return t("<strong>The file system location on a specific web server on which to publish sites.</strong>
-                Multiple platforms can co-exist on the same web server, and need to do so for
-                upgrades to be managed, as this is accomplished by migrating the site between platforms.
-                Platforms are most commonly built for specific releases of Drupal.");
-      break;
+      return t("<strong>The file system location on a specific web server on which to publish sites.</strong>\nMultiple platforms can co-exist on the same web server, and need to do so for upgrades to be managed, as this is accomplished by migrating the site between platforms. Platforms are most commonly built for specific releases of Drupal.");
+
     case 'client':
-      return t("<strong>The person or group that runs the site.</strong>
-                This information is usually required for billing and access purposes, to ensure
-                that only certain people are able to view the information for sites they run.
-                If you do not intend on having more than one client access the system,
-                you will not need to create any additional clients for your purposes.");
-      break;
+      return t("<strong>The person or group that runs the site.</strong>\nThis information is usually required for billing and access purposes, to ensure that only certain people are able to view the information for sites they run. If you do not intend on having more than one client access the system, you will not need to create any additional clients for your purposes.");
+
     case 'server':
-      return t("<strong>The physical machine which will provide various services to your site.</strong>
-                Each server can have multiple services associated to it. To host a site you require a database service and a web service, which can either be provided by a single or multiple servers.");
-      break;
+      return t("<strong>The physical machine which will provide various services to your site.</strong>\n Each server can have multiple services associated to it. To host a site you require a database service and a web service, which can either be provided by a single or multiple servers.");
+
     case 'task':
-      return t("<strong>The mechanism whereby Hostmaster keeps track of all changes that occur to the system.</strong>
-                Each task acts as a command for the back-end, and contains a full log of all changes that have occurred.
-                If a task should fail, the administrator will be notified with an explanation of exactly what went wrong,
-                and how to fix it.");
-      break;
+      return t("<strong>The mechanism whereby Hostmaster keeps track of all changes that occur to the system.</strong>\nEach task acts as a command for the back-end, and contains a full log of all changes that have occurred. If a task should fail, the administrator will be notified with an explanation of exactly what went wrong, and how to fix it.");
+
   }
 }
 
@@ -314,23 +302,19 @@ function hosting_init() {
   define('HOSTING_DEFAULT_DB_SERVER', variable_get('hosting_default_db_server', 2));
   define('HOSTING_DEFAULT_WEB_SERVER', variable_get('hosting_default_web_server', 3));
 
-  /**
-   * This client has access to everything, see hosting_client.access.inc
-   */
+  // This client has access to everything, see hosting_client.access.inc
   define('HOSTING_ADMIN_CLIENT', variable_get('hosting_admin_client', 1));
 
   define('HOSTING_OWN_DB_SERVER', variable_get('hosting_own_db_server', 2));
   define('HOSTING_OWN_WEB_SERVER', variable_get('hosting_own_web_server', 3));
   define('HOSTING_OWN_PLATFORM', variable_get('hosting_own_platform', 6));
 
-
-  /**
-   * Find the base URL, this is used by the initial 'hosting-setup' drush command
-   * This gets defined in the bootstrap, so just using the global definition.
-   */
+  // Find the base URL, this is used by the initial 'hosting-setup' Drush
+  // command. This gets defined in the bootstrap, so just using the global
+  // definition.
   define('HOSTING_DEFAULT_BASE_URL', $GLOBALS['base_url']);
 
-  // moved from hook_menu()
+  // Moved from hook_menu()
   drupal_add_css(drupal_get_path('module', 'hosting') . '/hosting.css');
 }
 
@@ -346,7 +330,10 @@ function hosting_theme() {
   );
 }
 
-function _hosting_node_link($nid, $title = null) {
+/**
+ * Generates a link to a node.
+ */
+function _hosting_node_link($nid, $title = NULL) {
   if (is_null($nid)) {
     return t("None");
   }
@@ -393,6 +380,7 @@ function hosting_block_view($delta) {
         'title' => t('Queues'),
         'content' => hosting_queue_block(),
       );
+
     case 'hosting_queues_summary':
       return array(
         'title' => t('Queues summary'),
@@ -415,7 +403,7 @@ function hosting_queue_summary_block() {
     $output = '';
     foreach ($queues as $queue => $info) {
       $disp = array();
-      # special case
+      // Special case.
       if (!$info['enabled']) {
         $disp[] = t('Status: disabled');
         continue;
@@ -485,12 +473,13 @@ function hosting_domain_allowed($url, $params = array()) {
 function drush_hosting_setup() {
   if (drush_confirm("This command will replace your crontab for this user. continue?")) {
     variable_set('hosting_dispatch_enabled', FALSE);
-    // attempt to run the dispatch command, to make sure it runs without the queue being enabled.
+    // Attempt to run the dispatch command, to make sure it runs without the
+    // queue being enabled.
     variable_set('hosting_dispatch_enabled', TRUE);
     drush_print(_hosting_dispatch_cmd());
     exec(_hosting_dispatch_cmd(), $return, $code);
     variable_set('hosting_dispatch_enabled', FALSE);
-    $return = join("\n", $return);
+    $return = implode("\n", $return);
     $data = unserialize($return);
     if ($code == DRUSH_SUCCESS) {
       variable_set('hosting_dispatch_enabled', TRUE);
@@ -515,7 +504,7 @@ function _hosting_setup_cron() {
   $existing = FALSE;
   exec('crontab -l 2> /dev/null', $cron);
   variable_set('hosting_cron_backup', $cron);
-  if (sizeof($cron)) {
+  if (count($cron)) {
     drush_log(dt("Replacing existing crontab"), 'warning');
   }
   else {
@@ -533,7 +522,7 @@ function _hosting_setup_cron() {
     else {
       $success = FALSE;
     }
-    // pclose returns shell exit codes (ie. 0 is success)
+    // 'pclose' returns shell exit codes (ie. 0 is success).
     if (pclose($fp)) {
       $success = FALSE;
     }
@@ -560,7 +549,7 @@ function _hosting_node_add($type = '') {
   $type = ($type) ? str_replace('-', '_', $type) : NULL;
 
   // If a node type has been specified, validate its existence.
-  if (isset($types[$type]) && user_access('create ' .  $type) && (hosting_feature($type) !== HOSTING_FEATURE_DISABLED)) {
+  if (isset($types[$type]) && user_access('create ' . $type) && (hosting_feature($type) !== HOSTING_FEATURE_DISABLED)) {
     // Initialize settings:
     $node = array(
       'uid' => $user->uid,
@@ -636,12 +625,15 @@ function hosting_set_breadcrumb($node) {
     case 'task':
       $breadcrumbs[] = _hosting_node_link($node->rid);
       break;
+
     case 'platform':
       $breadcrumbs[] = _hosting_node_link($node->web_server);
       break;
+
     case 'site':
       $breadcrumbs[] = _hosting_node_link($node->platform);
       break;
+
     case 'server':
       $breadcrumbs[] = l(t('Servers'), 'hosting/servers');
       break;
@@ -678,7 +670,7 @@ function hosting_queues_configure($form, &$form_state) {
     );
 
     $form[$queue]["last_run"] = array(
-      '#value' => hosting_format_interval(variable_get('hosting_queue_' . $queue . '_last_run', false)),
+      '#value' => hosting_format_interval(variable_get('hosting_queue_' . $queue . '_last_run', FALSE)),
     );
     $form[$queue]['frequency']['#prefix'] = "<div class='hosting-queue-frequency'>";
     $form[$queue]['frequency']['#suffix'] = "</div>";
@@ -734,7 +726,7 @@ function hosting_queues_configure($form, &$form_state) {
   }
   $form['help'] = array(
     '#type' => 'item',
-    '#description' => t('Increasing the queue frequency to every 1 second will not cause them to be dispatched every second, as the dispatcher can only run once per minute via cron. However, with such a short frequency, executing the hosting-dispatch command manually from the CLI will allow you to \'force\' the queues to be dispatched between cron runs. This may be useful for development purposes.'),
+    '#description' => t("Increasing the queue frequency to every 1 second will not cause them to be dispatched every second, as the dispatcher can only run once per minute via cron. However, with such a short frequency, executing the hosting-dispatch command manually from the CLI will allow you to 'force' the queues to be dispatched between cron runs. This may be useful for development purposes."),
   );
   $form['submit'] = array(
     '#type' => 'submit',
@@ -823,7 +815,8 @@ function hosting_form_alter(&$form, &$form_state, $form_id) {
     exit;
   }
 
-  // Alter the 'Add User' form to remind users that this is not the New Client form
+  // Alter the 'Add User' form to remind users that this is not the New Client
+  // form.
   if ($form_id == 'user_register') {
     $form[user_registration_help] = array(
       '#type' => 'item',
@@ -844,14 +837,16 @@ function hosting_form_alter(&$form, &$form_state, $form_id) {
       $form['author']['#access'] = FALSE;
       $form['comment_settings']['#access'] = FALSE;
 
-      // because these aren't really posts, 'preview' doesnt make sense in this context.
+      // Because these aren't really posts, 'preview' doesn't make sense in
+      // this context.
       $form['buttons']['preview']['#access'] = FALSE;
     }
   }
 }
 
 /**
- * Hosting version of menu_rebuild() from Drupal 6.15
+ * Hosting version of menu_rebuild() from Drupal 6.15.
+ *
  * This is needed for the upgrade path of a hostmaster platform from
  * 6.15 to 6.16. The Hosting module calls update hooks that run
  * menu_rebuild() which break on a 6.16 platform as the semaphore
@@ -883,7 +878,7 @@ function hosting_menu_rebuild() {
  */
 function hosting_context_load($name) {
   $name = ltrim($name, '@');
-  // TODO : introduce static caching ?
+  // TODO: introduce static caching ?
 
   $result = db_query("SELECT nid FROM {hosting_context} WHERE name = :name", array(':name' => $name));
 
@@ -902,7 +897,8 @@ function hosting_context_load($name) {
  *   The name of the provision context.
  */
 function hosting_context_register($nid, $name) {
-  // Check first to see if this nid exists in the system. If so, update its name
+  // Check first to see if this nid exists in the system. If so, update its
+  // name.
   if ($result = db_query("SELECT nid FROM {hosting_context} WHERE nid = :nid", array(':nid' => $nid))->fetch()) {
     db_update('hosting_context')
       ->fields(array(
@@ -912,7 +908,7 @@ function hosting_context_register($nid, $name) {
       ->execute();
   }
   else {
-    // It's a new item
+    // It's a new item.
     $id = db_insert('hosting_context')
       ->fields(array(
         'nid' => $nid,
