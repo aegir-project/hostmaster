@@ -385,7 +385,7 @@ function hosting_site_count($platform = NULL, $statuses = NULL) {
   if (count($statuses)) {
     // This essentially re-implements db_placeholders() which was removed in
     // Drupal 7. TODO: re-factor the DBTNG way.
-    $placeholders = implode(',', array_fill(0, count($statuses), '%d');
+    $placeholders = implode(',', array_fill(0, count($statuses), '%d'));
     $where[] = '(status IN (' . $placeholders . '))';
     $args = array_merge($args, $statuses);
   }
