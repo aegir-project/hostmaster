@@ -893,6 +893,7 @@ function hosting_client_block_info() {
     'region' => 'left',
     'weight' => 10,
   );
+  return $blocks;
 }
 
 /**
