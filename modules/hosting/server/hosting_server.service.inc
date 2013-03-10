@@ -23,7 +23,7 @@ class hostingService {
 
   protected function mergeData($query) {
     $args = func_get_args();
-    $result = db_fetch_array(call_user_func_array('db_query', $args));
+    $result = call_user_func_array('db_query', $args);
     $this->setValues($result);
   }
 
