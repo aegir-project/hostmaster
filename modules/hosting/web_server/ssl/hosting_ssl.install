@@ -131,20 +131,15 @@ function hosting_ssl_install() {
 }
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * Remove SSL service records from hosting_service table.
  */
 function hosting_ssl_uninstall() {
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query("DELETE FROM {hosting_service} WHERE service='http' and type='apache_ssl'") */
   db_delete('hosting_service')
-  ->condition('service', 'http' and type)
-  ->execute();
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query("DELETE FROM {hosting_service} WHERE service='http' and type='nginx_ssl'") */
+    ->condition('service', 'http')
+    ->condition('type', 'apache_ssl')
+    ->execute();
   db_delete('hosting_service')
-  ->condition('service', 'http' and type)
-  ->execute();
-  // TODO The drupal_(un)install_schema functions are called automatically in D7.
-  // drupal_uninstall_schema('hosting_ssl')
+    ->condition('service', 'http')
+    ->condition('type', 'nginx_ssl')
+    ->execute();
 }
