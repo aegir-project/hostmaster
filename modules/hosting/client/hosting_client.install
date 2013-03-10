@@ -81,13 +81,13 @@ function hosting_client_schema() {
  * Implements hook_install().
  */
 function hosting_client_install() {
-  // Create tables.
-  // TODO The drupal_(un)install_schema functions are called automatically in D7.
-  // drupal_install_schema('hosting_client')
-  $ret = array();
-  // TODO update_sql has been removed. Use the database API for any schema or data changes.
-  $ret[] = array() /* update_sql("INSERT INTO {hosting_client_user} (user, client) VALUES (1, 1)") */;
-  return $ret;
+  // Add default 'admin' client.
+  $insert = db_insert('hosting_client_user')
+    ->fields(array(
+      'user' => 1,
+      'client' => 1,
+    ))
+    ->execute();
 }
 
 /**
