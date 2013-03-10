@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- *   Install, update and uninstall for the dns module.
+ *   Define database schemas for the dns module.
  */
 
 /**
@@ -35,18 +35,3 @@ function hosting_dns_schema() {
   );
 }
 
-/**
- * Implements hook_install().
- */
-function hosting_dns_install() {
-  // TODO The drupal_(un)install_schema functions are called automatically in D7.
-  // drupal_install_schema('hosting_dns')
-}
-
-/**
- * Implements hook_uninstall().
- */
-function hosting_dns_uninstall() {
-  // TODO The drupal_(un)install_schema functions are called automatically in D7.
-  // drupal_uninstall_schema('hosting_dns')
-}

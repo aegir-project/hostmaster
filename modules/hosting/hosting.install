@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- *   Install, update and uninstall for the hosting module.
+ *   Define database schemas and update functions for the hosting module.
  */
 
 /**
@@ -28,4 +28,365 @@ function hosting_schema() {
     ),
   );
   return $schema;
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Set weight for hosting module.
+ */
+function hosting_update_1() {
+  $ret = array();
+  $ret[] = update_sql("UPDATE {system} SET weight = 10 WHERE type='module' and name='hosting'");
+  return $ret;
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Update function to remove unused table
+ */
+function hosting_update_2() {
+  $ret = array();
+  $ret[] = update_sql("DROP TABLE {hosting_config_template}");
+  return $ret;
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Hide hostmaster and hostslave profiles.
+ */
+function hosting_update_3() {
+  $ret = array();
+  $result = db_query("select n.nid from {node} n left join hosting_package p on n.nid = p.nid where short_name in ('hostslave', 'hostmaster')");
+  while ($obj = db_fetch_object($result)) {
+    $in[] = (int) $obj->nid;
+  }
+  $in = implode(", ", $in);
+  $ret[] = update_sql("UPDATE {node} SET status = 0 WHERE nid IN (" . $in . ")", $values);
+  return $ret;
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Enable the modalframe and jquery_ui modules.
+ */
+function hosting_update_6000() {
+  $ret = array();
+  module_enable(array('modalframe', 'jquery_ui'));
+  return $ret;
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Change the default configured blocks to match eldir.
+ */
+function hosting_update_6001() {
+  $ret = array();
+  module_enable(array('install_profile_api'));
+  drupal_load('module', 'install_profile_api');
+  install_include(array('block'));
+
+  $theme = 'eldir';
+  install_disable_block('hosting', 'hosting_queues_summary', $theme);
+  install_set_block('user', 0 , $theme, 'right', 0);
+  install_set_block('user', 1 , $theme, 'right', 0);
+  install_set_block('hosting', 'hosting_queues', $theme, 'right', 5);
+  install_set_block('hosting', 'hosting_summary', $theme, 'right', 10);
+
+  return $ret;
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * no-op - this used to verify one platform and all sites but breaks
+ * major upgrades.
+ */
+function hosting_update_6002() {
+  return array();
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Lower the default amount of concurrent tasks.
+ */
+function hosting_update_6003() {
+  $ret = array();
+  variable_set('hosting_queue_tasks_items', 5);
+  return $ret;
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Stricter initial permissions for the anonymous user.
+ */
+function hosting_update_6004() {
+  $ret = array();
+  install_include(array('user'));
+
+  install_remove_permissions(install_get_rid('anonymous user'), array('access content', 'access all views'));
+  install_remove_permissions(install_get_rid('authenticated user'), array('access content', 'access all views'));
+
+  return $ret;
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Move some menu items to the primary links menu.
+ */
+function hosting_update_6005() {
+  drupal_install_modules(array('hosting_server'));
+  hosting_menu_rebuild();
+
+  install_include(array('menu'));
+  $menu_name = variable_get('menu_primary_links_source', 'primary-links');
+
+  $items = install_menu_get_items('hosting/servers');
+  $item = db_fetch_array(db_query("SELECT * FROM {menu_links} WHERE mlid = %d", $items[0]['mlid']));
+  $item['menu_name'] = $menu_name;
+  $item['customized'] = 1;
+  $item['options'] = unserialize($item['options']);
+  install_menu_update_menu_item($item);
+
+  $items = install_menu_get_items('hosting/sites');
+  $item = db_fetch_array(db_query("SELECT * FROM {menu_links} WHERE mlid = %d", $items[0]['mlid']));
+  $item['menu_name'] = $menu_name;
+  $item['customized'] = 1;
+  $item['options'] = unserialize($item['options']);
+  install_menu_update_menu_item($item);
+
+  hosting_menu_rebuild();
+  return array();
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Move the platforms into primary links.
+ */
+function hosting_update_6006() {
+  install_include(array('menu'));
+  $menu_name = variable_get('menu_primary_links_source', 'primary-links');
+
+  $items = install_menu_get_items('hosting/platforms');
+  $item = db_fetch_array(db_query("SELECT * FROM {menu_links} WHERE mlid = %d", $items[0]['mlid']));
+  $item['menu_name'] = $menu_name;
+  $item['customized'] = 1;
+  $item['options'] = unserialize($item['options']);
+  install_menu_update_menu_item($item);
+
+  return array();
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Update the default db_server now that we've merged the webserver and dbserver nodes
+ * See http://drupal.org/node/731550
+ */
+function hosting_update_6007() {
+  variable_set('hosting_default_db_server', variable_get('hosting_default_web_server', 3));
+  variable_set('hosting_own_db_server', variable_get('hosting_default_web_server', 3));
+  return array();
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Add hosting_context table to map alias names.
+ */
+function hosting_update_6008() {
+  $return = array();
+
+  if (!variable_get('hosting_update_6008_run', FALSE)) {
+
+    db_create_table($return, 'hosting_context', array(
+      'fields' => array(
+        'nid' => array(
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+        ),
+        'name' => array(
+          'type' => 'varchar',
+          'length' => 50,
+          'not null' => TRUE,
+        ),
+      ),
+      'primary key' => array('nid'),
+      'unique keys' => array(
+        'name'     => array('name')
+      ),
+    ));
+
+    variable_set('hosting_update_6008_run', TRUE);
+
+    $records = array();
+
+    $result = db_query("SELECT n.nid, title FROM {node} n LEFT JOIN {hosting_site} s ON n.nid=s.nid WHERE s.status <> -2 AND n.type='site'");
+    while ($object = db_fetch_object($result)) {
+      $records[$object->nid] = $object->title;
+    }
+
+    $result =  db_query("SELECT n.nid, title FROM {node} n LEFT JOIN {hosting_server} s ON n.nid=s.nid WHERE n.status = 1 AND n.type='server'");
+    while ($object = db_fetch_object($result)) {
+      $records[$object->nid] = 'server_' . preg_replace("/[!\W\.\-]/", "", $object->title);
+    }
+
+    // We start with the web server because we assume that the main hostmaster site is installed locally.
+    $server_id = variable_get('hosting_default_web_server', 3);
+    $records[$server_id] = 'server_master';
+
+    foreach ($records as $nid => $name) {
+      hosting_context_register($nid, $name);
+    }
+  }
+  return $return;
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Fix the reference to the master server so that it no longer points at localhost.
+ */
+function hosting_update_6009() {
+  // This undoes the change we made previously in update_6008, but can be run again.
+  $ret = array();
+
+  db_query("UPDATE {hosting_context} SET name='server_master' WHERE name='server_localhost'");
+  $nid = db_result(db_query("SELECT nid from {hosting_context} WHERE name='server_master'"));
+  $uname = php_uname('n');
+
+  db_query("UPDATE {node} SET title='%s' WHERE nid=%d", $uname, $nid);
+  db_query("UPDATE {node_revisions} SET title='%s' WHERE nid=%d", $uname, $nid);
+
+  return $ret;
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Add url aliases for the context names that are registered.
+ */
+function hosting_update_6010() {
+  // We include the file instead of enabling the module,
+  // because we do not want the overhead of having all the
+  // path UI stuff on nodes.
+
+  require_once("./modules/path/path.module");
+  $ret = array();
+
+  $result = db_query("SELECT nid, name FROM {hosting_context}");
+
+  while ($obj = db_fetch_object($result)) {
+    path_set_alias("node/$obj->nid", "hosting/c/$obj->name");
+  }
+
+  return $ret;
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Clients and packages were imported as belonging to the anonymous user. Reassign them to the admin user.
+ */
+function hosting_update_6011() {
+  $ret = array();
+
+  db_query("UPDATE {node} SET uid=1 WHERE uid=0 AND type IN ('client', 'package')");
+
+  return $ret;
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Remove the hosting summary block.
+ */
+function hosting_update_6012() {
+  $ret = array();
+  drupal_load('module', 'install_profile_api');
+  install_include(array('block'));
+
+  $theme = 'eldir';
+  install_disable_block('hosting', 'hosting_summary', $theme);
+
+  return $ret;
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Add a permission allowing users to view the 'site disabled' message, which got
+ * lost when 'access content' permission was revoked a while ago.
+ */
+function hosting_update_6013() {
+  $ret = array();
+  install_include(array('user'));
+
+  install_add_permissions(install_get_rid('anonymous user'), array('access disabled sites'));
+  install_add_permissions(install_get_rid('authenticated user'), array('access disabled sites'));
+  return $ret;
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Restore proper weight to the hosting module.
+ *
+ * For some obscure reason, the weight is 10 which makes its updates run
+ * after all others, which gave us constant issues during upgrades.
+ */
+function hosting_update_6014() {
+  $ret = array();
+  $ret[] = update_sql("UPDATE {system} SET weight = 0 WHERE type='module' and name='hosting'");
+  return $ret;
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Delete URL aliases for sites that have been deleted.
+ *
+ * Ideally we'd do this in a single DB query, but there isn't a nice performant
+ * way to do it, so we do more DB queries instead of using potentially a lot of
+ * memory. Basically this may take a long time to run, but it shouldn't run out
+ * of resources doing so.
+ */
+function hosting_update_6015(&$sandbox) {
+  $ret = array();
+
+  if (!isset($sandbox['progress'])) {
+    $sandbox['progress'] = 0;
+    $sandbox['current_pid'] = 0;
+    $sandbox['max'] = db_result(db_query('SELECT COUNT(pid) FROM {url_alias}'));
+  }
+
+  $aliases = db_query_range("SELECT pid, src, dst FROM {url_alias} WHERE dst LIKE 'hosting/c/%' AND pid > %d ORDER BY pid ASC", $sandbox['current_pid'], 0, 50);
+
+  while ($alias = db_fetch_object($aliases)) {
+    // Get the node ID for the alias.
+    $nid = preg_replace('#^node/#', '', $alias->src);
+    if (is_numeric($nid)) {
+      // Check to see if the corresponding context has been deleted.
+      if (!db_result(db_query('SELECT COUNT(nid) FROM {hosting_context} WHERE nid = %d', $nid))) {
+        db_query('DELETE FROM {url_alias} WHERE pid = %d', $alias->pid);
+      }
+    }
+
+    $sandbox['progress']++;
+    $sandbox['current_pid'] = $alias->pid;
+  }
+
+  $ret['#finished'] = empty($sandbox['max']) ? 1 : ($sandbox['progress'] / $sandbox['max']);
+
+  return $ret;
 }

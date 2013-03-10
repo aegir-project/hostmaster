@@ -1,14 +1,12 @@
 <?php
 /**
  * @file
- * Install, update and uninstall functions for the hosting_web_cluster module.
+ * Define database schema for the hosting_web_cluster module.
  *
  */
 
-
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * Implements hook_schema().
  */
 function hosting_web_cluster_schema() {
   return array(
@@ -38,20 +36,3 @@ function hosting_web_cluster_schema() {
   );
 }
 
-/**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
- */
-function hosting_web_cluster_install() {
-  // TODO The drupal_(un)install_schema functions are called automatically in D7.
-  // drupal_install_schema('hosting_web_cluster')
-}
-
-/**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
- */
-function hosting_web_cluster_uninstall() {
-  // TODO The drupal_(un)install_schema functions are called automatically in D7.
-  // drupal_uninstall_schema('hosting_web_cluster')
-}

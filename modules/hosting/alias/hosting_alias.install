@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- *   Install, update and uninstall for the site aliases module.
+ *   Define database schema and update function for the site aliases module.
  */
 
 /**
@@ -48,45 +48,24 @@ function hosting_alias_schema() {
 }
 
 /**
- * Implements hook_install().
- */
-function hosting_alias_install() {
-  // Create tables.
-  // TODO The drupal_(un)install_schema functions are called automatically in D7.
-  // drupal_install_schema('hosting_alias')
-}
-
-/**
- * Implements hook_uninstall().
- */
-function hosting_alias_uninstall() {
-  // Remove tables.
-  // TODO The drupal_(un)install_schema functions are called automatically in D7.
-  // drupal_uninstall_schema('hosting_alias')
-}
-
-/**
+ * Implements hook_update_N().
+ *
  * This removes dodgy data created by an import bug.
  */
 function hosting_alias_update_1() {
   $ret = array();
-  // TODO update_sql has been removed. Use the database API for any schema or data changes.
-  $ret[] = array() /* update_sql("DELETE FROM {hosting_site_alias} WHERE alias='Array'") */;
-  // hook_update_N() no longer returns a $ret array. Instead, return
-  // nothing or a translated string indicating the update ran successfully.
-  // See http://drupal.org/node/224333#update_sql.
-  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
+  $ret[] = update_sql("DELETE FROM {hosting_site_alias} WHERE alias='Array'");
+  return $ret;
 }
 
 /**
+ * Implements hook_update_N().
+ *
  * Add the redirection field.
  */
 function hosting_alias_update_2() {
   $ret = array();
-  db_add_field('hosting_site_alias', 'redirection', array('type' => 'int', 'not null' => TRUE, 'default' => 0, 'size' => 'tiny'));
-  // hook_update_N() no longer returns a $ret array. Instead, return
-  // nothing or a translated string indicating the update ran successfully.
-  // See http://drupal.org/node/224333#update_sql.
-  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
+  db_add_field($ret, 'hosting_site_alias', 'redirection', array('type' => 'int', 'not null' => TRUE, 'default' => 0, 'size' => 'tiny'));
+  return $ret;
 }
 

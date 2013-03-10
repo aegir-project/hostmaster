@@ -1,12 +1,9 @@
 <?php
 /**
  * @file
- * Install, update and uninstall functions for the hosting_task module.
+ * Define the database schema and update functions for the hosting_task module.
  *
  */
-
-// $Id$
-
 
 /**
  * Implements hook_schema().
@@ -130,35 +127,24 @@ function hosting_task_schema() {
 }
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
- */
-function hosting_task_install() {
-  // Create tables.
-  // TODO The drupal_(un)install_schema functions are called automatically in D7.
-  // drupal_install_schema('hosting_task')
-}
-
-/**
+ * Implements hook_update_N().
+ *
  * Add the error column to hosting_task_log, so we can extract the
  * specific error codes, not just the messages.
  */
 function hosting_task_update_1() {
   $ret = array();
-  // TODO update_sql has been removed. Use the database API for any schema or data changes.
-  $ret[] = array() /* update_sql("ALTER TABLE {hosting_task_log}
-    ADD COLUMN error longtext NOT NULL default ''") */;
-  // TODO update_sql has been removed. Use the database API for any schema or data changes.
-  $ret[] = array() /* update_sql("ALTER TABLE {hosting_task_log}
-    DROP COLUMN severity") */;
+  $ret[] = update_sql("ALTER TABLE {hosting_task_log} 
+    ADD COLUMN error longtext NOT NULL default ''");
+  $ret[] = update_sql("ALTER TABLE {hosting_task_log} 
+    DROP COLUMN severity");
 
-  // hook_update_N() no longer returns a $ret array. Instead, return
-  // nothing or a translated string indicating the update ran successfully.
-  // See http://drupal.org/node/224333#update_sql.
-  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
+  return $ret;
 }
 
 /**
+ * Implements hook_update_N().
+ *
  * Reset the task_status of all currently (according to us) in queue tasks
  *
  * This will force them to be re-evaluated if the queue status doesn't match the task status
@@ -167,81 +153,52 @@ function hosting_task_update_2() {
   $ret = array();
   variable_set('hosting_dispatch_enabled', FALSE);
   // Put the queued items separately for a bit.
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query("UPDATE {hosting_task_queue} SET status = 100 WHERE status = 0") */
-  db_update('hosting_task_queue')
-  ->fields(array(
-    'status' =>  100,
-  ))
-  ->condition('status', 0)
-  ->execute();
+  db_query("UPDATE {hosting_task_queue} SET status = 100 WHERE status = 0");
 
   // Remove all the other items from the queue.
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query("UPDATE {hosting_task_queue} SET status = 0 WHERE status <> 100") */
-  db_update('hosting_task_queue')
-  ->fields(array(
-    'status' =>  0,
-  ))
-  ->condition('status', 100, '<>')
-  ->execute();
+  db_query("UPDATE {hosting_task_queue} SET status = 0 WHERE status <> 100");
 
   // Add all the queued items back into the queue.
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query("UPDATE {hosting_task_queue} SET status = 1 WHERE status = 100") */
-  db_update('hosting_task_queue')
-  ->fields(array(
-    'status' =>  1,
-  ))
-  ->condition('status', 100)
-  ->execute();
+  db_query("UPDATE {hosting_task_queue} SET status = 1 WHERE status = 100");
   variable_set('hosting_dispatch_enabled', TRUE);
-  // hook_update_N() no longer returns a $ret array. Instead, return
-  // nothing or a translated string indicating the update ran successfully.
-  // See http://drupal.org/node/224333#update_sql.
-  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
+  return $ret;
 }
 
 /**
+ * Implements hook_update_N().
+ *
  * Add a delta column to tasks so that we have a measure of duration of tasks
  */
 function hosting_task_update_6000() {
 
   $ret = hosting_package_update_6002();
 
-  // this update needs to be run before tasks can be added, in other update functions.
+  // this update needs to be run before tasks can be added, in other update functions. 
   if (!variable_get('hosting_task_update_6000_run', FALSE)) {
-    db_add_field('hosting_task', 'delta', array('type' => 'int', 'not null' => TRUE, 'default' => 0));
+    db_add_field($ret, 'hosting_task', 'delta', array('type' => 'int', 'not null' => TRUE, 'default' => 0));
     variable_set('hosting_task_update_6000_run', TRUE);
   }
-  // hook_update_N() no longer returns a $ret array. Instead, return
-  // nothing or a translated string indicating the update ran successfully.
-  // See http://drupal.org/node/224333#update_sql.
-  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
+  return $ret;
 }
 
 /**
+ * Implements hook_update_N().
+ *
  * remove the redundant hosting_queue table
  */
 function hosting_task_update_6001() {
   $ret = array();
-  db_drop_table('hosting_task_queue');
-  // hook_update_N() no longer returns a $ret array. Instead, return
-  // nothing or a translated string indicating the update ran successfully.
-  // See http://drupal.org/node/224333#update_sql.
-  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
+  db_drop_table($ret, 'hosting_task_queue');
+  return $ret;
 }
 
 /**
+ * Implements hook_update_N().
+ *
  * Remove all the duplicate task nodes for previous task type / rid combinations
  *
  * This makes it more efficient to query and generate the data, and makes sure we don't
  * lose any history.
- */
-
-/**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
  */
 function hosting_task_update_6002() {
   $ret = array();
@@ -249,15 +206,7 @@ function hosting_task_update_6002() {
   $result = db_query("select t.task_type, t.rid, max(t.nid) as max_nid from {hosting_task} t group by t.task_type, t.rid");
 
   while ($obj = db_fetch_object($result)) {
-    // TODO Please review the conversion of this statement to the D7 database API syntax.
-    /* db_query("UPDATE {hosting_task} SET nid = %d WHERE task_type='%s' AND rid=%d", $obj->max_nid, $obj->task_type, $obj->rid) */
-    db_update('hosting_task')
-  ->fields(array(
-    'nid' => $obj->max_nid,
-  ))
-  ->condition('task_type', $obj->task_type)
-  ->condition('rid', $obj->rid)
-  ->execute();
+    db_query("UPDATE {hosting_task} SET nid = %d WHERE task_type='%s' AND rid=%d", $obj->max_nid, $obj->task_type, $obj->rid);
   }
 
   db_query("update {hosting_task_arguments} a, {hosting_task} t set a.nid=t.nid where a.vid=t.vid");
@@ -266,39 +215,25 @@ function hosting_task_update_6002() {
   $result = db_query("select n.nid, count(t.vid) as vid_count from {node} n left join {hosting_task} t on n.nid = t.nid where n.type = 'task' group by n.nid having vid_count = 0");
 
   while ($obj = db_fetch_object($result)) {
-    // TODO Please review the conversion of this statement to the D7 database API syntax.
-    /* db_query("DELETE FROM {node} WHERE nid=%d", $obj->nid) */
-    db_delete('node')
-  ->condition('nid', $obj->nid)
-  ->execute();
+    db_query("DELETE FROM {node} WHERE nid=%d", $obj->nid);
   }
-  // hook_update_N() no longer returns a $ret array. Instead, return
-  // nothing or a translated string indicating the update ran successfully.
-  // See http://drupal.org/node/224333#update_sql.
-  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
+  return $ret;
 }
 
 /**
+ * Implements hook_update_N().
+ *
  * Processing state constant changed to ensure proper sorting
  */
 function hosting_task_update_6003() {
   $ret = array();
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query("UPDATE {hosting_task} SET task_status = -1 WHERE task_status = 4") */
-  db_update('hosting_task')
-  ->fields(array(
-    'task_status' =>  -1,
-  ))
-  ->condition('task_status', 4)
-  ->execute();
-  // hook_update_N() no longer returns a $ret array. Instead, return
-  // nothing or a translated string indicating the update ran successfully.
-  // See http://drupal.org/node/224333#update_sql.
-  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
+  db_query("UPDATE {hosting_task} SET task_status = -1 WHERE task_status = 4");
+  return $ret;
 }
 
-
 /**
+ * Implements hook_update_N().
+ *
  * Add 'cancel own task' permission to 'aegir client' role
  */
 function hosting_task_update_6004() {
@@ -307,14 +242,12 @@ function hosting_task_update_6004() {
 
   install_add_permissions(install_get_rid('aegir client'), array('cancel own tasks'));
   node_access_rebuild();
-  // hook_update_N() no longer returns a $ret array. Instead, return
-  // nothing or a translated string indicating the update ran successfully.
-  // See http://drupal.org/node/224333#update_sql.
-  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
+  return $ret;
 }
 
-
 /**
+ * Implements hook_update_N().
+ *
  * Remove DEFAULT value on a LONGTEXT fields.
  *
  * This was breaking in MariaDB and preventing installation. On MySQL
@@ -325,15 +258,14 @@ function hosting_task_update_6004() {
  */
 function hosting_task_update_6005() {
   $ret = array();
-  db_change_field('hosting_task_log', 'error', 'error',
+  db_change_field($ret, 'hosting_task_log', 'error', 'error',
                   array('type' => 'text', 'size' => 'big', 'not null' => TRUE));
-  // hook_update_N() no longer returns a $ret array. Instead, return
-  // nothing or a translated string indicating the update ran successfully.
-  // See http://drupal.org/node/224333#update_sql.
-  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
+  return $ret;
 }
 
 /**
+ * Implements hook_update_N().
+ *
  * Add nid field to hosting_task_log and remove orphaned log entries.
  */
 function hosting_task_update_6006() {
@@ -353,33 +285,20 @@ function hosting_task_update_6006() {
       'nid' => array('nid'),
     ),
   );
-  db_add_field('hosting_task_log', 'nid', $field, $indexes);
+  db_add_field($ret, 'hosting_task_log', 'nid', $field, $indexes);
 
   // Populate nid field.
   $query = "SELECT nid, vid FROM {hosting_task}";
   $result = db_query($query);
   while ($task = db_fetch_object($result)) {
     $query = "UPDATE {hosting_task_log} SET nid = %d WHERE vid = %d";
-    // TODO Please review the conversion of this statement to the D7 database API syntax.
-    /* db_query($query, $task->nid, $task->vid) */
-    db_update('hosting_task_log')
-  ->fields(array(
-    'nid' => $task->nid,
-  ))
-  ->condition('vid', $task->vid)
-  ->execute();
+    db_query($query, $task->nid, $task->vid);
   }
 
   // Remove orphaned logs, which will have nid == 0 now.
   $query = "DELETE FROM {hosting_task_log} WHERE nid = %d";
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query($query, 0) */
-  db_delete('hosting_task_log')
-  ->condition('nid', 0)
-  ->execute();
+  db_query($query, 0);
 
-  // hook_update_N() no longer returns a $ret array. Instead, return
-  // nothing or a translated string indicating the update ran successfully.
-  // See http://drupal.org/node/224333#update_sql.
-  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
+  return $ret;
 }
+

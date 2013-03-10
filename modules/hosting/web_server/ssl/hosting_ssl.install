@@ -1,15 +1,14 @@
 <?php
 /**
  * @file
- * Install, update and uninstall functions for the hosting_ssl module.
+ * Define the database schema and uninstall function for the hosting_ssl module.
  *
  */
 
 
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * Implements hook_schema().
  */
 function hosting_ssl_schema() {
   $schema['hosting_ssl_server'] = array(
@@ -119,15 +118,6 @@ function hosting_ssl_schema() {
     ),
   );
   return $schema;
-}
-
-/**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
- */
-function hosting_ssl_install() {
-  // TODO The drupal_(un)install_schema functions are called automatically in D7.
-  // drupal_install_schema('hosting_ssl')
 }
 
 /**
