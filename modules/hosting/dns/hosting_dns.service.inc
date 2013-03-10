@@ -79,20 +79,16 @@ class hostingService_dns_master extends hostingService_dns {
 
   function delete() {
     parent::delete();
-    // TODO Please review the conversion of this statement to the D7 database API syntax.
-    /* db_query('DELETE FROM {hosting_dns_slaves} WHERE master_nid = %d', $this->server->nid) */
     db_delete('hosting_dns_slaves')
-  ->condition('master_nid', $this->server->nid)
-  ->execute();
+      ->condition('master_nid', $this->server->nid)
+      ->execute();
   }
 
   function delete_revision() {
     parent::delete_revision();
-    // TODO Please review the conversion of this statement to the D7 database API syntax.
-    /* db_query('DELETE FROM {hosting_dns_slaves} WHERE master_vid = %d', $this->server->vid) */
     db_delete('hosting_dns_slaves')
-  ->condition('master_vid', $this->server->vid)
-  ->execute();
+      ->condition('master_vid', $this->server->vid)
+      ->execute();
   }
 
   function context_options($task_type, $ref_type, &$task) {

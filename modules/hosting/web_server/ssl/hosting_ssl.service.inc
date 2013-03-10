@@ -10,33 +10,27 @@ class hostingService_http_ssl extends hostingService_http_public {
 
   function insert() {
     parent::insert();
-    // TODO Please review the conversion of this statement to the D7 database API syntax.
-    /* db_query("INSERT INTO {hosting_ssl_server} (vid, nid, ssl_port) VALUES (%d, %d, %d)", $this->server->vid, $this->server->nid, $this->ssl_port) */
     $id = db_insert('hosting_ssl_server')
-  ->fields(array(
-    'vid' => $this->server->vid,
-    'nid' => $this->server->nid,
-    'ssl_port' => $this->ssl_port,
-  ))
-  ->execute();
+      ->fields(array(
+        'vid' => $this->server->vid,
+        'nid' => $this->server->nid,
+        'ssl_port' => $this->ssl_port,
+      ))
+      ->execute();
   }
 
   function delete() {
     parent::delete();
-    // TODO Please review the conversion of this statement to the D7 database API syntax.
-    /* db_query("DELETE FROM {hosting_ssl_server} WHERE nid=%d", $this->server->nid) */
     db_delete('hosting_ssl_server')
-  ->condition('nid', $this->server->nid)
-  ->execute();
+      ->condition('nid', $this->server->nid)
+      ->execute();
   }
 
   function delete_revision() {
     parent::delete_revision();
-    // TODO Please review the conversion of this statement to the D7 database API syntax.
-    /* db_query("DELETE FROM {hosting_ssl_server} WHERE vid=%d", $this->server->vid) */
     db_delete('hosting_ssl_server')
-  ->condition('vid', $this->server->vid)
-  ->execute();
+      ->condition('vid', $this->server->vid)
+      ->execute();
   }
 
   function form(&$form) {

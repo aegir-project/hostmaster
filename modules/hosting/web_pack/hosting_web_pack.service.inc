@@ -86,20 +86,16 @@ class hostingService_http_pack extends hostingService_http {
 
   function delete() {
     parent::delete();
-    // TODO Please review the conversion of this statement to the D7 database API syntax.
-    /* db_query('DELETE FROM {hosting_web_pack} WHERE nid = %d', $this->server->nid) */
     db_delete('hosting_web_pack')
-  ->condition('nid', $this->server->nid)
-  ->execute();
+      ->condition('nid', $this->server->nid)
+      ->execute();
   }
 
   function delete_revision() {
     parent::delete_revision();
-    // TODO Please review the conversion of this statement to the D7 database API syntax.
-    /* db_query('DELETE FROM {hosting_web_pack} WHERE vid = %d', $this->server->vid) */
     db_delete('hosting_web_pack')
-  ->condition('vid', $this->server->vid)
-  ->execute();
+      ->condition('vid', $this->server->vid)
+      ->execute();
   }
 
   function context_options($task_type, $ref_type, &$task) {

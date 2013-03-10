@@ -53,19 +53,17 @@ class hostingService {
   }
 
   public function insert() {
-    // TODO Please review the conversion of this statement to the D7 database API syntax.
-    /* db_query("INSERT INTO {hosting_service} (nid, vid, service, type, port, restart_cmd, available) VALUES (%d, %d, '%s', '%s', %d, '%s', %d)", $this->server->nid, $this->server->vid, $this->service, $this->type, $this->port, $this->restart_cmd, $this->available) */
     $id = db_insert('hosting_service')
-  ->fields(array(
-    'nid' => $this->server->nid,
-    'vid' => $this->server->vid,
-    'service' => $this->service,
-    'type' => $this->type,
-    'port' => $this->port,
-    'restart_cmd' => $this->restart_cmd,
-    'available' => $this->available,
-  ))
-  ->execute();
+      ->fields(array(
+        'nid' => $this->server->nid,
+        'vid' => $this->server->vid,
+        'service' => $this->service,
+        'type' => $this->type,
+        'port' => $this->port,
+        'restart_cmd' => $this->restart_cmd,
+        'available' => $this->available,
+      ))
+      ->execute();
   }
 
   public function update() {
@@ -74,21 +72,17 @@ class hostingService {
   }
 
   public function delete() {
-    // TODO Please review the conversion of this statement to the D7 database API syntax.
-    /* db_query("DELETE FROM {hosting_service} WHERE service = '%s' AND nid=%d", $this->service, $this->server->nid) */
     db_delete('hosting_service')
-  ->condition('service', $this->service)
-  ->condition('nid', $this->server->nid)
-  ->execute();
+      ->condition('service', $this->service)
+      ->condition('nid', $this->server->nid)
+      ->execute();
   }
 
   public function delete_revision() {
-    // TODO Please review the conversion of this statement to the D7 database API syntax.
-    /* db_query("DELETE FROM {hosting_service} WHERE service = '%s' AND vid=%d", $this->service, $this->server->vid) */
     db_delete('hosting_service')
-  ->condition('service', $this->service)
-  ->condition('vid', $this->server->vid)
-  ->execute();
+      ->condition('service', $this->service)
+      ->condition('vid', $this->server->vid)
+      ->execute();
   }
 
   public function form(&$form) {
