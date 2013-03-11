@@ -108,7 +108,7 @@ function hosting_client_node_access($node, $op, $account) {
         return user_access('create client', $account);
         break;
       case 'view':
-        return user_access('view client', $account) && db_fetch_array(db_query("SELECT user FROM {hosting_client_user} WHERE user = :user and client = :client", array(':user' => $account->uid, ':client' => $node->nid)));
+        return user_access('view client', $account) && db_query("SELECT user FROM {hosting_client_user} WHERE user = :user and client = :client", array(':user' => $account->uid, ':client' => $node->nid))->fetchAssoc();
       case 'update':
         if (user_access('edit own client', $account) && $account->uid == $node->uid) {
           return TRUE;
@@ -580,9 +580,9 @@ function hosting_client_users($node) {
   }
 
   $users = array();
-  $q = db_query("SELECT u.uid, u.name FROM {hosting_client_user} h INNER JOIN {users} u ON u.uid = h.user WHERE h.client = :h.client", array(':h.client' => $node));
-  while ($result = db_fetch_array($q)) {
-    $users[$result['uid']] = $result['name'];
+  $result = db_query("SELECT u.uid, u.name FROM {hosting_client_user} h INNER JOIN {users} u ON u.uid = h.user WHERE h.client = :h.client", array(':h.client' => $node));
+  foreach ($result as $row) {
+    $users[$row['uid']] = $row['name'];
   }
   return $users;
 }

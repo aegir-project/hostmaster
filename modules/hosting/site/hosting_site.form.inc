@@ -136,7 +136,7 @@ function hosting_site_available_options($node) {
     $allowed_plats = _hosting_get_allowed_platforms($user->uid);
     $access_check = FALSE;
 
-    while ($row = db_fetch_array($result)) {
+    foreach ($result as $row) {
       if (array_key_exists($row['nid'], $allowed_plats)) {
         $access_check = TRUE;
       }

@@ -1134,16 +1134,17 @@ function _hosting_parse_error_code($code) {
  * Return the status of the task matching the specification
  */
 function hosting_task_status($filter_by, $filter_value, $type = 'install') {
-  $args[] = 'task';
-  $args[] = $type;
-  $cond = '';
+  $query = db_select('node', 'n')
+    ->join('hosting_task', 't', 'n.vid = t.vid')
+    ->fields('t', array('task_status'))
+    ->condition('n.type', 'task')
+    ->condition('t.task_type', $type);
   if ($filter_by && $filter_value) {
-    $cond = ' AND t.' . $filter_by . ' = %d';
-    $args[] = $filter_value;
+    $query->condition('t.' . $filter_by, $filter_value);
   }
-  // TODO Please convert this statement to the D7 database API syntax.
-  $result = db_fetch_array(db_query("SELECT t.task_status AS status FROM {node} n INNER JOIN {hosting_task} t on n.vid=t.vid WHERE n.type='%s' AND t.task_type='%s' " . $cond . " ORDER BY t.vid DESC", $args));
-  return $result['status'];
+  $query->orderBy('t.vid', 'DESC');
+
+  return $query->execute()->fetchField();
 }
 
 /**

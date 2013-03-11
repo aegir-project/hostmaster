@@ -54,7 +54,7 @@ function hosting_site_delete_backup($bid) {
  * Get a site backup record
  */
 function hosting_site_get_backup($bid) {
-  return db_fetch_array(db_query("SELECT bid, site, web_server, filename, description, size, timestamp FROM {hosting_site_backups} WHERE bid = :bid", array(':bid' => $bid)));
+  return db_query("SELECT bid, site, web_server, filename, description, size, timestamp FROM {hosting_site_backups} WHERE bid = :bid", array(':bid' => $bid))->fetchAssoc();
 }
 
 /**

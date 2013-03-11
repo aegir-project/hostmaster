@@ -200,7 +200,7 @@ function hosting_nodeapi_OLD(&$node, $op, $arg1, $arg2) {
         break;
 
       case 'load':
-        $return = db_fetch_array(db_query("SELECT name AS hosting_name FROM {hosting_context} WHERE nid = :nid", array(':nid' => $node->nid)));
+        $return = db_query("SELECT name AS hosting_name FROM {hosting_context} WHERE nid = :nid", array(':nid' => $node->nid))->fetchAssoc();
         if ($return === FALSE) {
           // Should only happen on install.
           $return = array();

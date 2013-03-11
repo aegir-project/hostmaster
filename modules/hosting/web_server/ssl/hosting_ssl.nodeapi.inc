@@ -281,8 +281,7 @@ function hosting_ssl_nodeapi_site_update($node) {
  */
 function hosting_ssl_nodeapi_site_load($node) {
   $result = db_query("SELECT ssl_enabled, ssl_key FROM {hosting_ssl_site} WHERE vid = :vid", array(':vid' => $node->vid));
-  $additions = db_fetch_array($result);
-  return $additions;
+  return $result->fetchAssoc();
 }
 
 /**

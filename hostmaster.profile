@@ -160,21 +160,21 @@ function hostmaster_task_finalize() {
 
   // @TODO - seriously need to simplify this, but in our own code i think, not install profile api
   $items = install_menu_get_items('hosting/servers');
-  $item = db_fetch_array(db_query("SELECT * FROM {menu_links} WHERE mlid = %d", $items[0]['mlid']));
+  $item = db_query("SELECT * FROM {menu_links} WHERE mlid = %d", $items[0]['mlid'])->fetchAssoc();
   $item['menu_name'] = $menu_name;
   $item['customized'] = 1;
   $item['options'] = unserialize($item['options']);
   install_menu_update_menu_item($item);
 
   $items = install_menu_get_items('hosting/sites');
-  $item = db_fetch_array(db_query("SELECT * FROM {menu_links} WHERE mlid = %d", $items[0]['mlid']));
+  $item = db_query("SELECT * FROM {menu_links} WHERE mlid = %d", $items[0]['mlid'])->fetchAssoc();
   $item['menu_name'] = $menu_name;
   $item['customized'] = 1;
   $item['options'] = unserialize($item['options']);
   install_menu_update_menu_item($item);
 
   $items = install_menu_get_items('hosting/platforms');
-  $item = db_fetch_array(db_query("SELECT * FROM {menu_links} WHERE mlid = %d", $items[0]['mlid']));
+  $item = db_query("SELECT * FROM {menu_links} WHERE mlid = %d", $items[0]['mlid'])->fetchAssoc();
   $item['menu_name'] = $menu_name;
   $item['customized'] = 1;
   $item['options'] = unserialize($item['options']);
