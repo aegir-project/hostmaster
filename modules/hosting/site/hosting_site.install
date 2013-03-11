@@ -30,6 +30,12 @@ function hosting_site_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'db_name' => array(
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+        'default' => '',
+      ),
       'platform' => array(
         'type' => 'int',
         'not null' => TRUE,
@@ -311,6 +317,17 @@ function hosting_site_update_6201() {
     $perms = str_replace(array_keys($replacements), array_values($replacements), $perms);
     db_query("UPDATE {permission} SET perm = '%s' where rid = %d", implode(', ', $perms), $role->rid);
   }
+
+  return $ret;
+}
+
+/**
+ * Add 'db_name' column to 'hosting_site' table.
+ */
+function hosting_site_update_6202() {
+  $ret = array();
+  db_add_field($ret, 'hosting_site', 'db_name',
+      array('type' => 'varchar', 'length' => 64, 'not null' => TRUE, 'default' => ''));
 
   return $ret;
 }
