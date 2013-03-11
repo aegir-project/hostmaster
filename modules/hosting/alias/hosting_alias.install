@@ -32,10 +32,9 @@ function hosting_alias_schema() {
         'default' => 0,
       ),
       'redirection' => array(
-        'type' => 'int',
-        'size' => 'tiny',
+        'type' => 'varchar',
+        'length' => 255,
         'not null' => TRUE,
-        'default' => 0,
       ),
     ),
     'indexes' => array(
@@ -81,3 +80,14 @@ function hosting_alias_update_2() {
   return $ret;
 }
 
+
+/**
+ * Alter the redirection field to a varchar
+ */
+function hosting_alias_update_3() {
+  $ret = array();
+  $schema = hosting_alias_schema();
+  $spec = $schema['hosting_site_alias']['fields']['redirection'];
+  db_change_field($ret, 'hosting_site_alias', 'redirection', 'redirection', $spec);
+  return $ret;
+}
