@@ -46,7 +46,7 @@ class hostingService_http_pack extends hostingService_http {
     $master_servers = array();
     $slave_servers = array();
     $result = db_query('SELECT web_server_nid, type FROM {hosting_web_pack} WHERE vid = :vid', array(':vid' => $this->server->vid));
-    while ($web_server = db_fetch_object($result)) {
+    while ($web_server = $result->fetch()) {
       if ($web_server->type == 'master') {
         $master_servers[] = $web_server->web_server_nid;
       }

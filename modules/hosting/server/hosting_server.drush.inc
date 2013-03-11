@@ -60,7 +60,7 @@ function hosting_server_post_hosting_verify_task($task, $data) {
 
   // Verify the platforms on this server
   $query = db_query("SELECT nid FROM {hosting_platform} WHERE status <> :status AND web_server = :web_server", array(':status' => HOSTING_PLATFORM_DELETED, ':web_server' => $task->ref->nid));
-  while ($nid = db_fetch_object($query)) {
+  while ($nid = $query->fetch()) {
     hosting_add_task($nid->nid, 'verify');
   }
 

@@ -136,7 +136,7 @@ function hosting_site_delete($node) {
   ->execute();
   hosting_context_delete($node->nid);
   $result = db_query("SELECT distinct nid FROM {hosting_task} WHERE rid = :rid", array(':rid' => $node->nid));
-  while ($nid = db_fetch_object($result)) {
+  while ($nid = $result->fetch()) {
     node_delete($nid->nid);
   }
 }
@@ -233,7 +233,7 @@ function hosting_site_update(&$node) {
  */
 function hosting_site_load($nodes) {
   foreach ($nodes as $nid => &$node) {
-    $additions = db_fetch_object(db_query('SELECT  client, db_server, platform, profile, language as site_language, last_cron, cron_key, status AS site_status, verified FROM {hosting_site} WHERE vid = :vid', array(':vid' => $node->vid)));
+    $additions = db_query('SELECT  client, db_server, platform, profile, language as site_language, last_cron, cron_key, status AS site_status, verified FROM {hosting_site} WHERE vid = :vid', array(':vid' => $node->vid))->fetch();
     foreach ($additions as $property => &$value) {
       $node->$property = $value;
     }

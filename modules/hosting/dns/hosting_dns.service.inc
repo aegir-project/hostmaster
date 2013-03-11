@@ -56,7 +56,7 @@ class hostingService_dns_master extends hostingService_dns {
 
     $slave_servers = array();
     $result = db_query('SELECT slave_nid FROM {hosting_dns_slaves} WHERE master_vid = :master_vid', array(':master_vid' => $this->server->vid));
-    while ($slave_server = db_fetch_object($result)) {
+    while ($slave_server = $result->fetch()) {
       $slave_servers[] = $slave_server->slave_nid;
     }
 

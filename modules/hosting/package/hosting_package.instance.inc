@@ -203,7 +203,7 @@ function _hosting_package_instances_load($param, $multiple = FALSE) {
         LEFT JOIN {hosting_platform} h ON r.nid=h.nid
       WHERE " . $cond, $arguments);
 
-  while ($instance = db_fetch_object($result)) {
+  while ($instance = $result->fetch()) {
     $instance->languages = _hosting_package_instances_load_languages($instance->iid);
     if (!$multiple) {
       return $instance;
@@ -228,7 +228,7 @@ function _hosting_package_instances_load_languages($instance_id = NULL, $reset =
 
     // load language options: if argument is null, load all language options
     $lang_result = db_query("SELECT DISTINCT(language) FROM {hosting_package_languages} WHERE iid = :iid", array(':iid' => $instance_id));
-    while ($language = db_fetch_object($lang_result)) {
+    while ($language = $lang_result->fetch()) {
       $languages[$language->language] = _hosting_language_name($language->language);
     }
 
@@ -334,22 +334,22 @@ function hosting_package_comparison($current, $target) {
 
   $status = array();
   $result = db_query("SELECT count(c.nid) AS error FROM %s c LEFT JOIN %s t ON c.nid=t.nid WHERE (t.schema_version > :(t.schema_version && (c.schema_version > :(c.schema_version AND c.status = :c.status", array(':(t.schema_version' => 0, ':(c.schema_version' => t . schema_version, ':c.status' => 1, '' => $current_tbl, '' => $target_tbl));
-  while ($obj = db_fetch_object($result)) {
+  while ($obj = $result->fetch()) {
     $status['error'] = $obj->error;
   }
 
   $result = db_query("SELECT COUNT(c.nid) as missing FROM %s c LEFT JOIN %s t ON c.nid=t.nid WHERE t.nid IS null AND c.status = :c.status", array(':c.status' => 1, '' => $current_tbl, '' => $target_tbl));
-  while ($obj = db_fetch_object($result)) {
+  while ($obj = $result->fetch()) {
     $status['missing'] = $obj->missing;
   }
 
   $result = db_query("SELECT COUNT(c.nid) as upgrade FROM %s c LEFT JOIN %s t ON c.nid=t.nid WHERE (c.version_code < :(c.version_code OR (c.schema_version < :(c.schema_version AND c.status = :c.status", array(':(c.version_code' => t . version_code, ':(c.schema_version' => t . schema_version, ':c.status' => 1, '' => $current_tbl, '' => $target_tbl));
-  while ($obj = db_fetch_object($result)) {
+  while ($obj = $result->fetch()) {
     $status['upgrade'] = $obj->upgrade;
   }
 
   $result = db_query("SELECT count(c.nid) AS downgrade FROM %s c LEFT JOIN %s t ON c.nid=t.nid WHERE (c.version_code > :(c.version_code", array(':(c.version_code' => t . version_code, '' => $current_tbl, '' => $target_tbl));
-  while ($obj = db_fetch_object($result)) {
+  while ($obj = $result->fetch()) {
     $status['downgrade'] = $obj->downgrade;
   }
 

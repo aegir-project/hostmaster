@@ -409,7 +409,7 @@ function hosting_site_count($platform = NULL, $statuses = NULL) {
 function hosting_get_sites_by_status($platform, $status) {
   $nodes = array();
   $result = db_query("SELECT nid FROM {hosting_site} WHERE platform = :platform AND status = :status", array(':platform' => $platform, ':status' => $status));
-  while ($nid = db_fetch_object($result)) {
+  while ($nid = $result->fetch()) {
     $nodes[$nid->nid] = node_load($nid->nid);
   }
 
@@ -627,7 +627,7 @@ function hosting_site_list_form($form, $form_state, $filter_by = NULL, $filter_v
     );
 
     $sites = array();
-    while ($node = db_fetch_object($result)) {
+    while ($node = $result->fetch()) {
       $sites[$node->nid] = '';
       $form['site'][$node->nid] = array('#value' => l($node->title, 'node/' . $node->nid));
       $form['profile'][$node->nid] =  array('#value' => ($node->profile) ? _hosting_node_link($node->profile) : t('n/a'));

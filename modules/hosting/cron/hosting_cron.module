@@ -30,7 +30,7 @@ function hosting_cron_queue($count) {
   $result = db_query("SELECT n.nid FROM {node} n LEFT JOIN {hosting_site} s ON n.nid=s.nid WHERE n.type = :n.type and s.status = :s.status ORDER BY s.last_cron ASC, n.nid ASC", array(':n.type' => 'site', ':s.status' => HOSTING_SITE_ENABLED));
 
   $i = 0;
-  while ($i < $count && $nid = db_fetch_object($result)) {
+  while ($i < $count && $nid = $result->fetch()) {
     $site = node_load($nid->nid);
     $site_name = hosting_context_name($site->nid);
 
@@ -101,7 +101,7 @@ function hosting_cron_nodeapi_OLD(&$node, $op, $a3 = null) {
  */
 function hosting_cron_get_sites($limit = 5) {
   $result = db_query("SELECT n.nid FROM {node} n LEFT JOIN {hosting_site} s ON n.nid=s.nid WHERE n.type = :n.type and s.status = :s.status ORDER BY s.last_cron ASC, n.nid ASC limit %d", array(':n.type' => 'site', ':s.status' => HOSTING_SITE_ENABLED, '' => $limit));
-  while ($nid = db_fetch_object($result)) {
+  while ($nid = $result->fetch()) {
     $sites[$nid->nid] = node_load($nid->nid);
   }
   return $sites;

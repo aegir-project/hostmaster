@@ -165,7 +165,7 @@ function _hosting_get_platforms() {
   $return = array();
   $result = db_query("SELECT n.nid, n.title FROM {node} n LEFT JOIN {hosting_platform} h ON n.nid = h.nid
                       WHERE n.type = :n.type AND n.status = :n.status AND h.status <> :h.status ORDER BY n.title", array(':n.type' => 'platform', ':n.status' => 1, ':h.status' => HOSTING_PLATFORM_DELETED));
-  while ($server = db_fetch_object($result)) {
+  while ($server = $result->fetch()) {
     $return[$server->nid] = $server->title;
   }
   return $return;
@@ -178,7 +178,7 @@ function _hosting_get_enabled_platforms() {
   $return = array();
   $result = db_query("SELECT n.nid, n.title FROM {node} n LEFT JOIN {hosting_platform} h ON n.nid = h.nid
                       WHERE n.type = :n.type AND n.status = :n.status AND h.status <> :h.status ORDER BY n.title", array(':n.type' => 'platform', ':n.status' => 1, ':h.status' => HOSTING_PLATFORM_LOCKED));
-  while ($server = db_fetch_object($result)) {
+  while ($server = $result->fetch()) {
     $return[$server->nid] = $server->title;
   }
   return $return;
@@ -191,7 +191,7 @@ function _hosting_get_locked_platforms() {
   $return = array();
   $result = db_query("SELECT n.nid, n.title FROM {node} n LEFT JOIN {hosting_platform} h ON n.nid = h.nid
                       WHERE n.type = :n.type AND n.status = :n.status AND h.status = :h.status ORDER BY n.title", array(':n.type' => 'platform', ':n.status' => 1, ':h.status' => HOSTING_PLATFORM_LOCKED));
-  while ($server = db_fetch_object($result)) {
+  while ($server = $result->fetch()) {
     $return[$server->nid] = $server->title;
   }
   return $return;
@@ -427,11 +427,11 @@ function hosting_platform_delete($node) {
 
   hosting_context_delete($node->nid);
   $result = db_query("SELECT distinct nid FROM {hosting_task} WHERE rid = :rid", array(':rid' => $node->nid));
-  while ($nid = db_fetch_object($result)) {
+  while ($nid = $result->fetch()) {
     node_delete($nid->nid);
   }
   $result = db_query("SELECT distinct nid FROM {hosting_site} WHERE platform = :platform", array(':platform' => $node->nid));
-  while ($nid = db_fetch_object($result)) {
+  while ($nid = $result->fetch()) {
     node_delete($nid->nid);
   }
 }
@@ -441,11 +441,11 @@ function hosting_platform_delete($node) {
  */
 function hosting_platform_validate($node, &$form) {
   // Make sure the platform name is unique, to avoid context clashes.
-  if ($node->op != t('Delete') && $result = db_fetch_object(db_query("SELECT n.title AS name FROM {hosting_platform} AS h INNER JOIN {node} AS n ON n.nid = h.nid WHERE n.title = :n.title AND n.nid <> :n.nid AND h.status >= :h.status", array(':n.title' => $node->title, ':n.nid' => $node->nid, ':h.status' => HOSTING_PLATFORM_QUEUED)))) {
+  if ($node->op != t('Delete') && $result = db_query("SELECT n.title AS name FROM {hosting_platform} AS h INNER JOIN {node} AS n ON n.nid = h.nid WHERE n.title = :n.title AND n.nid <> :n.nid AND h.status >= :h.status", array(':n.title' => $node->title, ':n.nid' => $node->nid, ':h.status' => HOSTING_PLATFORM_QUEUED))->fetch()) {
     form_set_error('title', t('Platform name %name is already defined. Platform names must be unique across all servers.', array('%name' => $result->name)));
   }
   // Make sure the path is unique. Remote servers can't have the same path to a platform that is in use by another server.
-  if ($node->op != t('Delete') && $result = db_fetch_object(db_query("SELECT n.title AS name FROM {hosting_platform} AS h INNER JOIN {node} AS n ON n.nid = h.nid WHERE publish_path = :publish_path AND n.nid <> :n.nid AND h.status >= :h.status", array(':publish_path' => hosting_path_normalize($node->publish_path), ':n.nid' => $node->nid, ':h.status' => HOSTING_PLATFORM_QUEUED)))) {
+  if ($node->op != t('Delete') && $result = db_query("SELECT n.title AS name FROM {hosting_platform} AS h INNER JOIN {node} AS n ON n.nid = h.nid WHERE publish_path = :publish_path AND n.nid <> :n.nid AND h.status >= :h.status", array(':publish_path' => hosting_path_normalize($node->publish_path), ':n.nid' => $node->nid, ':h.status' => HOSTING_PLATFORM_QUEUED)))->fetch() {
     form_set_error('publish_path', t('Path is already in use by platform %name. Platform paths must be unique across all servers.', array('%name' => $result->name)));
   }
   if (is_null($node->web_server)) {
@@ -461,7 +461,7 @@ function hosting_platform_validate($node, &$form) {
  */
 function hosting_platform_load($nodes) {
   foreach ($nodes as $nid => &$node) {
-    $additions = db_fetch_object(db_query('SELECT publish_path, makefile, verified, web_server, status AS platform_status, make_working_copy FROM {hosting_platform} WHERE vid = :vid', array(':vid' => $node->vid)));
+    $additions = db_query('SELECT publish_path, makefile, verified, web_server, status AS platform_status, make_working_copy FROM {hosting_platform} WHERE vid = :vid', array(':vid' => $node->vid))->fetch();
     $iid = db_query("SELECT iid FROM {hosting_package_instance} i left join {hosting_package} p on p.nid=i.package_id WHERE p.package_type = :p.package_type AND i.rid = :i.rid", array(':p.package_type' => 'platform', ':i.rid' => $node->nid))->fetchField();
     $additions->release = hosting_package_instance_load($iid);
     $additions->profiles = hosting_get_profiles($node->nid, 'short_name');

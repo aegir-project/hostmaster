@@ -256,7 +256,7 @@ function hosting_ssl_nodeapi_site_insert($node) {
 function hosting_ssl_nodeapi_site_update($node) {
   // check if an existing record is there
   $result = db_query("SELECT ssl_enabled FROM {hosting_ssl_site} WHERE vid = :vid", array(':vid' => $node->vid));
-  if (!($obj = db_fetch_object($result))) {
+  if (!($obj = $result->fetch())) {
     hosting_ssl_nodeapi_site_insert($node);
   }
   else {
@@ -323,7 +323,7 @@ function hosting_ssl_save_key($node) {
   $ssl_key = $node->ssl_key_new;
   if ($ssl_key) {
     $result = db_query("SELECT * FROM {hosting_ssl_cert} WHERE ssl_key = :ssl_key", array(':ssl_key' => $ssl_key));
-    if ($obj = db_fetch_object($result)) {
+    if ($obj = $result->fetch()) {
       // update
       if ($node->client != null) {
         $obj->client = $client->nid;
@@ -384,7 +384,7 @@ function hosting_ssl_get_keys($client = null, $ask_custom = FALSE) {
   }
   $result = db_query($query, $args);
 
-  while ($obj = db_fetch_object($result)) {
+  while ($obj = $result->fetch()) {
     if (sizeof($obj->ssl_key)) {
       $keys[$obj->cid] = $obj->ssl_key;
     }

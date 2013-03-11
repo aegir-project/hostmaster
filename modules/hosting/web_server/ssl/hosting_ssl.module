@@ -162,7 +162,7 @@ function hosting_ssl_server_cert_list($node) {
   $sql .= tablesort_sql($header);
   $result = pager_query(db_rewrite_sql($sql, 'cert'), 25, 2, null, $args);
   $rows = array();
-  while ($cert = db_fetch_object($result)) {
+  while ($cert = $result->fetch()) {
     // XXX: not in use?
     //$row_class = ($cert->status == 1) ? 'hosting-success' : 'hosting-info';
     $row = array();

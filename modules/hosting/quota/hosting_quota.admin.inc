@@ -8,7 +8,7 @@ function hosting_quota_admin_client_list() {
   $result = pager_query('SELECT q.*, n.title FROM {hosting_client_quota} q INNER JOIN {node} n ON n.nid = q.client', $items_per_page);
   $output = array();
 
-  while ($row = db_fetch_object($result)) {
+  while ($row = $result->fetch()) {
 
     $resource = array($row->resource => $all_resources[$row->resource]);
 
@@ -80,7 +80,7 @@ function hosting_quota_admin_defaults_form_submit($form, &$form_state) {
     // Set quotas for clients that don't already have them
     // TODO Please convert this statement to the D7 database API syntax.
     $client_result = db_query('SELECT nid FROM {hosting_client} WHERE nid not in (SELECT client FROM {hosting_client_quota})');
-    while ($row = db_fetch_object($client_result)) {
+    while ($row = $client_result->fetch()) {
       hosting_quota_set_limit($row->nid, $resource, $quota);
     }
   }

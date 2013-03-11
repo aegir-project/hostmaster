@@ -16,7 +16,7 @@ function hosting_migrate_platform($form_state, $node) {
   if ($step == 1) {
 
     $result = db_query("SELECT count(nid) as site_count FROM {hosting_site} WHERE status = :status AND verified > :verified AND platform = :platform", array(':status' => HOSTING_SITE_ENABLED, ':verified' => 0, ':platform' => $node->nid));
-    if ($obj = db_fetch_object($result)) {
+    if ($obj = $result->fetch()) {
       if ($obj->site_count == 0) {
         $form['error'] = array(
           '#type' => 'markup',
@@ -142,7 +142,7 @@ function hosting_migrate_platform_submit($form, &$form_state) {
       $max_per_batch = 5;
       $result = db_query("SELECT n.nid, n.title FROM  {hosting_site} s LEFT JOIN {node} n ON n.nid=s.nid WHERE platform = :platform AND s.status = :s.status and s.verified > :s.verified ORDER BY n.title", array(':platform' => $form['#current_platform']->nid, ':s.status' => HOSTING_SITE_ENABLED, ':s.verified' => 0));
       $operations = array();
-      while ($site = db_fetch_object($result)) {
+      while ($site = $result->fetch()) {
         $operations[] = array(
           'hosting_migrate_platform_batch',
           array($site->nid, $form_state['values']['target_platform'], $form_state),

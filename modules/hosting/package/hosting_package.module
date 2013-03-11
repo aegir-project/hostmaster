@@ -213,7 +213,7 @@ function hosting_get_profile_languages($profile = NULL, $platform = NULL) {
   }
   else {
     $result = db_query("SELECT DISTINCT language FROM {hosting_package_languages}");
-    while ($lang = db_fetch_object($result)) {
+    while ($lang = $result->fetch()) {
       $languages[$lang->language] = _hosting_language_name($lang->language);
     }
   }
@@ -243,7 +243,7 @@ function _hosting_package_load($param) {
   $cond = implode(' AND ', $cond);
   // TODO Please convert this statement to the D7 database API syntax.
   $result = db_query('SELECT n.nid FROM {node} n left join {hosting_package} p on n.nid = p.nid WHERE ' . $cond, $arguments);
-  while ($nid = db_fetch_object($result)) {
+  while ($nid = $result->fetch()) {
     $return[$nid->nid] = node_load($nid->nid);
   }
   if (sizeof($return)) {
@@ -348,7 +348,7 @@ function hosting_package_delete($node) {
  */
 function hosting_package_load($nodes) {
   foreach ($nodes as $nid => &$node) {
-    $additions = db_fetch_object(db_query('SELECT package_type, short_name, old_short_name, description FROM {hosting_package} WHERE vid = :vid', array(':vid' => $node->vid)));
+    $additions = db_query('SELECT package_type, short_name, old_short_name, description FROM {hosting_package} WHERE vid = :vid', array(':vid' => $node->vid))->fetch();
     foreach ($additions as $property => &$value) {
       $node->$property = $value;
     }
@@ -441,7 +441,7 @@ function _hosting_package_list_package_usage($node) {
     return t('No packages are associated with @reference', array('@reference' => $node->title));
   }
   $rows = array();
-  while ($package = db_fetch_object($result)) {
+  while ($package = $result->fetch()) {
     $rows[] = array('data' => array(
         $package->package_version,
         l(filter_xss($package->platform_name), 'node/' . $package->platform_nid),
@@ -575,7 +575,7 @@ function hosting_package_list($ref, $type = null) {
     return t('No packages are associated with @reference', array('@reference' => $ref->title));
   }
   $rows = array();
-  while ($package = db_fetch_object($result)) {
+  while ($package = $result->fetch()) {
     $row_class = ($package->status == 1) ? 'hosting-success' : 'hosting-info';
     $row = array();
     $row[] =  array(

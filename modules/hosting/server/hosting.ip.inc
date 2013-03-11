@@ -78,7 +78,7 @@ function hosting_ip_validate($node) {
 function hosting_ip_load($node) {
   $ip_list = array();
   $result = db_query("SELECT ip_address FROM {hosting_ip_addresses} WHERE nid = :nid", array(':nid' => $node->nid));
-  while ($obj = db_fetch_object($result)) {
+  while ($obj = $result->fetch()) {
     $ip_list[] = $obj->ip_address;
   }
 

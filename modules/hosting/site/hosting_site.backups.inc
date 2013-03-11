@@ -67,7 +67,7 @@ function hosting_site_get_backup($bid) {
  */
 function hosting_site_backup_list($site) {
   $result = db_query("SELECT bid, description, size, timestamp FROM {hosting_site_backups} WHERE site = :site ORDER BY timestamp DESC", array(':site' => $site));
-  while ($object = db_fetch_object($result)) {
+  while ($object = $result->fetch()) {
     #needs to be cleaned up. but i am NOT generating a theme func for this right now.
     $backups[$object->bid] = '<strong>' . format_date($object->timestamp) . '</strong> - ' . format_size($object->size) . ' - ' . filter_xss($object->description);
   }

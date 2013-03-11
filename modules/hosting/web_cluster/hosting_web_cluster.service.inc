@@ -34,7 +34,7 @@ class hostingService_http_cluster extends hostingService_http {
 
     $web_servers = array();
     $result = db_query('SELECT web_server_nid FROM {hosting_web_cluster} WHERE vid = :vid', array(':vid' => $this->server->vid));
-    while ($web_server = db_fetch_object($result)) {
+    while ($web_server = $result->fetch()) {
       $web_servers[] = $web_server->web_server_nid;
       $server = node_load($web_server->web_server_nid);
       $ssl_enabled = $ssl_enabled && $server->services['http']->ssl_enabled;

@@ -876,7 +876,7 @@ function hosting_context_load($name) {
 
   $result = db_query("SELECT nid FROM {hosting_context} WHERE name = :name", array(':name' => $name));
 
-  if ($obj = db_fetch_object($result)) {
+  if ($obj = $result->fetch()) {
     return node_load($obj->nid);
   }
   return FALSE;

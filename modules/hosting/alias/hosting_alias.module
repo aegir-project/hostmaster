@@ -125,7 +125,7 @@ function hosting_alias_get_aliases($node, $type = null) {
 
   $result = db_query($query, $args);
 
-  while ($obj = db_fetch_object($result)) {
+  while ($obj = $result->fetch()) {
     $alias[] = $obj->alias;
   }
   if (sizeof($alias)) {

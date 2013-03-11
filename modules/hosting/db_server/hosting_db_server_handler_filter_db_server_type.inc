@@ -12,7 +12,7 @@ class hosting_db_server_handler_filter_db_server_type extends views_handler_filt
     if (!isset($this->value_options)) {
       $this->value_title = t('DB Sever Type');
       $result = db_query("SELECT DISTINCT(db_type) FROM {hosting_db_server}");
-      while ($db_server = db_fetch_object($result)) {
+      while ($db_server = $result->fetch()) {
         $options[$db_server->db_type] = $db_server->db_type;
       }
 

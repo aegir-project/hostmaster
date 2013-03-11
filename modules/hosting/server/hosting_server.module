@@ -192,7 +192,7 @@ function hosting_services_add(&$node, $name, $type, $values = array()) {
 function hosting_server_init_services(&$node) {
   $node->services = array();
   $result = db_query("SELECT service, type FROM {hosting_service} WHERE vid = :vid AND available = :available", array(':vid' => $node->vid, ':available' => 1));
-  while ($record = db_fetch_object($result)) {
+  while ($record = $result->fetch()) {
     $name = $record->service;
     if ($service_object = hosting_services_new_object($name, $record->type, $node)) {
       $node->services[$name] = $service_object;
@@ -545,7 +545,7 @@ function hosting_server_listing() {
   // TODO Please convert this statement to the D7 database API syntax.
   $result = db_query(db_rewrite_sql("SELECT n.nid FROM {node} n WHERE n.type='server' AND n.status = 1 ORDER BY n.title"));
   $rows = array();
-  while ($obj = db_fetch_object($result)) {
+  while ($obj = $result->fetch()) {
     $row = array();
     $server = node_load($obj->nid);
     $row[] = l($server->title, 'node/' . $server->nid);
@@ -586,7 +586,7 @@ function hosting_server_listing() {
 function hosting_get_servers($service) {
   $return = array();
   $result = db_query("SELECT n.nid, n.title FROM {node} n INNER JOIN {hosting_service} s ON n.vid = s.vid AND s.available = 1 AND s.service = '%s'", $service);
-  while ($server = db_fetch_object($result)) {
+  while ($server = $result->fetch()) {
     $return[$server->nid] = $server->title;
   }
   drupal_alter('hosting_servers_titles', $return, $service);

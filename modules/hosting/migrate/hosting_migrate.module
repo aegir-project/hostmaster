@@ -222,7 +222,7 @@ function hosting_migrate_comparison($current, $target) {
     c.schema_version as current_schema, t.schema_version as target_schema, c.status AS enabled
     FROM %s c LEFT JOIN %s t ON c.nid = t.nid ORDER BY c.status DESC, short_name", $current_tbl, $target_tbl);
 
-  while ($obj = db_fetch_object($result)) {
+  while ($obj = $result->fetch()) {
     if (isset($obj->current_schema) && ((int) $obj->target_schema > 0) && ((int) $obj->current_schema > (int) $obj->target_schema)) {
       $obj->status = 'downgrade';
     }
