@@ -549,6 +549,7 @@ function hosting_package_list($ref, $type = null) {
       'field' => 'package_type',
     ),
   );
+/*
   $args[] = $ref->nid;
 
   if (!is_null($type)) {
@@ -559,8 +560,31 @@ function hosting_package_list($ref, $type = null) {
   $sql = "SELECT h.nid as 'package', i.status, h.short_name, i.version, h.package_type, i.status FROM {hosting_package} h
     LEFT JOIN {hosting_package_instance} i ON i.package_id=h.nid WHERE i.rid=%d" . $cond;
   $sql .= tablesort_sql($header);
-  // @TODO hide deleted sites
   $result = pager_query(db_rewrite_sql($sql, 'h'), 25, 2, null, $args);
+*/
+  // TODO: Validate conversion to DBTNG.
+  $query = db_select('hosting_package', 'h')
+    ->extend('PagerDefault')
+    ->extend('TableSort');
+  $query = $query->join('hosting_package_instance', 'i', 'i.package_id=h.nid');
+  $query = $query->element(2);
+  $query = $query
+    ->addField('h', 'nid', 'package')
+    ->addField('i', 'status')
+    ->addField('h', 'short_name')
+    ->addField('i', 'version')
+    ->addField('h', 'package_type')
+    ->condition('i.rid', $ref->nid);
+  if (!is_null($type)) {
+    $query = $query->condition('h.package_type', $type);
+  }
+  $query = $query
+    ->limit(25)
+    ->orderByHeader($header)
+    ->addTag('node_access')
+  // @TODO hide deleted sites
+  $result = $query->execute()
+
   $view_package_perm = user_access('view package');
 
   if (!$result) {
