@@ -340,7 +340,7 @@ function hosting_quota_node_view($node, $view_mode, $langcode) {
 /**
  * Insert edit controls for the hosting quotas into the client edit form
  */
-function hosting_quota_form_alter(&$form, $form_state, $form_id) {
+function hosting_quota_form_alter(&$form, &$form_state, $form_id) {
   if (user_access('edit all quotas') && isset($form['type']) && isset($form['#node']) && 'client_node_form' == $form_id) {
     $node = $form['#node'];
 
