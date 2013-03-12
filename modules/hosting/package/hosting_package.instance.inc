@@ -109,23 +109,18 @@ function hosting_package_instance_update(&$instance) {
  * @see http://drupal.org/node/1354
  */
 function hosting_package_instance_create(&$instance) {
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query("INSERT INTO {hosting_package_instance} (
-   rid, package_id, filename,
-   schema_version, version, version_code, status)
-   VALUES (%d, %d, '%s', %d, '%s', %f, %d)", $instance->rid, $instance->package_id, $instance->filename, $instance->schema_version, $instance->version, $instance->version_code, $instance->status) */
   $id = db_insert('hosting_package_instance')
-  ->fields(array(
-    '       rid' => $instance->rid,
-    'package_id' => $instance->package_id,
-    'filename' => $instance->filename,
-    'schema_version' => $instance->schema_version,
-    'version' => $instance->version,
-    'version_code' => $instance->version_code,
-    'status' => $instance->status,
-  ))
-  ->execute();
-  $instance->iid = db_last_insert_id('hosting_package_instance', 'iid');
+    ->fields(array(
+      'rid' => $instance->rid,
+      'package_id' => $instance->package_id,
+      'filename' => $instance->filename,
+      'schema_version' => $instance->schema_version,
+      'version' => $instance->version,
+      'version_code' => $instance->version_code,
+      'status' => $instance->status,
+    ))
+    ->execute();
+  $instance->iid = $id;
   _hosting_package_instance_languages($instance);
 }
 
