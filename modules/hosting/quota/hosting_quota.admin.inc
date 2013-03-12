@@ -78,7 +78,6 @@ function hosting_quota_admin_defaults_form_submit($form, &$form_state) {
     variable_set("hosting_quota_default_{$resource}", $quota);
 
     // Set quotas for clients that don't already have them
-    // TODO Please convert this statement to the D7 database API syntax.
     $client_result = db_query('SELECT nid FROM {hosting_client} WHERE nid not in (SELECT client FROM {hosting_client_quota})');
     while ($row = $client_result->fetch()) {
       hosting_quota_set_limit($row->nid, $resource, $quota);

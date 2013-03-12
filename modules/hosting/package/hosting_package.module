@@ -241,7 +241,7 @@ function _hosting_package_load($param) {
     $arguments[] = $value;
   }
   $cond = implode(' AND ', $cond);
-  // TODO Please convert this statement to the D7 database API syntax.
+  // TODO convert this statement to a DBTNG dynamic query.
   $result = db_query('SELECT n.nid FROM {node} n left join {hosting_package} p on n.nid = p.nid WHERE ' . $cond, $arguments);
   while ($nid = $result->fetch()) {
     $return[$nid->nid] = node_load($nid->nid);

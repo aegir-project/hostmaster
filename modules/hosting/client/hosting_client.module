@@ -281,7 +281,7 @@ function hosting_client_validate(&$node) {
   else {
     $node->uname = hosting_client_sanitize($node->title);
   }
-  // TODO Please convert this statement to the D7 database API syntax.
+  // TODO convert this statement to DBTNG syntax.
   $nid = db_query("SELECT nid FROM {hosting_client} WHERE uname LIKE '%s'", addcslashes($node->uname, '\%_'))->fetchField();
   if ($nid && $node->nid != $nid) {
     $suggestion = hosting_client_validate_suggest($node);
@@ -316,7 +316,7 @@ function hosting_client_validate(&$node) {
 function hosting_client_validate_suggest($node) {
   $suggestion = FALSE;
   for ($i = 0; $i < 10; $i++) {
-    // TODO Please convert this statement to the D7 database API syntax.
+    // TODO convert this statement to DBTNG syntax.
     $nid = db_query("SELECT nid FROM {hosting_client} WHERE uname LIKE '%s%%'", addcslashes(hosting_client_sanitize($node->title) . $i, '\%_'))->fetchField();
     if (!$nid) {
       $suggestion = $node->title . $i;

@@ -172,7 +172,7 @@ function _hosting_package_instances_load($param, $multiple = FALSE) {
     return FALSE;
   }
   $instances = array();
-  // TODO Please convert this statement to the D7 database API syntax.
+  // TODO convert this statement to proper DBTNG syntax.
   $result = db_query("SELECT
       n.title, r.type, p.package_type, p.nid,
       i.iid, i.version, i.version_code, i.schema_version,
