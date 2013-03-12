@@ -283,18 +283,16 @@ function hosting_get_package($short_name) {
  * Implements hook_insert().
  */
 function hosting_package_insert($node) {
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query("INSERT INTO {hosting_package} (vid, nid, package_type, short_name, old_short_name, description ) VALUES (%d, %d, '%s', '%s', '%s', '%s')", $node->vid, $node->nid, $node->package_type, $node->short_name, $node->old_short_name, $node->description) */
   $id = db_insert('hosting_package')
-  ->fields(array(
-    'vid' => $node->vid,
-    'nid' => $node->nid,
-    'package_type' => $node->package_type,
-    'short_name' => $node->short_name,
-    'old_short_name' => $node->old_short_name,
-    'description ' => $node->description,
-  ))
-  ->execute();
+    ->fields(array(
+      'vid' => $node->vid,
+      'nid' => $node->nid,
+      'package_type' => $node->package_type,
+      'short_name' => $node->short_name,
+      'old_short_name' => $node->old_short_name,
+      'description ' => $node->description,
+    ))
+    ->execute();
 }
 
 
@@ -310,37 +308,31 @@ function hosting_package_update($node) {
     hosting_package_insert($node);
   }
   else {
-    // TODO Please review the conversion of this statement to the D7 database API syntax.
-    /* db_query("UPDATE {hosting_package} SET package_type = '%s', short_name = '%s', old_short_name = '%s', description = '%s' WHERE nid=%d", $node->package_type, $node->short_name, $node->old_short_name, $node->description, $node->nid) */
     db_update('hosting_package')
-  ->fields(array(
-    'package_type' => $node->package_type,
-    'short_name' => $node->short_name,
-    'old_short_name' => $node->old_short_name,
-    'description' => $node->description,
-  ))
-  ->condition('nid', $node->nid)
-  ->execute();
+      ->fields(array(
+        'package_type' => $node->package_type,
+        'short_name' => $node->short_name,
+        'old_short_name' => $node->old_short_name,
+        'description' => $node->description,
+      ))
+      ->condition('nid', $node->nid)
+      ->execute();
   }
 }
 
 function hosting_nodeapi_package_delete_revision(&$node) {
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query('DELETE FROM {hosting_package} WHERE vid = %d', $node->vid) */
   db_delete('hosting_package')
-  ->condition('vid', $node->vid)
-  ->execute();
+    ->condition('vid', $node->vid)
+    ->execute();
 }
 
 /**
  * Implements hook_delete().
  */
 function hosting_package_delete($node) {
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query('DELETE FROM {hosting_package} WHERE nid = %d', $node->nid) */
   db_delete('hosting_package')
-  ->condition('nid', $node->nid)
-  ->execute();
+    ->condition('nid', $node->nid)
+    ->execute();
 }
 
 /**

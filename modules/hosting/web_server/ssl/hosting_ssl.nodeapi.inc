@@ -237,16 +237,14 @@ function hosting_ssl_nodeapi_site_presave(&$node) {
  * @see http://drupal.org/node/1354
  */
 function hosting_ssl_nodeapi_site_insert($node) {
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query("INSERT INTO {hosting_ssl_site} (vid, nid, ssl_enabled, ssl_key) VALUES (%d, %d, %d, %d)", $node->vid, $node->nid, $node->ssl_enabled, $node->ssl_key) */
   $id = db_insert('hosting_ssl_site')
-  ->fields(array(
-    'vid' => $node->vid,
-    'nid' => $node->nid,
-    'ssl_enabled' => $node->ssl_enabled,
-    'ssl_key' => $node->ssl_key,
-  ))
-  ->execute();
+    ->fields(array(
+      'vid' => $node->vid,
+      'nid' => $node->nid,
+      'ssl_enabled' => $node->ssl_enabled,
+      'ssl_key' => $node->ssl_key,
+    ))
+    ->execute();
 }
 
 /**
@@ -260,15 +258,13 @@ function hosting_ssl_nodeapi_site_update($node) {
     hosting_ssl_nodeapi_site_insert($node);
   }
   else {
-    // TODO Please review the conversion of this statement to the D7 database API syntax.
-    /* db_query("UPDATE {hosting_ssl_site} SET ssl_enabled=%d, ssl_key=%d WHERE vid=%d", $node->ssl_enabled, $node->ssl_key, $node->vid) */
     db_update('hosting_ssl_site')
-  ->fields(array(
-    'ssl_enabled' => $node->ssl_enabled,
-    'ssl_key' => $node->ssl_key,
-  ))
-  ->condition('vid', $node->vid)
-  ->execute();
+      ->fields(array(
+        'ssl_enabled' => $node->ssl_enabled,
+        'ssl_key' => $node->ssl_key,
+      ))
+      ->condition('vid', $node->vid)
+      ->execute();
   }
   if ($node->site_status == HOSTING_SITE_DELETED) {
     hosting_ssl_clean_keys($node);
@@ -289,11 +285,9 @@ function hosting_ssl_nodeapi_site_load($node) {
  * @see http://drupal.org/node/1354
  */
 function hosting_ssl_nodeapi_site_delete($node) {
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query("DELETE FROM {hosting_ssl_site} WHERE nid=%d", $node->nid) */
   db_delete('hosting_ssl_site')
-  ->condition('nid', $node->nid)
-  ->execute();
+    ->condition('nid', $node->nid)
+    ->execute();
   hosting_ssl_clean_keys($node);
 }
 
@@ -302,11 +296,9 @@ function hosting_ssl_nodeapi_site_delete($node) {
  * @see http://drupal.org/node/1354
  */
 function hosting_ssl_nodeapi_site_delete_revision($node) {
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query("DELETE FROM {hosting_ssl_site} WHERE vid=%d", $node->vid) */
   db_delete('hosting_ssl_site')
-  ->condition('vid', $node->vid)
-  ->execute();
+    ->condition('vid', $node->vid)
+    ->execute();
 }
 
 
@@ -340,11 +332,9 @@ function hosting_ssl_save_key($node) {
       drupal_write_record("hosting_ssl_cert", $obj);
       if (!hosting_ip_allocate($obj, $node)) {
         form_set_error('ssl_key_new', t("Unable to allocate IP address for certificate, disabling SSL. Allocate more IP addresses to this server then try to enable SSL again."));
-        // TODO Please review the conversion of this statement to the D7 database API syntax.
-        /* db_query("DELETE FROM {hosting_ssl_cert} WHERE cid = %d", $obj->cid) */
         db_delete('hosting_ssl_cert')
-  ->condition('cid', $obj->cid)
-  ->execute();
+          ->condition('cid', $obj->cid)
+          ->execute();
         $obj->cid = FALSE;
         $node->ssl_enabled = HOSTING_SSL_DISABLED;
       }
@@ -402,15 +392,11 @@ function hosting_ssl_clean_keys($node) {
   // check if there are still sites using this site's certificate
   if (!db_query("SELECT * FROM hosting_ssl_site siteA INNER JOIN hosting_ssl_site siteB ON siteA.ssl_key = siteB.ssl_key INNER JOIN hosting_site s ON s.nid = siteA.nid WHERE siteA.ssl_enabled = :siteA.ssl_enabled AND s.status <> :s.status AND siteB.nid = :siteB.nid;", array(':siteA.ssl_enabled' => 1, ':s.status' => HOSTING_SITE_DELETED, ':siteB.nid' => $node->nid))->fetchField()) {
     drupal_set_message(t("cleaning up unused certificate associated with site"));
-    // TODO Please review the conversion of this statement to the D7 database API syntax.
-    /* db_query("DELETE FROM {hosting_ssl_cert} WHERE cid = %d", $node->ssl_key) */
     db_delete('hosting_ssl_cert')
-  ->condition('cid', $node->ssl_key)
-  ->execute();
-    // TODO Please review the conversion of this statement to the D7 database API syntax.
-    /* db_query("DELETE FROM {hosting_ssl_cert_ips} WHERE cid = %d", $node->ssl_key) */
+      ->condition('cid', $node->ssl_key)
+      ->execute();
     db_delete('hosting_ssl_cert_ips')
-  ->condition('cid', $node->ssl_key)
-  ->execute();
+      ->condition('cid', $node->ssl_key)
+      ->execute();
   }
 }

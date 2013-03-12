@@ -103,11 +103,9 @@ function hosting_platform_post_hosting_delete_task($task, $data) {
   $task->ref->no_verify = TRUE;
   node_save($task->ref);
   hosting_context_delete($task->ref->nid);
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query("DELETE FROM {hosting_platform_client_access} WHERE pid = %d", $task->ref->nid) */
   db_delete('hosting_platform_client_access')
-  ->condition('pid', $task->ref->nid)
-  ->execute();
+    ->condition('pid', $task->ref->nid)
+    ->execute();
 }
 
 /**

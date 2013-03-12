@@ -48,11 +48,9 @@ function hosting_client_user_insert(&$edit, $account, $category) {
  * Implements hook_user_cancel().
  */
 function hosting_client_user_cancel($edit, $account, $method) {
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query('DELETE FROM {hosting_client_user} WHERE user = %d', $user->uid) */
   db_delete('hosting_client_user')
-  ->condition('user', $user->uid)
-  ->execute();
+    ->condition('user', $user->uid)
+    ->execute();
 }
 
 /**
@@ -171,25 +169,21 @@ function hosting_client_user_form_validate($edit) {
 function hosting_client_user_form_submit($edit, $user) {
   if (array_key_exists('clients', $edit)) {
     foreach ($edit['clients'] as $client) {
-      // TODO Please review the conversion of this statement to the D7 database API syntax.
-      /* db_query('DELETE FROM {hosting_client_user} WHERE user = %d AND client = %d', $user->uid, $client) */
       $query = db_delete('hosting_client_user')
-  ->condition('user', $user->uid)
-  ->condition('client', $client)
-  ->execute();
+        ->condition('user', $user->uid)
+        ->condition('client', $client)
+        ->execute();
     }
   }
   if (array_key_exists('hosting_client', $edit) && $edit['hosting_client']) {
     $client = hosting_get_client($edit['hosting_client']);
-    // TODO Please review the conversion of this statement to the D7 database API syntax.
-    /* db_query('INSERT INTO {hosting_client_user} (client, user, contact_type) VALUES (%d, %d, "%s")', $client->nid, $user->uid, '') */
     $query = $id = db_insert('hosting_client_user')
-  ->fields(array(
-    'client' => $client->nid,
-    'user' => $user->uid,
-    'contact_type' => '',
-  ))
-  ->execute();
+      ->fields(array(
+        'client' => $client->nid,
+        'user' => $user->uid,
+        'contact_type' => '',
+      ))
+      ->execute();
   }
 }
 

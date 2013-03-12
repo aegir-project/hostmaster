@@ -165,26 +165,22 @@ function hosting_quota_resource_render($resource, $usage) {
  */
 function hosting_quota_set_limit($client, $resource, $value) {
   if (db_query("SELECT COUNT(*) FROM {hosting_client_quota} WHERE client = :client AND resource = :resource", array(':client' => $client, ':resource' => $resource))->fetchField()) {
-    // TODO Please review the conversion of this statement to the D7 database API syntax.
-    /* db_query("UPDATE {hosting_client_quota} SET value = '%s' WHERE client = %d AND resource = '%s'", $value, $client, $resource) */
-    db_update('hosting_client_quota')
-  ->fields(array(
-    'value' => $value,
-  ))
-  ->condition('client', $client)
-  ->condition('resource', $resource)
-  ->execute();
+    $id = db_update('hosting_client_quota')
+      ->fields(array(
+        'value' => $value,
+      ))
+      ->condition('client', $client)
+      ->condition('resource', $resource)
+      ->execute();
   }
   else {
-    // TODO Please review the conversion of this statement to the D7 database API syntax.
-    /* db_query("INSERT INTO {hosting_client_quota} (client, resource, value) VALUES (%d, '%s', '%s')", $client, $resource, $value) */
     $id = db_insert('hosting_client_quota')
-  ->fields(array(
-    'client' => $client,
-    'resource' => $resource,
-    'value' => $value,
-  ))
-  ->execute();
+      ->fields(array(
+        'client' => $client,
+        'resource' => $resource,
+        'value' => $value,
+      ))
+      ->execute();
   }
 }
 

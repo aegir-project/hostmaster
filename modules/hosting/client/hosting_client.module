@@ -336,48 +336,40 @@ function hosting_client_insert($node) {
   else {
     $node->uname = hosting_client_sanitize($node->title);
   }
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query("INSERT INTO {hosting_client} (vid, nid, uname) VALUES (%d, %d, '%s' )", $node->vid, $node->nid, $node->uname) */
   $id = db_insert('hosting_client')
-  ->fields(array(
-    'vid' => $node->vid,
-    'nid' => $node->nid,
-    'uname' => $node->uname,
-  ))
-  ->execute();
+    ->fields(array(
+      'vid' => $node->vid,
+      'nid' => $node->nid,
+      'uname' => $node->uname,
+    ))
+    ->execute();
   if (variable_get('hosting_client_register_user', FALSE)
      && !array_shift(user_load_multiple(array(), array('mail' => $node->email)))) {
     $user = hosting_client_register_user($node);
     $node->uid = $user->uid;
-    // TODO Please review the conversion of this statement to the D7 database API syntax.
-    /* db_query("UPDATE {node} SET uid = %d WHERE nid = %d", $user->uid, $node->nid) */
     db_update('node')
-  ->fields(array(
-    'uid' => $user->uid,
-  ))
-  ->condition('nid', $node->nid)
-  ->execute();
-    // TODO Please review the conversion of this statement to the D7 database API syntax.
-    /* db_query("UPDATE {node_revisions} SET uid = %d WHERE vid = %d", $user->uid, $node->vid) */
+      ->fields(array(
+        'uid' => $user->uid,
+      ))
+      ->condition('nid', $node->nid)
+      ->execute();
     db_update('node_revisions')
-  ->fields(array(
-    'uid' => $user->uid,
-  ))
-  ->condition('vid', $node->vid)
-  ->execute();
+      ->fields(array(
+        'uid' => $user->uid,
+      ))
+      ->condition('vid', $node->vid)
+      ->execute();
   }
   if (isset($node->new_user)) {
     $user = array_shift(user_load_multiple(array(), array('name' => $node->new_user)));
     if ($user) {
-      // TODO Please review the conversion of this statement to the D7 database API syntax.
-      /* db_query("INSERT INTO {hosting_client_user} (client, user, contact_type) VALUES (%d, %d, '%s')", $node->nid, $user->uid, '') */
       $id = db_insert('hosting_client_user')
-  ->fields(array(
-    'client' => $node->nid,
-    'user' => $user->uid,
-    'contact_type' => '',
-  ))
-  ->execute();
+        ->fields(array(
+          'client' => $node->nid,
+          'user' => $user->uid,
+          'contact_type' => '',
+        ))
+        ->execute();
     }
   }
 }
@@ -472,36 +464,30 @@ function hosting_client_update($node) {
     else {
       $node->uname = hosting_client_sanitize($node->title);
     }
-    // TODO Please review the conversion of this statement to the D7 database API syntax.
-    /* db_query("UPDATE {hosting_client} SET uname='%s' WHERE nid=%d", $node->uname, $node->nid) */
     db_update('hosting_client')
-  ->fields(array(
-    'uname' => $node->uname,
-  ))
-  ->condition('nid', $node->nid)
-  ->execute();
+      ->fields(array(
+        'uname' => $node->uname,
+      ))
+      ->condition('nid', $node->nid)
+      ->execute();
   }
   if ($node->users) {
     foreach ($node->users as $user) {
-      // TODO Please review the conversion of this statement to the D7 database API syntax.
-      /* db_query('DELETE FROM {hosting_client_user} WHERE user = %d AND client = %d', $user, $node->nid) */
       db_delete('hosting_client_user')
-  ->condition('user', $user)
-  ->condition('client', $node->nid)
-  ->execute();
+        ->condition('user', $user)
+        ->condition('client', $node->nid)
+        ->execute();
     }
   }
   if ($node->new_user) {
     $user = array_shift(user_load_multiple(array(), array('name' => $node->new_user)));
-    // TODO Please review the conversion of this statement to the D7 database API syntax.
-    /* db_query('INSERT INTO {hosting_client_user} (client, user, contact_type) VALUES (%d, %d, "%s")', $node->nid, $user->uid, '') */
     $id = db_insert('hosting_client_user')
-  ->fields(array(
-    'client' => $node->nid,
-    'user' => $user->uid,
-    'contact_type' => '',
-  ))
-  ->execute();
+      ->fields(array(
+        'client' => $node->nid,
+        'user' => $user->uid,
+        'contact_type' => '',
+      ))
+      ->execute();
   }
 }
 
@@ -511,22 +497,18 @@ function hosting_client_update($node) {
  * @see hosting_nodeapi()
  */
 function hosting_nodeapi_client_delete_revision(&$node) {
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query('DELETE FROM {hosting_client} WHERE vid = %d', $node->vid) */
   db_delete('hosting_client')
-  ->condition('vid', $node->vid)
-  ->execute();
+    ->condition('vid', $node->vid)
+    ->execute();
 }
 
 /**
  * Implements hook_delete().
  */
 function hosting_client_delete($node) {
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query('DELETE FROM {hosting_client} WHERE nid = %d', $node->nid) */
   db_delete('hosting_client')
-  ->condition('nid', $node->nid)
-  ->execute();
+    ->condition('nid', $node->nid)
+    ->execute();
 }
 
 /**
@@ -990,26 +972,22 @@ function hosting_client_node_insert($node) {
           // Client has been selected, add them to the access table
           $existing = db_query("SELECT cid FROM {hosting_platform_client_access} WHERE pid = :pid AND cid = :cid", array(':pid' => $node->nid, ':cid' => $cid))->fetchField();
           if (!$existing) {
-            // TODO Please review the conversion of this statement to the D7 database API syntax.
-            /* db_query("INSERT INTO {hosting_platform_client_access} (pid, cid) VALUES (%d, %d)", $node->nid, $cid) */
             $id = db_insert('hosting_platform_client_access')
-  ->fields(array(
-    'pid' => $node->nid,
-    'cid' => $cid,
-  ))
-  ->execute();
+              ->fields(array(
+                'pid' => $node->nid,
+                'cid' => $cid,
+              ))
+              ->execute();
           }
         }
         else {
           // Client has not been selected, or unselected
           $existing = db_query("SELECT cid FROM {hosting_platform_client_access} WHERE pid = :pid AND cid = :cid", array(':pid' => $node->nid, ':cid' => $cid))->fetchField();
           if ($existing) {
-            // TODO Please review the conversion of this statement to the D7 database API syntax.
-            /* db_query("DELETE FROM {hosting_platform_client_access} WHERE pid = %d AND cid = %d", $node->nid, $cid) */
             db_delete('hosting_platform_client_access')
-  ->condition('pid', $node->nid)
-  ->condition('cid', $cid)
-  ->execute();
+              ->condition('pid', $node->nid)
+              ->condition('cid', $cid)
+              ->execute();
           }
         }
       }
@@ -1030,26 +1008,22 @@ function hosting_client_node_update($node) {
           // Client has been selected, add them to the access table
           $existing = db_query("SELECT cid FROM {hosting_platform_client_access} WHERE pid = :pid AND cid = :cid", array(':pid' => $node->nid, ':cid' => $cid))->fetchField();
           if (!$existing) {
-            // TODO Please review the conversion of this statement to the D7 database API syntax.
-            /* db_query("INSERT INTO {hosting_platform_client_access} (pid, cid) VALUES (%d, %d)", $node->nid, $cid) */
             $id = db_insert('hosting_platform_client_access')
-  ->fields(array(
-    'pid' => $node->nid,
-    'cid' => $cid,
-  ))
-  ->execute();
+              ->fields(array(
+                'pid' => $node->nid,
+                'cid' => $cid,
+              ))
+              ->execute();
           }
         }
         else {
           // Client has not been selected, or unselected
           $existing = db_query("SELECT cid FROM {hosting_platform_client_access} WHERE pid = :pid AND cid = :cid", array(':pid' => $node->nid, ':cid' => $cid))->fetchField();
           if ($existing) {
-            // TODO Please review the conversion of this statement to the D7 database API syntax.
-            /* db_query("DELETE FROM {hosting_platform_client_access} WHERE pid = %d AND cid = %d", $node->nid, $cid) */
             db_delete('hosting_platform_client_access')
-  ->condition('pid', $node->nid)
-  ->condition('cid', $cid)
-  ->execute();
+              ->condition('pid', $node->nid)
+              ->condition('cid', $cid)
+              ->execute();
           }
         }
       }
@@ -1062,11 +1036,9 @@ function hosting_client_node_update($node) {
  */
 function hosting_client_node_delete($node) {
   if ($node->type == 'platform') {
-    // TODO Please review the conversion of this statement to the D7 database API syntax.
-    /* db_query("DELETE FROM {hosting_platform_client_access} WHERE pid = %d", $node->nid) */
     db_delete('hosting_platform_client_access')
-  ->condition('pid', $node->nid)
-  ->execute();
+      ->condition('pid', $node->nid)
+      ->execute();
   }
 }
 

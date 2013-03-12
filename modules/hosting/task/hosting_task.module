@@ -386,18 +386,16 @@ function hosting_task_log($vid, $type, $message, $error = '', $timestamp = NULL)
     $nids[$vid] = (int) db_query('SELECT nid FROM {hosting_task} WHERE vid = :vid', array(':vid' => $vid))->fetchField();
   }
 
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query("INSERT INTO {hosting_task_log} (vid, nid, type, message, error, timestamp) VALUES (%d, %d, '%s', '%s', '%s', %d)", $vid, $nids[$vid], $type, $message, $error, $timestamp) */
   $id = db_insert('hosting_task_log')
-  ->fields(array(
-    'vid' => $vid,
-    'nid' => $nids[$vid],
-    'type' => $type,
-    'message' => $message,
-    'error' => $error,
-    'timestamp' => $timestamp,
-  ))
-  ->execute();
+    ->fields(array(
+      'vid' => $vid,
+      'nid' => $nids[$vid],
+      'type' => $type,
+      'message' => $message,
+      'error' => $error,
+      'timestamp' => $timestamp,
+    ))
+    ->execute();
 }
 
 /**
@@ -594,22 +592,18 @@ function hosting_task_set_title(&$node) {
   $tasks = hosting_available_tasks($ref->type);
 
   $node->title = drupal_ucfirst($tasks[$node->task_type]['title']) . ': ' . $ref->title;
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query("UPDATE {node} SET title='%s' WHERE nid=%d", $node->title, $node->nid) */
   db_update('node')
-  ->fields(array(
-    'title' => $node->title,
-  ))
-  ->condition('nid', $node->nid)
-  ->execute();
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query("UPDATE {node_revisions} SET title='%s' WHERE vid=%d", $node->title, $node->vid) */
+    ->fields(array(
+      'title' => $node->title,
+    ))
+    ->condition('nid', $node->nid)
+    ->execute();
   db_update('node_revisions')
-  ->fields(array(
-    'title' => $node->title,
-  ))
-  ->condition('vid', $node->vid)
-  ->execute();
+    ->fields(array(
+      'title' => $node->title,
+    ))
+    ->condition('vid', $node->vid)
+    ->execute();
 }
 
 /**
@@ -706,32 +700,28 @@ function hosting_available_tasks($type = NULL, $reset = FALSE) {
 function hosting_task_insert($node) {
   $node->executed = isset($node->executed) ? $node->executed : NULL;
   $node->delta = isset($node->delta) ? $node->delta : NULL;
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query("INSERT INTO {hosting_task} (vid, nid, task_type, task_status, rid, executed, delta) VALUES (%d, %d, '%s', %d, %d, %d, %d)", $node->vid, $node->nid, $node->task_type, $node->task_status, $node->rid, $node->executed, $node->delta) */
   $id = db_insert('hosting_task')
-  ->fields(array(
-    'vid' => $node->vid,
-    'nid' => $node->nid,
-    'task_type' => $node->task_type,
-    'task_status' => $node->task_status,
-    'rid' => $node->rid,
-    'executed' => $node->executed,
-    'delta' => $node->delta,
-  ))
-  ->execute();
+    ->fields(array(
+      'vid' => $node->vid,
+      'nid' => $node->nid,
+      'task_type' => $node->task_type,
+      'task_status' => $node->task_status,
+      'rid' => $node->rid,
+      'executed' => $node->executed,
+      'delta' => $node->delta,
+    ))
+    ->execute();
 
   if (isset($node->task_args) && is_array($node->task_args)) {
     foreach ($node->task_args as $key => $value) {
-      // TODO Please review the conversion of this statement to the D7 database API syntax.
-      /* db_query("INSERT INTO {hosting_task_arguments} (vid, nid, name, value) VALUES (%d, %d, '%s', '%s')", $node->vid, $node->nid, $key, $value) */
       $id = db_insert('hosting_task_arguments')
-  ->fields(array(
-    'vid' => $node->vid,
-    'nid' => $node->nid,
-    'name' => $key,
-    'value' => $value,
-  ))
-  ->execute();
+        ->fields(array(
+          'vid' => $node->vid,
+          'nid' => $node->nid,
+          'name' => $key,
+          'value' => $value,
+        ))
+        ->execute();
     }
   }
   hosting_task_set_title($node);
@@ -750,40 +740,33 @@ function hosting_task_update($node) {
   }
   else {
     hosting_task_set_title($node);
-    // TODO Please review the conversion of this statement to the D7 database API syntax.
-    /* db_query("UPDATE {hosting_task} SET nid=%d, task_type = '%s', task_status = %d, rid = %d, executed=%d, delta=%d WHERE vid=%d", $node->nid, $node->task_type, $node->task_status, $node->rid, $node->executed, $node->delta, $node->vid) */
     db_update('hosting_task')
-  ->fields(array(
-    'nid' => $node->nid,
-    'task_type' => $node->task_type,
-    'task_status' => $node->task_status,
-    'rid' => $node->rid,
-    'executed' => $node->executed,
-    'delta' => $node->delta,
-  ))
-  ->condition('vid', $node->vid)
-  ->execute();
+      ->fields(array(
+        'nid' => $node->nid,
+        'task_type' => $node->task_type,
+        'task_status' => $node->task_status,
+        'rid' => $node->rid,
+        'executed' => $node->executed,
+        'delta' => $node->delta,
+      ))
+      ->condition('vid', $node->vid)
+      ->execute();
     if (isset($node->task_args) && is_array($node->task_args)) {
       # Wipe out old arguments first, since arguments could theoretically be removed.
-      // TODO Please review the conversion of this statement to the D7 database API syntax.
-      /* db_query("DELETE FROM {hosting_task_arguments} WHERE vid=%d", $node->vid) */
       db_delete('hosting_task_arguments')
-  ->condition('vid', $node->vid)
-  ->execute();
+        ->condition('vid', $node->vid)
+        ->execute();
       foreach ($node->task_args as $key => $value) {
-        // TODO Please review the conversion of this statement to the D7 database API syntax.
-        /* db_query("INSERT INTO {hosting_task_arguments} (vid, nid, name, value) VALUES (%d, %d, '%s', '%s')", $node->vid, $node->nid, $key, $value) */
         $id = db_insert('hosting_task_arguments')
-  ->fields(array(
-    'vid' => $node->vid,
-    'nid' => $node->nid,
-    'name' => $key,
-    'value' => $value,
-  ))
-  ->execute();
+          ->fields(array(
+            'vid' => $node->vid,
+            'nid' => $node->nid,
+            'name' => $key,
+            'value' => $value,
+          ))
+          ->execute();
       }
     }
-
   }
 }
 
@@ -791,42 +774,30 @@ function hosting_task_update($node) {
  * Implementation of hook_delete_revision()
  */
 function hosting_nodeapi_task_delete_revision(&$node) {
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query('DELETE FROM {hosting_task} WHERE vid = %d', $node->vid) */
   db_delete('hosting_task')
-  ->condition('vid', $node->vid)
-  ->execute();
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query('DELETE FROM {hosting_task_arguments} WHERE vid = %d', $node->vid) */
+    ->condition('vid', $node->vid)
+    ->execute();
   db_delete('hosting_task_arguments')
-  ->condition('vid', $node->vid)
-  ->execute();
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query('DELETE FROM {hosting_task_log} WHERE vid = %d', $node->vid) */
+    ->condition('vid', $node->vid)
+    ->execute();
   db_delete('hosting_task_log')
-  ->condition('vid', $node->vid)
-  ->execute();
+    ->condition('vid', $node->vid)
+    ->execute();
 }
 
 /**
  * Implements hook_delete().
  */
 function hosting_task_delete($node) {
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query('DELETE FROM {hosting_task} WHERE nid = %d', $node->nid) */
   db_delete('hosting_task')
-  ->condition('nid', $node->nid)
-  ->execute();
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query('DELETE FROM {hosting_task_arguments} WHERE nid = %d', $node->nid) */
+    ->condition('nid', $node->nid)
+    ->execute();
   db_delete('hosting_task_arguments')
-  ->condition('nid', $node->nid)
-  ->execute();
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query('DELETE FROM {hosting_task_log} WHERE nid = %d', $node->nid) */
+    ->condition('nid', $node->nid)
+    ->execute();
   db_delete('hosting_task_log')
-  ->condition('nid', $node->nid)
-  ->execute();
+    ->condition('nid', $node->nid)
+    ->execute();
 }
 
 /**

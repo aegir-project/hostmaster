@@ -16,14 +16,12 @@
  * will be referenced to the node.
  */
 function hosting_package_instance_sync($rid) {
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query("UPDATE {hosting_package_instance} SET status = -1 WHERE rid = %d", $rid) */
   db_update('hosting_package_instance')
-  ->fields(array(
-    'status' =>  -1,
-  ))
-  ->condition('rid', $rid)
-  ->execute();
+    ->fields(array(
+      'status' => -1,
+    ))
+    ->condition('rid', $rid)
+    ->execute();
   $map = _hosting_package_plural_map();
   $args = func_get_args();
   $rid = array_shift($args);
@@ -60,30 +58,24 @@ function hosting_package_instance_sync($rid) {
       hosting_package_instance_save($instance);
     }
   }
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query("DELETE FROM {hosting_package_instance} WHERE rid=%d AND status=-1", $rid) */
   db_delete('hosting_package_instance')
-  ->condition('rid', $rid)
-  ->condition('status', -1)
-  ->execute();
+    ->condition('rid', $rid)
+    ->condition('status', -1)
+    ->execute();
 }
 
 function _hosting_package_instance_languages($instance) {
   if (sizeof($instance->languages)) {
-    // TODO Please review the conversion of this statement to the D7 database API syntax.
-    /* db_query("DELETE FROM {hosting_package_languages} WHERE iid=%d", $instance->iid) */
     db_delete('hosting_package_languages')
-  ->condition('iid', $instance->iid)
-  ->execute();
+      ->condition('iid', $instance->iid)
+      ->execute();
     foreach ($instance->languages as $language) {
-      // TODO Please review the conversion of this statement to the D7 database API syntax.
-      /* db_query("INSERT INTO {hosting_package_languages} (iid, language) VALUES (%d, '%s')", $instance->iid, $language) */
       $id = db_insert('hosting_package_languages')
-  ->fields(array(
-    'iid' => $instance->iid,
-    'language' => $language,
-  ))
-  ->execute();
+        ->fields(array(
+          'iid' => $instance->iid,
+          'language' => $language,
+        ))
+        ->execute();
     }
   }
 
@@ -96,23 +88,18 @@ function _hosting_package_instance_languages($instance) {
  * @see http://drupal.org/node/1354
  */
 function hosting_package_instance_update(&$instance) {
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query("UPDATE {hosting_package_instance} SET
-   rid = %d, package_id = %d, filename = '%s',
-   schema_version = %d, version = '%s', version_code = %f, status = %d
-   WHERE iid = %d", $instance->rid, $instance->package_id, $instance->filename, $instance->schema_version, $instance->version, $instance->version_code, $instance->status, $instance->iid) */
-  db_update('hosting_package_instance')
-  ->fields(array(
-    'rid' => $instance->rid,
-    'package_id' => $instance->package_id,
-    'filename' => $instance->filename,
-    'schema_version' => $instance->schema_version,
-    'version' => $instance->version,
-    'version_code' => $instance->version_code,
-    'status' => $instance->status,
-  ))
-  ->condition('iid', $instance->iid)
-  ->execute();
+  $id = db_update('hosting_package_instance')
+    ->fields(array(
+      'rid' => $instance->rid,
+      'package_id' => $instance->package_id,
+      'filename' => $instance->filename,
+      'schema_version' => $instance->schema_version,
+      'version' => $instance->version,
+      'version_code' => $instance->version_code,
+      'status' => $instance->status,
+    ))
+    ->condition('iid', $instance->iid)
+    ->execute();
 
   _hosting_package_instance_languages($instance);
 }
@@ -259,16 +246,12 @@ function hosting_package_instance_save(&$instance) {
  * @see http://drupal.org/node/1354
  */
 function hosting_package_instance_delete($instance) {
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query("DELETE FROM {hosting_package_languages} WHERE iid=%d", $instance->iid) */
   db_delete('hosting_package_languages')
-  ->condition('iid', $instance->iid)
-  ->execute();
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query("DELETE FROM {hosting_package_instance} WHERE iid = %d", $instance->iid) */
+    ->condition('iid', $instance->iid)
+    ->execute();
   db_delete('hosting_package_instance')
-  ->condition('iid', $instance->iid)
-  ->execute();
+    ->condition('iid', $instance->iid)
+    ->execute();
 }
 
 

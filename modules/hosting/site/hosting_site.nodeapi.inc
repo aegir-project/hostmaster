@@ -113,27 +113,21 @@ function hosting_site_view(&$node, $teaser = false) {
  * Implementation of hook_nodeapi_delete_revision().
  */
 function hosting_nodeapi_site_delete_revision(&$node) {
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query('DELETE FROM {hosting_site} WHERE vid = %d', $node->vid) */
   db_delete('hosting_site')
-  ->condition('vid', $node->vid)
-  ->execute();
+    ->condition('vid', $node->vid)
+    ->execute();
 }
 
 /**
  * Implements hook_delete().
  */
 function hosting_site_delete($node) {
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query('DELETE FROM {hosting_site} WHERE nid = %d', $node->nid) */
   db_delete('hosting_site')
-  ->condition('nid', $node->nid)
-  ->execute();
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query('DELETE FROM {hosting_package_instance} WHERE rid=%d', $node->nid) */
+    ->condition('nid', $node->nid)
+    ->execute();
   db_delete('hosting_package_instance')
-  ->condition('rid', $node->nid)
-  ->execute();
+    ->condition('rid', $node->nid)
+    ->execute();
   hosting_context_delete($node->nid);
   $result = db_query("SELECT distinct nid FROM {hosting_task} WHERE rid = :rid", array(':rid' => $node->nid));
   while ($nid = $result->fetch()) {
@@ -160,23 +154,21 @@ function hosting_site_insert(&$node) {
   // Ensure that the last_cron value is set.
   $node->last_cron = isset($node->last_cron) ? $node->last_cron : 0;
 
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query("INSERT INTO {hosting_site} (vid, nid, client, db_server, platform, profile, language, last_cron, cron_key, status, verified) VALUES (%d, %d, %d, %d, %d, %d, '%s', %d, '%s', %d, %d)", $node->vid, $node->nid, $node->client, $node->db_server, $node->platform, $node->profile, $node->site_language, $node->last_cron, $node->cron_key, $node->site_status, $node->verified) */
   $id = db_insert('hosting_site')
-  ->fields(array(
-    'vid' => $node->vid,
-    'nid' => $node->nid,
-    'client' => $node->client,
-    'db_server' => $node->db_server,
-    'platform' => $node->platform,
-    'profile' => $node->profile,
-    'language' => $node->site_language,
-    'last_cron' => $node->last_cron,
-    'cron_key' => $node->cron_key,
-    'status' => $node->site_status,
-    'verified' => $node->verified,
-  ))
-  ->execute();
+    ->fields(array(
+      'vid' => $node->vid,
+      'nid' => $node->nid,
+      'client' => $node->client,
+      'db_server' => $node->db_server,
+      'platform' => $node->platform,
+      'profile' => $node->profile,
+      'language' => $node->site_language,
+      'last_cron' => $node->last_cron,
+      'cron_key' => $node->cron_key,
+      'status' => $node->site_status,
+      'verified' => $node->verified,
+    ))
+    ->execute();
   if ((empty($node->old_vid))) {
     hosting_context_register($node->nid, ($node->hosting_name) ? $node->hosting_name : $node->title);
     if ($node->import) {
@@ -203,22 +195,20 @@ function hosting_site_update(&$node) {
       $node->no_verify = TRUE;
     }
 
-    // TODO Please review the conversion of this statement to the D7 database API syntax.
-    /* db_query("UPDATE {hosting_site} SET client = %d, db_server = %d, platform = %d, last_cron = %d, cron_key = '%s', status = %d, profile = %d, language = '%s', verified = %d WHERE vid=%d", $node->client, $node->db_server, $node->platform, $node->last_cron, $node->cron_key, $node->site_status, $node->profile, $node->site_language, $node->verified, $node->vid) */
     db_update('hosting_site')
-  ->fields(array(
-    'client' => $node->client,
-    'db_server' => $node->db_server,
-    'platform' => $node->platform,
-    'last_cron' => $node->last_cron,
-    'cron_key' => $node->cron_key,
-    'status' => $node->site_status,
-    'profile' => $node->profile,
-    'language' => $node->site_language,
-    'verified' => $node->verified,
-  ))
-  ->condition('vid', $node->vid)
-  ->execute();
+      ->fields(array(
+        'client' => $node->client,
+        'db_server' => $node->db_server,
+        'platform' => $node->platform,
+        'last_cron' => $node->last_cron,
+        'cron_key' => $node->cron_key,
+        'status' => $node->site_status,
+        'profile' => $node->profile,
+        'language' => $node->site_language,
+        'verified' => $node->verified,
+      ))
+      ->condition('vid', $node->vid)
+      ->execute();
   }
   if (!$node->no_verify) {
     hosting_add_task($node->nid, 'verify');

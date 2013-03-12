@@ -23,8 +23,6 @@ function hosting_task_backup_form($node) {
  * Builds a list of backups of the site that have been generated.
  */
 function hosting_site_add_backup($site, $web_server, $filename, $description = '', $size = '') {
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query("INSERT INTO {hosting_site_backups} (site, web_server, filename, description, size, timestamp) VALUES (%d, %d, '%s', '%s', %d, %d)", $site, $web_server, $filename, $description, $size, REQUEST_TIME) */
   $id = db_insert('hosting_site_backups')
   ->fields(array(
     'site' => $site,
@@ -35,19 +33,16 @@ function hosting_site_add_backup($site, $web_server, $filename, $description = '
     'timestamp' => REQUEST_TIME,
   ))
   ->execute();
-  $bid = db_last_insert_id('hosting_site_backups', 'bid');
-  return $bid;
+  return $id;
 }
 
 /**
  * Delete a site backup record
  */
 function hosting_site_delete_backup($bid) {
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query("DELETE FROM {hosting_site_backups} WHERE bid=%d", $bid) */
   db_delete('hosting_site_backups')
-  ->condition('bid', $bid)
-  ->execute();
+    ->condition('bid', $bid)
+    ->execute();
 }
 
 /**

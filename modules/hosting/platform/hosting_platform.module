@@ -346,20 +346,18 @@ function hosting_platform_insert($node) {
   if (!isset($node->no_verify)) {
     hosting_add_task($node->nid, 'verify');
   }
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query("INSERT INTO {hosting_platform} (vid, nid, publish_path, makefile, verified, web_server, status, make_working_copy) VALUES (%d, %d, '%s', '%s', %d, %d, %d, %d)", $node->vid, $node->nid, $node->publish_path, $node->makefile, $node->verified, $node->web_server, $node->platform_status, $node->make_working_copy) */
   $id = db_insert('hosting_platform')
-  ->fields(array(
-    'vid' => $node->vid,
-    'nid' => $node->nid,
-    'publish_path' => $node->publish_path,
-    'makefile' => $node->makefile,
-    'verified' => $node->verified,
-    'web_server' => $node->web_server,
-    'status' => $node->platform_status,
-    'make_working_copy' => $node->make_working_copy,
-  ))
-  ->execute();
+    ->fields(array(
+      'vid' => $node->vid,
+      'nid' => $node->nid,
+      'publish_path' => $node->publish_path,
+      'makefile' => $node->makefile,
+      'verified' => $node->verified,
+      'web_server' => $node->web_server,
+      'status' => $node->platform_status,
+      'make_working_copy' => $node->make_working_copy,
+    ))
+    ->execute();
   if (!$node->old_vid) {
     hosting_context_register($node->nid, 'platform_' . preg_replace("/[!\W]/", "", $node->title));
   }
@@ -380,19 +378,17 @@ function hosting_platform_update($node) {
     if ($node->platform_status == HOSTING_PLATFORM_DELETED) {
       $node->no_verify = TRUE;
     }
-    // TODO Please review the conversion of this statement to the D7 database API syntax.
-    /* db_query("UPDATE {hosting_platform} SET publish_path = '%s', makefile = '%s', web_server = %d, verified = %d, status= %d, make_working_copy = %d WHERE nid=%d", $node->publish_path, $node->makefile, $node->web_server, $node->verified, $node->platform_status, $node->make_working_copy, $node->nid) */
     db_update('hosting_platform')
-  ->fields(array(
-    'publish_path' => $node->publish_path,
-    'makefile' => $node->makefile,
-    'web_server' => $node->web_server,
-    'verified' => $node->verified,
-    'status' => $node->platform_status,
-    'make_working_copy' => $node->make_working_copy,
-  ))
-  ->condition('nid', $node->nid)
-  ->execute();
+      ->fields(array(
+        'publish_path' => $node->publish_path,
+        'makefile' => $node->makefile,
+        'web_server' => $node->web_server,
+        'verified' => $node->verified,
+        'status' => $node->platform_status,
+        'make_working_copy' => $node->make_working_copy,
+      ))
+      ->condition('nid', $node->nid)
+      ->execute();
   }
   if (!$node->no_verify) {
     hosting_add_task($node->nid, 'verify');
@@ -403,27 +399,21 @@ function hosting_platform_update($node) {
  * Implementation of hook_nodeapi_TYPE_OP().
  */
 function hosting_nodeapi_platform_delete_revision(&$node) {
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query('DELETE FROM {hosting_platform} WHERE vid = %d', $node->vid) */
   db_delete('hosting_platform')
-  ->condition('vid', $node->vid)
-  ->execute();
+    ->condition('vid', $node->vid)
+    ->execute();
 }
 
 /**
  * Implements hook_delete().
  */
 function hosting_platform_delete($node) {
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query('DELETE FROM {hosting_platform} WHERE nid = %d', $node->nid) */
   db_delete('hosting_platform')
-  ->condition('nid', $node->nid)
-  ->execute();
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query('DELETE FROM {hosting_package_instance} WHERE rid=%d', $node->nid) */
+    ->condition('nid', $node->nid)
+    ->execute();
   db_delete('hosting_package_instance')
-  ->condition('rid', $node->nid)
-  ->execute();
+    ->condition('rid', $node->nid)
+    ->execute();
 
   hosting_context_delete($node->nid);
   $result = db_query("SELECT distinct nid FROM {hosting_task} WHERE rid = :rid", array(':rid' => $node->nid));

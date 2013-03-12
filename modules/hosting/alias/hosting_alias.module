@@ -147,34 +147,30 @@ function hosting_alias_insert($node) {
     if (is_array($aliases)) {
       foreach ($aliases as $alias) {
         if (($alias = trim($alias)) && !in_array($alias, $automatic)) {
-          // TODO Please review the conversion of this statement to the D7 database API syntax.
-          /* db_query("INSERT INTO {hosting_site_alias} (vid, nid, alias, automatic, redirection) VALUES (%d, %d, '%s', %d, %d)", $node->vid, $node->nid, $alias, HOSTING_ALIAS_CUSTOM, $node->redirection) */
           $id = db_insert('hosting_site_alias')
-  ->fields(array(
-            'vid' => $node->vid,
-            'nid' => $node->nid,
-            'alias' => $alias,
-            'automatic' => HOSTING_ALIAS_CUSTOM,
-            'redirection' => $node->redirection,
-          ))
-  ->execute();
+            ->fields(array(
+              'vid' => $node->vid,
+              'nid' => $node->nid,
+              'alias' => $alias,
+              'automatic' => HOSTING_ALIAS_CUSTOM,
+              'redirection' => $node->redirection,
+            ))
+            ->execute();
         }
       }
     }
     if (sizeof($automatic)) {
       foreach ($automatic as $alias) {
         if (($alias = trim($alias)) && _hosting_valid_fqdn($alias)) {
-          // TODO Please review the conversion of this statement to the D7 database API syntax.
-          /* db_query("INSERT INTO {hosting_site_alias} (vid, nid, alias, automatic, redirection) VALUES (%d, %d, '%s', %d, %d)", $node->vid, $node->nid, $alias, HOSTING_ALIAS_AUTOMATIC, $node->redirection) */
           $id = db_insert('hosting_site_alias')
-  ->fields(array(
-            'vid' => $node->vid,
-            'nid' => $node->nid,
-            'alias' => $alias,
-            'automatic' => HOSTING_ALIAS_AUTOMATIC,
-            'redirection' => $node->redirection,
-          ))
-  ->execute();
+            ->fields(array(
+              'vid' => $node->vid,
+              'nid' => $node->nid,
+              'alias' => $alias,
+              'automatic' => HOSTING_ALIAS_AUTOMATIC,
+              'redirection' => $node->redirection,
+            ))
+            ->execute();
         }
       }
     }
@@ -203,11 +199,9 @@ function hosting_alias_update($node) {
  *   The site node.
  */
 function hosting_alias_delete($node) {
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query("DELETE FROM {hosting_site_alias} WHERE nid=%d", $node->nid) */
   db_delete('hosting_site_alias')
-  ->condition('nid', $node->nid)
-  ->execute();
+    ->condition('nid', $node->nid)
+    ->execute();
 }
 
 /**
@@ -217,11 +211,10 @@ function hosting_alias_delete($node) {
  *   The site node.
  */
 function hosting_alias_delete_revision($node) {
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query("DELETE FROM {hosting_site_alias} WHERE nid=%d and vid=%d", $node->nid, $node->vid) */
   db_delete('hosting_site_alias')
-  ->condition('nid', $node->nid)
-  ->execute();
+    ->condition('nid', $node->nid)
+    ->condition('vid', $node->vid)
+    ->execute();
 }
 
 /**

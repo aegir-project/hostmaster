@@ -925,16 +925,12 @@ function hosting_context_register($nid, $name) {
  *   The nid of the node to remove the association from.
  */
 function hosting_context_delete($nid) {
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query("DELETE FROM {url_alias} WHERE src='node/%d'", $nid) */
   db_delete('url_alias')
-  ->condition('src', $nid)
-  ->execute();
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query("DELETE FROM {hosting_context} WHERE nid=%d", $nid) */
+    ->condition('src', 'node/' . $nid)
+    ->execute();
   db_delete('hosting_context')
-  ->condition('nid', $nid)
-  ->execute();
+    ->condition('nid', $nid)
+    ->execute();
 }
 
 
