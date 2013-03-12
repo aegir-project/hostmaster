@@ -907,8 +907,13 @@ function hosting_client_autocomplete($type, $keyword) {
   $matches = array();
 
   if ($type == 'client') {
-    // TODO Please convert this statement to the D7 database API syntax.
-    $query = db_query(db_rewrite_sql("SELECT * FROM {node} n WHERE type = '%s' AND title LIKE '%s%%'"), $type, addcslashes($keyword, '\%_'));
+    // TODO Confirm that these are equivalent, especially the db_rewrite_sql -> addTag('node_access')
+    // $query = db_query(db_rewrite_sql("SELECT * FROM {node} n WHERE type = '%s' AND title LIKE '%s%%'"), $type, addcslashes($keyword, '\%_'));
+    $query = db_select('node', 'n')
+      ->condition('type', $type)
+      ->condition('title', addcslashes($keyword, '\%_'), 'LIKE')
+      ->addTag('node_access')
+      ->execute()
     while ($result = $query->fetch()) {
       $matches[$result->title] = $result->title;
     }

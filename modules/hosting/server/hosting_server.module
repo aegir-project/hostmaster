@@ -542,8 +542,15 @@ function hosting_server_listing() {
       $header[] = $data['title'];
     }
   }
-  // TODO Please convert this statement to the D7 database API syntax.
-  $result = db_query(db_rewrite_sql("SELECT n.nid FROM {node} n WHERE n.type='server' AND n.status = 1 ORDER BY n.title"));
+  // TODO Confirm these are equivalent, especially the db_rewrite_sql() -> addTag('node_access').
+  //$result = db_query(db_rewrite_sql("SELECT n.nid FROM {node} n WHERE n.type='server' AND n.status = 1 ORDER BY n.title"));
+  $result = db_select('node', 'n')
+    ->fields('n', array('nid'))
+    ->condition('type', 'server')
+    ->condition('status', 1)
+    ->orderBy('title')
+    ->addTag('node_access')
+    ->execute();
   $rows = array();
   while ($obj = $result->fetch()) {
     $row = array();
