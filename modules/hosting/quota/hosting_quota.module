@@ -284,42 +284,55 @@ function hosting_quota_get_all_info($client, $start = NULL, $end = NULL) {
 }
 
 /**
- * Implements hook_nodeapi().
+ *  Implements hook_node_update().
  */
-function hosting_quota_nodeapi_OLD(&$node, $op, $a3 = NULL, $a4 = NULL) {
-  // TODO Remaining code in this function needs to be moved to the appropriate new hook function.
+function hosting_quota_node_update($node) {
+  if ($node->type == 'client') {
+    if (user_access('edit all quotas')) {
+      foreach ($node as $field => $value) {
+        if (substr($field, 0, 6) == 'quota-') {
+          $quota = substr($field, 6);
+          // If no value was entered use the default value for this resource
+          if (!$value) {
+            $value = variable_get("hosting_quota_default_{$quota}", 0);
+          }
+          hosting_quota_set_limit($node->nid, $quota, $value);
+        }
+      }
+    }
+  }
+}
+
+/**
+ *  Implements hook_node_insert().
+ */
+function hosting_quota_node_insert($node) {
+  hosting_quota_node_update($node);
+}
+
+/**
+ *  Implements hook_node_load().
+ */
+function hosting_quota_node_load($node, $types) {
+  if ($node->type == 'client') {
+    $node->quota = hosting_quota_get_all_info($node->nid);
+  }
+}
+
+/**
+ *  Implements hook_node_view().
+ */
+function hosting_quota_node_view($node, $view_mode, $langcode) {
   global $user;
   if ($node->type == 'client') {
-    switch ($op) {
-      case 'insert':
-      case 'update':
-        if (user_access('edit all quotas')) {
-          foreach ($node as $field => $value) {
-            if (substr($field, 0, 6) == 'quota-') {
-              $quota = substr($field, 6);
-              // If no value was entered use the default value for this resource
-              if (!$value) {
-                $value = variable_get("hosting_quota_default_{$quota}", 0);
-              }
-              hosting_quota_set_limit($node->nid, $quota, $value);
-            }
-          }
-        }
-        break;
-      case 'load':
-        $node->quota = hosting_quota_get_all_info($node->nid);
-        break;
-      case 'view':
-        $allowed_clients = array_keys(hosting_get_client_from_user($user->uid));
-        if (user_access('view all quotas') || (in_array($node->nid, $allowed_clients) && user_access('view own quota'))) {
-          $node->content['info']['quota'] = array(
-            '#type' => 'item',
-            '#title' => 'Quota',
-            '#value' => theme('hosting_quota_client', array('node' => $node)),
-            '#weight' => 5,
-          );
-        }
-        break;
+    $allowed_clients = array_keys(hosting_get_client_from_user($user->uid));
+    if (user_access('view all quotas') || (in_array($node->nid, $allowed_clients) && user_access('view own quota'))) {
+      $node->content['info']['quota'] = array(
+        '#type' => 'item',
+        '#title' => 'Quota',
+        '#value' => theme('hosting_quota_client', array('node' => $node)),
+        '#weight' => 5,
+      );
     }
   }
 }
