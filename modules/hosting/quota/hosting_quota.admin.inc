@@ -1,4 +1,10 @@
 <?php
+
+/**
+ * @file hosting_quota.admin.inc
+ * Admin forms for the quota module.
+ */
+
 /**
  * Page callback for admin/hosting/quotas
  */
@@ -52,8 +58,8 @@ function hosting_quota_admin_defaults_form($form, $form_state) {
 
   foreach ($all_resources as $resource => $quota) {
     $form['quota'][$resource] = array(
-      '#title' => $quota['title'],
-      '#description' => $quota['description'],
+      '#title' => check_plain($quota['title']),
+      '#description' => check_plain($quota['description']),
       '#type' => 'textfield',
       '#default_value' => variable_get("hosting_quota_default_{$resource}", 0),
     );

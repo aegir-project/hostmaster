@@ -30,8 +30,8 @@ function hosting_quota_menu() {
   $items = array();
 
   $items['admin/hosting/quotas'] = array(
-    'title' => t('Quotas'),
-    'description' => t('Aegir client quotas'),
+    'title' => 'Quotas',
+    'description' => 'Aegir client quotas',
     'page callback' => 'hosting_quota_admin_client_list',
     'access arguments' => array('view all quotas'),
     'type' => MENU_LOCAL_TASK,
@@ -39,16 +39,16 @@ function hosting_quota_menu() {
   );
 
   $items['admin/hosting/quotas/list'] = array(
-    'title' => t('List Client Quotas'),
-    'description' => t('Listing of all client quotas'),
+    'title' => 'List Client Quotas',
+    'description' => 'Listing of all client quotas',
     'access arguments' => array('view all quotas'),
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'file' => 'hosting_quota.admin.inc',
   );
 
   $items['admin/hosting/quotas/defaults'] = array(
-    'title' => t('Default Client Quotas'),
-    'description' => t('Set defaults for client quotas'),
+    'title' => 'Default Client Quotas',
+    'description' => 'Set defaults for client quotas',
     'access arguments' => array('edit all quotas'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('hosting_quota_admin_defaults_form'),
@@ -349,8 +349,8 @@ function hosting_quota_form_alter(&$form, $form_state, $form_id) {
         $quota['limit'] = variable_get("hosting_quota_default_$resource", 0);
       }
       $form['quota']['quota-' . $resource] = array(
-        '#title' => $quota['title'],
-        '#description' => $quota['description'],
+        '#title' => check_plain($quota['title']),
+        '#description' => check_plain($quota['description']),
         '#type' => 'textfield',
         '#default_value' => $quota ? $quota['limit'] : 0,
       );
