@@ -794,7 +794,6 @@ function theme_hosting_site_list($variables) {
   // If there are rows in this form, then $form['site'] contains a list of
   // the title form elements.
   $has_posts = isset($form['site']) && is_array($form['site']);
-  // TODO Please change this theme call to use an associative array for the $variables parameter.
   $select_header = $has_posts ? theme('table_select_header_cell') : '';
   $header = array(
     $select_header,
