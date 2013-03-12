@@ -137,7 +137,6 @@ function hosting_ssl_cert_node_load($arg) {
  * List SSL certificates associated with the given server
  */
 function hosting_ssl_server_cert_list($node) {
-  $args = array($node->nid);
   drupal_set_title(t('Certificates installed on server @server', array('@server' => $node->title)), PASS_THROUGH);
   $header = array(
     array(
@@ -153,6 +152,8 @@ function hosting_ssl_server_cert_list($node) {
       'field' => 'client',
     ),
   );
+/*
+  $args = array($node->nid);
   $sql = 'SELECT ips.ip_address, cert.ssl_key AS domain, cert.status, client.title AS client
             FROM {hosting_ip_addresses} ips
             INNER JOIN {hosting_ssl_cert_ips} cert_ip ON cert_ip.ip_address = ips.id
@@ -161,6 +162,26 @@ function hosting_ssl_server_cert_list($node) {
             WHERE ips.nid = %d';
   $sql .= tablesort_sql($header);
   $result = pager_query(db_rewrite_sql($sql, 'cert'), 25, 2, null, $args);
+*/
+// TODO: Validate and finish conversion to DBTNG. Specifically, what do we do
+// with $primary_table passed to db_rewrite_sql()?
+  $query = db_select('hosting_ip_addresses', 'ips')
+    ->extend('PagerDefault')
+    ->extend('TableSort');
+  $query = $query->join('hosting_ssl_cert_ips', 'cert_ip', 'cert_ip.ip_address = ips.id');
+  $query = $query->join('hosting_ssl_cert', 'cert', 'cert.cid = cert_ip.cid');
+  $query = $query->join('node', 'client', 'client.nid = cert.client');
+  $query = $query->element(2);
+  $query = $query
+    ->addField('ips', 'ip_address', 'domain')
+    ->addField('cert', 'ssl_key', 'cert.status')
+    ->addField('client', 'title', 'client')
+    ->condition('ips.nid', $node->nid)
+    ->limit(25)
+    ->orderByHeader($header)
+    ->addTag('node_access')
+  $result = $query->execute()
+
   $rows = array();
   while ($cert = $result->fetch()) {
     // XXX: not in use?
