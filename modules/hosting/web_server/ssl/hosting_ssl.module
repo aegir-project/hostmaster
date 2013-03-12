@@ -173,8 +173,9 @@ function hosting_ssl_server_cert_list($node) {
   $query = $query->join('node', 'client', 'client.nid = cert.client');
   $query = $query->element(2);
   $query = $query
-    ->addField('ips', 'ip_address', 'domain')
-    ->addField('cert', 'ssl_key', 'cert.status')
+    ->addField('ips', 'ip_address')
+    ->addField('cert', 'ssl_key', 'domain')
+    ->addField('cert', 'status')
     ->addField('client', 'title', 'client')
     ->condition('ips.nid', $node->nid)
     ->limit(25)
