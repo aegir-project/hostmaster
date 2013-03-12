@@ -845,7 +845,15 @@ function hosting_client_configure($form, &$form_state) {
  */
 function _hosting_get_clients() {
   $return = array();
-  $result = pager_query(db_rewrite_sql('SELECT n.nid, n.title from {node} n WHERE n.type = "client"'), 25);
+  // TODO: Confirm that these are equivalent.
+  //$result = pager_query(db_rewrite_sql('SELECT n.nid, n.title from {node} n WHERE n.type = "client"'), 25);
+  $query = db_select('node', 'n')->extend('PagerDefault');
+  $result = $query
+    ->fields('n', array('nid', 'title'))
+    ->condition('type', 'client')
+    ->limit(25)
+    ->addTag('node_access')
+    ->execute()
   while ($client = $result->fetch()) {
     $return[$client->nid] = $client->title;
   }
