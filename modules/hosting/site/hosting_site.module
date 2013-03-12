@@ -552,18 +552,6 @@ function hosting_site_list_form($form, $form_state, $filter_by = NULL, $filter_v
 
   // Step 1 - select sites
   if ($step == 1) {
-    $args[] = 'site';
-    $cond = '';
-
-    if ($filter_by && $filter_value) {
-      if ($filter_by == 'status') {
-        $cond = ' AND s.' . $filter_by . ' & %d';
-      }
-      else {
-        $cond = ' AND s.' . $filter_by . ' = %d';
-      }
-      $args[] = $filter_value;
-    }
 
     $header = array(
       array(
@@ -592,11 +580,57 @@ function hosting_site_list_form($form, $form_state, $filter_by = NULL, $filter_v
       );
     }
 
+    /*
+    $args[] = 'site';
+    $cond = '';
+
+    if ($filter_by && $filter_value) {
+      if ($filter_by == 'status') {
+        $cond = ' AND s.' . $filter_by . ' & %d';
+      }
+      else {
+        $cond = ' AND s.' . $filter_by . ' = %d';
+      }
+      $args[] = $filter_value;
+    }
+
     $sql = "SELECT n.nid, n.title, n.created, s.status as site_status, profile, s.language as site_language, platform, verified FROM {node} n left join {hosting_site} s ON n.vid=s.vid WHERE type='%s' AND s.status != -2 " . $cond;
     $sql .= tablesort_sql($header);
 
-    // @TODO hide deleted sites
     $result = pager_query(db_rewrite_sql($sql), 25, 1, null, $args);
+    */
+    // TODO: Validate conversion to DBTNG.
+    $query = db_select('node', 'n')
+      ->extend('PagerDefault')
+      ->extend('TableSort');
+    $query = $query->join('hosting_site', 's', 'n.vid=s.vid');
+    $query = $query->element(1);
+    $query = $query
+      ->addField('n', 'nid')
+      ->addField('n', 'title')
+      ->addField('n', 'created')
+      ->addField('s', 'status', 'site_status')
+      ->addField('s', 'profile')
+      ->addField('s', 'language', 'site_language')
+      ->addField('s', 'platform')
+      ->addField('s', 'verified')
+      ->condition('type', 'site')
+      ->condition('s.status', -2, '!=');
+    if ($filter_by && $filter_value) {
+      if ($filter_by == 'status') {
+        // Bitwise operator?
+        $query->condition($filter_by, $filter_value, '&');
+      }
+      else {
+        $query->condition($filter_by, $filter_value);
+      }
+    }
+    // @TODO hide deleted sites
+    $query = $query
+      ->limit(25)
+      ->orderByHeader($header)
+      ->addTag('node_access')
+    $result = $query->execute()
 
     $form['options'] = array(
       '#type' => 'fieldset',
