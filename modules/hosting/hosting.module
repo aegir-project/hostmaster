@@ -179,43 +179,146 @@ function hosting_site_maintenance() {
 }
 
 /**
- * Implements hook_nodeapi().
- *
- * This function redirects to hosting_nodeapi_$nodetype_$op calls, to save
- * ourselves from an incessant amount of intricately nested code, and allow
- * easier extension / maintenance.
+ * Implements hook_node_delete().
  *
  * @see hook_nodeapi_TYPE_OP()
  */
-function hosting_nodeapi_OLD(&$node, $op, $arg1, $arg2) {
-  // TODO Remaining code in this function needs to be moved to the appropriate new hook function.
-  global $user;
-  $return = array();
-  if (in_array($node->type, hosting_context_node_types())) {
-    switch ($op) {
-      case 'presave':
-        if (!isset($node->uid)) {
-          $node->uid = $user->uid;
-        }
-        break;
+function hosting_node_delete($node) {
+  // Redispatch through our custom nodeapi implementation
+  hosting_nodeapi($node, 'delete');
+}
 
-      case 'load':
-        $return = db_query("SELECT name AS hosting_name FROM {hosting_context} WHERE nid = :nid", array(':nid' => $node->nid))->fetchAssoc();
-        if ($return === FALSE) {
-          // Should only happen on install.
-          $return = array();
-        }
-        break;
+/**
+ * Implements hook_node_insert().
+ *
+ * @see hook_nodeapi_TYPE_OP()
+ */
+function hosting_node_insert($node) {
+  // Redispatch through our custom nodeapi implementation
+  hosting_nodeapi($node, 'insert');
+}
 
-      case 'delete':
-        db_delete('hosting_context')
-          ->condition('nid', $node->nid)
-          ->execute();
-        break;
+/**
+ * Implements hook_node_load().
+ *
+ * @see hook_nodeapi_TYPE_OP()
+ */
+function hosting_node_load($nodes, $types) {
+  // Decide whether any of $types are relevant to our purposes.
+  if (count(array_intersect(hosting_context_node_types(), $types))) {
+    // Gather our extra data for each of these nodes.
+    $result = db_query("SELECT name AS hosting_name FROM {hosting_context} WHERE nid IN(:nids)", array(':nids' => array_keys($nodes)));
+    // Add our extra data to the node objects.
+    foreach ($result as $record) {
+      $nodes[$record->nid]->hosting_name = $record->hosting_name;
+      // Redispatch through our custom nodeapi implementation
+      hosting_nodeapi($nodes[$record->nid], 'load');
     }
   }
+}
+
+/**
+ * Implements hook_node_prepare().
+ *
+ * @see hook_nodeapi_TYPE_OP()
+ */
+function hosting_node_prepare($node) {
+  // Redispatch through our custom nodeapi implementation
+  hosting_nodeapi($node, 'prepare');
+}
+
+/**
+ * Implements hook_node_presave().
+ *
+ * @see hook_nodeapi_TYPE_OP()
+ */
+function hosting_node_presave($node) {
+  if (in_array($node->type, hosting_context_node_types())) {
+    if (!isset($node->uid)) {
+      global $user;
+      $node->uid = $user->uid;
+    }
+  }
+  // Redispatch through our custom nodeapi implementation
+  hosting_nodeapi($node, 'presave');
+}
+
+/**
+ * Implements hook_node_revision_delete().
+ *
+ * @see hook_nodeapi_TYPE_OP()
+ */
+function hosting_node_revision_delete($node) {
+  // Redispatch through our custom nodeapi implementation
+  hosting_nodeapi($node, 'delete revision');
+}
+
+/**
+ * Implements hook_node_search_result).
+ *
+ * @see hook_nodeapi_TYPE_OP()
+ */
+function hosting_node_search_result($node) {
+  // Redispatch through our custom nodeapi implementation
+  hosting_nodeapi($node, 'search result');
+}
+
+/**
+ * Implements hook_node_update().
+ *
+ * @see hook_nodeapi_TYPE_OP()
+ */
+function hosting_node_update($node) {
+  // Redispatch through our custom nodeapi implementation
+  hosting_nodeapi($node, 'update');
+}
+
+/**
+ * Implements hook_node_update_index().
+ *
+ * @see hook_nodeapi_TYPE_OP()
+ */
+function hosting_node_update_index($node) {
+  // Redispatch through our custom nodeapi implementation
+  hosting_nodeapi($node, 'update index');
+}
+
+/**
+ * Implements hook_node_validate().
+ *
+ * @see hook_nodeapi_TYPE_OP()
+ */
+function hosting_node_validate($node, $form, &$form_state) {
+  // Redispatch through our custom nodeapi implementation
+  hosting_nodeapi($node, 'validate', $form);
+}
+
+/**
+ * Implements hook_node_view().
+ *
+ * @see hook_nodeapi_TYPE_OP()
+ */
+function hosting_node_view($node, $view_mode, $langcode) {
+  // Redispatch through our custom nodeapi implementation
+  if ($view_mode == 'teaser') {
+    hosting_nodeapi($node, 'view', TRUE, FALSE);
+  }
+  elseif ($view_mode == 'full') {
+    hosting_nodeapi($node, 'view', FALSE, TRUE);
+  }
+}
+
+/**
+ * Redirects to hosting_nodeapi_$nodetype_$op calls, to save ourselves from an
+ * incessant amount of intricately nested code, and allow easier extension and
+ * maintenance.
+ *
+ * @see hook_nodeapi_TYPE_OP()
+ */
+function hosting_nodeapi(&$node, $op, $arg1 = NULL, $arg2 = NULL) {
   // We need to practically re-invent module_invoke_all here because
   // we have to pass the node as a reference.
+  $return = array();
   $hook = "nodeapi_" . $node->type . "_" . str_replace(" ", "_", $op);
   foreach (module_implements($hook) as $module) {
     $function = $module . '_' . $hook;
