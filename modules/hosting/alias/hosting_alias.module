@@ -218,72 +218,100 @@ function hosting_alias_delete_revision($node) {
 }
 
 /**
- * Implements hook_nodeapi().
- *
- * For most of the $op's we pass of to a help function that does the heavy
- * lifting.
+ * Implements hook_node_insert().
  */
-function hosting_alias_nodeapi_OLD(&$node, $op, $a3 = NULL, $a4 = NULL) {
-  // TODO Remaining code in this function needs to be moved to the appropriate new hook function.
+function hosting_alias_node_insert($node) {
   if ($node->type == 'site') {
-    switch ($op) {
-      case 'insert':
-        hosting_alias_insert($node);
-        break;
-      case 'update':
-        hosting_alias_update($node);
-        break;
-      case 'delete':
-        hosting_alias_delete($node);
-        break;
-      case 'delete revision':
-        hosting_alias_delete_revision($node);
-        break;
-      case 'validate':
-        $aliases = explode("\n", $node->aliases);
-        foreach ($aliases as $alias) {
-          if ($alias = trim($alias)) {
-            if (!hosting_domain_allowed($alias, array('nid' => $node->nid)) || $alias == $node->title) {
-              form_set_error('aliases', t('The domain name @alias is already in use', array('@alias' => $alias)));
-            }
-            if (!_hosting_valid_fqdn($alias)) {
-              form_set_error('aliases', t('The domain name @alias is not a valid url', array('@alias' => $alias)));
-            }
-          }
-        }
-        break;
-      case 'load':
-        // XXX: this returns only the first redirection status. it
-        // works since they are all set to the same in hook_insert(),
-        // but we should return an associative alias => redirection
-        // array instead
-        $additions['redirection'] = db_query("SELECT redirection FROM {hosting_site_alias} WHERE vid = :vid", array(':vid' => $node->vid))->fetchField();
-        // Only retrieves custom aliases, as they are all that can be modified.
-        $additions['aliases'] = hosting_alias_get_aliases($node, HOSTING_ALIAS_CUSTOM);
-        return $additions;
-        break;
-      case 'view':
-        $aliases = hosting_alias_get_aliases($node);
+    hosting_alias_insert($node);
+  }
+}
 
-        if (sizeof($aliases)) {
-          foreach ($aliases as $link) {
-            $links[] = l($link, "http://$link");
-          }
-          $node->content['info']['aliases'] = array(
-            '#type' => 'item',
-            '#title' => t('Domain aliases'),
-            '#value' => implode(', ', $links),
-            '#weight' => 10,
-          );
-          $redirection = db_query("SELECT redirection FROM {hosting_site_alias} WHERE vid = :vid", array(':vid' => $node->vid))->fetchField();
-          $node->content['info']['redirection'] = array(
-            '#type' => 'item',
-            '#title' => t('Redirection'),
-            '#value' => $redirection['redirection'] ? t('Yes') : t('No'),
-            '#weight' => 10,
-          );
+/**
+ * Implements hook_node_update().
+ */
+function hosting_alias_node_update($node) {
+  if ($node->type == 'site') {
+    hosting_alias_update($node);
+  }
+}
+
+/**
+ * Implements hook_node_delete().
+ */
+function hosting_alias_node_delete($node) {
+  if ($node->type == 'site') {
+    hosting_alias_delete($node);
+  }
+}
+
+/**
+ * Implements hook_node_revision_delete().
+ */
+function hosting_alias_node_revision_delete($node) {
+  if ($node->type == 'site') {
+    hosting_alias_delete_revision($node);
+  }
+}
+
+/**
+ * Implements hook_node_validate().
+ */
+function hosting_alias_node_validate($node, $form, &$form_state) {
+  if ($node->type == 'site') {
+    $aliases = explode("\n", $node->aliases);
+    foreach ($aliases as $alias) {
+      if ($alias = trim($alias)) {
+        if (!hosting_domain_allowed($alias, array('nid' => $node->nid)) || $alias == $node->title) {
+          form_set_error('aliases', t('The domain name @alias is already in use', array('@alias' => $alias)));
         }
-        break;
+        if (!_hosting_valid_fqdn($alias)) {
+          form_set_error('aliases', t('The domain name @alias is not a valid url', array('@alias' => $alias)));
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_node_load().
+ */
+function hosting_alias_node_load($node, $types) {
+  if ($node->type == 'site') {
+    // XXX: this returns only the first redirection status. it
+    // works since they are all set to the same in hook_insert(),
+    // but we should return an associative alias => redirection
+    // array instead
+    $additions['redirection'] = db_query("SELECT redirection FROM {hosting_site_alias} WHERE vid = :vid", array(':vid' => $node->vid))->fetchField();
+    // Only retrieves custom aliases, as they are all that can be modified.
+    $additions['aliases'] = hosting_alias_get_aliases($node, HOSTING_ALIAS_CUSTOM);
+    return $additions;
+  }
+}
+
+/**
+ * Implements hook_node_view().
+ */
+function hosting_alias_node_view($node, $view_mode, $langcode) {
+  if ($node->type == 'site') {
+    $aliases = hosting_alias_get_aliases($node);
+
+    if (sizeof($aliases)) {
+      foreach ($aliases as $link) {
+        $links[] = l($link, "http://$link");
+      }
+      $node->content['info']['aliases'] = array(
+        '#type' => 'item',
+        '#title' => t('Domain aliases'),
+        '#value' => implode(', ', $links),
+        '#weight' => 10,
+      );
+      $redirection = db_query("SELECT redirection FROM {hosting_site_alias} WHERE vid = :vid", array(':vid' => $node->vid))->fetchField();
+      $node->content['info']['redirection'] = array(
+        '#type' => 'item',
+        '#title' => t('Redirection'),
+        '#value' => $redirection['redirection'] ? t('Yes') : t('No'),
+        '#weight' => 10,
+      );
     }
   }
 }
