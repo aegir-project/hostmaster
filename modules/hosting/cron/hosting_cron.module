@@ -66,23 +66,18 @@ function hosting_cron_queue($count) {
 }
 
 /**
- * Implements hook_nodeapi().
+ * Implements hook_node_view().
  */
-function hosting_cron_nodeapi_OLD(&$node, $op, $a3 = null) {
-  // TODO Remaining code in this function needs to be moved to the appropriate new hook function.
+function hosting_cron_node_view(&$node, $view_mode, $langcode) {
   if ($node->type == 'site') {
-    switch ($op) {
-      case 'view':
-        if (!$a3) {
-          // @todo : turn it into x minutes ago
-          $node->content['info']['last_cron'] = array(
-            '#type' => 'item',
-            '#title' => t('Cron run'),
-            '#weight' => 20,
-            '#value' => hosting_format_interval($node->last_cron),
-          );
-        }
-        break;
+    if ($view_mode != 'teaser') {
+      // @todo : turn it into x minutes ago
+      $node->content['info']['last_cron'] = array(
+        '#type' => 'item',
+        '#title' => t('Cron run'),
+        '#weight' => 20,
+        '#value' => hosting_format_interval($node->last_cron),
+      );
     }
   }
 }
