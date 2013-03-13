@@ -30,7 +30,7 @@ function _hosting_task_log($entry) {
  *
  * @see drush_hosting_task()
  */
-function drush_hosting_task_validate($id, $type = null) {
+function drush_hosting_task_validate($id, $type = NULL) {
   drush_set_option('user', 1);
   drush_bootstrap(DRUSH_BOOTSTRAP_DRUPAL_LOGIN);
   if (is_numeric($id)) {
@@ -51,8 +51,8 @@ function drush_hosting_task_validate($id, $type = null) {
     $task->context_options = array(
       'context_type' => $task->ref->type,
       'master_url' => url('', array('absolute' => TRUE)),
-      'root' => null,
-      'uri' => null,
+      'root' => NULL,
+      'uri' => NULL,
     );
     $task->args = array();
     $task->changed = REQUEST_TIME;
@@ -62,7 +62,7 @@ function drush_hosting_task_validate($id, $type = null) {
     if ($task->task_status == HOSTING_TASK_PROCESSING) {
       return drush_set_error('HOSTING_TASK_RUNNING', dt("This task is already running"));
     }
-    if ($task->task_status != HOSTING_TASK_QUEUED && !drush_get_option('force', false)) {
+    if ($task->task_status != HOSTING_TASK_QUEUED && !drush_get_option('force', FALSE)) {
       return drush_set_error('HOSTING_TASK_NOT_QUEUED', dt("This task is not queued, use --force"));
     }
     $task->task_status = HOSTING_TASK_PROCESSING;

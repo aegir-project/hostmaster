@@ -26,7 +26,7 @@ function hosting_site_node_info() {
 /**
  * Implements hook_view().
  */
-function hosting_site_view(&$node, $teaser = false) {
+function hosting_site_view(&$node, $teaser = FALSE) {
   hosting_set_breadcrumb($node);
   modalframe_parent_js();
   $node->content['info']['#prefix'] = '<div id="hosting-site-info" class="hosting-info-list">';

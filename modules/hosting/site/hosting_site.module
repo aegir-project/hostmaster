@@ -1,4 +1,7 @@
 <?php
+/**
+ * @file Contains hook implementations for Hosting site module.
+ */
 
 /**
  * This site is deleted from the backend.
@@ -196,7 +199,7 @@ function hosting_site_get_port($node) {
  */
 function _hosting_site_url($node) {
   $schema = 'http';
-  $port = null;
+  $port = NULL;
 
   $url = strtolower(trim($node->title));
 
@@ -207,7 +210,7 @@ function _hosting_site_url($node) {
   if ($server->services['http']->has_port()) {
     $port = $server->services['http']->port;
     if ($port == 80) {
-      $port = null;
+      $port = NULL;
     }
   }
 
@@ -222,7 +225,7 @@ function _hosting_site_url($node) {
     if ($server->services['http']->has_port()) {
       $port = $server->services['http']->ssl_port;
       if ($port == 443) {
-        $port = null;
+        $port = NULL;
       }
     }
   }
@@ -429,7 +432,7 @@ function hosting_get_site_by_url($url) {
   if ($nid) {
     return node_load($nid);
   }
-  return false;
+  return FALSE;
 }
 
 /**
@@ -725,13 +728,14 @@ function hosting_site_list_form($form, $form_state, $filter_by = NULL, $filter_v
     }
     elseif (sizeof($form_state['storage']['failed'])) {
       drupal_set_message(t('The task @task is not able to be performed on any of the selected sites.', array('@task' => $task)), 'error');
-      $form['return_link'] = array('#value' => l('Return to site listing', 'hosting/sites'));
+      $form['return_link'] = array('#value' => l(t('Return to site listing'), 'hosting/sites'));
       return $form;
     }
 
     $form['help'] = array('#value' => $tasks[$task]['description']);
 
     $question = t('Are you sure you want to perform the "@task" task on each of the following sites?', array('@task' => $tasks[$task]['title']));
+    // @ignore security_8
     return confirm_form($form, $question, 'hosting/sites', '', $tasks[$task]['title']);
   }
 }
@@ -901,7 +905,7 @@ function theme_hosting_site_list($variables) {
  * Define the classes that correspond to the site status.
  * @see _hosting_site_status()
  */
-function _hosting_site_list_class($node, $verified = null) {
+function _hosting_site_list_class($node, $verified = NULL) {
   $status = (is_numeric($node)) ? $node : $node->site_status;
   static $classes = array(
     HOSTING_SITE_QUEUED => "hosting-queue",

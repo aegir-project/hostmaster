@@ -37,7 +37,7 @@ function hosting_alias_menu() {
 function hosting_alias_help($path, $arg) {
   switch ($path) {
     case 'admin/hosting/aliases':
-      $output = t('Site aliases allow you to let sites be available through multiple domain addresses.<br /> The most common use of this functionality is to provide automatic aliasing for www.mysite.com and mysite.com variants of the domain name.<br /> ');
+      $output = t('Site aliases allow you to let sites be available through multiple domain addresses.<br />The most common use of this functionality is to provide automatic aliasing for www.mysite.com and mysite.com variants of the domain name.<br />');
       $output .= t('This module will also allow you to provide a "temporary url" that sites will always be accessible from, in case of DNS problems.<br />');
       $output .= t('Settings made here do not take effect automatically for existing sites.<br />');
       break;
@@ -52,7 +52,7 @@ function hosting_alias_help($path, $arg) {
  * Add a textbox to site node forms with a newline
  * separated list of aliases to the site
  */
-function hosting_alias_form_alter(&$form, $form_state, $form_id) {
+function hosting_alias_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'site_node_form') {
     return hosting_alias_form_data($form);
   }
@@ -110,7 +110,7 @@ function hosting_alias_form_data(&$form) {
  * @return
  *   An array of aliases for the given site.
  */
-function hosting_alias_get_aliases($node, $type = null) {
+function hosting_alias_get_aliases($node, $type = NULL) {
   if (!$node->vid) {
     return array();
   }

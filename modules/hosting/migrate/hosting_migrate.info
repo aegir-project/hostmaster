@@ -5,3 +5,5 @@ dependencies[] = hosting
 dependencies[] = hosting_site
 
 core = 7.x
+
+files[] = 'hosting_migrate.batch.inc'

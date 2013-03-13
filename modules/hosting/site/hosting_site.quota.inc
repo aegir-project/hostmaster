@@ -1,4 +1,7 @@
 <?php
+/**
+ * @file Quota-relaled hooks for the Hosting site module.
+ */
 
 /**
  * Implements hook_hosting_quota_resource().

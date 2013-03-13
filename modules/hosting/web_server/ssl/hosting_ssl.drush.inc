@@ -1,8 +1,10 @@
 <?php
+/**
+ * @file Drush hooks for the Hosting SSH module. module.
+ */
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * Implements hook_hosting_TASK_OBJECT_context_options().
  */
 function hosting_ssl_hosting_site_context_options(&$task) {
   $node = $task->ref;

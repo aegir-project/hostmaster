@@ -4,7 +4,6 @@
  *   Allow clients to be created and granted permissions over sites, tasks etc.
  */
 
-include 'hosting_client.access.inc';
 include drupal_get_path( 'module', 'node' ) . '/node.pages.inc';
 
 /**
@@ -145,7 +144,7 @@ function hosting_get_client($client) {
   if ($result) {
     return node_load($result);
   }
-  return false;
+  return FALSE;
 }
 
 /**
@@ -161,7 +160,7 @@ function hosting_get_client_by_uname($uname) {
     return node_load($result);
   }
   else {
-    return false;
+    return FALSE;
   }
 }
 
@@ -173,7 +172,7 @@ function hosting_client_form(&$node) {
 
   $form['title'] = array(
     '#type' => 'textfield',
-    '#title' => $type->title_label,
+    '#title' => check_plain($type->title_label),
     '#required' => TRUE,
     '#size' => 40,
     '#default_value' => $node->title,
@@ -250,6 +249,7 @@ function hosting_client_form(&$node) {
     );
   }
   return $form;
+  // @ignore security_fapi_markup
 }
 
 /**
@@ -751,7 +751,7 @@ function hosting_client_menu_access($perm, $node) {
     return user_access($perm);
   }
   else {
-    return false;
+    return FALSE;
   }
 }
 
@@ -935,7 +935,7 @@ function hosting_client_autocomplete($type, $keyword) {
 /**
  * Implements hook_form_alter().
  */
-function hosting_client_form_alter(&$form, $form_state, $form_id) {
+function hosting_client_form_alter(&$form, &$form_state, $form_id) {
   if (user_access('administer clients')) {
     if (hosting_feature('client') && $form_id == 'platform_node_form') {
       global $user;
@@ -1055,11 +1055,6 @@ function hosting_client_node_delete($node) {
       ->execute();
   }
 }
-
-/**
- * Implements hook_nodeapi().
- */
-function hosting_client_nodeapi_OLD(&$node, $op, $a3 = NULL, $a4 = NULL) { }
 
 /**
  * Small helper function to get platforms that haven't been deleted or locked,

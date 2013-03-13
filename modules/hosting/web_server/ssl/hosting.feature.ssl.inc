@@ -1,8 +1,10 @@
 <?php
+/**
+ * @file Register this module as a Hosting feature.
+ */
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * Implements hook_hosting_feature().
  */
 function hosting_ssl_hosting_feature() {
   $features['ssl'] = array(

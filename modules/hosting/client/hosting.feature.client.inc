@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file hosting.feature.client.inc
+ * Register this module as an Aegir feature.
+ */
+
+/**
  * Implements hook_hosting_feature().
  */
 function hosting_client_hosting_feature() {

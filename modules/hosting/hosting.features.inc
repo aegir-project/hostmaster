@@ -75,8 +75,8 @@ function hosting_features_form($form, &$form_state) {
   foreach ($features as $feature => $info) {
     $element = array(
       '#type' => 'checkbox',
-      '#title' => $info['title'],
-      '#description' => $info['description'],
+      '#title' => check_plain($info['title']),
+      '#description' => check_plain($info['description']),
       '#default_value' => hosting_feature($feature),
       '#required' => hosting_feature($feature) == HOSTING_FEATURE_REQUIRED,
       '#disabled' => hosting_feature($feature) == HOSTING_FEATURE_REQUIRED,

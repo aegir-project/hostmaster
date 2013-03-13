@@ -1,4 +1,7 @@
 <?php
+/**
+ * @file Define Hosting service class for SSL.
+ */
 
 class hostingService_http_ssl extends hostingService_http_public {
 

@@ -1,5 +1,7 @@
 <?php
-
+/**
+ * @file Define the base Hosting service class.
+ */
 
 class hostingService {
 
@@ -8,7 +10,7 @@ class hostingService {
   protected $has_restart_cmd = FALSE;
   protected $has_port = FALSE;
 
-  function __construct($node, $values = null) {
+  function __construct($node, $values = NULL) {
     self::save($node);
     self::setValues($values);
   }
@@ -27,7 +29,7 @@ class hostingService {
     $this->setValues($result);
   }
 
-  public function setValues($values = null) {
+  public function setValues($values = NULL) {
     if (is_array($values)) {
       foreach ($values as $key => $value) {
         $this->{$key} = $value;
@@ -101,7 +103,7 @@ class hostingService {
     else {
       $form['restart_cmd'] = array(
         '#type' => 'value',
-        '#value' => null,
+        '#value' => NULL,
       );
     }
 

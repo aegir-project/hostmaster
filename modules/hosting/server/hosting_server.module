@@ -1,4 +1,9 @@
 <?php
+
+/**
+ * Hook implementations for the Hosting server module
+ */
+
 include_once "hosting_server.service.inc";
 include_once "hosting.ip.inc";
 
@@ -10,7 +15,7 @@ function hosting_server_node_info() {
     "type" => 'server',
     "name" => 'Server',
     'base' => 'hosting_server',
-    "has_title" => true,
+    "has_title" => TRUE,
     "title_label" => t('Host name'),
     "description" => hosting_node_help("server"),
     "has_body" => 0,
@@ -157,7 +162,7 @@ function hosting_server_services() {
 /**
  * Factory method for generating new instance of a service class.
  */
-function hosting_services_new_object($name, $type, $node, $values = null) {
+function hosting_services_new_object($name, $type, $node, $values = NULL) {
   $services = hosting_server_services();
 
   $class = $services[$name]['types'][$type];
@@ -225,14 +230,14 @@ function hosting_server_services_from_post(&$node) {
 /**
  * Invoke a method on all enabled services.
  */
-function hosting_server_invoke_services(&$node, $method, &$arg1 = null, &$arg2 = null, &$arg3 = null, &$arg4 = null) {
+function hosting_server_invoke_services(&$node, $method, &$arg1 = NULL, &$arg2 = NULL, &$arg3 = NULL, &$arg4 = NULL) {
   $return = array();
   foreach ($node->services as $name => $service) {
     $result = $service->$method($arg1, $arg2, $arg3, $arg4);
     if (isset($result) && is_array($result)) {
       $return = array_merge_recursive($return, $result);
     }
-    else if (isset($result)) {
+    elseif (isset($result)) {
       $return[] = $result;
     }
   }
@@ -276,7 +281,7 @@ function hosting_server_form(&$node) {
   foreach (hosting_server_services() as $name => $service) {
     $form['services'][$name] = array(
       '#type' => 'fieldset',
-      '#title' => $service['title'],
+      '#title' => check_plain($service['title']),
       '#prefix' => '<div class="hosting-service-form">',
       '#suffix' => '</div>',
       '#weight' => isset($service['weight']) ? $service['weight'] : 0,

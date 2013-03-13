@@ -79,7 +79,7 @@ function hosting_platform_post_hosting_verify_task($task, $data) {
     foreach ($context['sites'] as $url) {
       if (hosting_domain_allowed($url)) {
         // Import any sites that have not been created yet.
-        $site = new StdClass();
+        $site = new stdClass();
         $site->type = 'site';
         $site->site_status = HOSTING_SITE_QUEUED;
         $site->import = TRUE;

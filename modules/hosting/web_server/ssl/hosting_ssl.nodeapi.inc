@@ -1,4 +1,7 @@
 <?php
+/**
+ * @file NodeAPI functions for the Hosting SSL module.
+ */
 
 /**
  * This SSL key is a custom, Aegir generated one.
@@ -65,8 +68,8 @@ function hosting_ssl_hosting_site_options_alter(&$return, $node) {
     $return['ssl_enabled'] = FALSE;
   }
 
-  $return['ssl_key'] = false;
-  $return['ssl_key_new'] = false;
+  $return['ssl_key'] = FALSE;
+  $return['ssl_key_new'] = FALSE;
 
   // Test if ssl has been enabled.
   if ($node->ssl_enabled != 0) {
@@ -85,7 +88,7 @@ function hosting_ssl_hosting_site_options_alter(&$return, $node) {
     if ($node->ssl_key == HOSTING_SSL_CUSTOM_KEY) {
       // default the new key to the site's domain name, after filtering.
       $default = hosting_ssl_filter_key($node->title);
-      $return['ssl_key_new'] = (!empty($default)) ? $default : true;
+      $return['ssl_key_new'] = (!empty($default)) ? $default : TRUE;
     }
 
     // we need to ensure that the return value is properly indexed, otherwise it
@@ -101,7 +104,7 @@ function hosting_ssl_hosting_site_options_alter(&$return, $node) {
  * @todo Please document this function.
  * @see http://drupal.org/node/1354
  */
-function hosting_ssl_nodeapi_site_view(&$node, $teaser = false) {
+function hosting_ssl_nodeapi_site_view(&$node, $teaser = FALSE) {
   $node->content['info']['ssl_enabled'] = array(
     '#type' => 'item',
     '#title' => t('Encryption'),
@@ -152,7 +155,7 @@ function hosting_ssl_output_key($cid) {
 /**
  * Output filter for SSL enabled field.
  */
-function hosting_ssl_status_options($status = null) {
+function hosting_ssl_status_options($status = NULL) {
   $options = array(
     HOSTING_SSL_DISABLED => t('Disabled'),
     HOSTING_SSL_ENABLED => t('Enabled'),
@@ -317,7 +320,7 @@ function hosting_ssl_save_key($node) {
     $result = db_query("SELECT * FROM {hosting_ssl_cert} WHERE ssl_key = :ssl_key", array(':ssl_key' => $ssl_key));
     if ($obj = $result->fetch()) {
       // update
-      if ($node->client != null) {
+      if ($node->client != NULL) {
         $obj->client = $client->nid;
       }
       drupal_write_record("hosting_ssl_cert", $obj, 'cid');
@@ -355,7 +358,7 @@ function hosting_ssl_save_key($node) {
  * @param $ask_custom
  *   Include the special 'generate new key' value used by the site form.
  */
-function hosting_ssl_get_keys($client = null, $ask_custom = FALSE) {
+function hosting_ssl_get_keys($client = NULL, $ask_custom = FALSE) {
   $keys = array();
 
   if ($ask_custom == TRUE) {
@@ -390,7 +393,7 @@ function hosting_ssl_get_keys($client = null, $ask_custom = FALSE) {
  */
 function hosting_ssl_clean_keys($node) {
   // check if there are still sites using this site's certificate
-  if (!db_query("SELECT * FROM hosting_ssl_site siteA INNER JOIN hosting_ssl_site siteB ON siteA.ssl_key = siteB.ssl_key INNER JOIN hosting_site s ON s.nid = siteA.nid WHERE siteA.ssl_enabled = :siteA.ssl_enabled AND s.status <> :s.status AND siteB.nid = :siteB.nid;", array(':siteA.ssl_enabled' => 1, ':s.status' => HOSTING_SITE_DELETED, ':siteB.nid' => $node->nid))->fetchField()) {
+  if (!db_query("SELECT * FROM {hosting_ssl_site} siteA INNER JOIN {hosting_ssl_site} siteB ON siteA.ssl_key = siteB.ssl_key INNER JOIN {hosting_site} s ON s.nid = siteA.nid WHERE siteA.ssl_enabled = :siteA.ssl_enabled AND s.status <> :s.status AND siteB.nid = :siteB.nid;", array(':siteA.ssl_enabled' => 1, ':s.status' => HOSTING_SITE_DELETED, ':siteB.nid' => $node->nid))->fetchField()) {
     drupal_set_message(t("cleaning up unused certificate associated with site"));
     db_delete('hosting_ssl_cert')
       ->condition('cid', $node->ssl_key)

@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * Configuration forms for the queue daemon.
+ */
 
 /**
  * Configuration form for backup schedules
@@ -51,6 +55,7 @@ function hosting_queued_settings_form($form, &$form_state) {
   );
 
   return system_settings_form($form);
+  // @ignore security_fapi_markup
 }
 
 function _hosting_queued_settings_form_delay_callback($value) {

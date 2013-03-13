@@ -108,7 +108,7 @@ function hosting_client_update_1() {
         if ($distinct->count > 1) {
           # we have found duplicates.
           $result2 = db_query("SELECT nid FROM {hosting_client} WHERE email = '%s' ORDER BY nid", $distinct->email);
-          $first = false;
+          $first = FALSE;
           while ($client = db_fetch_object($result2)) {
             if (!$first) {
               // this is the key all the others will be assigned to.
@@ -259,10 +259,12 @@ function hosting_client_update_6000() {
     if ($client->organization) {
       // we arbitrarily choose the organisation as the base parameter
       $name = $client->organization;
-    } elseif ($client->name) {
+    }
+    elseif ($client->name) {
       // fallback on the name of the "contact"
       $name = $client->name;
-    } else {
+    }
+    else {
       // fallback - use the email
       $name = $client->email;
     }
@@ -271,9 +273,12 @@ function hosting_client_update_6000() {
     $newname = $name;
     for ($i = ''; $i < 100; $i++) {
       if ($nid = db_result(db_query("SELECT nid FROM {hosting_client} WHERE uname = '%s'", $unique))) {
-        drupal_set_message("nid $nid dupes this client ({$client->nid}) unique: $unique");
-      } else {
-        drupal_set_message("setting client $name to " . $newname . " ($unique)");
+        // @ignore security_3
+        drupal_set_message(t('nid !nid dupes this client (!client_nid) unique: !unique', array('!nid' => $nid, '!client_nid' => $client->nid, '!unique' => $unique)));
+      }
+      else {
+        // @ignore security_3
+        drupal_set_message(t('setting client !name to !newname (!unique)', array('!name' => $name, '!newname' => $newname, '!unique' => $unique)));
         db_query("UPDATE {hosting_client} SET uname = '%s' WHERE nid = %d AND vid = %d", $unique, $client->nid, $client->vid);
         db_query("UPDATE {node} SET title = '%s' WHERE nid = %d", $newname, $client->nid);
         db_query("UPDATE {node_revisions} SET title = '%s' WHERE nid = %d AND vid = %d", $name, $client->nid, $client->vid);

@@ -1,5 +1,7 @@
 <?php
-
+/**
+ * @file Views hanlder for Hosting site module.
+ */
 
 class views_handler_field_hosting_site_status extends views_handler_field {
   function option_definition() {

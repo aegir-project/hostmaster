@@ -71,7 +71,7 @@ function hosting_migrate_hosting_tasks() {
  * Only one of these needs to change for a valid migration to be possible.
  */
 function hosting_task_migrate_form_validate($form, &$form_state) {
-  $migrate_possible = false;
+  $migrate_possible = FALSE;
 
   $site = $form['parameters']['#node'];
 
@@ -167,7 +167,7 @@ function hosting_task_migrate_form($node) {
   if (!_hosting_platform_is_locked($node->platform)) {
     $form[$node->platform]['target_platform'] = array(
       '#type' => 'radio',
-      '#title' => $site_platform->title,
+      '#title' => check_plain($site_platform->title),
       "#return_value" => $node->platform,
       "#default_value" => $node->platform,
       '#description' => t("Current platform"),
@@ -190,7 +190,7 @@ function hosting_task_migrate_form($node) {
 
       $form[$platform->nid]['target_platform'] = array(
         '#type' => 'radio',
-        '#title' => $platform->title,
+        '#title' => check_plain($platform->title),
         '#parents' => array('parameters', 'target_platform'),
         "#return_value" => $platform->nid,
         '#description' => $description,
@@ -242,7 +242,7 @@ function hosting_migrate_comparison($current, $target) {
   return theme("hosting_migrate_comparison", array('packages' => $packages));
 }
 
-function _hosting_migrate_version_display($version, $schema = null, $status = null) {
+function _hosting_migrate_version_display($version, $schema = NULL, $status = NULL) {
   $status = (!is_null($status)) ? $status : 'same';
   if (is_null($version)) {
     $display = 'missing';

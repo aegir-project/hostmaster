@@ -1,7 +1,12 @@
 <?php
 
-// $Id$
+/**
+ * @file Drush hooks for the Hosting site module.
+ */
 
+/**
+ * Implements hook_hosting_TASK_OBJECT_context_options().
+ */
 function hosting_hosting_site_context_options(&$task) {
   $task->context_options['db_server'] = hosting_context_name($task->ref->db_server);
   $task->context_options['platform'] = hosting_context_name($task->ref->platform);
@@ -19,8 +24,7 @@ function hosting_hosting_site_context_options(&$task) {
 }
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * Implements hook_drush_context_import().
  */
 function hosting_site_drush_context_import($context, &$node) {
   if ($context->type == 'site') {

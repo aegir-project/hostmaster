@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file Hosting service classes for the Hosting web server module.osting service classes for the Hosting web server module.
+ */
+
 class hostingService_http extends hostingService {
   public $service = 'http';
   public $ssl_enabled = FALSE;

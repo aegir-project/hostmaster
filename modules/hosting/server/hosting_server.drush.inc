@@ -1,4 +1,7 @@
 <?php
+/**
+ * @file Drush hooks for the Hosting server module.
+ */
 
 /**
  * Pass options for the server verification to the backend.

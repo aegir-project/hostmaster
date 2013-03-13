@@ -80,7 +80,7 @@ function hosting_migrate_post_hosting_migrate_task($task, $data) {
     }
 
     $site->verified = REQUEST_TIME;
-    $site->no_verify = true;
+    $site->no_verify = TRUE;
     $site->platform = $target;
     node_save($site);
 

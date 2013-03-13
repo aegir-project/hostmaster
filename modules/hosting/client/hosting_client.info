@@ -5,3 +5,4 @@ dependencies[] = hosting
 
 core = 7.x
 
+files[] = 'hosting_client.access.inc'

@@ -1,8 +1,10 @@
 <?php
+/**
+ * @file Register the NGINX Hosting feature.
+ */
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * Implements hook_hosting_feature().
  */
 function hosting_nginx_hosting_feature() {
   $features['nginx'] = array(

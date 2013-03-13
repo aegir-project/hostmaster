@@ -520,7 +520,7 @@ function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
     $node->content['info']['makefile'] = array(
       '#type' => 'item',
       '#title' => t('Drush makefile'),
-      '#value' => (preg_match('/^http|^ftp/', $node->makefile)) ? l('makefile', $node->makefile) : filter_xss($node->makefile),
+      '#value' => (preg_match('/^http|^ftp/', $node->makefile)) ? l(t('makefile'), $node->makefile) : filter_xss($node->makefile),
     );
   }
 
@@ -590,7 +590,7 @@ function hosting_platform_hosting_summary() {
     $platforms = _hosting_get_platforms();
     $summary['platforms'] = theme('item_list', array('items' => array_map('_hosting_node_link', array_keys($platforms)), 'title' => t('Platforms')));
   }
-  else if (user_access('view platform')) {
+  elseif (user_access('view platform')) {
     $platforms = _hosting_get_enabled_platforms();
     $summary['platforms'] = theme('item_list', array('items' => array_map('_hosting_node_link', array_keys($platforms)), 'title' => t('Platforms')));
   }

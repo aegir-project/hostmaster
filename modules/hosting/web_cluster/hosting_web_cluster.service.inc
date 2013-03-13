@@ -1,4 +1,7 @@
 <?php
+/**
+ * @file Extensions to the Hosting service class for the web cluster module.
+ */
 
 module_load_include('service.inc', 'hosting_web_server');
 

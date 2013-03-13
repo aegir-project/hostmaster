@@ -32,8 +32,8 @@ function hosting_task_menu() {
   }
 
   $items['hosting/tasks/%node/list'] = array(
-    'title' => t('Task list'),
-    'description' => t('AJAX callback for refreshing task list'),
+    'title' => 'Task list',
+    'description' => 'AJAX callback for refreshing task list',
     'page callback' => 'hosting_task_ajax_list',
     'page arguments' => array(2),
     'access callback' => 'node_access',
@@ -43,8 +43,8 @@ function hosting_task_menu() {
 
 
   $items['hosting/tasks/%node/cancel'] = array(
-    'title' => t('Task list'),
-    'description' => t('Callback for stopping tasks'),
+    'title' => 'Task list',
+    'description' => 'Callback for stopping tasks',
     'page callback' => 'hosting_task_cancel',
     'page arguments' => array(2),
     'access callback' => 'hosting_task_cancel_access',
@@ -54,8 +54,8 @@ function hosting_task_menu() {
 
 
   $items['hosting/tasks/queue'] = array(
-    'title' => t('Task list'),
-    'description' => t('AJAX callback for refreshing task queue'),
+    'title' => 'Task list',
+    'description' => 'AJAX callback for refreshing task queue',
     'page callback' => 'hosting_task_ajax_queue',
     'access arguments' => array('access task logs'),
     'type' => MENU_CALLBACK,
@@ -416,7 +416,7 @@ function hosting_task_retry($task_id) {
 /**
  * Helper function to generate new task node
  */
-function hosting_add_task($nid, $type, $args = null, $status = HOSTING_TASK_QUEUED) {
+function hosting_add_task($nid, $type, $args = NULL, $status = HOSTING_TASK_QUEUED) {
   global $user;
 
   $task = hosting_get_most_recent_task($nid, $type);
@@ -551,7 +551,7 @@ function hosting_task_backup_delete_form($node) {
       $backup = hosting_site_get_backup($bid);
       $form[$bid] = array(
         '#type' => 'checkbox',
-        '#title' => $info,
+        '#title' => check_plain($info),
         '#return_value' => $backup['filename'],
       );
     }
@@ -959,7 +959,7 @@ function _hosting_task_log_table($vid) {
     return theme("table", array('header' => $header, 'rows' => (array) $rows, 'attributes' => array('id' => 'hosting-task-log', 'class' => 'hosting-table')));
   }
 
-  return false;
+  return FALSE;
 }
 
 /**
@@ -1001,7 +1001,7 @@ function hosting_get_most_recent_task($rid, $type) {
   if ($nid) {
     return node_load($nid);
   }
-  return false;
+  return FALSE;
 }
 
 /**
@@ -1012,7 +1012,7 @@ function hosting_get_most_recent_task($rid, $type) {
  * @arg $count integer the number of tasks to return
  * @arg $element integer which element to start from
  */
-function hosting_get_tasks($filter_by = null, $filter_value = null, $count = 5, $element = 0) {
+function hosting_get_tasks($filter_by = NULL, $filter_value = NULL, $count = 5, $element = 0) {
   $nodes = array();
   // TODO: Validate this DBTNG conversion.
   /*
@@ -1151,14 +1151,14 @@ function hosting_task_status_output($filter_by, $filter_value, $type = 'install'
 /**
  * Display list of tasks
  */
-function hosting_task_list($filter_by = null, $filter_value = null) {
+function hosting_task_list($filter_by = NULL, $filter_value = NULL) {
   return _hosting_task_list($filter_by, $filter_value, 25, 12, 'title');
 }
 
 /**
  * Implements hook_summary().
  */
-function hosting_task_summary($filter_by = null, $filter_value = null) {
+function hosting_task_summary($filter_by = NULL, $filter_value = NULL) {
 
   modalframe_parent_js();
   $more_link = l(t('More tasks'), 'hosting/queues/tasks');
@@ -1188,7 +1188,7 @@ function hosting_task_queue_block() {
     );
 
 
-    $log_button = _hosting_task_button(t('View'), 'node/' . $node->nid, t("Display the task log"), 'hosting-button-log', isset($node->nid) &&  user_access('access task logs'), true, false);
+    $log_button = _hosting_task_button(t('View'), 'node/' . $node->nid, t("Display the task log"), 'hosting-button-log', isset($node->nid) &&  user_access('access task logs'), TRUE, FALSE);
 
     $row['actions'] = array(
       'data' => $log_button,
@@ -1407,8 +1407,8 @@ function hosting_task_fetch_tasks($rid) {
  * @todo Please document this function.
  * @see http://drupal.org/node/1354
  */
-function hosting_task_status_class($status = null) {
-  $class = null;
+function hosting_task_status_class($status = NULL) {
+  $class = NULL;
   if (!is_null($status)) {
     switch ($status) {
       case HOSTING_TASK_SUCCESS:

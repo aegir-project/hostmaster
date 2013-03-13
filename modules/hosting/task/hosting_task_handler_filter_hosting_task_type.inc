@@ -1,4 +1,7 @@
 <?php
+/**
+ * @file Views handler for the Hosting task module.
+ */
 
 /**
  * Filter by task type

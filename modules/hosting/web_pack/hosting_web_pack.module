@@ -1,8 +1,10 @@
 <?php
+/**
+ * @file Hook implementations for the Hosting web pack module.
+ */
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * Implements hook_hosting_service().
  */
 function hosting_web_pack_hosting_service() {
   return array(

@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file hosting_queued.module
+ * Contains hooks for the queue daemon module.
+ */
+
+/**
  * Implements hook_menu().
  */
 function hosting_queued_menu() {

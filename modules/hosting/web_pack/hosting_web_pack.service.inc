@@ -1,4 +1,7 @@
 <?php
+/**
+ * @file Hosting service class for the Hosting web pack module.
+ */
 
 module_load_include('service.inc', 'hosting_web_server');
 

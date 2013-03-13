@@ -249,7 +249,7 @@ function _hosting_package_load($param) {
   if (sizeof($return)) {
     return $return;
   }
-  return null;
+  return NULL;
 }
 
 function hosting_get_packages_by_type($type) {
@@ -258,10 +258,10 @@ function hosting_get_packages_by_type($type) {
   if ($nid = $result->fetchField()) {
     return node_load($nid);
   }
-  return false;
+  return FALSE;
 }
 
-function hosting_get_default_profile($default = null) {
+function hosting_get_default_profile($default = NULL) {
   if ($p = hosting_get_package(variable_get('hosting_default_profile', 'default'))) {
     return $p->nid;
   }
@@ -276,7 +276,7 @@ function hosting_get_package($short_name) {
   if ($nid = $result->fetchField()) {
     return node_load($nid);
   }
-  return false;
+  return FALSE;
 }
 
 /**
@@ -465,7 +465,7 @@ function _hosting_package_list_package_usage($node) {
       ));
   }
 
-  return theme('table', array('header' => $header, 'rows' => $rows)) . theme('pager', array('tags' => null, 'element' => 2));
+  return theme('table', array('header' => $header, 'rows' => $rows)) . theme('pager', array('tags' => NULL, 'element' => 2));
 }
 
 /**
@@ -487,13 +487,13 @@ function _hosting_language_names($languages) {
 }
 
 function _hosting_language_name($language) {
-  include_once './includes/locale.inc';
+  include_once dirname(__file__) . '/includes/locale.inc';
   $locales = _locale_get_predefined_list();
   return $locales[$language][0] . (isset($locales[$language][1]) ? ' ' . t('(@language)', array('@language' => $locales[$language][1])) : '');
 }
 
 
-function _hosting_package_plural_map($key = null) {
+function _hosting_package_plural_map($key = NULL) {
   static $plural_map = array(
     'modules' => 'module',
     'themes' => 'theme',
@@ -534,7 +534,7 @@ function hosting_package_sync(&$data) {
       if (!isset($package->nid) ||
         (isset($package->title) && ($package->title != $name)) ||
         (isset($file['info']['description']) && ($package->description != $file['info']['description'])) ||
-	      (isset($file['info']['old_short_name']) && ($package->old_short_name != $file['info']['old_short_name']))) {
+        (isset($file['info']['old_short_name']) && ($package->old_short_name != $file['info']['old_short_name']))) {
 
         $package->title = $name;
         $package->description = isset($file['info']['description']) ? $file['info']['description'] : '';
@@ -552,7 +552,7 @@ function hosting_package_sync(&$data) {
  * @TODO Add ability to filter by additional fields
  * @TODO Add paging.
  */
-function hosting_package_list($ref, $type = null) {
+function hosting_package_list($ref, $type = NULL) {
   drupal_set_title(t('Packages on @reference', array('@reference' => $ref->title)), PASS_THROUGH);
   $header = array(
     array(
@@ -631,7 +631,7 @@ function hosting_package_list($ref, $type = null) {
     );
   }
 
-  return theme('table', array('header' =>   $header, 'rows' => $rows, 'attributes' => array('class' => 'hosting-table'))) . theme('pager', array('tags' => null, 'element' => 2));
+  return theme('table', array('header' =>   $header, 'rows' => $rows, 'attributes' => array('class' => 'hosting-table'))) . theme('pager', array('tags' => NULL, 'element' => 2));
 }
 
 /**

@@ -40,7 +40,7 @@ function hosting_get_db_server($hostname) {
     return node_load($result);
   }
 
-  return false;
+  return FALSE;
 }
 
 /**

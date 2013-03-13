@@ -1,8 +1,11 @@
 <?php
+/**
+ * @file Register a Hosting feature for the Sign-up module.osting feature for
+ * the Sign-up module.
+ */
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * Implements hook_hosting_feature().
  */
 function hosting_signup_hosting_feature() {
   $features['signup'] = array(

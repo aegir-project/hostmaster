@@ -1,4 +1,7 @@
 <?php
+/**
+ * @file Define a Hosting service class for NGINX.
+ */
 
 module_load_include('service.inc', 'hosting_web_server');
 

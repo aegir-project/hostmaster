@@ -20,15 +20,15 @@ function drush_hosting_dispatch() {
   $platform = node_load(HOSTING_OWN_PLATFORM);
   $root = $platform->publish_path;
 
-  if (variable_get('hosting_dispatch_enabled', false)) {
+  if (variable_get('hosting_dispatch_enabled', FALSE)) {
     $queues = hosting_get_queues();
     foreach ($queues as $queue => $info) {
       // Check and release too old cron semaphore if exist
-      $old_semaphore = variable_get('hosting_queue_' . $queue . '_running', false);
+      $old_semaphore = variable_get('hosting_queue_' . $queue . '_running', FALSE);
       if ($old_semaphore) {
         if (REQUEST_TIME - $old_semaphore > 3600) {
           // Release too old cron semaphore
-          variable_del('hosting_queue_' . $queue . '_running', false);
+          variable_del('hosting_queue_' . $queue . '_running', FALSE);
         }
       }
       if ($info['running']) {
@@ -36,7 +36,7 @@ function drush_hosting_dispatch() {
       }
       else {
         if ($info['enabled']) {
-          if (($now - $info["last"]) >= $info["calc_frequency"] || drush_get_option('force', false)) {
+          if (($now - $info["last"]) >= $info["calc_frequency"] || drush_get_option('force', FALSE)) {
             $count = $info['calc_items'] - $info['running_items'];
             if ($count <= 0) {
               drush_log(dt("maximum number of tasks (@count) already running", array('@count' => $info['running_items'])));
