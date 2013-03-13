@@ -129,9 +129,9 @@ function hosting_site_available_options($node) {
     // Trim down the list of profiles to those that are available and the user has access to
     // XXX This hack (next 22 lines) hides profiles that can't be accessed
     // Eventually we should lighten up the content of this callback
-    $result = db_query("SELECT l.nid FROM hosting_package_instance i
-                        JOIN hosting_package p ON p.nid = i.package_id
-                        JOIN hosting_platform l ON l.nid = i.rid WHERE i.package_id = :i.package_id
+    $result = db_query("SELECT l.nid FROM {hosting_package_instance} i
+                        JOIN {hosting_package} p ON p.nid = i.package_id
+                        JOIN {hosting_platform} l ON l.nid = i.rid WHERE i.package_id = :i.package_id
                         AND p.package_type = :p.package_type AND l.status = :l.status;", array(':i.package_id' => $id, ':p.package_type' => 'profile', ':l.status' => HOSTING_PLATFORM_ENABLED));
     $allowed_plats = _hosting_get_allowed_platforms($user->uid);
     $access_check = FALSE;
