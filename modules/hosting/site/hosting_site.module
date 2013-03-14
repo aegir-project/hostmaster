@@ -632,8 +632,8 @@ function hosting_site_list_form($form, $form_state, $filter_by = NULL, $filter_v
     $query = $query
       ->limit(25)
       ->orderByHeader($header)
-      ->addTag('node_access')
-    $result = $query->execute()
+      ->addTag('node_access');
+    $result = $query->execute();
 
     $form['options'] = array(
       '#type' => 'fieldset',

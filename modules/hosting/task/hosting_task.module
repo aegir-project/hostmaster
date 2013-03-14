@@ -1032,13 +1032,13 @@ function hosting_get_tasks($filter_by = NULL, $filter_value = NULL, $count = 5, 
     ->fields('t', array('task_status', 'task_type', 'rid'))
     ->condition('type', 'task')
     ->limit($count)
-    ->addTag('node_access')
+    ->addTag('node_access');
   if ($filter_by && $filter_value) {
     $query = $query->condition($filter_by, $filter_value);
   }
-  $result = $query->execute()
+  $result = $query->execute();
 
-  while ($row = $result->fetch()) {
+  foreach ($result as $row) {
     $nodes[] = $row;
   }
 
