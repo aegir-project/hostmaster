@@ -43,7 +43,7 @@ function hosting_package_node_info() {
 function hosting_package_menu() {
   $items = array();
 
-  $items['node/%hosting_package_node/packages'] = array(
+  $items['node/%hosting_package_wildcard/packages'] = array(
     'title' => 'Packages',
     'description' => 'List of packages available for this platform',
     'page callback' => 'hosting_package_list',
@@ -52,7 +52,7 @@ function hosting_package_menu() {
     'access arguments' => array('view package'),
     'weight' => 1,
   );
-  $items['node/%hosting_package_node/packages/all'] = array(
+  $items['node/%hosting_package_wildcard/packages/all'] = array(
     'title' => 'All packages',
     'description' => 'List of all packages',
     'page callback' => 'hosting_package_list',
@@ -63,7 +63,7 @@ function hosting_package_menu() {
   );
   $x = 0;
   foreach (_hosting_package_types() as $type => $description) {
-    $items['node/%hosting_package_node/packages/' . $type] = array(
+    $items['node/%hosting_package_wildcard/packages/' . $type] = array(
       'title' => $description,
       'description' => $description,
       'page callback' => 'hosting_package_list',
@@ -80,7 +80,7 @@ function hosting_package_menu() {
  * @todo Please document this function.
  * @see http://drupal.org/node/1354
  */
-function hosting_package_node_load($arg) {
+function hosting_package_wildcard_load($arg) {
   if (!is_numeric($arg)) {
     return FALSE;
   }
