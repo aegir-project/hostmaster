@@ -391,6 +391,9 @@ function hosting_node_help($type) {
     case 'task':
       return t("<strong>The mechanism whereby Hostmaster keeps track of all changes that occur to the system.</strong>\nEach task acts as a command for the back-end, and contains a full log of all changes that have occurred. If a task should fail, the administrator will be notified with an explanation of exactly what went wrong, and how to fix it.");
 
+    case 'package':
+      return t("PLACEHOLDER");
+
   }
 }
 
