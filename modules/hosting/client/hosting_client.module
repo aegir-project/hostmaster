@@ -849,8 +849,7 @@ function _hosting_get_clients() {
   //$result = pager_query(db_rewrite_sql('SELECT n.nid, n.title from {node} n WHERE n.type = "client"'), 25);
   $query = db_select('node', 'n')->extend('PagerDefault');
   $result = $query
-    ->addField('n', 'nid')
-    ->addField('n', 'title')
+    ->fields('n', array('nid', 'title'))
     ->condition('type', 'client')
     ->limit(25)
     ->addTag('node_access')
