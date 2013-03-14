@@ -183,11 +183,11 @@ function hosting_ssl_server_cert_list($node) {
     ->condition('ips.nid', $node->nid)
     ->limit(25)
     ->orderByHeader($header)
-    ->addTag('node_access')
-  $result = $query->execute()
+    ->addTag('node_access');
+  $result = $query->execute();
 
   $rows = array();
-  while ($cert = $result->fetch()) {
+  foreach ($result as $cert) {
     // XXX: not in use?
     //$row_class = ($cert->status == 1) ? 'hosting-success' : 'hosting-info';
     $row = array();

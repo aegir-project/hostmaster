@@ -643,14 +643,14 @@ function hosting_task_outstanding($nid, $type) {
  * Return the amount of items still in the queue
  */
 function hosting_task_count() {
-  return db_query("SELECT COUNT(t.vid) FROM {hosting_task} t INNER JOIN {node} n ON t.vid = n.vid WHERE t.task_status = :t.task_status", array(':t.task_status' => HOSTING_TASK_QUEUED))->fetchField();
+  return db_query("SELECT COUNT(t.vid) FROM {hosting_task} t INNER JOIN {node} n ON t.vid = n.vid WHERE t.task_status = !t.task_status", array('!t.task_status' => HOSTING_TASK_QUEUED))->fetchField();
 }
 
 /**
  * Return the amount of items running in the queue
  */
 function hosting_task_count_running() {
-  return db_query("SELECT COUNT(t.nid) FROM {node} n INNER JOIN {hosting_task} t ON n.vid=t.vid WHERE type = :type AND t.task_status = :t.task_status", array(':type' => 'task', ':t.task_status' => HOSTING_TASK_PROCESSING))->fetchField();
+  return db_query("SELECT COUNT(t.nid) FROM {node} n INNER JOIN {hosting_task} t ON n.vid=t.vid WHERE type = !type AND t.task_status = !t.task_status", array('!type' => 'task', '!t.task_status' => HOSTING_TASK_PROCESSING))->fetchField();
 }
 
 /**
@@ -1055,9 +1055,9 @@ function hosting_get_tasks($filter_by = NULL, $filter_value = NULL, $count = 5, 
  */
 function _hosting_get_new_tasks($limit = 20) {
   $return = array();
-  $result = db_query("SELECT t.nid FROM {hosting_task} t INNER JOIN {node} n ON t.vid = n.vid WHERE t.task_status = :t.task_status GROUP BY t.rid ORDER BY n.changed, n.nid ASC LIMIT %d", array(':t.task_status' => 0, '' => $limit));
-  while ($node = $result->fetch()) {
-    $return[$node->nid] =  node_load($node->nid);
+  $result = db_query("SELECT t.nid FROM {hosting_task} t INNER JOIN {node} n ON t.vid = n.vid WHERE t.task_status = !t.task_status GROUP BY t.rid ORDER BY n.changed, n.nid ASC LIMIT !limit", array('!t.task_status' => 0, '!limit' => $limit));
+  foreach ($result as $node) {
+    $return[$node->nid] = node_load($node->nid);
   }
   return $return;
 }
