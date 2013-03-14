@@ -854,7 +854,7 @@ function _hosting_get_clients() {
     ->condition('type', 'client')
     ->limit(25)
     ->addTag('node_access')
-    ->execute()
+    ->execute();
   foreach ($result as $client) {
     $return[$client->nid] = $client->title;
   }
