@@ -30,11 +30,12 @@ class hostingService_db_mysql extends hostingService_db {
       '#title' => t('Username'),
       '#description' => t('The user that will be used to create new mysql users and databases for new sites.'),
       '#size' => 40,
-      '#default_value' => $this->db_user,
+      '#default_value' => isset($this->db_user) ? $this->db_user : NULL,
       '#maxlength' => 64,
       '#weight' => 5,
     );
-    if ($this->db_passwd) {
+    $passwd_description = '';
+    if (isset($this->db_passwd)) {
       $passwd_description = t('<strong>You have already set a password for this database server.</strong><br />');
     }
     $form['db_passwd'] = array(

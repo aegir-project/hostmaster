@@ -598,7 +598,7 @@ function hosting_task_set_title(&$node) {
     ))
     ->condition('nid', $node->nid)
     ->execute();
-  db_update('node_revisions')
+  db_update('node_revision')
     ->fields(array(
       'title' => $node->title,
     ))
@@ -997,7 +997,7 @@ function _hosting_task_log_class($type) {
  * This is used for documenting issues with verification.
  */
 function hosting_get_most_recent_task($rid, $type) {
-  $nid = db_query("SELECT t.nid FROM {hosting_task} t INNER JOIN {node} n ON n.vid = t.vid WHERE task_type = :task_type and t.rid = :t.rid ORDER BY t.vid DESC limit 1", array(':task_type' => $type, ':t.rid' => $rid))->fetchField();
+  $nid = db_query("SELECT t.nid FROM {hosting_task} t INNER JOIN {node} n ON n.vid = t.vid WHERE task_type = !task_type and t.rid = !t.rid ORDER BY t.vid DESC limit 1", array('!task_type' => $type, '!t.rid' => $rid))->fetchField();
   if ($nid) {
     return node_load($nid);
   }
@@ -1026,8 +1026,9 @@ function hosting_get_tasks($filter_by = NULL, $filter_value = NULL, $count = 5, 
   $result = pager_query(db_rewrite_sql("SELECT n.*, t.task_status, t.task_type, t.rid FROM {node} n INNER JOIN {hosting_task} t on n.vid=t.vid WHERE type='%s'" . $cond . " ORDER BY n.vid DESC"), $count, $element, NULL, $args);
   */
   $query = db_select('node', 'n')
-    ->extend('PagerDefault')
-    ->join('hosting_task', 't', 'n.vid=t.vid')
+    ->extend('PagerDefault');
+  $query->join('hosting_task', 't', 'n.vid=t.vid');
+  $query = $query
     ->fields('n')
     ->fields('t', array('task_status', 'task_type', 'rid'))
     ->condition('type', 'task')
@@ -1356,8 +1357,8 @@ function hosting_task_fetch_tasks($rid) {
   $node = node_load($rid);
 
   $result = db_query("SELECT n.nid, t.task_type, t.task_status FROM {node} n INNER JOIN {hosting_task} t ON n.vid = t.vid
-    WHERE n.type = :n.type AND t.rid = :t.rid
-    ORDER BY t.task_status ASC, n.changed DESC", array(':n.type' => 'task', ':t.rid' => $rid));
+    WHERE n.type = !n.type AND t.rid = !t.rid
+    ORDER BY t.task_status ASC, n.changed DESC", array('!n.type' => 'task', '!t.rid' => $rid));
 
   while ($obj = $result->fetch()) {
     $return[$obj->task_type] = array(

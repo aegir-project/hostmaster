@@ -13,7 +13,7 @@ include_once "hosting.ip.inc";
 function hosting_server_node_info() {
   $types["server"] =  array(
     "type" => 'server',
-    "name" => 'Server',
+    "name" => t('Server'),
     'base' => 'hosting_server',
     "has_title" => TRUE,
     "title_label" => t('Host name'),
@@ -248,9 +248,8 @@ function hosting_server_invoke_services(&$node, $method, &$arg1 = NULL, &$arg2 =
 /**
  * Implements hook_form().
  */
-function hosting_server_form(&$node) {
+function hosting_server_form($node, &$form_state) {
   drupal_add_js(drupal_get_path('module', 'hosting_server') . '/hosting_server.js');
-
   $form['title'] = array(
     '#type' => 'textfield',
     '#title' => t('Server hostname'),
@@ -264,7 +263,7 @@ function hosting_server_form(&$node) {
     '#type' => 'textarea',
     '#title' => t('Ip addresses'),
     '#description' => t('A list of IP addresses this server is publicly available under, one per line. If none is specified, a DNS lookup will be performed based on the server hostname above. <br /><strong>This should point to the public network, if you have such a separation.</strong>'),
-    '#default_value' => implode("\n", _hosting_ip_list($node->ip_addresses)),
+    '#default_value' => isset($node->ip_addresses) ? implode("\n", _hosting_ip_list($node->ip_addresses)) : NULL,
     '#weight' => -9,
   );
 
@@ -274,7 +273,7 @@ function hosting_server_form(&$node) {
     '#tree' => TRUE,
   );
 
-  if (!$node->nid) {
+  if (!isset($node->nid)) {
     $node->services = array();
   }
 
@@ -380,7 +379,7 @@ function hosting_server_update($node) {
 
   hosting_ip_save($node, TRUE);
 
-  if (!$node->no_verify) {
+  if (!isset($node->no_verify) || !$node->no_verify) {
     hosting_add_task($node->nid, 'verify');
   }
 }
@@ -390,7 +389,7 @@ function hosting_server_update($node) {
  */
 function hosting_server_insert($node) {
   if (!$node->revision) {
-    $hosting_name = ($node->hosting_name) ? $node->hosting_name : 'server_' . preg_replace("/[!\W\.\-]/", "", $node->title);
+    $hosting_name = isset($node->hosting_name) ? $node->hosting_name : 'server_' . preg_replace("/[!\W\.\-]/", "", $node->title);
     hosting_context_register($node->nid, $hosting_name );
   }
 
@@ -406,7 +405,7 @@ function hosting_server_insert($node) {
   hosting_server_invoke_services($node, 'save', $node);
   hosting_server_invoke_services($node, 'insert', $node);
 
-  if (!$node->no_verify) {
+  if (!isset($node->no_verify) || !$node->no_verify) {
     hosting_add_task($node->nid, 'verify');
   }
 }
@@ -489,28 +488,30 @@ function hosting_server_view(&$node, $teaser = FALSE, $page = FALSE) {
     $node->content->info->ip_addresses['#weight'] = -30;
   }
 
-  foreach ($node->services as $name => $service) {
-    $node->content['info'][$name] = array(
-      '#prefix' => '<div class="hosting-service-info hosting-service-' . $name . '-info">',
-      '#suffix' => '</div>',
-    );
-    if (isset($services[$name]['weight'])) {
-      $node->content['info'][$name]['#weight'] = $services[$name]['weight'];
+  if (isset($node->services)) {
+    foreach ($node->services as $name => $service) {
+      $node->content['info'][$name] = array(
+        '#prefix' => '<div class="hosting-service-info hosting-service-' . $name . '-info">',
+        '#suffix' => '</div>',
+      );
+      if (isset($services[$name]['weight'])) {
+        $node->content['info'][$name]['#weight'] = $services[$name]['weight'];
+      }
+
+      $title = $services[$name]['title'] . ' : ' . $service->type;
+
+      $node->content['info'][$name]['title'] = array(
+        '#value' => '<h3>' . $title . '</h3>',
+        '#weight' => -20,
+      );
+
+      $service->view($node->content['info'][$name]);
     }
-
-    $title = $services[$name]['title'] . ' : ' . $service->type;
-
-    $node->content['info'][$name]['title'] = array(
-      '#value' => '<h3>' . $title . '</h3>',
-      '#weight' => -20,
-    );
-
-    $service->view($node->content['info'][$name]);
   }
 
   if ($page) {
     // Task list
-    if ($node->nid) {
+    if (isset($node->nid)) {
       $node->content['tasks_view'] = array(
         '#type' => 'item',
         '#value' => hosting_task_table($node),

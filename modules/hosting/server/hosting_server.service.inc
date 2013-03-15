@@ -20,7 +20,7 @@ class hostingService {
   }
 
   public function load() {
-    $this->mergeData("SELECT port, restart_cmd, available FROM {hosting_service} WHERE vid = %d AND type = '%s'", $this->server->vid, $this->type);
+    $this->mergeData("SELECT port, restart_cmd, available FROM {hosting_service} WHERE vid = !vid AND type = !type", array('!vid' => $this->server->vid, '!type' => $this->type));
   }
 
   protected function mergeData($query) {
@@ -38,13 +38,13 @@ class hostingService {
   }
 
   public function save($node) {
-    $this->server = new stdClass();
-    $this->server->nid = $node->nid;
-    $this->server->vid = $node->vid;
-    $this->server->title = $node->title;
+    if (isset($node->nid)) {
+      $this->server = new stdClass();
+      $this->server->nid = $node->nid;
+      $this->server->vid = $node->vid;
+      $this->server->title = $node->title;
+    }
   }
-
-
 
   public function default_restart_cmd() {
     return '';
@@ -94,7 +94,7 @@ class hostingService {
         '#title' => t('Restart command'),
         '#required' => $this->available,
         '#description' => t('The command to run to restart this service.'),
-        '#default_value' => (!is_null($this->restart_cmd)) ? $this->restart_cmd : $this->default_restart_cmd(),
+        '#default_value' => (isset($this->restart_cmd)) ? $this->restart_cmd : $this->default_restart_cmd(),
         '#size' => 40,
         '#maxlength' => 255,
         '#weight' => -7,
@@ -114,7 +114,7 @@ class hostingService {
         '#title' => t('Port'),
         '#required' => $this->available,
         '#size' => 40,
-        '#default_value' => ($this->port) ? $this->port : $this->default_port(),
+        '#default_value' => isset($this->port) ? $this->port : $this->default_port(),
         '#description' => t("The port that this service is listening on."),
         '#maxlength' => 255,
         '#weight' => -8,
@@ -134,7 +134,7 @@ class hostingService {
       $render['restart_cmd'] = array(
         '#type' => 'item',
         '#title' => t('Restart command'),
-        '#value' => filter_xss($this->restart_cmd),
+        '#value' => isset($this->restart_cmd) ? filter_xss($this->restart_cmd) : NULL,
       );
 
     }
@@ -143,7 +143,7 @@ class hostingService {
       $render['port'] = array(
         '#type' => 'item',
         '#title' => t('Port'),
-        '#value' => filter_xss($this->port),
+        '#value' => isset($this->port) ? filter_xss($this->port) : NULL,
       );
     }
   }

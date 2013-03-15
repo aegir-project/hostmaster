@@ -68,7 +68,7 @@ function hosting_cron_queue($count) {
 /**
  * Implements hook_node_view().
  */
-function hosting_cron_node_view(&$node, $view_mode, $langcode) {
+function hosting_cron_node_view($node, $view_mode, $langcode) {
   if ($node->type == 'site') {
     if ($view_mode != 'teaser') {
       // @todo : turn it into x minutes ago
