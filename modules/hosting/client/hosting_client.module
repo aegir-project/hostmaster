@@ -22,8 +22,7 @@ define('MAX_GROUP_LENGTH', 16);
  */
 function hosting_client_node_info() {
   $types["client"] =  array(
-    "type" => 'client',
-    "name" => 'Client',
+    "name" => t('Client'),
     'base' => 'hosting_client',
     "has_title" => TRUE,
     "title_label" => 'Client name',
@@ -167,7 +166,7 @@ function hosting_get_client_by_uname($uname) {
 /**
  * Implements hook_form().
  */
-function hosting_client_form(&$node) {
+function hosting_client_form(&$node, &$form_state) {
   $type = node_type_get_type('client');
 
   $form['title'] = array(
@@ -185,11 +184,11 @@ function hosting_client_form(&$node) {
     '#title' => t('Internal name'),
     '#size' => MAX_GROUP_LENGTH,
     '#maxlength' => MAX_GROUP_LENGTH,
-    '#default_value' => $node->uname,
+    '#default_value' => isset($node->uname) ? $node->uname : '',
     '#access' => user_access('edit client uname'),
     '#description' => t('A machine-usable name that can be used internally, for example to map to a UNIX group in the backend. It is unique accross the system. If no value is provided, it is deduced from the client name, by stripping spaces and metacharacters and adding a prefix (%prefix).', array('%prefix' => variable_get('hosting_client_prefix', 'no prefix define'))),
   );
-  if (!$node->nid && variable_get('hosting_client_register_user', FALSE)) {
+  if (!isset($node->nid) && variable_get('hosting_client_register_user', FALSE)) {
     $form['email'] = array(
       '#type' => 'textfield',
       '#title' => t('Email address'),
@@ -209,8 +208,9 @@ function hosting_client_form(&$node) {
     );
   }
 
-  if ($node->nid) {
+  if (isset($node->nid)) {
     $users = hosting_client_users($node);
+    $user_list = array();
     foreach ($users as $uid => $uname) {
       $form['user_edit']['name'][$uid] = array(
         '#type' => 'markup',
@@ -258,9 +258,11 @@ function hosting_client_form(&$node) {
  */
 function theme_hosting_client_form($variables) {
   $form = $variables['form'];
-  foreach (element_children($form['name']) as $user) {
+  foreach (element_children($form['name'], FALSE) as $user) {
     $row = array();
-    $row['data'][] = drupal_render($form['name'][$user]);
+    // TODO: Figure out why drupal_render isn't working here.
+    //$row['data'][] = drupal_render($form['name'][$user]);
+    $row['data'][] = $form['name'][$user]['#value'];
     if (user_access('edit client users')) {
       $row['data'][] = drupal_render($form['users'][$user]);
     }
@@ -272,9 +274,9 @@ function theme_hosting_client_form($variables) {
 }
 
 /**
- * Implements hook_validate() ().
+ * Implements hook_validate().
  */
-function hosting_client_validate(&$node) {
+function hosting_client_validate($node, $form, &$form_state) {
   if ($node->uname) {
     $node->uname = hosting_client_sanitize($node->uname);
   }
@@ -282,7 +284,7 @@ function hosting_client_validate(&$node) {
     $node->uname = hosting_client_sanitize($node->title);
   }
   // TODO convert this statement to DBTNG syntax.
-  $nid = db_query("SELECT nid FROM {hosting_client} WHERE uname LIKE '%s'", addcslashes($node->uname, '\%_'))->fetchField();
+  $nid = db_query("SELECT nid FROM {hosting_client} WHERE uname LIKE '!existing'", array('!existing' => addcslashes($node->uname, '\%_')))->fetchField();
   if ($nid && $node->nid != $nid) {
     $suggestion = hosting_client_validate_suggest($node);
     if ($suggestion) {
@@ -292,7 +294,7 @@ function hosting_client_validate(&$node) {
       form_set_error('title', t("Client name already in use."));
     }
   }
-  if (!$node->nid && $node->email) {
+  if (!$node->nid && isset($node->email)) {
     $user = array_shift(user_load_multiple(array(), array('mail' => $node->email)));
     if ($user) {
       form_set_error('email', t("Email address already exists."));
@@ -527,7 +529,7 @@ function hosting_client_load($nodes) {
 }
 
 /**
- * Implements hook_load().
+ * Implements hook_node_load().
  *
  * @param $arg
  *    Node's numeric nid
@@ -560,13 +562,8 @@ function hosting_client_users($node) {
   elseif (!is_numeric($node)) {
     return array();
   }
-
-  $users = array();
-  $result = db_query("SELECT u.uid, u.name FROM {hosting_client_user} h INNER JOIN {users} u ON u.uid = h.user WHERE h.client = :h.client", array(':h.client' => $node));
-  foreach ($result as $row) {
-    $users[$row['uid']] = $row['name'];
-  }
-  return $users;
+  // TODO: Figure out why variable substitution doesn't work here.
+  return db_query("SELECT u.uid, u.name, h.client FROM {hosting_client_user} h INNER JOIN {users} u ON u.uid = h.user WHERE h.client = $node")->fetchAllKeyed();
 }
 
 /**
