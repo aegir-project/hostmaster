@@ -596,7 +596,7 @@ function hosting_server_listing() {
  */
 function hosting_get_servers($service) {
   $return = array();
-  $result = db_query("SELECT n.nid, n.title FROM {node} n INNER JOIN {hosting_service} s ON n.vid = s.vid AND s.available = 1 AND s.service = '%s'", $service);
+  $result = db_query("SELECT n.nid, n.title FROM {node} n INNER JOIN {hosting_service} s ON n.vid = s.vid AND s.available = 1 AND s.service = '!service'", array('!service' => $service));
   while ($server = $result->fetch()) {
     $return[$server->nid] = $server->title;
   }

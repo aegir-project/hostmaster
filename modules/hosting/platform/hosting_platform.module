@@ -229,14 +229,14 @@ function hosting_platform_form(&$node) {
   // the path if the makefile was specified is that there's the possibility
   // that the platform path was actually created when the node was saved the
   // first time and we have cruft lying around to cleanup.
-  if (!$node->nid || (!$node->verified && !$node->makefile)) {
+  if (!isset($node->nid) || (!$node->verified && !isset($node->makefile))) {
     $form['publish_path'] = array(
       '#type' => 'textfield',
       '#title' => t('Publish path'),
       '#required' => TRUE,
       '#description' => t('The absolute path on the filesystem where the sites will be hosted. This needs to be created manually and initialized before your platform works properly. It also needs to be a unique path not already in use by a platform on any server.<br />For example, run the following shell commands:<pre>%commands</pre>Your publish path is the absolute path to the directory that gets created.<br />Alternatively, you can specify a makefile below, and the platform will be created automatically if the path specified here does not exist.<br />You are still required to enter the absolute path above, as it will be treated as the target directory by the makefile.', array('%commands' => "cd /var/aegir/platforms\ndrush dl drupal\n")),
       '#size' => 40,
-      '#default_value' => $node->publish_path,
+      '#default_value' => isset($node->publish_path) ? $node->publish_path : NULL,
       '#maxlength' => 255,
     );
   }
@@ -259,7 +259,7 @@ function hosting_platform_form(&$node) {
     '#title' => t('Makefile'),
     '#description' => t('The absolute path on the filesystem or public URL of a makefile that will be used to create the platform in the directory specified above. If the directory already exists, this file will be ignored.'),
     '#size' => 40,
-    '#default_value' => $node->makefile,
+    '#default_value' => isset($node->makefile) ? $node->makefile : NULL,
     '#maxlength' => 255,
   );
 
@@ -296,7 +296,7 @@ function hosting_platform_form(&$node) {
   foreach (array('verified', 'platform_status') as $extra_attribute) {
     $form["$extra_attribute"] = array(
       '#type' => 'value',
-      '#value' => $node->$extra_attribute,
+      '#value' => isset($node->$extra_attribute) ? $node->$extra_attribute : NULL,
     );
   }
   return $form;
@@ -333,8 +333,8 @@ function hosting_platform_form_alter(&$form, &$form_state, $form_id) {
   // Remove delete button from platform edit form, unless the platform's already been deleted via the Delete task
   if ($form_id == 'platform_node_form') {
     $node = $form['#node'];
-    if ($node->platform_status !== '-2') {
-      $form['buttons']['delete']['#type'] = 'hidden';
+    if (isset($node->platform_status) && $node->platform_status !== '-2') {
+      $form['action']['delete']['#type'] = 'hidden';
     }
   }
 }
@@ -431,11 +431,11 @@ function hosting_platform_delete($node) {
  */
 function hosting_platform_validate($node, &$form) {
   // Make sure the platform name is unique, to avoid context clashes.
-  if ($node->op != t('Delete') && $result = db_query("SELECT n.title AS name FROM {hosting_platform} AS h INNER JOIN {node} AS n ON n.nid = h.nid WHERE n.title = :n.title AND n.nid <> :n.nid AND h.status >= :h.status", array(':n.title' => $node->title, ':n.nid' => $node->nid, ':h.status' => HOSTING_PLATFORM_QUEUED))->fetch()) {
+  if ($node->op != t('Delete') && $result = db_query("SELECT n.title AS name FROM {hosting_platform} AS h INNER JOIN {node} AS n ON n.nid = h.nid WHERE n.title = !n.title AND n.nid <> !n.nid AND h.status >= !h.status", array('!n.title' => $node->title, '!n.nid' => $node->nid, '!h.status' => HOSTING_PLATFORM_QUEUED))->fetch()) {
     form_set_error('title', t('Platform name %name is already defined. Platform names must be unique across all servers.', array('%name' => $result->name)));
   }
   // Make sure the path is unique. Remote servers can't have the same path to a platform that is in use by another server.
-  if ($node->op != t('Delete') && $result = db_query("SELECT n.title AS name FROM {hosting_platform} AS h INNER JOIN {node} AS n ON n.nid = h.nid WHERE publish_path = :publish_path AND n.nid <> :n.nid AND h.status >= :h.status", array(':publish_path' => hosting_path_normalize($node->publish_path), ':n.nid' => $node->nid, ':h.status' => HOSTING_PLATFORM_QUEUED))->fetch()) {
+  if ($node->op != t('Delete') && $result = db_query("SELECT n.title AS name FROM {hosting_platform} AS h INNER JOIN {node} AS n ON n.nid = h.nid WHERE publish_path = !publish_path AND n.nid <> !n.nid AND h.status >= !h.status", array('!publish_path' => hosting_path_normalize($node->publish_path), '!n.nid' => $node->nid, '!h.status' => HOSTING_PLATFORM_QUEUED))->fetch()) {
     form_set_error('publish_path', t('Path is already in use by platform %name. Platform paths must be unique across all servers.', array('%name' => $result->name)));
   }
   if (is_null($node->web_server)) {
