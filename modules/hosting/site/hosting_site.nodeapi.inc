@@ -163,13 +163,13 @@ function hosting_site_insert(&$node) {
   // Ensure that the last_cron value is set.
   $node->last_cron = isset($node->last_cron) ? $node->last_cron : 0;
 
-<<<<<<< HEAD
   $id = db_insert('hosting_site')
     ->fields(array(
       'vid' => $node->vid,
       'nid' => $node->nid,
       'client' => $node->client,
       'db_server' => $node->db_server,
+      'db_name' => $node->db_name,
       'platform' => $node->platform,
       'profile' => $node->profile,
       'language' => $node->site_language,
@@ -179,10 +179,6 @@ function hosting_site_insert(&$node) {
       'verified' => $node->verified,
     ))
     ->execute();
-=======
-  db_query("INSERT INTO {hosting_site} (vid, nid, client, db_server, db_name, platform, profile, language, last_cron, cron_key, status, verified) VALUES (%d, %d, %d, %d, '%s', %d, %d, '%s', %d, '%s', %d, %d)",
-           $node->vid, $node->nid, $node->client, $node->db_server, $node->db_name, $node->platform, $node->profile, $node->site_language, $node->last_cron, $node->cron_key, $node->site_status, $node->verified);
->>>>>>> e7cb9b9d6de82d84ae5e9f0aac0462732a43b065
   if ((empty($node->old_vid))) {
     hosting_context_register($node->nid, ($node->hosting_name) ? $node->hosting_name : $node->title);
     if ($node->import) {
@@ -209,11 +205,11 @@ function hosting_site_update(&$node) {
       $node->no_verify = TRUE;
     }
 
-<<<<<<< HEAD
     db_update('hosting_site')
       ->fields(array(
         'client' => $node->client,
         'db_server' => $node->db_server,
+        'db_name' => $node->db_name,
         'platform' => $node->platform,
         'last_cron' => $node->last_cron,
         'cron_key' => $node->cron_key,
@@ -224,10 +220,6 @@ function hosting_site_update(&$node) {
       ))
       ->condition('vid', $node->vid)
       ->execute();
-=======
-    db_query("UPDATE {hosting_site} SET client = %d, db_server = %d, db_name = '%s', platform = %d, last_cron = %d, cron_key = '%s', status = %d, profile = %d, language = '%s', verified = %d WHERE vid=%d",
-             $node->client, $node->db_server, $node->db_name, $node->platform, $node->last_cron, $node->cron_key, $node->site_status, $node->profile, $node->site_language, $node->verified, $node->vid);
->>>>>>> e7cb9b9d6de82d84ae5e9f0aac0462732a43b065
   }
   if (!$node->no_verify) {
     hosting_add_task($node->nid, 'verify');
@@ -240,17 +232,11 @@ function hosting_site_update(&$node) {
  * @param node
  *    Node object
  */
-<<<<<<< HEAD
 function hosting_site_load($nodes) {
   foreach ($nodes as $nid => &$node) {
-    $additions = db_query('SELECT  client, db_server, platform, profile, language as site_language, last_cron, cron_key, status AS site_status, verified FROM {hosting_site} WHERE vid = :vid', array(':vid' => $node->vid))->fetch();
+    $additions = db_query('SELECT  client, db_server, db_name, platform, profile, language as site_language, last_cron, cron_key, status AS site_status, verified FROM {hosting_site} WHERE vid = :vid', array(':vid' => $node->vid))->fetch();
     foreach ($additions as $property => &$value) {
       $node->$property = $value;
     }
   }
-=======
-function hosting_site_load($node) {
-  $additions = db_fetch_object(db_query('SELECT client, db_server, db_name, platform, profile, language as site_language, last_cron, cron_key, status AS site_status, verified FROM {hosting_site} WHERE vid = %d', $node->vid));
-  return $additions;
->>>>>>> e7cb9b9d6de82d84ae5e9f0aac0462732a43b065
 }
