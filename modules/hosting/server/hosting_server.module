@@ -474,8 +474,6 @@ function hosting_server_node_load($arg) {
 function hosting_server_view(&$node, $teaser = FALSE, $page = FALSE) {
   hosting_set_breadcrumb($node);
 
-  $node = node_prepare($node, $teaser);
-
   $services = hosting_server_services();
 
   $node->content['info'] = array(
