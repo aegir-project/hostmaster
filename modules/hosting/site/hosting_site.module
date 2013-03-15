@@ -606,17 +606,13 @@ function hosting_site_list_form($form, $form_state, $filter_by = NULL, $filter_v
     $query = db_select('node', 'n')
       ->extend('PagerDefault')
       ->extend('TableSort');
-    $query = $query->join('hosting_site', 's', 'n.vid=s.vid');
+    $query->join('hosting_site', 's', 'n.vid=s.vid');
     $query = $query->element(1);
+    $query->addField('s', 'status', 'site_status');
+    $query->addField('s', 'language', 'site_language');
     $query = $query
-      ->addField('n', 'nid')
-      ->addField('n', 'title')
-      ->addField('n', 'created')
-      ->addField('s', 'status', 'site_status')
-      ->addField('s', 'profile')
-      ->addField('s', 'language', 'site_language')
-      ->addField('s', 'platform')
-      ->addField('s', 'verified')
+      ->fields('n', array('nid', 'title', 'created'))
+      ->fields('s', array('profile', 'platform', 'verified'))
       ->condition('type', 'site')
       ->condition('s.status', -2, '!=');
     if ($filter_by && $filter_value) {
