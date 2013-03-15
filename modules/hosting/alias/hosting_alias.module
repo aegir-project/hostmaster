@@ -28,6 +28,12 @@ function hosting_alias_menu() {
     'access arguments' => array('administer hosting aliases'),
     'type' => MENU_LOCAL_TASK,
   );
+  $items['hosting_alias/js'] = array(
+    'title' => 'Javascript Alias Form',
+    'page callback' => 'hosting_alias_form_js',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
   return $items;
 }
 
@@ -53,7 +59,7 @@ function hosting_alias_help($path, $arg) {
  */
 function hosting_alias_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'site_node_form') {
-    return hosting_alias_form_data($form);
+    return hosting_alias_form_data($form, $form_state);
   }
 }
 
@@ -63,13 +69,13 @@ function hosting_alias_form_alter(&$form, &$form_state, $form_id) {
  * @param $form
  *   The form to alter, should come from hook_form_alter().
  */
-function hosting_alias_form_data(&$form) {
+function hosting_alias_form_data(&$form, &$form_state) {
   if (user_access('create site aliases')) {
 
     // List the automatic aliasses first.
-    $aliases = hosting_alias_get_aliases($form['#node'], HOSTING_ALIAS_AUTOMATIC);
-    if (sizeof($aliases)) {
-      foreach ($aliases as $link) {
+    $automatic_aliases = hosting_alias_get_aliases($form['#node'], HOSTING_ALIAS_AUTOMATIC);
+    if (sizeof($automatic_aliases)) {
+      foreach ($automatic_aliases as $link) {
         $links[] = l($link, "http://$link");
       }
       $form['aliases_automatic'] = array(
@@ -80,21 +86,132 @@ function hosting_alias_form_data(&$form) {
       );
     }
 
-    $form['aliases'] = array(
-      '#type' => 'textarea',
-      '#title' => t('Domain aliases'),
-      '#description' => t('The site can also be accessed through these domain names, one per line.'),
-      '#default_value' => implode("\n", (array) $form['#node']->aliases),
-      '#weight' => 10,
+    // Add a wrapper for the aliases and more button.
+    $form['aliases_wrapper'] = array(
+      '#tree' => FALSE,
+      '#title' => t('Domain Aliases'),
+      '#type' => 'fieldset',
+      '#prefix' => '<div class="clear-block" id="hosting-aliases-wrapper">',
+      '#suffix' => '</div>',
     );
-    $form['redirection'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Redirect domain aliases to main domain'),
-      '#default_value' => isset($form['#node']->redirection) ? $form['#node']->redirection : variable_get('hosting_alias_redirection', FALSE),
-      '#weight' => 11,
+    $form['aliases_wrapper']['aliases'] = array(
+      '#prefix' => '<div id="hosting-aliases">',
+      '#suffix' => '</div>',
+      '#tree' => TRUE,
+     // '#theme' => 'hosting_alias_form',
+    );
+
+    // Get the list of existing aliases, either from form_state or the node.
+    if (isset($form_state['aliases'])) {
+      $aliases = array_filter($form_state['aliases']);
+    }
+    else {
+      $aliases = array_filter($form['#node']->aliases);
+    }
+
+    // Figure out the alias count
+    if (isset($form_state['alias_count'])) {
+      $alias_count = $form_state['alias_count'] + 1;
+    }
+    else {
+      $alias_count = max(1, empty($aliases) ? 1 : count($aliases) + 1);
+    }
+
+    // Add alias textfields
+    for ($delta = 0; $delta < $alias_count; $delta++) {
+      $form['aliases_wrapper']['aliases'][$delta] = array(
+        '#type' => 'textfield',
+        '#default_value' => $aliases[$delta],
+      );
+    }
+
+    // "Add Alias" button
+    $form['aliases_wrapper']['add_alias'] = array(
+      '#type' => 'submit',
+      '#value' => t('Add an alias'),
+      '#description' => t("Click here to add another alias."),
+      '#weight' => 1,
+      '#submit' => array('hosting_alias_add_alias_submit'), // If no javascript action.
+      '#ahah' => array(
+        'path' => 'hosting_alias/js',
+        'wrapper' => 'hosting-aliases-wrapper',
+        'method' => 'replace',
+        'effect' => 'fade',
+      ),
+    );
+
+    // Redirection Domain
+    $options = array();
+    $options[0] = t('No redirection');
+    $options[$form['#node']->title] = $form['#node']->title;
+    if (!empty($aliases)) {
+      $options += array_combine($aliases, $aliases);
+    }
+    if (!empty($automatic_aliases)) {
+      $options += array_combine($automatic_aliases, $automatic_aliases);
+    }
+
+    $default = isset($form_state['values']['redirection']) ? $form_state['values']['redirection'] : $form['#node']->redirection;
+
+    $form['aliases_wrapper']['redirection'] = array(
+      '#type' => 'select',
+      '#title' => t('Redirect all domain aliases to'),
+      '#options' => $options,
+      '#default_value' => $default,
+      '#weight' => -1,
     );
     return $form;
   }
+}
+
+/**
+ * Callback to handle "Add Alias" button
+ */
+function hosting_alias_add_alias_submit($form, &$form_state) {
+  // Set the form to rebuild and run submit handlers.
+  node_form_submit_build_node($form, $form_state);
+
+  // Make the changes we want to the form state.
+  if ($form_state['values']['add_alias']) {
+    $form_state['values']['aliases'] = array_filter($form_state['values']['aliases']);
+    $form_state['alias_count'] = max(count($form_state['values']['aliases']), 1);
+  }
+}
+
+/**
+ * AHAH callback for additional alias form fields.
+ *
+ * Copied from poll_choice_js()
+ */
+function hosting_alias_form_js() {
+  include_once 'modules/node/node.pages.inc';
+  $form_state = array(
+    'storage' => NULL,
+    'submitted' => FALSE,
+  );
+  $form_build_id = $_POST['form_build_id'];
+  // Get the form from the cache.
+  $form = form_get_cache($form_build_id, $form_state);
+  $args = $form['#parameters'];
+  $form_id = array_shift($args);
+  // We will run some of the submit handlers so we need to disable redirecting.
+  $form['#redirect'] = FALSE;
+  // We need to process the form, prepare for that by setting a few internals
+  // variables.
+  $form['#post'] = $_POST;
+  $form['#programmed'] = FALSE;
+  $form_state['post'] = $_POST;
+  // Build, validate and if possible, submit the form.
+  drupal_process_form($form_id, $form, $form_state);
+  // This call recreates the form relying solely on the form_state that the
+  // drupal_process_form set up.
+  $form = drupal_rebuild_form($form_id, $form_state, $args, $form_build_id);
+  // Render the new output.
+  $alias_form = $form['aliases_wrapper'];
+  unset($alias_form['#prefix'], $alias_form['#suffix']); // Prevent duplicate wrappers.
+  $output = theme('status_messages') . drupal_render($alias_form);
+
+  drupal_json(array('status' => TRUE, 'data' => $output));
 }
 
 /**
@@ -146,6 +263,7 @@ function hosting_alias_insert($node) {
     if (is_array($aliases)) {
       foreach ($aliases as $alias) {
         if (($alias = trim($alias)) && !in_array($alias, $automatic)) {
+<<<<<<< HEAD
           $id = db_insert('hosting_site_alias')
             ->fields(array(
               'vid' => $node->vid,
@@ -155,12 +273,16 @@ function hosting_alias_insert($node) {
               'redirection' => $node->redirection,
             ))
             ->execute();
+=======
+          db_query("INSERT INTO {hosting_site_alias} (vid, nid, alias, automatic, redirection) VALUES (%d, %d, '%s', %d, '%s')", $node->vid, $node->nid, $alias, HOSTING_ALIAS_CUSTOM, $node->redirection);
+>>>>>>> e7cb9b9d6de82d84ae5e9f0aac0462732a43b065
         }
       }
     }
     if (sizeof($automatic)) {
       foreach ($automatic as $alias) {
         if (($alias = trim($alias)) && _hosting_valid_fqdn($alias)) {
+<<<<<<< HEAD
           $id = db_insert('hosting_site_alias')
             ->fields(array(
               'vid' => $node->vid,
@@ -170,6 +292,9 @@ function hosting_alias_insert($node) {
               'redirection' => $node->redirection,
             ))
             ->execute();
+=======
+          db_query("INSERT INTO {hosting_site_alias} (vid, nid, alias, automatic, redirection) VALUES (%d, %d, '%s', %d, '%s')", $node->vid, $node->nid, $alias, HOSTING_ALIAS_AUTOMATIC, $node->redirection);
+>>>>>>> e7cb9b9d6de82d84ae5e9f0aac0462732a43b065
         }
       }
     }
@@ -230,6 +355,7 @@ function hosting_alias_node_insert($node) {
  */
 function hosting_alias_node_update($node) {
   if ($node->type == 'site') {
+<<<<<<< HEAD
     hosting_alias_update($node);
   }
 }
@@ -265,6 +391,69 @@ function hosting_alias_node_validate($node, $form, &$form_state) {
         }
         if (!_hosting_valid_fqdn($alias)) {
           form_set_error('aliases', t('The domain name @alias is not a valid url', array('@alias' => $alias)));
+=======
+    switch ($op) {
+      case 'insert':
+        hosting_alias_insert($node);
+        break;
+      case 'update':
+        hosting_alias_update($node);
+        break;
+      case 'delete' :
+        hosting_alias_delete($node);
+        break;
+      case 'delete revision':
+        hosting_alias_delete_revision($node);
+        break;
+      case 'validate' :
+        $aliases = $node->aliases;
+        foreach ($aliases as $alias) {
+          if ($alias = trim($alias)) {
+            if (!hosting_domain_allowed($alias, array('nid' => $node->nid)) || $alias == $node->title) {
+              form_set_error('aliases', t('The domain name @alias is already in use', array('@alias' => $alias)));
+            }
+            if (!_hosting_valid_fqdn($alias)) {
+              form_set_error('aliases', t('The domain name @alias is not a valid url', array('@alias' => $alias)));
+            }
+          }
+        }
+
+        // Make sure chosen redirect is still an alias
+        if ($node->redirection != 0 && !in_array($node->redirection, $aliases) && !($node->redirection == $node->title)) {
+          form_set_error('redirection', t('The domain name @alias is not an alias for this site.', array('@alias' => $node->redirection)));
+        }
+        break;
+      case 'load':
+        // XXX: this returns only the first redirection status. it
+        // works since they are all set to the same in hook_insert(),
+        // but we should return an associative alias => redirection
+        // array instead
+        $additions['redirection'] = db_result(db_query("SELECT redirection FROM {hosting_site_alias} WHERE vid=%d", $node->vid));
+        // Only retrieves custom aliases, as they are all that can be modified.
+        $additions['aliases'] = hosting_alias_get_aliases($node, HOSTING_ALIAS_CUSTOM);
+        return $additions;
+        break;
+      case 'view':
+        $aliases = hosting_alias_get_aliases($node);
+
+        if (sizeof($aliases)) {
+          foreach ($aliases as $link) {
+            $links[] = l($link, "http://$link");
+          }
+          $node->content['info']['aliases'] = array(
+            '#type' => 'item',
+            '#title' => t('Domain aliases'),
+            '#value' => implode(', ', $links), 
+            '#weight' => 10,
+          );
+          $redirection = db_result(db_query("SELECT redirection FROM {hosting_site_alias} WHERE vid=%d", $node->vid));
+          $node->content['info']['redirection'] = array(
+            '#type' => 'item',
+            '#title' => t('Redirection Target'),
+            '#value' => !empty($redirection) ? l($redirection, "http://$redirection") : t('None'),
+            '#weight' => 10,
+          );
+>>>>>>> e7cb9b9d6de82d84ae5e9f0aac0462732a43b065
         }
       }
     }

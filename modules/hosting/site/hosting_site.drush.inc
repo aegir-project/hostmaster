@@ -212,6 +212,7 @@ function hosting_site_post_hosting_verify_task($task, $data) {
     $task->ref->no_verify = TRUE;
     if ($data['context']['cron_key']) {
       $task->ref->cron_key = $data['context']['cron_key'];
+      $task->ref->db_name = $data['self']['db_name'];
     }
     node_save($task->ref);
 
