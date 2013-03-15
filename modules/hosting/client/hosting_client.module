@@ -135,10 +135,10 @@ function hosting_client_node_access($node, $op, $account) {
  */
 function hosting_get_client($client) {
   if (is_numeric($client)) {
-    $result = db_query("SELECT n.nid FROM {hosting_client} h INNER JOIN {node} n ON n.nid = h.nid WHERE n.nid = :n.nid", array(':n.nid' => $client))->fetchField();
+    $result = db_query("SELECT n.nid FROM {hosting_client} h INNER JOIN {node} n ON n.nid = h.nid WHERE n.nid = !n.nid", array('!n.nid' => $client))->fetchField();
   }
   else {
-    $result = db_query("SELECT c.nid FROM {hosting_client} c JOIN {node} n ON c.nid = n.nid WHERE n.title = :n.title AND n.type = :n.type", array(':n.title' => $client, ':n.type' => 'client'))->fetchField();
+    $result = db_query("SELECT c.nid FROM {hosting_client} c JOIN {node} n ON c.nid = n.nid WHERE n.title = !n.title AND n.type = !n.type", array('!n.title' => $client, '!n.type' => 'client'))->fetchField();
   }
   if ($result) {
     return node_load($result);
@@ -538,7 +538,7 @@ function hosting_client_node_load($arg) {
   if (!is_numeric($arg)) {
     return FALSE;
   }
-  if ($node = node_load($arg)) {
+  if ($node = node_load_multiple(array($arg))) {
     if ($node->type == 'client') {
       return $node;
     }
@@ -697,9 +697,10 @@ function _hosting_client_site_default($node) {
     $clients = array();
     foreach ($client_ids as $client_id => $client_permissions) {
       $client_id = $client_id ? $client_id : HOSTING_DEFAULT_CLIENT;
-      $client = node_load($client_id);
+      $client = node_load_multiple(array($client_id));
+      $client = $client[$client_id];
       $clients[$client->title] = $client->title;
-      if ($node->client == $client_id || !$current_client_id) {
+      if (isset($node->client) && ($node->client == $client_id || !$current_client_id)) {
         $current_client_id = $client_id;
       }
     }
@@ -713,16 +714,16 @@ function _hosting_client_site_default($node) {
   }
 
   // allow admins to override
-  if ($node->client && user_access('administer clients')) {
+  if (isset($node->client) && $node->client && user_access('administer clients')) {
     $current_client_id = $node->client;
   }
 
-  $client = node_load($current_client_id);
+  $client = node_load_multiple(array($current_client_id));
   if (!$client) {
     # we give up, couldn't find a client, we're probably in a preview so
     # just use the node client
     $client = new stdClass();
-    $client->title = $node->client;
+    $client->title = isset($node->client) ? $node->client : NULL;
   }
 
   return $client->title;
@@ -914,11 +915,13 @@ function hosting_client_autocomplete($type, $keyword) {
   if ($type == 'client') {
     // TODO Confirm that these are equivalent, especially the db_rewrite_sql -> addTag('node_access')
     // $query = db_query(db_rewrite_sql("SELECT * FROM {node} n WHERE type = '%s' AND title LIKE '%s%%'"), $type, addcslashes($keyword, '\%_'));
-    $result = db_select('node', 'n')
-      ->condition('type', $type)
-      ->condition('title', addcslashes($keyword, '\%_'), 'LIKE')
-      ->addTag('node_access')
-      ->execute();
+    $query = db_select('node', 'n')
+      ->condition('type', $type);
+    $query->addField('n', 'title');
+    $query = $query
+      ->condition('title', '%' . $keyword . '%' , 'LIKE')
+      ->addTag('node_access');
+      $result = $query->execute();
     foreach ($result as $client) {
       $matches[$client->title] = $client->title;
     }
