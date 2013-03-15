@@ -5,7 +5,7 @@
  */
 
 include drupal_get_path( 'module', 'node' ) . '/node.pages.inc';
-
+include dirname(__FILE__) . '/hosting_client.access.inc';
 /**
  * The maximum length of a UNIX group
  *
