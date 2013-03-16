@@ -548,8 +548,9 @@ function hosting_server_listing() {
   }
   // TODO Confirm these are equivalent, especially the db_rewrite_sql() -> addTag('node_access').
   //$result = db_query(db_rewrite_sql("SELECT n.nid FROM {node} n WHERE n.type='server' AND n.status = 1 ORDER BY n.title"));
-  $result = db_select('node', 'n')
-    ->addField('n', 'nid')
+  $query = db_select('node', 'n');
+  $query->addField('n', 'nid');
+  $result = $query
     ->condition('type', 'server')
     ->condition('status', 1)
     ->orderBy('title')
