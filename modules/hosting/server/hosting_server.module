@@ -580,7 +580,7 @@ function hosting_server_listing() {
     $rows[] = $row;
   }
 
-  return theme('table', array('header' =>   $header, 'rows' => $rows, 'attributes' => array('class' => 'hosting-table')));
+  return theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('class' => array('hosting-table'))));
 }
 
 /**
