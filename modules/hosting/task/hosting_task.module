@@ -948,15 +948,15 @@ function _hosting_task_log_table($vid) {
       }
       $row =  array(array(
           'data' => $message,
-          'class' => 'hosting-status',
+          'class' => array('hosting-status'),
         ));
       $rows[] = array(
         'data' => $row,
-        'class' => _hosting_task_log_class($entry->type),
+        'class' => array(_hosting_task_log_class($entry->type)),
       );
     }
 
-    return theme("table", array('header' => $header, 'rows' => (array) $rows, 'attributes' => array('id' => 'hosting-task-log', 'class' => 'hosting-table')));
+    return theme("table", array('header' => $header, 'rows' => (array) $rows, 'attributes' => array('id' => 'hosting-task-log', 'class' => array('hosting-table'))));
   }
 
   return FALSE;
@@ -1185,7 +1185,7 @@ function hosting_task_queue_block() {
     $row = array();
     $row['type'] = array(
       'data' => drupal_ucfirst(str_replace(array('_', '-'), ' ', $node->task_type)) . ' ' . _hosting_node_link($node->rid),
-      'class' => 'hosting-status',
+      'class' => array('hosting-status'),
     );
 
 
@@ -1193,15 +1193,15 @@ function hosting_task_queue_block() {
 
     $row['actions'] = array(
       'data' => $log_button,
-      'class' => 'hosting-actions',
+      'class' => array('hosting-actions'),
     );
     $class = hosting_task_status_class($node->task_status);
     $rows[] = array(
       'data' => $row,
-      'class' => $class,
+      'class' => array($class),
     );
   }
-  return "<div id='hosting-task-queue-block'>" . theme('table', array('header' => $headers, 'rows' => $rows, 'attributes' => array('class' => 'hosting-table'))) . "</div>";
+  return "<div id='hosting-task-queue-block'>" . theme('table', array('header' => $headers, 'rows' => $rows, 'attributes' => array('class' => array('hosting-table')))) . "</div>";
 
 }
 
@@ -1219,7 +1219,7 @@ function hosting_task_table($node) {
   $headers[] = t('Task');
   $headers[] = array(
     'data' => t('Actions'),
-    'class' => 'hosting-actions',
+    'class' => array('hosting-actions'),
   );
 
   $tasklist = hosting_task_fetch_tasks($node->nid);
@@ -1234,7 +1234,7 @@ function hosting_task_table($node) {
 
     $row['type'] = array(
       'data' => $info['title'],
-      'class' => 'hosting-status',
+      'class' => array('hosting-status'),
     );
     $actions = array();
 
@@ -1248,15 +1248,15 @@ function hosting_task_table($node) {
     $actions['log'] = _hosting_task_button(t('View'), isset($info['nid']) ? 'node/' . $info['nid'] : '<front>', t("Display the task log"), 'hosting-button-log', isset($info['nid']) &&  user_access('access task logs'), TRUE, FALSE);
     $row['actions'] = array(
       'data' => implode('', $actions),
-      'class' => 'hosting-actions',
+      'class' => array('hosting-actions'),
     );
 
     $rows[] = array(
       'data' => $row,
-      'class' => $info['class'],
+      'class' => array($info['class']),
     );
   }
-  $output .= theme('table', array('header' => $headers, 'rows' => $rows, 'attributes' => array('class' => 'hosting-table')));
+  $output .= theme('table', array('header' => $headers, 'rows' => $rows, 'attributes' => array('class' => array('hosting-table'))));
   return $output;
 }
 
@@ -1310,7 +1310,7 @@ function _hosting_task_list($filter_by, $filter_value, $count = 5, $element = 0,
       }
       $row['type'] = array(
         'data' => $data,
-        'class' => 'hosting-status',
+        'class' => array('hosting-status'),
       );
 
       if (!in_array('created', $skip)) {
@@ -1323,22 +1323,22 @@ function _hosting_task_list($filter_by, $filter_value, $count = 5, $element = 0,
 
       $headers[t('Actions')] = '';
 
-      $actions['log'] = l(t('View'), 'node/' . $node->nid, array('attributes' => array('class' => 'hosting-button-dialog hosting-button-enabled hosting-button-log')));
+      $actions['log'] = l(t('View'), 'node/' . $node->nid, array('attributes' => array('class' => array('hosting-button-dialog', 'hosting-button-enabled', 'hosting-button-log'))));
 
       $row['actions'] = array(
         'data' => $actions['log'],
-        'class' => 'hosting-actions',
+        'class' => array('hosting-actions'),
       );
 
       $class = hosting_task_status_class($node->task_status);
 
       $rows[] = array(
         'data' => $row,
-        'class' => $class,
+        'class' => array($class),
       );
     }
 
-    $output = theme('table', array('header' => array_keys($headers), 'rows' => $rows, 'attributes' => array('class' => 'hosting-table')));
+    $output = theme('table', array('header' => array_keys($headers), 'rows' => $rows, 'attributes' => array('class' => array('hosting-table'))));
     if ($pager === TRUE) {
       $output .= theme('pager', array('tags' => NULL, 'element' => $element));
     }

@@ -196,5 +196,5 @@ function hosting_ssl_server_cert_list($node) {
     $row[] = filter_xss($cert->client);
     $rows[] = $row;
   }
-  return theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('class' => 'hostign-table'))) . theme('pager', array('tags' => NULL, 'element' => 2));
+  return theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('class' => array('hostign-table')))) . theme('pager', array('tags' => NULL, 'element' => 2));
 }

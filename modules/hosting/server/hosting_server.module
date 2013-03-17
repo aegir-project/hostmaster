@@ -565,13 +565,13 @@ function hosting_server_listing() {
       if ($service !== 'server') {
         if ($server->services[$service]->available) {
           $row[] = array(
-            'class' => 'hosting-service-available',
+            'class' => array('hosting-service-available'),
             'data' => $server->services[$service]->type,
           );
         }
         else {
           $row[] = array(
-            'class' => 'hosting-service-unavailable',
+            'class' => array('hosting-service-unavailable'),
             'data' => t('No'),
           );
         }

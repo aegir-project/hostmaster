@@ -254,7 +254,7 @@ function _hosting_migrate_version_display($version, $schema = NULL, $status = NU
     $display .= " (" . $schema . ")";
   }
 
-  return array('class' => 'hosting-package-' . $status, 'data' => $display);
+  return array('class' => array('hosting-package-' . $status), 'data' => $display);
 }
 
 /**
@@ -269,14 +269,14 @@ function theme_hosting_migrate_comparison($variables) {
     $row = array();
     $row[] = array(
       'data' => $instance->short_name,
-      'class' => 'hosting-status',
+      'class' => array('hosting-status'),
     );
     $target_schema = ((int) $instance->target_schema == 0) ? $instance->current_schema : $instance->target_schema;
     $row[] = _hosting_migrate_version_display($instance->current_version, $instance->current_schema);
     $row[] = _hosting_migrate_version_display($instance->target_version, $target_schema, $instance->status);
     $rows[] = array(
       'data' => $row,
-      'class' => ($instance->enabled) ? 'hosting-success' : 'hosting-info',
+      'class' => ($instance->enabled) ? array('hosting-success') : array('hosting-info'),
     );
   }
   $options['attributes']['class'] = 'hosting-migrate-comparison-return';

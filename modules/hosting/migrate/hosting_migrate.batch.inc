@@ -75,7 +75,7 @@ function hosting_migrate_platform($form_state, $node) {
           $status = $form_state['storage']['status'][$site_id];
           $row = array(array(
               'data' => $url,
-              'class' => 'hosting-status',
+              'class' => array('hosting-status'),
             ), $status['upgrade'], $status['missing'], $status['error']);
           if (isset($form_state['storage']['instance'][$site_id])) {
             $link = l(t('Compare'), 'hosting/migrate/compare/' . $node->nid . '/' . $form_state['storage']['instance'][$site_id], $options);
@@ -86,12 +86,12 @@ function hosting_migrate_platform($form_state, $node) {
           $row[] = $link;
           $rows[] = array(
             'data' => $row,
-            'class' => 'hosting-' . _hosting_migrate_site_list_class($status),
+            'class' => array('hosting-' . _hosting_migrate_site_list_class($status)),
           );
         }
         $form['output'][$type]['table'] = array(
           '#type' => 'markup',
-          '#value' => theme('table', array('header' =>   $header, 'rows' => $rows, 'attributes' => array('class' => 'hosting-table'))),
+          '#value' => theme('table', array('header' =>   $header, 'rows' => $rows, 'attributes' => array('class' => array('hosting-table')))),
         );
 
       }

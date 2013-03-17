@@ -851,7 +851,7 @@ function theme_hosting_queues_configure($variables) {
     t('Description'),
     array(
       'data' => t('Frequency'),
-      'class' => 'hosting-queue-frequency-head',
+      'class' => array('hosting-queue-frequency-head'),
     ),
     t('Last run'),
   );

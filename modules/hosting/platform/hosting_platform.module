@@ -637,7 +637,7 @@ function hosting_platform_listing() {
     $row = array();
     $node = node_load($nid);
     $row[] = array(
-      'class' => 'hosting-status',
+      'class' => array('hosting-status'),
       'data' => _hosting_node_link($nid),
     );
     $release = sprintf("%s %s", $node->release->title, $node->release->version);
@@ -648,7 +648,7 @@ function hosting_platform_listing() {
     $row[] = $count;
     $rows[] = array(
       'data' => $row,
-      'class' => _hosting_platform_list_class($node),
+      'class' => array(_hosting_platform_list_class($node)),
     );
   }
   $row = array();
@@ -659,6 +659,6 @@ function hosting_platform_listing() {
   $row[] = $total;
   $rows[] = $row;
 
-  return theme('table', array('header' =>   $header, 'rows' => $rows, 'attributes' => array('class' => 'hosting-table')));
+  return theme('table', array('header' =>   $header, 'rows' => $rows, 'attributes' => array('class' => array('hosting-table'))));
 }
 

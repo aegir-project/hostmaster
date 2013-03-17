@@ -702,10 +702,10 @@ function hosting_site_list_form($form, $form_state, $filter_by = NULL, $filter_v
             'data' => array(
               array(
                 'data' => l($url, 'node/' . $site_id),
-                'class' => 'hosting-status',
+                'class' => array('hosting-status'),
               ),
             ),
-            'class' => ($type == 'passed' ? 'hosting-success' : 'hosting-error'),
+            'class' => ($type == 'passed' ? array('hosting-success') : array('hosting-error')),
           );
           $rows[] = $row;
         }
@@ -862,7 +862,7 @@ function theme_hosting_site_list($variables) {
       $row[] = drupal_render($form['sites'][$key]);
       $row[] = array(
         'data' => drupal_render($form['site'][$key]),
-        'class' => 'hosting-status',
+        'class' => array('hosting-status'),
       );
       $row[] = drupal_render($form['profile'][$key]);
       $row[] = drupal_render($form['language'][$key]);
@@ -872,7 +872,7 @@ function theme_hosting_site_list($variables) {
       }
       $rows[] = array(
         'data' => $row,
-        'class' => drupal_render($form['site_class'][$key]),
+        'class' => array(drupal_render($form['site_class'][$key])),
       );
     }
 
@@ -884,7 +884,7 @@ function theme_hosting_site_list($variables) {
       ));
   }
 
-  $output .= theme('table', array('header' =>   $header, 'rows' => $rows, 'attributes' => array('class' => 'hosting-table')));
+  $output .= theme('table', array('header' =>   $header, 'rows' => $rows, 'attributes' => array('class' => array('hosting-table'))));
   if ($form['pager']['#value']) {
     $output .= drupal_render($form['pager']);
   }

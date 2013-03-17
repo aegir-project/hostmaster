@@ -433,7 +433,7 @@ function theme_hosting_quota_admin_list($variables) {
       if ($quotas[$resource]['usage'] > $quotas[$resource]['limit']) {
         $row[] = array(
           'data' => "{$quotas[$resource]['rendered usage']} / {$quotas[$resource]['rendered limit']}",
-          'class' => 'warning',
+          'class' => array('warning'),
         );
       }
       else {

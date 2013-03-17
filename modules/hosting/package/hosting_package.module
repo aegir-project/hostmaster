@@ -620,18 +620,18 @@ function hosting_package_list($ref, $type = NULL) {
     $row = array();
     $row[] =  array(
       'data' => ($package->status) ? t('Enabled') : t('Available'),
-      'class' => 'hosting-status',
+      'class' => array('hosting-status'),
     );
     $row[] =  ($view_package_perm) ? l(filter_xss($package->short_name), 'node/' . $package->package) : $package->short_name;
     $row[] =  $package->version;
     $row[] = filter_xss($package->package_type);
     $rows[] = array(
       'data' => $row,
-      'class' => $row_class,
+      'class' => array($row_class),
     );
   }
 
-  return theme('table', array('header' =>   $header, 'rows' => $rows, 'attributes' => array('class' => 'hosting-table'))) . theme('pager', array('tags' => NULL, 'element' => 2));
+  return theme('table', array('header' =>   $header, 'rows' => $rows, 'attributes' => array('class' => array('hosting-table')))) . theme('pager', array('tags' => NULL, 'element' => 2));
 }
 
 /**
