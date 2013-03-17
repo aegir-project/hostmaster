@@ -225,16 +225,16 @@ function hosting_client_node_access_records($node) {
   $grants = array();
   $base_grant = array(
     'realm' => 'hosting ' . $node->type,
-    'grant_view' => TRUE,
-    'grant_update' => TRUE,
-    'grant_delete' => FALSE,
+    'grant_view' => 1,
+    'grant_update' => 1,
+    'grant_delete' => 0,
     'priority' => 1,
   );
 
   // tasks inherit from their parent
   if ($node->type == 'task') {
     $node = node_load($node->rid);
-    $base_grant['grant_update'] = FALSE;
+    $base_grant['grant_update'] = 0;
   }
 
   switch ($node->type) {
@@ -245,7 +245,7 @@ function hosting_client_node_access_records($node) {
       $base_grant['gid'] = $node->nid;
       break;
     case 'package':
-      $base_grant['grant_update'] = FALSE;
+      $base_grant['grant_update'] = 0;
       break;
     case 'task':
     case 'server':
@@ -258,7 +258,7 @@ function hosting_client_node_access_records($node) {
        if (sizeof($node->clients)) {
        foreach ($node->clients as $cid => $client) {
        if ($cid != HOSTING_ADMIN_CLIENT) {
-       $grants[] = array_merge($base_grant, array('gid' => $cid, 'grant_update' => FALSE));
+       $grants[] = array_merge($base_grant, array('gid' => $cid, 'grant_update' => 0));
        }
        }
        }

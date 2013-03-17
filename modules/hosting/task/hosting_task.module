@@ -265,7 +265,7 @@ function hosting_task_node_info() {
  */
 function hosting_task_node_access($node, $op, $account) {
   if (user_access('administer tasks', $account)) {
-    return TRUE;
+    return NODE_ACCESS_ALLOW;
   }
 }
 

@@ -340,19 +340,17 @@ function hosting_site_permission() {
  * Implements hook_node_access().
  */
 function hosting_site_node_access($node, $op, $account) {
-  switch ($op) {
-    case 'create':
-      return user_access('create site', $account);
-      break;
-    case 'update':
-      return user_access('edit site', $account);
-      break;
-    case 'delete':
-      return user_access('delete site', $account);
-      break;
-    case 'view':
-      return user_access('view site', $account);
-      break;
+  if ($op == 'create' && user_access('create site', $account)) {
+    return NODE_ACCESS_ALLOW;
+  }
+  if ($op == 'update' && user_access('edit site', $account)) {
+    return NODE_ACCESS_ALLOW;
+  }
+  if ($op == 'delete' && user_access('delete site', $account)) {
+    return NODE_ACCESS_ALLOW;
+  }
+  if ($op == 'view' && user_access('view site', $account)) {
+    return NODE_ACCESS_ALLOW;
   }
 }
 
