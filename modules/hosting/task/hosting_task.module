@@ -247,7 +247,7 @@ function hosting_task_node_info() {
   #management
   $types["task"] =  array(
     "type" => 'task',
-    "name" => 'Task',
+    "name" => t('Task'),
     'base' => 'hosting_task',
     "has_title" => FALSE,
     "title_label" => '',
@@ -392,7 +392,7 @@ function hosting_task_log($vid, $type, $message, $error = '', $timestamp = NULL)
       'nid' => $nids[$vid],
       'type' => $type,
       'message' => $message,
-      'error' => $error,
+      'error' => isset($error) ? $error : '',
       'timestamp' => $timestamp,
     ))
     ->execute();

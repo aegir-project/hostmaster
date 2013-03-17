@@ -443,8 +443,10 @@ function _hosting_node_link($nid, $title = NULL) {
     return t("None");
   }
   $node = node_load($nid);
-  $title = (!is_null($title)) ? $title : filter_xss($node->title);
-  if ($node->nid) {
+  if (!isset($title)) {
+    $title = isset($node->title) ? filter_xss($node->title) : NULL;
+  }
+  if (isset($node->nid)) {
     return node_access('view', $node) ? l($title, "node/" . $node->nid) : filter_xss($node->title);
   }
 }
