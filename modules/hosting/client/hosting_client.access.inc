@@ -8,7 +8,9 @@
  * Implements hook_user_load().
  */
 function hosting_client_user_load($users) {
-  $users['1']->client_id = hosting_get_client_from_user($users['1']->uid);
+  foreach ($users as $uid => $user) {
+    $users[$uid]->client_id = hosting_get_client_from_user($user->uid);
+  }
 }
 
 /**
@@ -16,7 +18,7 @@ function hosting_client_user_load($users) {
  */
 function hosting_client_user_view($account, $view_mode) {
   if (hosting_feature('client')) {
-    return hosting_client_view_user($user);
+    return hosting_client_view_user($account);
   }
 }
 
@@ -25,7 +27,7 @@ function hosting_client_user_view($account, $view_mode) {
  */
 function hosting_client_user_XXX($edit, $account) {
   if (hosting_feature('client')) {
-    return hosting_client_user_form($edit, $user, $category);
+    return hosting_client_user_form($edit, $account, $category);
   }
 }
 
@@ -40,7 +42,7 @@ function hosting_client_user_presave(&$edit, $account, $category) {
  * Implements hook_user_insert().
  */
 function hosting_client_user_insert(&$edit, $account, $category) {
-  hosting_client_user_form_submit($edit, $user);
+  hosting_client_user_form_submit($edit, $account);
   $edit['hosting_client'] = NULL;
 }
 
@@ -49,14 +51,9 @@ function hosting_client_user_insert(&$edit, $account, $category) {
  */
 function hosting_client_user_cancel($edit, $account, $method) {
   db_delete('hosting_client_user')
-    ->condition('user', $user->uid)
+    ->condition('user', $account->uid)
     ->execute();
 }
-
-/**
- * Implements hook_user().
- */
-function hosting_client_user_OLD($op, &$edit, &$user, $category = NULL) { }
 
 /**
  * Add visible items when viewing a user().
