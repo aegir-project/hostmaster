@@ -716,7 +716,7 @@ function _hosting_client_site_default($node) {
     $current_client_id = $node->client;
   }
 
-  $client = node_load_multiple(array($current_client_id));
+  $client = node_load($current_client_id);
   if (!$client) {
     # we give up, couldn't find a client, we're probably in a preview so
     # just use the node client
