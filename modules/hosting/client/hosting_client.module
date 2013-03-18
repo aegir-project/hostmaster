@@ -332,7 +332,7 @@ function hosting_client_validate_suggest($node) {
  * Implements hook_insert().
  */
 function hosting_client_insert($node) {
-  if ($node->uname) {
+  if (isset($node->uname)) {
     $node->uname = hosting_client_sanitize($node->uname);
   }
   else {
