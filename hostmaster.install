@@ -101,7 +101,6 @@ function hostmaster_bootstrap() {
   $node->type = 'package';
   $node->package_type = 'platform';
   $node->short_name = 'drupal';
-  // These two are required?
   $node->old_short_name = 'drupal';
   $node->description = 'Drupal code-base.';
   $node->status = 1;
@@ -113,11 +112,12 @@ function hostmaster_bootstrap() {
   $node->type = 'platform';
   $node->title = 'hostmaster';
   $node->publish_path = d()->root;
-  //$node->makefile = '';
+  $node->makefile = '';
   $node->verified = 1;
   $node->web_server = variable_get('hosting_default_web_server', 2);
+  $node->platform_status = 1;
   $node->status = 1;
-  //$node->make_working_copy = '';
+  $node->make_working_copy = 0;
   node_save($node);
   $platform_id = $node->nid;
   variable_set('hosting_own_platform', $node->nid);
@@ -125,6 +125,8 @@ function hostmaster_bootstrap() {
   $instance = new stdClass();
   $instance->rid = $node->nid;
   $instance->version = VERSION;
+  $instance->filename = '';
+  $instance->version_code = 1;
   $instance->schema_version = drupal_get_installed_schema_version('system');
   $instance->package_id = $package_id;
   $instance->status = 0;
@@ -135,6 +137,8 @@ function hostmaster_bootstrap() {
   $node->uid = 1;
   $node->title = 'hostmaster';
   $node->type = 'package';
+  $node->old_short_name = 'hostmaster';
+  $node->description = 'The Hostmaster profile.';
   $node->package_type = 'profile';
   $node->short_name = 'hostmaster';
   $node->status = 1;
@@ -149,10 +153,13 @@ function hostmaster_bootstrap() {
   $node->title = d()->uri;
   $node->platform = $platform_id;
   $node->client = $client_id;
+  $node->db_name = '';
   $node->db_server = $db_node->nid;
   $node->profile = $profile_id;
   $node->import = true;
   $node->hosting_name = 'hostmaster';
+  $node->site_status = 1;
+  $node->verified = 1;
   $node->status = 1;
   node_save($node);
 
