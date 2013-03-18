@@ -657,7 +657,7 @@ function hosting_site_list_form($form, $form_state, $filter_by = NULL, $filter_v
     );
 
     $sites = array();
-    while ($node = $result->fetch()) {
+    foreach ($result as $node) {
       $sites[$node->nid] = '';
       $form['site'][$node->nid] = array('#value' => l($node->title, 'node/' . $node->nid));
       $form['profile'][$node->nid] =  array('#value' => ($node->profile) ? _hosting_node_link($node->profile) : t('n/a'));
@@ -733,6 +733,7 @@ function hosting_site_list_form($form, $form_state, $filter_by = NULL, $filter_v
     return confirm_form($form, $question, 'hosting/sites', '', $tasks[$task]['title']);
   }
 }
+
 /**
  * Validate hosting_site_list form submissions.
  */

@@ -590,14 +590,12 @@ function hosting_package_list($ref, $type = NULL) {
   $query = db_select('hosting_package', 'h')
     ->extend('PagerDefault')
     ->extend('TableSort');
-  $query = $query->join('hosting_package_instance', 'i', 'i.package_id=h.nid');
+  $query->join('hosting_package_instance', 'i', 'i.package_id=h.nid');
   $query = $query->element(2);
+  $query->addField('h', 'nid', 'package');
   $query = $query
-    ->addField('h', 'nid', 'package')
-    ->addField('i', 'status')
-    ->addField('h', 'short_name')
-    ->addField('i', 'version')
-    ->addField('h', 'package_type')
+    ->fields('i', array('status', 'version'))
+    ->fields('h', array('short_name', 'package_type'))
     ->condition('i.rid', $ref->nid);
   if (!is_null($type)) {
     $query = $query->condition('h.package_type', $type);

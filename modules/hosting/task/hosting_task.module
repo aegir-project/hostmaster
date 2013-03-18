@@ -631,11 +631,11 @@ function hosting_task_outstanding($nid, $type) {
       SELECT t.nid FROM {hosting_task} t
         INNER JOIN {node} n ON t.vid = n.vid
       WHERE
-        t.rid = %d
-        AND t.task_status = %d
-        AND t.task_type = '%s'
+        t.rid = !rid
+        AND t.task_status = !status
+        AND t.task_type = '!type'
         ORDER BY t.vid DESC
-        LIMIT 1", $nid, HOSTING_TASK_QUEUED, $type)->fetchField();
+        LIMIT 1", array('!rid' =>$nid, '!status' => HOSTING_TASK_QUEUED, '!type' => $type))->fetchField();
   return $return;
 }
 
@@ -1056,7 +1056,7 @@ function hosting_get_tasks($filter_by = NULL, $filter_value = NULL, $count = 5, 
  */
 function _hosting_get_new_tasks($limit = 20) {
   $return = array();
-  $result = db_query("SELECT t.nid FROM {hosting_task} t INNER JOIN {node} n ON t.vid = n.vid WHERE t.task_status = !t.task_status GROUP BY t.rid ORDER BY n.changed, n.nid ASC LIMIT !limit", array('!t.task_status' => 0, '!limit' => $limit));
+  $result = db_query_range("SELECT t.nid FROM {hosting_task} t INNER JOIN {node} n ON t.vid = n.vid WHERE t.task_status = !task_status GROUP BY t.rid ORDER BY n.changed, n.nid ASC", 0, $limit, array('!task_status' => 0));
   foreach ($result as $node) {
     $return[$node->nid] = node_load($node->nid);
   }
