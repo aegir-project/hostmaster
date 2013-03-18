@@ -483,7 +483,6 @@ function hosting_platform_node_load($arg) {
  * Implements hook_view().
  */
 function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
-  modalframe_parent_js();
 
   $node->content['info'] = array(
     '#prefix' => '<div id="hosting-platform-info" class="hosting-info-list">',

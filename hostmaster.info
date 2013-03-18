@@ -28,6 +28,7 @@ dependencies[] = hosting_server
 
 ;; Drupal contrib ;;
 dependencies[] = admin_menu
+dependencies[] = overlay_paths
 
 ;; Aegir contrib ;;
 ;dependencies[] = hosting_platform_pathauto

@@ -28,7 +28,6 @@ function hosting_site_node_info() {
  */
 function hosting_site_view(&$node, $teaser = FALSE) {
   hosting_set_breadcrumb($node);
-  modalframe_parent_js();
   $node->content['info']['#prefix'] = '<div id="hosting-site-info" class="hosting-info-list">';
   if ($node->site_status == HOSTING_SITE_ENABLED) {
     $node->content['info']['link'] = array(

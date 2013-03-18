@@ -61,6 +61,14 @@ function hosting_task_menu() {
     'type' => MENU_CALLBACK,
   );
 
+  // Custom path to task node views for overlay.
+  // See hosting_task_overlay_paths().
+  $items['hosting/task/%node'] = array(
+    'page callback' => 'node_page_view',
+    'page arguments' => array(2),
+    'access arguments' => array('access task logs'),
+  );
+
   return $items;
 }
 
@@ -1161,7 +1169,6 @@ function hosting_task_list($filter_by = NULL, $filter_value = NULL) {
  */
 function hosting_task_summary($filter_by = NULL, $filter_value = NULL) {
 
-  modalframe_parent_js();
   $more_link = l(t('More tasks'), 'hosting/queues/tasks');
   return hosting_task_queue_block() . $more_link;
 }
@@ -1189,7 +1196,7 @@ function hosting_task_queue_block() {
     );
 
 
-    $log_button = _hosting_task_button(t('View'), 'node/' . $node->nid, t("Display the task log"), 'hosting-button-log', isset($node->nid) &&  user_access('access task logs'), TRUE, FALSE);
+    $log_button = _hosting_task_button(t('View'), 'hosting/task/' . $node->nid, t("Display the task log"), 'hosting-button-log', isset($node->nid) &&  user_access('access task logs'), TRUE, FALSE);
 
     $row['actions'] = array(
       'data' => $log_button,
@@ -1245,7 +1252,7 @@ function hosting_task_table($node) {
       $actions['run'] = _hosting_task_button(t('Run'), sprintf("node/%d/%s_%s", $node->nid, $node->type, $task), $info['description'], 'hosting-button-run', $info['task_permitted'], $info['dialog']);
     }
 
-    $actions['log'] = _hosting_task_button(t('View'), isset($info['nid']) ? 'node/' . $info['nid'] : '<front>', t("Display the task log"), 'hosting-button-log', isset($info['nid']) &&  user_access('access task logs'), TRUE, FALSE);
+    $actions['log'] = _hosting_task_button(t('View'), isset($info['nid']) ? 'hosting/task/' . $info['nid'] : '<front>', t("Display the task log"), 'hosting-button-log', isset($info['nid']) &&  user_access('access task logs'), TRUE, FALSE);
     $row['actions'] = array(
       'data' => implode('', $actions),
       'class' => array('hosting-actions'),
@@ -1274,7 +1281,7 @@ function _hosting_task_button($title, $link, $description, $class = '', $status 
 
     $options['attributes'] = array(
       'title' => $description,
-      'class' => implode(" ", $classes),
+      'class' => $classes,
     );
     if ($add_token) {
       $options['query'] = array(
@@ -1441,4 +1448,16 @@ function hosting_task_views_api() {
     'api' => 2,
     'path' => drupal_get_path('module', 'hosting_task'),
   );
+}
+
+/**
+ * Implements hook_overlay_paths().
+ */
+function hosting_task_overlay_paths() {
+  $paths = array(
+    'hosting/task/*' => array(
+      'width' => 600,
+    ),
+  );
+  return $paths;
 }
