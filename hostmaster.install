@@ -127,7 +127,8 @@ function hostmaster_bootstrap() {
   $instance->version = VERSION;
   $instance->filename = '';
   $instance->version_code = 1;
-  $instance->schema_version = drupal_get_installed_schema_version('system');
+  //$instance->schema_version = drupal_get_installed_schema_version('system');
+  $instance->schema_version = 0;
   $instance->package_id = $package_id;
   $instance->status = 0;
   hosting_package_instance_save($instance);
