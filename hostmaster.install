@@ -207,7 +207,7 @@ function hostmaster_task_finalize() {
       'theme' => 'eldir',
       'status' => 1,
       'weight' => 5,
-      'region' => 'right',
+      'region' => 'sidebar_first',
       'pages' => '',
       'cache' => -1,
     ),

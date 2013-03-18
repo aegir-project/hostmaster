@@ -458,19 +458,22 @@ function hosting_block_info() {
   $blocks['hosting_summary'] = array(
     'info' => t('Hosting summary'),
     'enabled' => 1,
-    'region' => 'left',
+    'status' => 1,
+    'region' => 'sidebar_last',
     'weight' => 10,
   );
   $blocks['hosting_queues'] = array(
     'info' => t('Hosting queues'),
     'enabled' => 1,
-    'region' => 'right',
+    'status' => 1,
+    'region' => 'sidebar_first',
     'weight' => 0,
   );
   $blocks['hosting_queues_summary'] = array(
     'info' => t('Hosting queues summary'),
     'enabled' => 1,
-    'region' => 'right',
+    'status' => 1,
+    'region' => 'sidebar_first',
     'weight' => 1,
     'cache' => 'BLOCK_NO_CACHE',
   );
