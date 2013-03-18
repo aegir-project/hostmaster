@@ -113,8 +113,11 @@ function hostmaster_bootstrap() {
   $node->type = 'platform';
   $node->title = 'hostmaster';
   $node->publish_path = d()->root;
+  //$node->makefile = '';
+  $node->verified = 1;
   $node->web_server = variable_get('hosting_default_web_server', 2);
   $node->status = 1;
+  //$node->make_working_copy = '';
   node_save($node);
   $platform_id = $node->nid;
   variable_set('hosting_own_platform', $node->nid);
