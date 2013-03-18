@@ -157,9 +157,9 @@ function hosting_site_nodeapi_site_presave(&$node) {
 function hosting_site_insert(&$node) {
   $client = hosting_get_client($node->client);
   $node->client = $client->nid;
-  $node->site_language = ($node->site_language) ? $node->site_language : 'en';
+  $node->site_language = isset($node->site_language) ? $node->site_language : 'en';
   // If the cron_key is set use it, otherwise generate a new one.
-  $node->cron_key = !empty($node->cron_key) ? $node->cron_key : '';
+  $node->cron_key = isset($node->cron_key) ? $node->cron_key : '';
   // Ensure that the last_cron value is set.
   $node->last_cron = isset($node->last_cron) ? $node->last_cron : 0;
 
