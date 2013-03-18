@@ -358,7 +358,7 @@ function hosting_platform_insert($node) {
       'make_working_copy' => $node->make_working_copy,
     ))
     ->execute();
-  if (!$node->old_vid) {
+  if (!isset($node->old_vid)) {
     hosting_context_register($node->nid, 'platform_' . preg_replace("/[!\W]/", "", $node->title));
   }
 }

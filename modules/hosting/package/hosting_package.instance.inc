@@ -65,7 +65,7 @@ function hosting_package_instance_sync($rid) {
 }
 
 function _hosting_package_instance_languages($instance) {
-  if (sizeof($instance->languages)) {
+  if (isset($instance->languages) && count($instance->languages)) {
     db_delete('hosting_package_languages')
       ->condition('iid', $instance->iid)
       ->execute();
