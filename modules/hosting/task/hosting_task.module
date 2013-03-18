@@ -946,6 +946,7 @@ function _hosting_task_log_table($vid) {
   $result = db_query("SELECT * FROM {hosting_task_log} WHERE vid = :vid ORDER BY lid", array(':vid' => $vid));
   if ($result) {
     $header = array('data' => 'Log message');
+    $rows = array();
     while ($entry = $result->fetch()) {
       if (strlen($entry->message) > 300) {
         $summary = "<span class='hosting-task-summary'>" . filter_xss(substr($entry->message, 0, 75), array()) . "... <a href='javascript:void(0)' class='hosting-summary-expand modalframe-exclude'>(" . t('Expand') . ')</a></span>';
@@ -964,7 +965,7 @@ function _hosting_task_log_table($vid) {
       );
     }
 
-    return theme("table", array('header' => $header, 'rows' => (array) $rows, 'attributes' => array('id' => 'hosting-task-log', 'class' => array('hosting-table'))));
+    return theme("table", array('header' => $header, 'rows' => $rows, 'attributes' => array('id' => 'hosting-task-log', 'class' => array('hosting-table'))));
   }
 
   return FALSE;
