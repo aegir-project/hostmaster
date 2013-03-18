@@ -7,7 +7,7 @@ class hostingService_http_ssl extends hostingService_http_public {
 
   function load() {
     parent::load();
-    $this->mergeData("SELECT ssl_port FROM {hosting_ssl_server} WHERE vid=%d", $this->server->vid);
+    $this->mergeData("SELECT ssl_port FROM {hosting_ssl_server} WHERE vid=!vid", array('!vid' => $this->server->vid));
     $this->ssl_enabled = TRUE;
   }
 

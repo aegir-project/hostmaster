@@ -81,7 +81,7 @@ class hostingService_example_basic extends hostingService_example {
      * results automatically, instead of iterating through the results ourself.
      */
 
-    // $this->mergeData("SELECT example_field FROM {hosting_example} WHERE vid = %d", $this->server->vid);
+    // $this->mergeData("SELECT example_field FROM {hosting_example} WHERE vid = !vid", array('!vid' => $this->server->vid));
   }
 
   /**
