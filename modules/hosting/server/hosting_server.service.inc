@@ -6,7 +6,7 @@
 class hostingService {
 
   public $server;
-  public $available = FALSE;
+  public $available = 0; //FALSE;
 
   protected $has_restart_cmd = FALSE;
   protected $has_port = FALSE;
