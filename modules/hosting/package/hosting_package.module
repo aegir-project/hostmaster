@@ -433,18 +433,18 @@ function _hosting_package_list_package_usage($node) {
   $query = db_select('node', 'n')
     ->extend('PagerDefault')
     ->extend('TableSort');
-  $query = $query->join('hosting_package_instance', 'pi', 'pi.rid = n.nid');
-  $query = $query->join('hosting_package', 'p', 'p.nid = pi.package_id');
-  $query = $query->join('hosting_site', 's', 's.nid = n.nid');
-  $query = $query->join('node', 'n2', 'n2.nid = s.platform');
+  $query->join('hosting_package_instance', 'pi', 'pi.rid = n.nid');
+  $query->join('hosting_package', 'p', 'p.nid = pi.package_id');
+  $query->join('hosting_site', 's', 's.nid = n.nid');
+  $query->join('node', 'n2', 'n2.nid = s.platform');
   $query = $query->element(2);
+  $query->addField('s', 'client', 'client_nid');
+  $query->addField('n2', 'title', 'platform_name');
+  $query->addField('s', 'platform', 'platform_nid');
+  $query->addField('n', 'title', 'site_name');
+  $query->addField('n', 'nid', 'site_nid');
+  $query->addField('pi', 'version', 'package_version');
   $query = $query
-    ->addField('s', 'client', 'client_nid')
-    ->addField('n2', 'title', 'platform_name')
-    ->addField('s', 'platform', 'platform_nid')
-    ->addField('n', 'title', 'site_name')
-    ->addField('n', 'nid', 'site_nid')
-    ->addField('pi', 'version', 'package_version')
     ->condition('pi.status', 1)
     ->condition('s.status', HOSTING_SITE_DISABLED, '>=')
     ->condition('pi.package_id', $node->nid)
