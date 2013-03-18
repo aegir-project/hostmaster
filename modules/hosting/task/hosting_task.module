@@ -858,7 +858,7 @@ function hosting_task_retry_form_submit($form, &$form_state) {
  */
 function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
   drupal_add_js(drupal_get_path('module', 'hosting') . '/hosting.js');
-  $node = node_prepare($node, $teaser);
+  //$node = node_prepare($node, $teaser);
 
   $ref = node_load($node->rid);
 
