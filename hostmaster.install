@@ -77,7 +77,7 @@ function hostmaster_bootstrap() {
   hosting_services_add($db_node, 'db', $db_server->db_service_type, array(
     'db_type' => $master_db['scheme'],
     'db_user' => urldecode($master_db['user']),
-    'db_passwd' => urldecode($master_db['pass']),
+    'db_passwd' => isset($master_db['pass']) ? urldecode($master_db['pass']) : '',
     'port' => 3306,
     'available' => 1,
   ));
@@ -185,6 +185,8 @@ function hostmaster_task_finalize() {
   foreach ($menu_paths as $menu_path) {
     $item = $existing_item = menu_get_item($menu_path);
     $item['menu_name'] = 'main-menu';
+    $item['link_title'] = $item->title;
+    $item['link_path'] = drupal_get_normal_path($menu_path);
     menu_link_save(&$item, $existing_item);
   }
 
@@ -201,7 +203,7 @@ function hostmaster_task_finalize() {
     array(
       'module' => 'hosting',
       'delta' => 'hosting_queues',
-      'theme' => $theme,
+      'theme' => 'eldir',
       'status' => 1,
       'weight' => 5,
       'region' => 'right',
@@ -239,7 +241,7 @@ function hostmaster_task_finalize() {
   user_role_grant_permissions($client_role->rid, array(
     // Drupal core
     'access content',
-    'access all views',
+    //'access all views',
     // Clients
     'edit own client',
     'view client',
