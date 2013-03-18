@@ -102,8 +102,8 @@ function hostmaster_bootstrap() {
   $node->package_type = 'platform';
   $node->short_name = 'drupal';
   // These two are required?
-  $node->old_short_name = 'drupal',
-  $node->description = 'Drupal code-base.',
+  $node->old_short_name = 'drupal';
+  $node->description = 'Drupal code-base.';
   $node->status = 1;
   node_save($node);
   $package_id = $node->nid;
