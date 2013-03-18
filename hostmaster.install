@@ -7,7 +7,9 @@
  */
 function hostmaster_install() {
 
-  // add support for nginx
+  variable_set('install_profile', 'hostmaster');
+
+// add support for nginx
   if (d()->platform->server->http_service_type === 'nginx') {
     drupal_install_modules(array('hosting_nginx'));
   }
@@ -24,7 +26,6 @@ function hostmaster_bootstrap() {
   /* Default node types and default node */
   $types =  node_types_rebuild();
 
-  variable_set('install_profile', 'hostmaster');
   // Initialize the hosting defines
   hosting_init();
 
@@ -93,6 +94,7 @@ function hostmaster_bootstrap() {
   variable_set('hosting_default_db_server', $db_node->nid);
   variable_set('hosting_own_db_server', $db_node->nid);
 
+  // Create the hostmaster platform & packages
   $node = new stdClass();
   $node->uid = 1;
   $node->title = 'Drupal';
