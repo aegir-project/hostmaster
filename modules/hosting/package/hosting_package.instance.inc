@@ -45,7 +45,7 @@ function hosting_package_instance_sync($rid) {
         $instance->package_id = $package['package_id'];
       }
       $instance->languages = isset($package['info']['languages']) ? $package['info']['languages'] : array();
-      $instance->filename = isset($package['filename']) ? $package['filename'] : NULL;
+      $instance->filename = isset($package['filename']) ? $package['filename'] : '';
       $instance->version = isset($package['version']) ? $package['version'] : 'Unknown';
       $instance->version_code = hosting_package_instance_version_code($package['version']);
       $instance->schema_version = isset($package['schema_version']) ? $package['schema_version'] : 0;
