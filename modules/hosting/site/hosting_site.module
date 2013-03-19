@@ -382,28 +382,20 @@ function hosting_site_count($platform = NULL, $statuses = NULL) {
   if (is_null($statuses)) {
     $statuses = array(HOSTING_SITE_ENABLED);
   }
-  $args = array();
-  $query = "SELECT count(nid) FROM {hosting_site}";
-  $where = array();
+
+  $query = db_select('hosting_site')
+    ->addTag('hosting_site_count')
+    ->fields('hosting_site', array('nid'));
 
   if (count($statuses)) {
-    // This essentially re-implements db_placeholders() which was removed in
-    // Drupal 7. TODO: re-factor this whole function the DBTNG way.
-    $placeholders = implode(',', array_fill(0, count($statuses), '%d'));
-    $where[] = '(status IN (' . $placeholders . '))';
-    $args = array_merge($args, $statuses);
+    $query->condition('status', $statuses);
   }
 
   if (!is_null($platform)) {
-    $where[] = "(platform = %d)";
-    $args[] = $platform;
+    $query->condition('platform', $platform);
   }
 
-  if (!empty($where)) {
-    $query .= ' WHERE ' . implode(' AND ', $where);
-  }
-
-  return db_query($query, $args)->fetchField();
+  return $query->countQuery()->execute()->fetchField();
 }
 
 /**
@@ -607,15 +599,15 @@ function hosting_site_list_form($form, $form_state, $filter_by = NULL, $filter_v
     $query = db_select('node', 'n')
       ->extend('PagerDefault')
       ->extend('TableSort');
-    $query->join('hosting_site', 's', 'n.vid=s.vid');
-    $query = $query->element(1);
-    $query->addField('s', 'status', 'site_status');
-    $query->addField('s', 'language', 'site_language');
-    $query = $query
+    $hs_table_alias = $query->join('hosting_site', NULL, 'n.vid = %alias.vid');
+    //$query = $query->element(1);
+    $query->addField($hs_table_alias, 'status', 'site_status');
+    $query->addField($hs_table_alias, 'language', 'site_language');
+    $query
       ->fields('n', array('nid', 'title', 'created'))
-      ->fields('s', array('profile', 'platform', 'verified'))
+      ->fields($hs_table_alias, array('profile', 'platform', 'verified'))
       ->condition('type', 'site')
-      ->condition('s.status', -2, '!=');
+      ->condition($hs_table_alias . '.status', -2, '!=');
     if ($filter_by && $filter_value) {
       if ($filter_by == 'status') {
         // Bitwise operator?
@@ -626,7 +618,7 @@ function hosting_site_list_form($form, $form_state, $filter_by = NULL, $filter_v
       }
     }
     // @TODO hide deleted sites
-    $query = $query
+    $query
       ->limit(25)
       ->orderByHeader($header)
       ->addTag('node_access');
@@ -662,14 +654,14 @@ function hosting_site_list_form($form, $form_state, $filter_by = NULL, $filter_v
     $sites = array();
     foreach ($result as $node) {
       $sites[$node->nid] = '';
-      $form['site'][$node->nid] = array('#value' => l($node->title, 'node/' . $node->nid));
-      $form['profile'][$node->nid] =  array('#value' => ($node->profile) ? _hosting_node_link($node->profile) : t('n/a'));
-      $form['language'][$node->nid] = array('#value' => ($node->site_language) ? _hosting_language_name($node->site_language) : t('n/a'));
-      $form['created'][$node->nid] =  array('#value' => t("@interval ago", array('@interval' => format_interval(REQUEST_TIME - $node->created, 1))));
+      $form['site'][$node->nid] = array('#markup' => l($node->title, 'node/' . $node->nid));
+      $form['profile'][$node->nid] =  array('#markup' => ($node->profile) ? _hosting_node_link($node->profile) : t('n/a'));
+      $form['language'][$node->nid] = array('#markup' => ($node->site_language) ? _hosting_language_name($node->site_language) : t('n/a'));
+      $form['created'][$node->nid] =  array('#markup' => t("@interval ago", array('@interval' => format_interval(REQUEST_TIME - $node->created, 1))));
       if (sizeof($platforms) > 1) {
-        $form['platform'][$node->nid] = array('#value' => ($node->platform) ? _hosting_node_link($node->platform) : t('n/a'));
+        $form['platform'][$node->nid] = array('#markup' => ($node->platform) ? _hosting_node_link($node->platform) : t('n/a'));
       }
-      $form['site_class'][$node->nid] = array('#value' => _hosting_site_list_class($node, $node->verified));
+      $form['site_class'][$node->nid] = array('#markup' => _hosting_site_list_class($node, $node->verified));
     }
     $form['sites'] = array(
       '#type' => 'checkboxes',
