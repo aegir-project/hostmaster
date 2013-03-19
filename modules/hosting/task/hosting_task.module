@@ -461,6 +461,7 @@ function hosting_add_task($nid, $type, $args = NULL, $status = HOSTING_TASK_QUEU
 
   return $task;
 }
+
 /**
  * Implements hook_form().
  */
@@ -868,7 +869,7 @@ function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
   $node->content['info']['reference'] = array(
     '#type' => 'item',
     '#title' => drupal_ucfirst($ref->type),
-    '#value' => _hosting_node_link($node->rid),
+    '#markup' => _hosting_node_link($node->rid),
   );
 
   if ($node->task_status != HOSTING_TASK_QUEUED) {
@@ -876,13 +877,13 @@ function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
       $node->content['info']['started'] = array(
         '#type' => 'item',
         '#title' => t('Started'),
-        '#value' => format_date($node->executed),
+        '#markup' => format_date($node->executed),
         '#weight' => 1,
       );
       $node->content['info']['delta'] = array(
         '#type' => 'item',
         '#title' => t('Processing time'),
-        '#value' => format_interval(REQUEST_TIME - $node->executed),
+        '#markup' => format_interval(REQUEST_TIME - $node->executed),
         '#weight' => 2,
       );
     }
@@ -890,13 +891,13 @@ function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
       $node->content['info']['executed'] = array(
         '#type' => 'item',
         '#title' => t('Executed'),
-        '#value' => format_date($node->executed),
+        '#markup' => format_date($node->executed),
         '#weight' => 1,
       );
       $node->content['info']['delta'] = array(
         '#type' => 'item',
         '#title' => t('Execution time'),
-        '#value' => format_interval($node->delta),
+        '#markup' => format_interval($node->delta),
         '#weight' => 2,
       );
     }
@@ -908,14 +909,14 @@ function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
     $node->content['info']['notexecuted'] = array(
       '#type' => 'item',
       '#title' => t('This task has not been processed yet'),
-      '#value' => t('It will be processed around %date, if the queue is not too crowded. The queue is currently run every %freq, was last run %last and processes %items items at a time. Server time is %time.', array('%freq' => format_interval($queue['frequency']), '%date' => format_date($next, 'custom', 'H:i:sO'), '%last' => hosting_format_interval($queue['last_run']), '%items' => $queue['items'], '%time' => format_date(REQUEST_TIME, 'custom', 'H:i:sO'))),
+      '#markup' => t('It will be processed around %date, if the queue is not too crowded. The queue is currently run every %freq, was last run %last and processes %items items at a time. Server time is %time.', array('%freq' => format_interval($queue['frequency']), '%date' => format_date($next, 'custom', 'H:i:sO'), '%last' => hosting_format_interval($queue['last_run']), '%items' => $queue['items'], '%time' => format_date(REQUEST_TIME, 'custom', 'H:i:sO'))),
     );
   }
   if ($node->task_status) {
     $node->content['info']['status'] = array(
       '#type' => 'item',
       '#title' => t('Status'),
-      '#value' => _hosting_parse_error_code($node->task_status),
+      '#markup' => _hosting_parse_error_code($node->task_status),
     );
   }
   $node->content['info']['#suffix'] = '</div>';
@@ -923,7 +924,7 @@ function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
   if (user_access('retry failed tasks') && ($node->task_status == HOSTING_TASK_ERROR)) {
     $node->content['retry'] = array(
       '#type' => 'markup',
-      '#value' => drupal_get_form('hosting_task_retry_form', $node->nid),
+      '#markup' => drupal_get_form('hosting_task_retry_form', $node->nid),
       '#weight' => 5,
     );
   }
@@ -933,7 +934,7 @@ function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
       $node->content['hosting_log'] = array(
         '#weight' => 10,
         '#type' => 'item',
-        '#value' => $table,
+        '#markup' => $table,
       );
     }
   }
