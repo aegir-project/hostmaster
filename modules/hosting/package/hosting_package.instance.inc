@@ -155,37 +155,35 @@ function hosting_package_instances_load($param) {
  * Internal function for hosting_package_instance(s)_load.
  */
 function _hosting_package_instances_load($param, $multiple = FALSE) {
-  $arguments = array();
+  $instances = array();
+
+  $query = db_select('hosting_package_instance', 'i')
+    ->addTag('hosting_package_instances_load')
+    ->fields('i', array('iid', 'version', 'version_code', 'schema_version', 'status', 'rid', 'package_id'));
+  $package_alias = $query->leftJoin('hosting_package', 'p', 'i.package_id = %alias.nid');
+  $query->fields($package_alias, array('package_type', 'nid', 'description', 'short_name', 'old_short_name'));
+  $node_package_alias = $query->leftJoin('node', 'n', $package_alias . '.nid = %alias.nid');
+  $query->fields($node_package_alias, array('title'));
+  $node_instance_alias = $query->leftJoin('node', 'r', 'i.rid = %alias.nid');
+  $query->fields($node_instance_alias, array('type'));
+  $platform_alias = $query->leftJoin('hosting_platform', 'h', $node_instance_alias . '.nid = %alias.nid');
+
   if (is_numeric($param)) {
-    $cond = 'iid = %d';
-    $arguments[] = $param;
+    $query->condition('i.iid', $param);
   }
   elseif (is_array($param)) {
     // Turn the conditions into a query.
     foreach ($param as $key => $value) {
-      $cond[] = $key . " = '%s'";
-      $arguments[] = $value;
+      $query->condition($key, $value);
     }
-    $cond = implode(' AND ', $cond);
   }
   else {
     return FALSE;
   }
-  $instances = array();
-  // TODO convert this statement to proper DBTNG syntax.
-  $result = db_query("SELECT
-      n.title, r.type, p.package_type, p.nid,
-      i.iid, i.version, i.version_code, i.schema_version,
-      i.status, p.description, p.short_name, p.old_short_name, i.rid,
-      i.package_id
-      FROM {hosting_package_instance} i
-        LEFT JOIN {hosting_package} p ON p.nid=i.package_id
-        LEFT JOIN {node} n ON p.nid=n.nid
-        LEFT JOIN {node} r ON r.nid=i.rid
-        LEFT JOIN {hosting_platform} h ON r.nid=h.nid
-      WHERE " . $cond, $arguments);
 
-  while ($instance = $result->fetch()) {
+  $result = $query->execute();
+
+  foreach ($result as $instance) {
     $instance->languages = _hosting_package_instances_load_languages($instance->iid);
     if (!$multiple) {
       return $instance;
