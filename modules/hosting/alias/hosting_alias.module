@@ -231,17 +231,19 @@ function hosting_alias_get_aliases($node, $type = NULL) {
     return array();
   }
   $alias = array();
-  $query = "SELECT alias FROM {hosting_site_alias} WHERE vid=%d";
-  $args[] = $node->vid;
+  $query = db_select('hosting_site_alias')
+    ->addTag('hosting_alias_get_aliases')
+    ->fields('hosting_site_alias', array('alias'))
+    ->condition('vid', $node->vid)
+    ->orderBy('alias', 'ASC');
+
   if (!is_null($type)) {
-    $query .= " AND automatic=%d";
-    $args[] = $type;
+    $query->condition('automatic', $type);
   }
-  $query .= ' ORDER BY alias ASC';
 
-  $result = db_query($query, $args);
+  $result = $query->execute();
 
-  while ($obj = $result->fetch()) {
+  foreach ($result as $obj) {
     $alias[] = $obj->alias;
   }
   if (sizeof($alias)) {
