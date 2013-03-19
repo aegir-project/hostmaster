@@ -77,8 +77,12 @@ function hosting_package_menu() {
 }
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * Menu wildcard loader callback.
+ *
+ * Loads a hosting_site or hosting_platform node.
+ * @see hosting_package_menu().
+ *
+ * @arg $arg a numeric nid
  */
 function hosting_package_wildcard_load($arg) {
   if (!is_numeric($arg)) {

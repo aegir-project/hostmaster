@@ -462,12 +462,15 @@ function hosting_platform_load($nodes) {
 }
 
 /**
- * Implements hook_load().
+ * Menu wildcard loader callback.
+ *
+ * Loads a hosting_platform node.
+ * @see hosting_task_menu().
  *
  * @param arg
  *    Node's numeric nid
  */
-function hosting_platform_node_load($arg) {
+function hosting_platform_wildcard_load($arg) {
   if (!is_numeric($arg)) {
     return FALSE;
   }

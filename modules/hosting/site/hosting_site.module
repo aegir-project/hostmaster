@@ -87,12 +87,15 @@ function _hosting_site_form_check() {
 }
 
 /**
- * Implements hook_load().
+ * Menu wildcard loader callback.
+ *
+ * Loads a hosting_site node.
+ * @see hosting_task_menu().
  *
  * @param arg
  *    Node's numeric nid
  */
-function hosting_site_node_load($arg) {
+function hosting_site_wildcard_load($arg) {
   if (!is_numeric($arg)) {
     return FALSE;
   }

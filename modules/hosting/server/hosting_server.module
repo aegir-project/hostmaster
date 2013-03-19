@@ -451,11 +451,14 @@ function hosting_server_load($nodes) {
 }
 
 /**
- * Menu callback; loads a hosting_task_server node
+ * Menu wildcard loader callback.
+ *
+ * Loads a hosting_server node.
+ * @see hosting_task_menu().
  *
  * @arg $arg a numeric nid
  */
-function hosting_server_node_load($arg) {
+function hosting_server_wildcard_load($arg) {
   if (!is_numeric($arg)) {
     return FALSE;
   }
