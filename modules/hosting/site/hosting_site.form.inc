@@ -32,7 +32,7 @@ function _hosting_site_field(&$form, $node, $item, $element, $filter_display = '
         '#type' => 'item',
         '#title' => $element['#title'],
         '#description' => isset($element['#description']) ? $element['#description'] : NULL,
-        '#value' => "<div class='placeholder'>" . $filter_display($element['#default_value']) . "</div>",
+        '#markup' => "<div class='placeholder'>" . $filter_display($element['#default_value']) . "</div>",
       );
       if (isset($element['#weight'])) {
         $form[$item . '_description']['#weight'] = $element['#weight'];

@@ -40,7 +40,7 @@ function hosting_site_view(&$node, $teaser = FALSE) {
     $node->content['info']['client'] = array(
       '#type' => 'item',
       '#title' => t('Client'),
-      '#value' => _hosting_node_link($node->client),
+      '#markup' => _hosting_node_link($node->client),
       '#weight' => 5,
     );
   }
@@ -48,27 +48,27 @@ function hosting_site_view(&$node, $teaser = FALSE) {
   $node->content['info']['verified'] = array(
     '#type' => 'item',
     '#title' => t('Verified'),
-    '#value' => hosting_format_interval($node->verified),
+    '#markup' => hosting_format_interval($node->verified),
   );
 
   $node->content['info']['platform'] = array(
     '#type' => 'item',
     '#title' => t('Platform'),
-    '#value' => _hosting_node_link($node->platform),
+    '#markup' => _hosting_node_link($node->platform),
   );
 
   if ($node->profile) {
     $node->content['info']['profile'] = array(
       '#type' => 'item',
       '#title' => t('Install profile'),
-      '#value' => _hosting_node_link($node->profile),
+      '#markup' => _hosting_node_link($node->profile),
     );
   }
   if ($node->site_language) {
     $node->content['info']['site_language'] = array(
       '#type' => 'item',
       '#title' => t('Language'),
-      '#value' => _hosting_language_name($node->site_language),
+      '#markup' => _hosting_language_name($node->site_language),
     );
   }
 
@@ -76,7 +76,7 @@ function hosting_site_view(&$node, $teaser = FALSE) {
     $node->content['info']['status'] = array(
       '#type' => 'item',
       '#title' => t('Status'),
-      '#value' => _hosting_site_status($node),
+      '#markup' => _hosting_site_status($node),
     );
   }
 
@@ -84,7 +84,7 @@ function hosting_site_view(&$node, $teaser = FALSE) {
     $node->content['info']['db_server'] = array(
       '#type' => 'item',
       '#title' => t('Database server'),
-      '#value' => _hosting_node_link($node->db_server),
+      '#markup' => _hosting_node_link($node->db_server),
     );
   }
 
@@ -92,7 +92,7 @@ function hosting_site_view(&$node, $teaser = FALSE) {
     $node->content['info']['db_name'] = array(
       '#type' => 'item',
       '#title' => t('Database name'),
-      '#value' => check_plain($node->db_name),
+      '#markup' => check_plain($node->db_name),
     );
   }
 
@@ -101,7 +101,7 @@ function hosting_site_view(&$node, $teaser = FALSE) {
   if ($node->nid) {
     $node->content['tasks_view'] = array(
       '#type' => 'item',
-      '#value' => hosting_task_table($node),
+      '#markup' => hosting_task_table($node),
       '#prefix' => '<div id="hosting-task-list">',
       '#suffix' => '</div>',
       '#weight' => 10,

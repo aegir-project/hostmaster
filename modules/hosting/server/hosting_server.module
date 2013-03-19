@@ -512,7 +512,7 @@ function hosting_server_view(&$node, $teaser = FALSE, $page = FALSE) {
     if (isset($node->nid)) {
       $node->content['tasks_view'] = array(
         '#type' => 'item',
-        '#value' => hosting_task_table($node),
+        '#markup' => hosting_task_table($node),
         '#prefix' => '<div id="hosting-task-list">',
         '#suffix' => '</div>',
         '#weight' => 10,

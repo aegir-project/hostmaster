@@ -492,34 +492,34 @@ function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
   $node->content['info']['verified'] = array(
     '#type' => 'item',
     '#title' => t('Verified'),
-    '#value' => hosting_format_interval($node->verified),
+    '#markup' => hosting_format_interval($node->verified),
     '#weight' => -10,
   );
 
   $node->content['info']['publish_path'] = array(
     '#type' => 'item',
     '#title' => t('Publish path'),
-    '#value' => filter_xss($node->publish_path),
+    '#markup' => filter_xss($node->publish_path),
     '#weight' => -8,
   );
 
   $node->content['info']['web_server'] = array(
     '#type' => 'item',
     '#title' => t('Web server'),
-    '#value' => _hosting_node_link($node->web_server),
+    '#markup' => _hosting_node_link($node->web_server),
     '#weight' => -7,
   );
   $node->content['info']['status'] = array(
     '#type' => 'item',
     '#title' => t('Status'),
-    '#value' => _hosting_platform_status($node),
+    '#markup' => _hosting_platform_status($node),
   );
 
   if ($node->makefile) {
     $node->content['info']['makefile'] = array(
       '#type' => 'item',
       '#title' => t('Drush makefile'),
-      '#value' => (preg_match('/^http|^ftp/', $node->makefile)) ? l(t('makefile'), $node->makefile) : filter_xss($node->makefile),
+      '#markup' => (preg_match('/^http|^ftp/', $node->makefile)) ? l(t('makefile'), $node->makefile) : filter_xss($node->makefile),
     );
   }
 
@@ -528,7 +528,7 @@ function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
     $node->content['info']['release'] = array(
       '#type' => 'item',
       '#title' => t('Release'),
-      '#value' => _hosting_node_link($node->release->nid, $release),
+      '#markup' => _hosting_node_link($node->release->nid, $release),
       '#weight' => -6,
     );
   }
@@ -536,7 +536,7 @@ function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
   if ($page) {
     $node->content['sites_view'] = array(
       '#type' => 'item',
-      '#value' => drupal_get_form('hosting_site_list_form', 'platform', $node->nid),
+      '#markup' => drupal_render(drupal_get_form('hosting_site_list_form', 'platform', $node->nid)),
       '#prefix' => '<div id="hosting-site-list">',
       '#suffix' => '</div>',
       '#weight' => 10,
@@ -546,10 +546,10 @@ function hosting_platform_view($node, $teaser = FALSE, $page = FALSE) {
     if ($node->nid) {
       $node->content['tasks_view'] = array(
         '#type' => 'item',
-        '#value' => hosting_task_table($node),
+        '#markup' => hosting_task_table($node),
         '#prefix' => '<div id="hosting-task-list">',
         '#suffix' => '</div>',
-        '#weight' => 10,
+        '#weight' => 9,
       );
       $settings['hostingTaskRefresh'] = array(
         'nid' => $node->nid,

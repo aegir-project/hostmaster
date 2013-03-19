@@ -136,7 +136,7 @@ class hostingService {
       $render['restart_cmd'] = array(
         '#type' => 'item',
         '#title' => t('Restart command'),
-        '#value' => isset($this->restart_cmd) ? filter_xss($this->restart_cmd) : NULL,
+        '#markup' => isset($this->restart_cmd) ? filter_xss($this->restart_cmd) : NULL,
       );
 
     }
@@ -145,7 +145,7 @@ class hostingService {
       $render['port'] = array(
         '#type' => 'item',
         '#title' => t('Port'),
-        '#value' => isset($this->port) ? filter_xss($this->port) : NULL,
+        '#markup' => isset($this->port) ? filter_xss($this->port) : NULL,
       );
     }
   }

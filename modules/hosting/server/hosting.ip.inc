@@ -31,7 +31,7 @@ function hosting_ip_view(&$node) {
     $node->content['info']['ip_addresses'] = array(
       '#type' => 'item',
       '#title' => t('IP addresses'),
-      '#value' => implode('<br />', $ip_list),
+      '#markup' => implode('<br />', $ip_list),
     );
   }
 }

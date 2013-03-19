@@ -947,7 +947,7 @@ function _hosting_task_log_table($vid) {
   if ($result) {
     $header = array('data' => 'Log message');
     $rows = array();
-    while ($entry = $result->fetch()) {
+    foreach ($result as $entry) {
       if (strlen($entry->message) > 300) {
         $summary = "<span class='hosting-task-summary'>" . filter_xss(substr($entry->message, 0, 75), array()) . "... <a href='javascript:void(0)' class='hosting-summary-expand modalframe-exclude'>(" . t('Expand') . ')</a></span>';
         $message = $summary . "<span class='hosting-task-full'>" . filter_xss($entry->message) . '</span>';
@@ -955,7 +955,7 @@ function _hosting_task_log_table($vid) {
       else {
         $message = filter_xss($entry->message);
       }
-      $row =  array(array(
+      $row = array(array(
           'data' => $message,
           'class' => array('hosting-status'),
         ));

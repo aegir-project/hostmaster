@@ -356,19 +356,19 @@ function hosting_package_view($node, $teaser = FALSE, $page = FALSE) {
   $node->content['info']['package_type'] = array(
     '#type' => 'item',
     '#title' => t('Package Type'),
-    '#value' => filter_xss($node->package_type),
+    '#markup' => filter_xss($node->package_type),
   );
   $node->content['info']['short_name'] = array(
     '#type' => 'item',
     '#title' => t('Project Name'),
-    '#value' => filter_xss($node->short_name),
+    '#markup' => filter_xss($node->short_name),
   );
 
   if (!empty($node->old_short_name)) {
     $node->content['info']['old_short_name'] = array(
       '#type' => 'item',
       '#title' => t('Previous Project Name'),
-      '#value' => filter_xss($node->old_short_name),
+      '#markup' => filter_xss($node->old_short_name),
     );
   }
   $node->content['info']['#suffix'] = '</div>';
@@ -376,7 +376,7 @@ function hosting_package_view($node, $teaser = FALSE, $page = FALSE) {
   if ($node->package_type == 'profile') {
     $node->content['sites_view'] = array(
       '#type' => 'item',
-      '#value' => drupal_get_form('hosting_site_list_form', 'profile', $node->nid),
+      '#markup' => drupal_render(drupal_get_form('hosting_site_list_form', 'profile', $node->nid)),
       '#prefix' => '<div id="hosting-site-list">',
       '#suffix' => '</div>',
       '#weight' => 10,
@@ -386,7 +386,7 @@ function hosting_package_view($node, $teaser = FALSE, $page = FALSE) {
     $node->content['hosting-package-usage'] = array(
       '#prefix' => '<div id="hosting-package-usage">',
       '#suffix' => '</div>',
-      '#value' => _hosting_package_list_package_usage($node),
+      '#markup' => drupal_render(_hosting_package_list_package_usage($node)),
       '#weight' => 99,
     );
   }
