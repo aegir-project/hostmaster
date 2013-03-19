@@ -1038,6 +1038,7 @@ function hosting_get_tasks($filter_by = NULL, $filter_value = NULL, $count = 5, 
   */
   $query = db_select('node', 'n')
     ->extend('PagerDefault');
+  $query->element($element);
   $query->join('hosting_task', 't', 'n.vid=t.vid');
   $query = $query
     ->fields('n')
