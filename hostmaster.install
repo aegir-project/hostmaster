@@ -206,7 +206,7 @@ function hostmaster_task_finalize() {
       'delta' => 'hosting_queues',
       'theme' => 'eldir',
       'status' => 1,
-      'weight' => 5,
+      'weight' => -1,
       'region' => 'sidebar_first',
       'pages' => '',
       'cache' => -1,
