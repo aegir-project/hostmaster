@@ -16,7 +16,7 @@ function hosting_task_menu() {
     }
     foreach ($tasks as $task => $info) {
       if (empty($info['hidden'])) {
-        $path = sprintf("node/%%hosting_%s_node/%s_%s", $type, $type, $task);
+        $path = sprintf("hosting_confirm/%%hosting_%s_wildcard/%s_%s", $type, $type, $task);
         $items[$path] = array(
           'title' => $info['title'],
           'description' => $info['description'],
@@ -1250,7 +1250,7 @@ function hosting_task_table($node) {
       $actions['cancel'] = _hosting_task_button(t('Cancel'), sprintf("hosting/tasks/%d/cancel", $info['nid']), t("Cancel the task and remove it from the queue"), 'hosting-button-stop', !$info['task_permitted']);
     }
     else {
-      $actions['run'] = _hosting_task_button(t('Run'), sprintf("node/%d/%s_%s", $node->nid, $node->type, $task), $info['description'], 'hosting-button-run', $info['task_permitted'], $info['dialog']);
+      $actions['run'] = _hosting_task_button(t('Run'), sprintf("hosting_confirm/%d/%s_%s", $node->nid, $node->type, $task), $info['description'], 'hosting-button-run', $info['task_permitted'], $info['dialog']);
     }
 
     $actions['log'] = _hosting_task_button(t('View'), isset($info['nid']) ? 'hosting/task/' . $info['nid'] : '<front>', t("Display the task log"), 'hosting-button-log', isset($info['nid']) &&  user_access('access task logs'), TRUE, FALSE);
@@ -1457,6 +1457,9 @@ function hosting_task_views_api() {
 function hosting_task_overlay_paths() {
   $paths = array(
     'hosting/task/*' => array(
+      'width' => 600,
+    ),
+    'hosting_confirm/*' => array(
       'width' => 600,
     ),
   );
