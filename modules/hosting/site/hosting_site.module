@@ -600,7 +600,9 @@ function hosting_site_list_form($form, $form_state, $filter_by = NULL, $filter_v
       ->extend('PagerDefault')
       ->extend('TableSort');
     $hs_table_alias = $query->join('hosting_site', NULL, 'n.vid = %alias.vid');
-    //$query = $query->element(1);
+    // Set the pager element as 1.
+    $pager_element = 1;
+    $query->element($pager_element);
     $query->addField($hs_table_alias, 'status', 'site_status');
     $query->addField($hs_table_alias, 'language', 'site_language');
     $query
@@ -667,7 +669,7 @@ function hosting_site_list_form($form, $form_state, $filter_by = NULL, $filter_v
       '#type' => 'checkboxes',
       '#options' => $sites,
     );
-    $form['pager'] = array('#value' => theme('pager', array('tags' => NULL, 'element' => 1)));
+    $form['pager'] = array('#value' => theme('pager', array('tags' => NULL, 'element' => $pager_element)));
     $form['#theme'] = 'hosting_site_list';
     $query = array();
     if (isset($_GET['page'])) {
