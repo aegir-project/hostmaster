@@ -48,7 +48,7 @@ function hosting_package_instance_sync($rid) {
       $instance->filename = isset($package['filename']) ? $package['filename'] : NULL;
       $instance->version = isset($package['version']) ? $package['version'] : 'Unknown';
       $instance->version_code = hosting_package_instance_version_code($package['version']);
-      $instance->schema_version = isset($package['schema_version']) ? $package['schema_version'] : NULL;
+      $instance->schema_version = isset($package['schema_version']) ? $package['schema_version'] : 0;
       if (array_key_exists('status', $package)) {
         $instance->status = $package['status'];
       }
@@ -307,27 +307,65 @@ function hosting_package_instance_version_code($version) {
  */
 function hosting_package_comparison($current, $target) {
 
-  $current_tbl = _hosting_package_temporary_table($current);
-  $target_tbl = _hosting_package_temporary_table($target);
+  $current_table = _hosting_package_temporary_table($current);
+  $target_table = _hosting_package_temporary_table($target);
 
   $status = array();
-  $result = db_query("SELECT count(c.nid) AS error FROM %s c LEFT JOIN %s t ON c.nid=t.nid WHERE (t.schema_version > :(t.schema_version && (c.schema_version > :(c.schema_version AND c.status = :c.status", array(':(t.schema_version' => 0, ':(c.schema_version' => t . schema_version, ':c.status' => 1, '' => $current_tbl, '' => $target_tbl));
-  while ($obj = $result->fetch()) {
+  $result = db_query("SELECT count(c.nid) AS error
+                      FROM !current_table c
+                      LEFT JOIN !target_table t
+                      ON c.nid=t.nid
+                      WHERE (t.schema_version > 0) && (c.schema_version > t.schema_version)
+                      AND c.status = !c.status",
+                      array('!current_table' => $current_table,
+                        '!target_table' => $target_table,
+                        '!c.status' => 1,
+                        )
+                      );
+  foreach ($result as $obj) {
     $status['error'] = $obj->error;
   }
 
-  $result = db_query("SELECT COUNT(c.nid) as missing FROM %s c LEFT JOIN %s t ON c.nid=t.nid WHERE t.nid IS null AND c.status = :c.status", array(':c.status' => 1, '' => $current_tbl, '' => $target_tbl));
-  while ($obj = $result->fetch()) {
+  $result = db_query("SELECT COUNT(c.nid) AS missing
+                      FROM !current_table c
+                      LEFT JOIN !target_table t
+                      ON c.nid=t.nid
+                      WHERE t.nid IS NULL
+                      AND c.status = !c.status",
+                      array('!current_table' => $current_table,
+                        '!target_table' => $target_table,
+                        '!c.status' => 1,
+                        )
+                      );
+  foreach ($result as $obj) {
     $status['missing'] = $obj->missing;
   }
 
-  $result = db_query("SELECT COUNT(c.nid) as upgrade FROM %s c LEFT JOIN %s t ON c.nid=t.nid WHERE (c.version_code < :(c.version_code OR (c.schema_version < :(c.schema_version AND c.status = :c.status", array(':(c.version_code' => t . version_code, ':(c.schema_version' => t . schema_version, ':c.status' => 1, '' => $current_tbl, '' => $target_tbl));
-  while ($obj = $result->fetch()) {
+  $result = db_query("SELECT COUNT(c.nid) as upgrade
+                      FROM !current_table c
+                      LEFT JOIN !target_table t
+                      ON c.nid=t.nid
+                      WHERE (c.version_code < t.version_code) OR (c.schema_version < t.schema_version)
+                      AND c.status = !c.status",
+                      array('!current_table' => $current_table,
+                        '!target_table' => $target_table,
+                        '!c.status' => 1,
+                        )
+                      );
+  foreach ($result as $obj) {
     $status['upgrade'] = $obj->upgrade;
   }
 
-  $result = db_query("SELECT count(c.nid) AS downgrade FROM %s c LEFT JOIN %s t ON c.nid=t.nid WHERE (c.version_code > :(c.version_code", array(':(c.version_code' => t . version_code, '' => $current_tbl, '' => $target_tbl));
-  while ($obj = $result->fetch()) {
+  $result = db_query("SELECT count(c.nid) AS downgrade
+                      FROM !current_table c
+                      LEFT JOIN !target_table t
+                      ON c.nid=t.nid
+                      WHERE (c.version_code > t.version_code)",
+                      array('!current_table' => $current_table,
+                        '!target_table' => $target_table,
+                        )
+                      );
+  foreach ($result as $obj) {
     $status['downgrade'] = $obj->downgrade;
   }
 

@@ -24,7 +24,7 @@ function hosting_package_node_info() {
   #package management
   $types["package"] =  array(
     "type" => 'package',
-    "name" => 'Package',
+    "name" => t('Package'),
     'base' => 'hosting_package',
     "has_title" => FALSE,
     "title_label" => '',
