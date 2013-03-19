@@ -651,7 +651,8 @@ function hosting_task_outstanding($nid, $type) {
  * Return the amount of items still in the queue
  */
 function hosting_task_count() {
-  return db_query("SELECT COUNT(t.vid) FROM {hosting_task} t INNER JOIN {node} n ON t.vid = n.vid WHERE t.task_status = !t.task_status", array('!t.task_status' => HOSTING_TASK_QUEUED))->fetchField();
+  $result = db_query("SELECT COUNT(t.vid) FROM {hosting_task} t INNER JOIN {node} n ON t.vid = n.vid WHERE t.task_status = '!task_status'", array('task_status' => HOSTING_TASK_QUEUED))->fetchField();
+  return $result;
 }
 
 /**
