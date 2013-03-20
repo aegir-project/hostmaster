@@ -102,7 +102,7 @@ class hostingService {
       $form['restart_cmd'] = array(
         '#type' => 'textfield',
         '#title' => t('Restart command'),
-        '#required' => $this->available,
+        '#required' => !empty($this->available),
         '#description' => t('The command to run to restart this service.'),
         '#default_value' => (isset($this->restart_cmd)) ? $this->restart_cmd : $this->default_restart_cmd(),
         '#size' => 40,
@@ -122,7 +122,7 @@ class hostingService {
       $form['port'] = array(
         '#type' => 'textfield',
         '#title' => t('Port'),
-        '#required' => $this->available,
+        '#required' => !empty($this->available),
         '#size' => 40,
         '#default_value' => isset($this->port) ? $this->port : $this->default_port(),
         '#description' => t("The port that this service is listening on."),
