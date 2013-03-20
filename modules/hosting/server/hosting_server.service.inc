@@ -65,7 +65,6 @@ class hostingService {
   }
 
   public function insert() {
-    $restart_cmd = isset($this->restart_cmd) ? $this->restart_cmd : NULL;
     $id = db_insert('hosting_service')
       ->fields(array(
         'nid' => $this->server->nid,
@@ -74,7 +73,7 @@ class hostingService {
         'type' => $this->type,
         'port' => $this->port,
         'restart_cmd' => $this->restart_cmd,
-        'available' => isset($this->available) ? $this->available : 0,
+        'available' => $this->available,
       ))
       ->execute();
   }
