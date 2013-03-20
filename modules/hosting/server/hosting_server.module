@@ -196,8 +196,16 @@ function hosting_services_add(&$node, $name, $type, $values = array()) {
  */
 function hosting_server_init_services(&$node) {
   $node->services = array();
-  $result = db_query("SELECT service, type FROM {hosting_service} WHERE vid = :vid AND available = :available", array(':vid' => $node->vid, ':available' => 1));
-  while ($record = $result->fetch()) {
+  $result = db_query("SELECT service, type
+                      FROM {hosting_service}
+                      WHERE vid = :vid
+                      AND available = :available",
+                      array(
+                        ':vid' => $node->vid,
+                        ':available' => 1,
+                      )
+                    );
+  foreach ($result as $record) {
     $name = $record->service;
     if ($service_object = hosting_services_new_object($name, $record->type, $node)) {
       $node->services[$name] = $service_object;
@@ -536,11 +544,6 @@ function hosting_server_view(&$node, $teaser = FALSE, $page = FALSE) {
 /**
  * Output a table of servers with their enabled services.
  */
-
-/**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
- */
 function hosting_server_listing() {
   $services = hosting_server_services();
   $header = array(t('Server'));
@@ -560,7 +563,7 @@ function hosting_server_listing() {
     ->addTag('node_access')
     ->execute();
   $rows = array();
-  while ($obj = $result->fetch()) {
+  foreach ($result as $obj) {
     $row = array();
     $server = node_load($obj->nid);
     $row[] = l($server->title, 'node/' . $server->nid);
