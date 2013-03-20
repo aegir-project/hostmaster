@@ -1,5 +1,7 @@
+(function($) {
+
 hostingTaskRefreshList = function() {
-  if (!Drupal.settings.hostingTaskRefresh.nid) { 
+  if (!Drupal.settings.hostingTaskRefresh.nid) {
     return null;
   }
 
@@ -25,7 +27,7 @@ hostingTaskRefreshList = function() {
       setTimeout("hostingTaskRefreshList()", 30000);
     }
   }
- 
+
   hostingTaskAddOverlay('#hosting-task-list');
   $.get(Drupal.settings.basePath + 'hosting/tasks/' + Drupal.settings.hostingTaskRefresh.nid + '/list', null, hostingTaskListRefreshCallback , 'json' );
 }
@@ -85,3 +87,5 @@ hostingTaskBindButtons = function(elem) {
    });
 }
 
+
+})(jQuery);
