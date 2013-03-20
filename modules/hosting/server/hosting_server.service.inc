@@ -20,7 +20,15 @@ class hostingService {
   }
 
   public function load() {
-    $this->mergeData("SELECT port, restart_cmd, available FROM {hosting_service} WHERE vid = !vid AND type = !type", array('!vid' => $this->server->vid, '!type' => $this->type));
+    $this->mergeData("SELECT port, restart_cmd, available
+                      FROM {hosting_service}
+                      WHERE vid = :vid
+                      AND type = :type",
+                      array(
+                        ':vid' => $this->server->vid,
+                        ':type' => $this->type
+                      )
+                    );
   }
 
   protected function mergeData($query) {
@@ -29,10 +37,12 @@ class hostingService {
     $this->setValues($result);
   }
 
-  public function setValues($values = NULL) {
-    if (is_array($values)) {
-      foreach ($values as $key => $value) {
-        $this->{$key} = $value;
+  public function setValues($result = NULL) {
+    if (count($result)) {
+      foreach ($result as $record) {
+        foreach ($record as $key => $value) {
+          $this->{$key} = $value;
+        }
       }
     }
   }
@@ -135,7 +145,7 @@ class hostingService {
       $render['restart_cmd'] = array(
         '#type' => 'item',
         '#title' => t('Restart command'),
-        '#markup' => isset($this->restart_cmd) ? filter_xss($this->restart_cmd) : NULL,
+        '#markup' => filter_xss($this->restart_cmd),
       );
 
     }
@@ -144,7 +154,7 @@ class hostingService {
       $render['port'] = array(
         '#type' => 'item',
         '#title' => t('Port'),
-        '#markup' => isset($this->port) ? filter_xss($this->port) : NULL,
+        '#markup' => filter_xss($this->port),
       );
     }
   }

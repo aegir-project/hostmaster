@@ -569,7 +569,9 @@ function hosting_server_listing() {
     $row[] = l($server->title, 'node/' . $server->nid);
     foreach ($services as $service => $data) {
       if ($service !== 'server') {
-        if (isset($server->services[$service]) && $server->services[$service]->available) {
+        if (isset($server->services[$service]) &&
+            isset($server->services[$service]->available) &&
+            $server->services[$service]->available) {
           $row[] = array(
             'class' => array('hosting-service-available'),
             'data' => $server->services[$service]->type,
