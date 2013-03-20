@@ -26,7 +26,7 @@ class hostingService_db_mysql extends hostingService_db {
     parent::form($form);
     $form['db_user'] = array(
       '#type' => 'textfield',
-      '#required' => $this->available,
+      '#required' => !empty($this->available),
       '#title' => t('Username'),
       '#description' => t('The user that will be used to create new mysql users and databases for new sites.'),
       '#size' => 40,
@@ -96,7 +96,7 @@ class hostingService_db_mysql extends hostingService_db {
     $render['db_user'] = array(
       '#type' => 'item',
       '#title' => t('Database user'),
-      '#value' => filter_xss($this->db_user),
+      '#markup' => filter_xss($this->db_user),
     );
 
   }
