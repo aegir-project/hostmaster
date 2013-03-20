@@ -937,7 +937,9 @@ function hosting_form_alter(&$form, &$form_state, $form_id) {
   $node_types = array('site', 'platform', 'server', 'client');
   foreach ($node_types as $type) {
     if ($form_id == $type . '_node_form') {
-      $form['additional_settings']['#access'] = FALSE;
+      $form['options']['#access'] = FALSE;
+      $form['revision_information']['#access'] = FALSE;
+      $form['author']['#access'] = FALSE;
 
       // Because these aren't really posts, 'preview' doesn't make sense in
       // this context.
@@ -1033,9 +1035,7 @@ function hosting_context_register($nid, $name) {
  *   The nid of the node to remove the association from.
  */
 function hosting_context_delete($nid) {
-  db_delete('url_alias')
-    ->condition('src', 'node/' . $nid)
-    ->execute();
+  path_delete(array('source' => 'node/' . $nid));
   db_delete('hosting_context')
     ->condition('nid', $nid)
     ->execute();
