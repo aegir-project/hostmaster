@@ -32,9 +32,8 @@ class hostingService {
                     );
   }
 
-  protected function mergeData($query) {
-    $args = func_get_args();
-    $result = call_user_func_array('db_query', $args);
+  protected function mergeData($query, $args = array()) {
+    $result = db_query($query, $args)->fetchAssoc();
     $this->setValues($result);
   }
 
