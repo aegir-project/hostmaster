@@ -37,12 +37,10 @@ class hostingService {
     $this->setValues($result);
   }
 
-  public function setValues($result = NULL) {
-    if (count($result)) {
-      foreach ($result as $record) {
-        foreach ($record as $key => $value) {
-          $this->{$key} = $value;
-        }
+  public function setValues($record = NULL) {
+    if (is_array($record)) {
+      foreach ($record as $key => $value) {
+        $this->{$key} = $value;
       }
     }
   }
