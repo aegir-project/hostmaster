@@ -1375,9 +1375,9 @@ function hosting_task_fetch_tasks($rid) {
 
   $result = db_query("SELECT n.nid, t.task_type, t.task_status FROM {node} n INNER JOIN {hosting_task} t ON n.vid = t.vid
     WHERE n.type = :ntype AND t.rid = :trid
-    ORDER BY t.task_status ASC, n.changed DESC", array(':ntype' => 'task', ':trid' => $rid));
+    ORDER BY n.changed ASC", array(':ntype' => 'task', ':trid' => $rid));
 
-  while ($obj = $result->fetch()) {
+  foreach ($result as $obj) {
     $return[$obj->task_type] = array(
       'nid' => $obj->nid,
       'task_status' => $obj->task_status,
