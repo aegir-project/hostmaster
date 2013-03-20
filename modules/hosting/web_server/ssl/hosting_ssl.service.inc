@@ -42,9 +42,9 @@ class hostingService_http_ssl extends hostingService_http_public {
     $form['ssl_port'] = array(
       '#type' => 'textfield',
       '#title' => t('SSL Port'),
-      '#required' => $this->available,
+      '#required' => !empty($this->available),
       '#size' => 40,
-      '#default_value' => ($this->ssl_port) ? $this->ssl_port : '443',
+      '#default_value' => isset($this->ssl_port) ? $this->ssl_port : '443',
       '#description' => t("The port that this service will use for encrypted traffic."),
       '#maxlength' => 255,
       '#weight' => -7,
