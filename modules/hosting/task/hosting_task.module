@@ -933,7 +933,7 @@ function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
     if ($table = _hosting_task_log_table($node->vid)) {
       $node->content['hosting_log'] = array(
         '#weight' => 10,
-        '#type' => 'item',
+        '#type' => 'markup',
         '#markup' => $table,
       );
     }
@@ -1374,8 +1374,8 @@ function hosting_task_fetch_tasks($rid) {
   $node = node_load($rid);
 
   $result = db_query("SELECT n.nid, t.task_type, t.task_status FROM {node} n INNER JOIN {hosting_task} t ON n.vid = t.vid
-    WHERE n.type = !n.type AND t.rid = !t.rid
-    ORDER BY t.task_status ASC, n.changed DESC", array('!n.type' => 'task', '!t.rid' => $rid));
+    WHERE n.type = :ntype AND t.rid = :trid
+    ORDER BY t.task_status ASC, n.changed DESC", array(':ntype' => 'task', ':trid' => $rid));
 
   while ($obj = $result->fetch()) {
     $return[$obj->task_type] = array(
