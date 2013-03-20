@@ -452,7 +452,17 @@ function hosting_platform_validate($node, &$form) {
 function hosting_platform_load($nodes) {
   foreach ($nodes as $nid => &$node) {
     $additions = db_query('SELECT publish_path, makefile, verified, web_server, status AS platform_status, make_working_copy FROM {hosting_platform} WHERE vid = :vid', array(':vid' => $node->vid))->fetch();
-    $iid = db_query("SELECT iid FROM {hosting_package_instance} i left join {hosting_package} p on p.nid=i.package_id WHERE p.package_type = !p.package_type AND i.rid = !i.rid", array('!p.package_type' => 'platform', '!i.rid' => $node->nid))->fetchField();
+    $iid = db_query("SELECT iid
+                     FROM {hosting_package_instance} i
+                     LEFT JOIN {hosting_package} p
+                     ON p.nid=i.package_id
+                     WHERE p.package_type = :package_type
+                     AND i.rid = :rid",
+                     array(
+                       ':package_type' => 'platform',
+                       ':rid' => $node->nid
+                     )
+                   )->fetchField();
     $additions->release = hosting_package_instance_load($iid);
     $additions->profiles = hosting_get_profiles($node->nid, 'short_name');
     foreach ($additions as $property => &$value) {
