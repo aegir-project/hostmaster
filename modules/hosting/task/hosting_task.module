@@ -1330,7 +1330,12 @@ function _hosting_task_list($filter_by, $filter_value, $count = 5, $element = 0,
         $headers[t('Created')] = '';
       }
 
-      $row['executed'] = t("@interval ago", array('@interval' => format_interval(REQUEST_TIME - $node->changed, 1)));
+      if ($node->task_status == 0) {
+        $row['executed'] = '';
+      }
+      else {
+        $row['executed'] = t("@interval ago", array('@interval' => format_interval(REQUEST_TIME - $node->changed, 1)));
+      }
       $headers[t('Executed')] = '';
 
       $headers[t('Actions')] = '';
