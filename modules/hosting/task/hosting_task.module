@@ -1044,6 +1044,7 @@ function hosting_get_tasks($filter_by = NULL, $filter_value = NULL, $count = 5, 
     ->fields('n')
     ->fields('t', array('task_status', 'task_type', 'rid'))
     ->condition('type', 'task')
+    ->orderBy('n.vid', 'DESC')
     ->limit($count)
     ->addTag('node_access');
   if ($filter_by && $filter_value) {
