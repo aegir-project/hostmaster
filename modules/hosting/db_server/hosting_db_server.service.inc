@@ -87,7 +87,7 @@ class hostingService_db_mysql extends hostingService_db {
 
   function load() {
     parent::load();
-    $this->mergeData('SELECT db_user, db_passwd FROM {hosting_db_server} WHERE vid = !vid', array('!vid' => $this->server->vid));
+    $this->mergeData('SELECT db_user, db_passwd FROM {hosting_db_server} WHERE vid = :vid', array(':vid' => $this->server->vid));
   }
 
   function view(&$render) {
