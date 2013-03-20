@@ -697,7 +697,7 @@ function _hosting_node_add($type = '') {
  */
 function hosting_queues($key = '') {
   $queues = hosting_get_queues();
-
+  $output = '';
   if ($queues[$key]) {
     if ($queues[$key]['name']) {
       $output .= "<h1>" . $queues[$key]['name'] . "</h1>";
