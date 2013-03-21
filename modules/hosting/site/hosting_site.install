@@ -36,7 +36,7 @@ function hosting_site_schema() {
       'db_name' => array(
         'type' => 'varchar',
         'length' => 64,
-        'not null' => TRUE,
+        'not null' => FALSE,
         'default' => '',
       ),
       'platform' => array(
@@ -371,4 +371,14 @@ function hosting_site_update_6202() {
       array('type' => 'varchar', 'length' => 64, 'not null' => TRUE, 'default' => ''));
 
   return $ret;
+}
+
+/**
+ * Allow NULLs in 'db_name' column in 'hosting_site' table.
+ */
+function hosting_site_update_7200() {
+  db_change_field('hosting_site', 'db_name', 'db_name',
+    array('type' => 'varchar', 'length' => 64, 'not null' => FALSE, 'default' => '')
+  );
+  throw new DrupalUpdateException('Something with a database schema change. If you SQL-fu is up for it, consider running the following query on you Aegir site database: `ALTER hosting_site MODIFY db_name varchar(64) null;`');
 }
