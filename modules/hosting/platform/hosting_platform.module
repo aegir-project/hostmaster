@@ -266,7 +266,7 @@ function hosting_platform_form(&$node) {
   $form['make_working_copy'] = array(
     '#type' => 'radios',
     '#title' => t('Drush make option'),
-    '#default_value' => isset($form['#node']->make_working_copy) ? $form['#node']->make_working_copy : FALSE,
+    '#default_value' => isset($form['#node']->make_working_copy) ? $form['#node']->make_working_copy : 0,
     '#options' => array(
       FALSE => t('Normal - Discards SCM files'),
       TRUE => t('Working copy - preserves SCM files'),
