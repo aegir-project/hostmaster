@@ -174,8 +174,8 @@ function hosting_site_insert(&$node) {
       'language' => $node->site_language,
       'last_cron' => $node->last_cron,
       'cron_key' => $node->cron_key,
-      'status' => $node->site_status,
-      'verified' => $node->verified,
+      'status' => isset($node->site_status) ? $node->site_status : HOSTING_SITE_QUEUED,
+      'verified' => isset($node->verified) ? $node->verified : 0,
     ))
     ->execute();
   if ((empty($node->old_vid))) {

@@ -1086,12 +1086,26 @@ function _hosting_get_allowed_platforms($uid = NULL, $reset = FALSE) {
   if (!isset($platforms[$uid])) {
     $platforms[$uid] = array();
 
-    $result = db_query("SELECT n.nid, n.title FROM {node} n LEFT JOIN {hosting_platform} h ON n.nid = h.nid
-                      LEFT JOIN {hosting_platform_client_access} p ON n.nid = p.pid
-                      LEFT JOIN {hosting_client_user} c ON c.client = p.cid
-                      WHERE n.type = :n.type AND n.status = :n.status AND h.status > :h.status
-                      AND (c.user = :(c.user OR p.pid IS NULL)", array(':n.type' => 'platform', ':n.status' => 1, ':h.status' => HOSTING_PLATFORM_LOCKED, ':(c.user' => $uid));
-    while ($server = $result->fetch()) {
+    $result = db_query("SELECT n.nid, n.title
+                        FROM {node} n
+                        LEFT JOIN {hosting_platform} h
+                        ON n.nid = h.nid
+                        LEFT JOIN {hosting_platform_client_access} p
+                        ON n.nid = p.pid
+                        LEFT JOIN {hosting_client_user} c
+                        ON c.client = p.cid
+                        WHERE n.type = :type
+                        AND n.status = :nstatus
+                        AND h.status > :hstatus
+                        AND (c.user = :cuser OR p.pid IS NULL)",
+                        array(
+                          ':type' => 'platform',
+                          ':nstatus' => 1,
+                          ':hstatus' => HOSTING_PLATFORM_LOCKED,
+                          ':cuser' => $uid
+                        )
+                      );
+    foreach ($result as $server) {
       $platforms[$uid][$server->nid] = $server->title;
     }
   }
