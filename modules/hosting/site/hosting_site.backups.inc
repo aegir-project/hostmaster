@@ -1,10 +1,13 @@
 <?php
-// $Id$
-
 /**
  * @file Site backup functions.
  */
 
+/**
+ * Confirmation form for site backups.
+ *
+ * @see hosting_task_confirm_form().
+ */
 function hosting_task_backup_form($node) {
   $form['description'] = array(
     '#title' => t('Description'),

@@ -218,7 +218,7 @@ function hosting_platform_form(&$node) {
     '#type' => 'textfield',
     '#title' => t('Name'),
     '#required' => TRUE,
-    '#description' => t('Choose a unique descriptive name for your platform. You very likely want this to be something like "Drupal 6.20".'),
+    '#description' => t('Choose a unique descriptive name for your platform. You very likely want this to be something like "Drupal 7.21".'),
     '#size' => 40,
     '#default_value' => $node->title,
     '#maxlength' => 255,
