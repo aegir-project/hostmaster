@@ -352,9 +352,9 @@ function hosting_platform_insert($node) {
       'nid' => $node->nid,
       'publish_path' => $node->publish_path,
       'makefile' => $node->makefile,
-      'verified' => $node->verified,
+      'verified' => isset($node->verified) ? $node->verified : 0,
       'web_server' => $node->web_server,
-      'status' => $node->platform_status,
+      'status' => isset($node->platform_status) ? $node->platform_status : 0,
       'make_working_copy' => $node->make_working_copy,
     ))
     ->execute();

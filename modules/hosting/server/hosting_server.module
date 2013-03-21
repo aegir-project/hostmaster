@@ -603,8 +603,15 @@ function hosting_server_listing() {
  */
 function hosting_get_servers($service) {
   $return = array();
-  $result = db_query("SELECT n.nid, n.title FROM {node} n INNER JOIN {hosting_service} s ON n.vid = s.vid AND s.available = 1 AND s.service = '!service'", array('!service' => $service));
-  while ($server = $result->fetch()) {
+  $result = db_query("SELECT n.nid, n.title
+                      FROM {node} n
+                      INNER JOIN {hosting_service} s
+                      ON n.vid = s.vid
+                      WHERE s.available = 1
+                      AND s.service = :service",
+                      array(':service' => $service)
+                    );
+  foreach ($result as $server) {
     $return[$server->nid] = $server->title;
   }
   drupal_alter('hosting_servers_titles', $return, $service);
