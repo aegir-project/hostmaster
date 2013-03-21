@@ -588,7 +588,7 @@ function hosting_task_confirm_form_submit($form, &$form_state) {
   $values = $form_state['values'];
   hosting_add_task($values['nid'], $values['task'], $values['parameters']);
   $form_state['redirect'] = 'node/' . $values['nid'];
-  modalframe_close_dialog();
+  overlay_close_dialog();
 }
 
 /**
@@ -852,7 +852,7 @@ function hosting_task_retry_form($form, $form_state, $nid) {
  */
 function hosting_task_retry_form_submit($form, &$form_state) {
   hosting_task_retry($form_state['values']['task']);
-  modalframe_close_dialog();
+  overlay_close_dialog();
 }
 
 /**

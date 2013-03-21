@@ -108,7 +108,7 @@ function hosting_migrate_platform($form_state, $node) {
   // Step 3 - All migrate tasks have been created, close the modal if needed.
   if ($step == 3) {
     if (!empty($GLOBALS['modalframe_page_template'])) {
-      modalframe_close_dialog();
+      overlay_close_dialog();
     }
     else {
       drupal_goto('node/' . $form_state['storage']['target_platform']);
