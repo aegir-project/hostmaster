@@ -136,7 +136,7 @@ function hosting_get_client($client) {
   }
   else {
     if ($nodes = node_load_multiple(array(), array('type' => 'client', 'title' => $client))) {
-      return $nodes[0];
+      return $nodes[1];
     }
     else {
       return FALSE;
