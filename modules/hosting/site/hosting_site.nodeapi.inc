@@ -168,7 +168,7 @@ function hosting_site_insert(&$node) {
       'nid' => $node->nid,
       'client' => $node->client,
       'db_server' => $node->db_server,
-      'db_name' => $node->db_name,
+      'db_name' => isset($node->db_name) ? $node->db_name : '',
       'platform' => $node->platform,
       'profile' => $node->profile,
       'language' => $node->site_language,
@@ -179,7 +179,7 @@ function hosting_site_insert(&$node) {
     ))
     ->execute();
   if ((empty($node->old_vid))) {
-    hosting_context_register($node->nid, ($node->hosting_name) ? $node->hosting_name : $node->title);
+    hosting_context_register($node->nid, isset($node->hosting_name) ? $node->hosting_name : $node->title);
     if ($node->import) {
       hosting_add_task($node->nid, 'import');
     }

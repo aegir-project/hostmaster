@@ -923,8 +923,7 @@ function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
 
   if (user_access('retry failed tasks') && ($node->task_status == HOSTING_TASK_ERROR)) {
     $node->content['retry'] = array(
-      '#type' => 'markup',
-      '#markup' => drupal_get_form('hosting_task_retry_form', $node->nid),
+      'form' => drupal_get_form('hosting_task_retry_form', $node->nid),
       '#weight' => 5,
     );
   }

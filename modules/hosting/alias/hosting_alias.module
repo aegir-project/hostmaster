@@ -106,7 +106,7 @@ function hosting_alias_form_data(&$form, &$form_state) {
       $aliases = array_filter($form_state['aliases']);
     }
     else {
-      $aliases = array_filter($form['#node']->aliases);
+      $aliases = array_filter(isset($form['#node']->aliases) ? $form['#node']->aliases : array());
     }
 
     // Figure out the alias count
@@ -227,7 +227,7 @@ function hosting_alias_form_js() {
  *   An array of aliases for the given site.
  */
 function hosting_alias_get_aliases($node, $type = NULL) {
-  if (!$node->vid) {
+  if (empty($node->vid)) {
     return array();
   }
   $alias = array();
@@ -512,19 +512,19 @@ function hosting_alias_automatic_aliases($url) {
  * generated aliases to ensure that this url has not been used before
  */
 function hosting_alias_allow_domain($url, $params = array()) {
-  $query = "SELECT COUNT(n.nid) FROM {node} n
-      LEFT JOIN {hosting_site} h ON h.nid=n.nid
-      LEFT JOIN {hosting_site_alias} a  ON n.vid = a.vid
-    WHERE
-      type='site' AND alias='%s' AND h.status <> %d";
-  $args[] = $url;
-  $args[] = HOSTING_SITE_DELETED;
+  $query = db_select('node', 'n')
+    ->fields('n', array('nid'))
+    ->condition('n.type', 'site');
+
+  $query->leftJoin('hosting_site', 'h', 'h.nid = n.nid');
+  $query->condition('h.status', HOSTING_SITE_DELETED, '<>');
+
+  $query->leftJoin('hosting_site_alias', 'a', 'n.vid = a.vid');
+  $query->condition('a.alias', $url);
 
   if (isset($params['nid'])) {
-    $query .= ' AND n.nid <> %d';
-    $args[] = $params['nid'];
+    $query->condition('n.nid', $params['nid'], '<>');
   }
-  $result = !db_query($query, $args)->fetchField();
-  return $result;
+  return $query->countQuery()->execute()->fetchField();
 
 }

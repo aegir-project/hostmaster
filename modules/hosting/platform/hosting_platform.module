@@ -245,7 +245,7 @@ function hosting_platform_form(&$node) {
     $form['info']['publish_path'] = array(
       '#type' => 'item',
       '#title' => t('Publish path'),
-      '#value' => $node->publish_path,
+      '#markup' => $node->publish_path,
     );
     // send it on form submission
     $form['publish_path'] = array(
@@ -268,8 +268,8 @@ function hosting_platform_form(&$node) {
     '#title' => t('Drush make option'),
     '#default_value' => isset($form['#node']->make_working_copy) ? $form['#node']->make_working_copy : 0,
     '#options' => array(
-      FALSE => t('Normal - Discards SCM files'),
-      TRUE => t('Working copy - preserves SCM files'),
+      0 => t('Normal - Discards SCM files'),
+      1 => t('Working copy - preserves SCM files'),
     ),
   );
 
@@ -310,17 +310,17 @@ function hosting_platform_form_platform_after_build($form) {
 
   drupal_add_js(drupal_get_path('module', 'hosting_platform') . '/hosting_platform.js');
   if (isset($form['makefile']['#attributes']['class'])) {
-    $form['makefile']['#attributes']['class'] .= ' hosting-platform-working-copy-source';
+    $form['makefile']['#attributes']['class'][] = ' hosting-platform-working-copy-source';
   }
   else {
-    $form['makefile']['#attributes']['class'] = ' hosting-platform-working-copy-source';
+    $form['makefile']['#attributes']['class'][] = ' hosting-platform-working-copy-source';
   }
 
   if (isset($form['make_working_copy']['#attributes']['class'])) {
-    $form['make_working_copy']['#attributes']['class'] .= ' hosting-platform-working-copy-target';
+    $form['make_working_copy']['#attributes']['class'][] = ' hosting-platform-working-copy-target';
   }
   else {
-    $form['make_working_copy']['#attributes']['class'] = ' hosting-platform-working-copy-target';
+    $form['make_working_copy']['#attributes']['class'][] = ' hosting-platform-working-copy-target';
   }
 
   return $form;

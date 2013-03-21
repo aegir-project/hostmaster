@@ -252,7 +252,7 @@ function hosting_site_form($node) {
     '#options' => $profiles,
     '#default_value' => isset($node->profile) ? $node->profile : hosting_get_default_profile(key($profiles)),
     '#required' => TRUE,
-    '#attributes' => array('class' => "hosting-site-form-profile-options"),
+    '#attributes' => array('class' => array("hosting-site-form-profile-options")),
   ), '_hosting_node_link');
 
 
@@ -275,7 +275,7 @@ function hosting_site_form($node) {
     '#options' => hosting_get_profile_languages(),
     '#required' => TRUE,
     '#default_value' => isset($node->site_language) ? $node->site_language : 'en',
-    '#attributes' => array('class' => "hosting-site-form-site-language-options"),
+    '#attributes' => array('class' => array("hosting-site-form-site-language-options")),
   ), '_hosting_language_name');
 
   _hosting_site_field($form, $node, 'db_server', array(
