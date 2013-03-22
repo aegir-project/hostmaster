@@ -188,7 +188,7 @@ function hostmaster_task_finalize() {
     $item['menu_name'] = 'main-menu';
     $item['link_title'] = $title;
     $item['link_path'] = drupal_get_normal_path($menu_path);
-    menu_link_save(&$item, $existing_item);
+    menu_link_save($item, $existing_item);
   }
 
   // Enable Eldir, and set is as default theme
