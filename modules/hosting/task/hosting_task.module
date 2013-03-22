@@ -69,7 +69,67 @@ function hosting_task_menu() {
     'access arguments' => array('access task logs'),
   );
 
+  $items['hosting/task/log/ajax/%node/%/%'] = array(
+    'page callback' => 'hosting_task_log_ajax',
+    'page arguments' => array(4, 5, 6),
+    'access arguments' => array('access task logs'),
+    'delivery callback' => 'ajax_deliver',
+  );
+
   return $items;
+}
+
+function hosting_task_log_ajax($node, $last_position, $id) {
+  $commands = array();
+
+  // Long polling for ten seconds.
+  $expire = time() + 10;
+  $table = FALSE;
+  while ((empty($table) || !count($table['#rows'])) && (time() < $expire)) {
+    usleep(200000);
+    $table = _hosting_task_log_table($node, $last_position);
+  }
+
+  if (isset($table['#refresh_url'])) {
+    $url = $table['#refresh_url'];
+  }
+  else {
+    $url = url('hosting/task/log/ajax/' . $node->nid . '/' . $last_position);
+  }
+
+
+  if (!empty($table)) {
+    unset($table['#header']);
+    $commands[] = hosting_task_ajax_command_hosting_table_append('#' . $id, drupal_render($table));
+  }
+
+
+  $commands[] = hosting_task_ajax_command_hosting_table_check('#' . $id, $url);
+
+
+
+  return array(
+    '#type' => 'ajax',
+    '#commands' => $commands,
+  );
+}
+
+function hosting_task_ajax_command_hosting_table_append($selector, $html, $settings = NULL) {
+  return array(
+    'command' => 'hosting_table_append',
+    'selector' => $selector,
+    'data' => $html,
+    'settings' => $settings,
+  );
+}
+
+function hosting_task_ajax_command_hosting_table_check($selector, $url, $settings = NULL) {
+  return array(
+    'command' => 'hosting_table_check',
+    'selector' => $selector,
+    'url' => $url,
+    'settings' => $settings,
+  );
 }
 
 /**
@@ -929,11 +989,10 @@ function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
   }
 
   if (user_access('access task logs')) {
-    if ($table = _hosting_task_log_table($node->vid)) {
+    if ($table = _hosting_task_log_table($node)) {
       $node->content['hosting_log'] = array(
         '#weight' => 10,
-        '#type' => 'markup',
-        '#markup' => $table,
+        'table' => $table,
       );
     }
   }
@@ -943,11 +1002,12 @@ function hosting_task_view($node, $teaser = FALSE, $page = FALSE) {
 /**
  * Display table containing the logged information for this task
  */
-function _hosting_task_log_table($vid) {
-  $result = db_query("SELECT * FROM {hosting_task_log} WHERE vid = :vid ORDER BY lid", array(':vid' => $vid));
+function _hosting_task_log_table($node, $last_position = 0) {
+  $result = db_query("SELECT * FROM {hosting_task_log} WHERE vid = :vid AND lid > :lid ORDER BY lid", array(':vid' => $node->vid, ':lid' => $last_position));
   if ($result) {
     $header = array('data' => 'Log message');
     $rows = array();
+    $last_lid = $last_position;
     foreach ($result as $entry) {
       if (strlen($entry->message) > 300) {
         $summary = "<span class='hosting-task-summary'>" . filter_xss(substr($entry->message, 0, 75), array()) . "... <a href='javascript:void(0)' class='hosting-summary-expand modalframe-exclude'>(" . t('Expand') . ')</a></span>';
@@ -964,9 +1024,38 @@ function _hosting_task_log_table($vid) {
         'data' => $row,
         'class' => array(_hosting_task_log_class($entry->type)),
       );
+      // Record that we've seen this log row.
+      $last_lid = $entry->lid;
     }
 
-    return theme("table", array('header' => $header, 'rows' => $rows, 'attributes' => array('id' => 'hosting-task-log', 'class' => array('hosting-table'))));
+    return array(
+      '#theme' => "table",
+      '#header' => $header,
+      '#rows' => $rows,
+      '#attributes' => array(
+        'id' => 'hosting-task-log',
+        'class' => array(
+          'hosting-table',
+        ),
+      ),
+      '#refresh_url' => url('hosting/task/log/ajax/' . $node->nid . '/' . $last_lid),
+      '#attached' => array(
+        'js' => array(
+          array(
+            'data' => array(
+              'hosting_task' => array(
+                'refresh_url' => url('hosting/task/log/ajax/' . $node->nid . '/' . $last_lid),
+              ),
+            ),
+            'type' => 'setting',
+          ),
+          drupal_get_path('module', 'hosting_task') . '/js/hosting_task.table.js',
+        ),
+        'library' => array(
+            array('system', 'drupal.ajax'),
+        ),
+      ),
+    );
   }
 
   return FALSE;
