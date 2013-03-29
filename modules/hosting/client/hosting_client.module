@@ -875,8 +875,8 @@ function hosting_client_list() {
 function hosting_client_block_info() {
   $blocks['hosting_clients'] = array(
     'info' => t('Hosting clients'),
-    'enabled' => 1,
-    'region' => 'left',
+    'status' => 1,
+    'region' => 'sidebar_last',
     'weight' => 10,
   );
   return $blocks;
