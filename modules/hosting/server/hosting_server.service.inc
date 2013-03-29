@@ -70,7 +70,7 @@ class hostingService {
         'service' => $this->service,
         'type' => $this->type,
         'port' => $this->port,
-        'restart_cmd' => $this->restart_cmd,
+        'restart_cmd' => isset($this->restart_cmd) ? $this->restart_cmd : '',
         'available' => $this->available,
       ))
       ->execute();
