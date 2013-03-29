@@ -6,3 +6,4 @@ dependencies[] = hosting
 core = 7.x
 
 files[] = hosting_server.service.inc
+files[] = hosting_server.test

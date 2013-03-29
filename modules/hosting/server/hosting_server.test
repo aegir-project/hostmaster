@@ -1,0 +1,37 @@
+<?php
+
+  /**
+   * @file
+   * Tests for hosting_server.module.
+   */
+
+class HostingServerTestCase extends HostingTestCase {
+
+
+  function testServer() {
+
+
+    $web_user = $this->drupalCreateUser(array(
+      // Drupal core
+      'access content',
+      //'access all views',
+      // Clients
+      'view server',
+      'create server',
+      'edit server',
+      'delete server',
+    ));
+    // Make the user part of the admin client.
+    hosting_client_user_form_submit(array('hosting_client' => 1,), $web_user);
+    $this->drupalLogin($web_user);
+    $this->drupalGet('hosting/servers');
+  }
+
+  public static function getInfo() {
+    return array(
+      'name' => 'Hosting Server',
+      'description' => 'Tests.',
+      'group' => 'Hosting',
+    );
+  }
+}

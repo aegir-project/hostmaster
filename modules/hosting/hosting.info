@@ -12,5 +12,6 @@ core = 7.x
 #dependencies[] = hosting_web_server
 
 files[] = hosting_views_field_handler_interval.inc
+files[] = hosting.test
 
 configure = admin/hosting

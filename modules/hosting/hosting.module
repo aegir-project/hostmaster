@@ -401,6 +401,12 @@ function hosting_node_help($type) {
  * Implements hook_init().
  */
 function hosting_init() {
+  static $already_called = FALSE;
+  if ($already_called) {
+    return;
+  }
+  $already_called = TRUE;
+
   // Definitions for the default platforms, clients etc.
   // Done to avoid using 'magic numbers'
   define('HOSTING_DEFAULT_CLIENT', variable_get('hosting_default_client', 1));
