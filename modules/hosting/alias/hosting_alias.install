@@ -84,10 +84,13 @@ function hosting_alias_update_2() {
 /**
  * Alter the redirection field to a varchar
  */
-function hosting_alias_update_3() {
+function hosting_alias_update_6203() {
   $ret = array();
-  $schema = hosting_alias_schema();
-  $spec = $schema['hosting_site_alias']['fields']['redirection'];
+  $spec = array(
+      'type' => 'varchar',
+      'length' => 255,
+      'not null' => TRUE,
+  ),
   db_change_field($ret, 'hosting_site_alias', 'redirection', 'redirection', $spec);
   return $ret;
 }
