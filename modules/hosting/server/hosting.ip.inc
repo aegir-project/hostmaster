@@ -23,7 +23,9 @@ function hosting_ip_view(&$node) {
  * IP Utility function for hook_update/hook_insert.
  */
 function hosting_ip_save($node, $update = FALSE) {
-  foreach ($node->ip_addresses as $id => $ip) {
+  $ips = is_array($node->ip_addresses) ? $node->ip_addresses : array();
+
+  foreach ($ips as $id => $ip) {
     $ip = trim($ip);
     if (empty($ip)) {
       // empty fields are considered removed
@@ -32,7 +34,9 @@ function hosting_ip_save($node, $update = FALSE) {
       db_query("UPDATE {hosting_ip_addresses} SET ip_address = '%s' WHERE id=%d", $ip, $id);
     }
   }
-  foreach ($node->new_ip_addresses as $id => $ip) {
+
+  $ips = is_array($node->new_ip_addresses) ? $node->ip_addresses : array();
+  foreach ($ips as $id => $ip) {
     if (!empty($ip)) {
       // new entries are prefixed with the string 'new', insert those
       db_query("INSERT INTO {hosting_ip_addresses} (nid, ip_address) VALUES (%d, '%s')", $node->nid, $ip);
