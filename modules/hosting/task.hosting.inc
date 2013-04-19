@@ -59,8 +59,8 @@ function drush_hosting_task_validate($id, $type = null) {
     $task->executed = time();
     /* if not already running, remove the task from the queue
      * this is to avoid concurrent task runs */
-    if ($task->task_status == HOSTING_TASK_PROCESSING) {
-      return drush_set_error('HOSTING_TASK_RUNNING', dt("This task is already running"));
+    if ($task->task_status == HOSTING_TASK_PROCESSING && !drush_get_option('force', false)) {
+      return drush_set_error('HOSTING_TASK_RUNNING', dt("This task is already running, use --force"));
     }
     if ($task->task_status != HOSTING_TASK_QUEUED && !drush_get_option('force', false)) {
       return drush_set_error('HOSTING_TASK_NOT_QUEUED', dt("This task is not queued, use --force"));
