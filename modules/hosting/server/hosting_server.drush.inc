@@ -8,7 +8,7 @@
  */
 function hosting_hosting_server_context_options(&$task) {
   $task->context_options['remote_host'] = $task->ref->title;
-  $ip_list = _hosting_ip_list($task->ref->ip_addresses);
+  $ip_list = $task->ref->ip_addresses;
   $task->context_options['ip_addresses'] = sizeof($ip_list) ? implode(',', $ip_list) : 'null';
 
   foreach (hosting_server_services() as $type => $info) {
@@ -27,7 +27,7 @@ function hosting_hosting_server_context_options(&$task) {
 function hosting_server_drush_context_import($context, &$node) {
   if ($context->type == 'server') {
     $node->title = strtolower($context->remote_host);
-    $node->ip_addresses = implode("\n", $context->ip_addresses);
+    $node->new_ip_addresses = implode("\n", $context->ip_addresses);
     foreach (hosting_server_services() as $type => $info) {
       if (isset($context->{$type . '_service_type'})) {
         $service_type = $context->{$type . '_service_type'};
