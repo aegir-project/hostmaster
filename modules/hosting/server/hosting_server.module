@@ -327,7 +327,7 @@ function hosting_nodeapi_server_presave(&$node) {
     $ips = gethostbynamel($node->title);
     if ($ips) {
       drupal_set_message(t('Initialized the IP to %ip based on hostname %name. If an HTTP service is enabled, this will be used to create database grants so make sure it is the right address, as seen from the database server.', array('%ip' => join(',', $ips), '%name' => $node->title)), 'message');
-      $node->new_ip_addresses = array($ips);
+      $node->new_ip_addresses = $ips;
     } else {
       drupal_set_message(t("Could not resolve IP address of server %name, not automatically setting IP address. DNS may fail.", array('%name' => $node->title)));
     }
