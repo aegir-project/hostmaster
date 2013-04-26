@@ -90,7 +90,7 @@ function hosting_alias_update_6203() {
       'type' => 'varchar',
       'length' => 255,
       'not null' => TRUE,
-  ),
+  );
   db_change_field($ret, 'hosting_site_alias', 'redirection', 'redirection', $spec);
   return $ret;
 }
