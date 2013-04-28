@@ -5,27 +5,10 @@
  */
 
 /**
- * Get an array from the text ip address list.
- */
-function _hosting_ip_list($addresses) {
-  $return = array();
-  $ip_list = is_array($addresses) ? $addresses : explode("\n", $addresses);
-
-  foreach ($ip_list as $key => $ip) {
-    $ip = trim($ip);
-    if (!empty($ip)) {
-      $return[$key] = $ip;
-    }
-  }
-
-  return $return;
-}
-
-/**
  * Display the ip address on the node. IP utility function for hook_view.
  */
 function hosting_ip_view(&$node) {
-  $ip_list = isset($node->ip_addresses) ? _hosting_ip_list($node->ip_addresses) : array();
+  $ip_list = isset($node->ip_addresses) ? $node->ip_addresses : array();
 
   if (sizeof($ip_list)) {
     $node->content['info']['ip_addresses'] = array(
@@ -40,19 +23,29 @@ function hosting_ip_view(&$node) {
  * IP Utility function for hook_update/hook_insert.
  */
 function hosting_ip_save($node, $update = FALSE) {
-  $ip_list = _hosting_ip_list($node->ip_addresses);
+  $ips = is_array($node->ip_addresses) ? $node->ip_addresses : array();
 
-  if ($update) {
-    hosting_ip_delete($node);
+  foreach ($ips as $id => $ip) {
+    $ip = trim($ip);
+    if (empty($ip)) {
+      // empty fields are considered removed
+      db_query("DELETE FROM {hosting_ip_addresses} WHERE id=%d", $id);
+    } else {
+      db_query("UPDATE {hosting_ip_addresses} SET ip_address = '%s' WHERE id=%d", $ip, $id);
+    }
   }
 
-  foreach ($ip_list as $ip) {
-    $id = db_insert('hosting_ip_addresses')
-      ->fields(array(
-        'nid' => $node->nid,
-        'ip_address' => $ip,
-      ))
-      ->execute();
+  $ips = is_array($node->new_ip_addresses) ? $node->ip_addresses : array();
+  foreach ($ips as $id => $ip) {
+    if (!empty($ip)) {
+      // new entries are prefixed with the string 'new', insert those
+      db_insert('hosting_ip_addresses')
+        ->fields(array(
+          'nid' => $node->nid,
+          'ip_address' => $ip,
+        ))
+        ->execute();
+    }
   }
 }
 
@@ -60,11 +53,22 @@ function hosting_ip_save($node, $update = FALSE) {
  * Validate that IP list is valid. IP utility function for hook_validate.
  */
 function hosting_ip_validate($node) {
-  foreach (_hosting_ip_list($node->ip_addresses) as $ip) {
-    if (!_hosting_valid_ip($ip)) {
-      form_set_error('ip_addresses', t('Invalid IP address: %ip.', array(
-        '%ip' => $ip,
-      )));
+  foreach ($node->ip_addresses as $id => $ip) {
+    $ip = trim($ip);
+    if (empty($ip)) {
+      // deletion, look if the IP is in use
+      if ($cid = db_result(db_query('SELECT ssl_key FROM {hosting_ssl_cert_ips} i INNER JOIN {hosting_ssl_cert} c ON c.cid = i.cid WHERE ip_address = %d', $id))) {
+        form_set_error("ip_addresses][$id", t('Cannot remove IP associated with certificate %cert.', array('%cert' => $cid)));
+      }
+    } elseif (!_hosting_valid_ip($ip)) {
+      form_set_error("ip_addresses][$id", t('Invalid IP address: %ip.', array(
+        '%ip' => $ip )));
+    }
+  }
+  foreach ($node->new_ip_addresses as $id => $ip) {
+    if (!empty($ip) && !_hosting_valid_ip($ip)) {
+      form_set_error("ip_addresses][$id", t('Invalid IP address: %ip.', array(
+        '%ip' => $ip )));
     }
   }
 }
@@ -75,9 +79,9 @@ function hosting_ip_validate($node) {
  */
 function hosting_ip_load($node) {
   $ip_list = array();
-  $result = db_query("SELECT ip_address FROM {hosting_ip_addresses} WHERE nid = :nid", array(':nid' => $node->nid));
+  $result = db_query("SELECT id,ip_address FROM {hosting_ip_addresses} WHERE nid = :nid ORDER BY id", array(':nid' => $node->nid));
   while ($obj = $result->fetch()) {
-    $ip_list[] = $obj->ip_address;
+    $ip_list[$obj->id] = $obj->ip_address;
   }
 
   return $ip_list;

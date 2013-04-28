@@ -1093,6 +1093,24 @@ function hosting_settings($form, &$form_state) {
     '#weight' => 0,
   );
 
+  $profiles = array();
+  foreach (hosting_get_profiles() as $id => $name) {
+    $profile = hosting_package_instance_load(array('p.nid' => $id));
+    $profiles[$profile->short_name] = "{$name} ({$profile->short_name})";
+    // Don't allow a site to be provisioned with hostslave or hostmaster profile
+    if (in_array($name, array('Hostslave', 'Hostmaster'))) {
+      unset($profiles[$profile->short_name]);
+    }
+  }
+  natcasesort($profiles);
+  $default_value = hosting_package_instance_load(array('p.nid' => hosting_get_default_profile()))->short_name;
+  $form['hosting_default_profile'] = array(
+    '#type' => 'select',
+    '#title' => t('Default profile'),
+    '#options' => $profiles,
+    '#description' => t('The default install profile to use when creating new sites.'),
+    '#default_value' => $default_value,
+  );
   $form['hosting_ignore_default_profiles'] = array(
     '#type' => 'checkbox',
     '#title' => t('Hide platforms with non-default profiles'),

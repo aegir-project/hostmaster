@@ -210,9 +210,9 @@ function hosting_site_post_hosting_verify_task($task, $data) {
   if ($task->ref->type == 'site') {
     $task->ref->verified = REQUEST_TIME;
     $task->ref->no_verify = TRUE;
+    $task->ref->db_name = $data['self']['db_name'];
     if ($data['context']['cron_key']) {
       $task->ref->cron_key = $data['context']['cron_key'];
-      $task->ref->db_name = $data['self']['db_name'];
     }
     node_save($task->ref);
 

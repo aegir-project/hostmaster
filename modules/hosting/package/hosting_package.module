@@ -266,10 +266,13 @@ function hosting_get_packages_by_type($type) {
 }
 
 function hosting_get_default_profile($default = NULL) {
-  if ($p = hosting_get_package(variable_get('hosting_default_profile', 'default'))) {
+  if ($p = hosting_get_package(variable_get('hosting_default_profile', 'standard'))) {
     return $p->nid;
   }
   elseif ($p = hosting_get_package('standard')) {
+    return $p->nid;
+  }
+  elseif ($p = hosting_get_package('default')) {
     return $p->nid;
   }
   return $default;

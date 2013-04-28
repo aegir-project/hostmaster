@@ -220,13 +220,13 @@ function hosting_server_update_6005() {
  */
 function hosting_server_update_6200() {
   $ret = array();
-  db_add_field($ret, "hosting_ip_addresses", "id", array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE));
+  db_drop_index($ret, 'hosting_ip_addresses', 'vid');
   db_drop_field($ret, "hosting_ip_addresses", "vid");
+  db_add_field($ret, "hosting_ip_addresses", "id", array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE), array('primary key' => array('id')));
   $r = db_query("SELECT nid, ip_address FROM {hosting_ip_addresses}");
   for ($i = 0; $row = db_fetch_object($r); $i++) {
     $ret[] = update_sql("UPDATE {hosting_ip_addresses} SET id=$i WHERE nid={$row->nid} AND ip_address='{$row->ip_address}'");
   }
-  db_add_primary_key($ret, 'hosting_ip_addresses', array('id'));
   db_add_index($ret, 'hosting_ip_addresses', 'nid', array('nid'));
   return $ret;
 }
