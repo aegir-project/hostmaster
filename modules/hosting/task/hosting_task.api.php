@@ -36,6 +36,7 @@
  *      to the provision-save command.
  *
  * @see hosting_available_tasks()
+ * @see hosting_task_TASK_TYPE_form()
  */
 function hook_hosting_tasks() {
   // From hosting_clone_hosting_tasks().
@@ -66,6 +67,42 @@ function hook_hosting_tasks_alter(&$tasks) {
     $tasks['site']['clone']['title'] = t('Site clone');
   }
 }
+
+/**
+ * Add fields to the task confirmation form.
+ *
+ * @param $node
+ *   The node on which the task is being called.
+ *
+ * @see hosting_task_confirm_form()
+ * @see hosting_site_list_form()
+ */
+function hosting_task_TASK_TYPE_form($node) {
+  // From hosting_task_clone_form()
+  $form = hosting_task_migrate_form($node);
+  $form['new_uri']['#description'] = t('The new domain name of the clone site.');
+  return $form;
+}
+
+/**
+ * Validate the form data defined in hosting_task_TASK_TYPE_form().
+ *
+ * @see hosting_task_confirm_form()
+ */
+function hosting_task_TASK_TYPE_form_validate($form, &$form_state) {
+  // From hosting_task_clone_form_validate()
+  $site = $form['parameters']['#node'];
+
+  $url = strtolower(trim($form_state['values']['parameters']['new_uri'])); // domain names are case-insensitive
+  if ($url == strtolower(trim($site->title))) {
+    form_set_error('new_uri', t("To clone a site you need to specify a new Domain name to clone it to."));
+  }
+  else {
+    hosting_task_migrate_form_validate($form, $form_state);
+  }
+
+}
+
 
 /**
  * @} End of "addtogroup hooks".
