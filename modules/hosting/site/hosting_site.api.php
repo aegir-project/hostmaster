@@ -60,21 +60,6 @@ function hook_hosting_site_options_alter(&$return, $node) {
 }
 
 /**
- * @see hosting_task_confirm_form()
- * @see hosting_site_list_form()
- */
-function hosting_task_TASK_TYPE_form($node) {
-
-}
-
-/**
- * @see hosting_task_confirm_form()
- */
-function hosting_task_TASK_TYPE_form_validate() {
-
-}
-
-/**
  * Defines which filters are allowed to be used on the hosting site list.
  *
  * The list of sites can be filtered via the query string, and to avoid nasty

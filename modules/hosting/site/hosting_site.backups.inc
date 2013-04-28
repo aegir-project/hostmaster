@@ -73,3 +73,41 @@ function hosting_site_backup_list($site) {
   return $backups;
 }
 
+/**
+ * Implements hosting_task_TASK_TYPE_form_validate().
+ */
+function hosting_task_backup_delete_form_validate($form, &$form_state) {
+  if ($form['parameters']['no_backups']) {
+    form_set_error('no_backups', t('There are no valid backups available.'));
+  }
+  if (!$form['parameters']['#post']['parameters']) {
+    form_set_error('no_backups', t('No backups were selected for deletion.'));
+  }
+}
+
+/**
+ * Implements hosting_task_TASK_TYPE_form().
+ */
+function hosting_task_backup_delete_form($node) {
+  $list = hosting_site_backup_list($node->nid);
+  if (sizeof($list)) {
+    foreach ($list as $bid => $info) {
+      $backup = hosting_site_get_backup($bid);
+      $form[$bid] = array(
+        '#type' => 'checkbox',
+        '#title' => $info,
+        '#return_value' => $backup['filename'],
+      );
+    }
+  }
+  else {
+    $form['no_backups'] = array(
+      '#type' => 'item',
+      '#title' => t('Backups'),
+      '#value' => t('There are no valid backups available.')
+    );
+  }
+  return $form;
+}
+
+
