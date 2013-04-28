@@ -445,40 +445,6 @@ function hosting_task_restore_form_validate($form, &$form_state) {
 }
 
 /**
- * Implementation of hook_form_alter()
- */                               
-function hosting_task_backup_delete_form_validate($form, &$form_state) {
-  if ($form['parameters']['no_backups']) {
-    form_set_error('no_backups', t('There are no valid backups available.'));
-  }
-  if (!$form['parameters']['#post']['parameters']) {
-    form_set_error('no_backups', t('No backups were selected for deletion.'));
-  }
-}
-
-function hosting_task_backup_delete_form($node) {
-  $list = hosting_site_backup_list($node->nid);
-  if (sizeof($list)) {
-    foreach ($list as $bid => $info) {
-      $backup = hosting_site_get_backup($bid);
-      $form[$bid] = array(
-        '#type' => 'checkbox',
-        '#title' => $info,
-        '#return_value' => $backup['filename'],
-      );
-    }
-  }
-  else {
-    $form['no_backups'] = array(
-      '#type' => 'item',
-      '#title' => t('Backups'),
-      '#value' => t('There are no valid backups available.')
-    );
-  }  
-  return $form;
-}
-
-/**
  * Generic form submit handler for tasks confirmation
  *
  * This handler gets called after any task has been confirmed by the user. It
