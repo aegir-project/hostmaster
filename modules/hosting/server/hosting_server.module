@@ -237,6 +237,7 @@ function hosting_server_form(&$node) {
 
   if (!$node->nid) {
     $node->services = array();
+    $node->ip_addresses = array();
   }
 
   // taken mostly from the hosting_site alias stuff
@@ -260,6 +261,7 @@ function hosting_server_form(&$node) {
   // Get the list of existing IPs
   $ips = $node->ip_addresses;
   $ips_count = max(3, empty($ips) ? 3 : count($ips) + 1);
+
   // Add alias textfields
   foreach ($ips as $id => $ip) {
     $form['ips_wrapper']['ip_addresses'][$id] = array(
