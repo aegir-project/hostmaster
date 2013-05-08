@@ -106,8 +106,10 @@ function hosting_alias_form_data(&$form, &$form_state) {
     if (isset($form_state['aliases'])) {
       $aliases = array_filter($form_state['aliases']);
     }
-    else {
+    elseif (isset($form['#node']->aliases)) {
       $aliases = array_filter($form['#node']->aliases);
+    } else {
+      $aliases = array();
     }
 
     // Figure out the alias count
@@ -144,7 +146,9 @@ function hosting_alias_form_data(&$form, &$form_state) {
     // Redirection Domain
     $options = array();
     $options[0] = t('No redirection');
-    $options[$form['#node']->title] = $form['#node']->title;
+    if (isset($form['#node']->title)) {
+      $options[$form['#node']->title] = $form['#node']->title;
+    }
     if (!empty($aliases)) {
       $options += array_combine($aliases, $aliases);
     }
