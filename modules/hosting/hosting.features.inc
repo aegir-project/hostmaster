@@ -112,6 +112,7 @@ function hosting_features_form() {
 function hosting_features_form_submit($form, &$form_state) {
   $values = $form_state['values'];
   $features = hosting_get_features(TRUE);
+  $module_cache = module_rebuild_cache();
   foreach ($features  as $feature => $info) {
     $value = $values[$feature];
     $current = hosting_feature($feature);
@@ -122,8 +123,18 @@ function hosting_features_form_submit($form, &$form_state) {
 
         $modules = array($module);
 
-        // Enable the module.
-        drupal_set_message(t("Enabling %module module", array('%module' => implode(",", $modules))));
+        // Gather any dependencies to enable
+        foreach ($module_cache[$module]->info['dependencies'] as $dependency) {
+          if (!module_exists($dependency)) {
+            $modules[] = $dependency;
+          }
+        }
+
+        // Enable the module(s).
+        drupal_set_message(t("Enabling %module module!plural", array(
+          '%module' => implode(", ", $modules),
+          '!plural' => count($modules) > 1 ? 's' : '',
+        )));
         drupal_install_modules($modules);
       }
       if (function_exists($callback = $features[$feature]['enable'])) {
