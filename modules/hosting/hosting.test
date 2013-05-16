@@ -1,5 +1,0 @@
-<?php
-
-class HostingTestCase extends DrupalWebTestCase {
-  protected $profile = 'hostmaster';
-}
