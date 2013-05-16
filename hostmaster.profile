@@ -11,7 +11,7 @@ function hostmaster_profile_modules() {
   return array(
     /* core */ 'block', 'color', 'filter', 'help', 'menu', 'node', 'system', 'user',
     /* aegir contrib */ 'hosting', 'hosting_task', 'hosting_client', 'hosting_db_server', 'hosting_package', 'hosting_platform', 'hosting_site', 'hosting_web_server', 'hosting_server', 'hosting_clone', 'hosting_cron', 'hosting_migrate',
-    /* other contrib */ 'install_profile_api' /* needs >= 2.1 */, 'jquery_ui', 'modalframe', 'admin_menu',
+    /* other contrib */ 'install_profile_api' /* needs >= 2.1 */, 'jquery_ui', 'modalframe', 'admin_menu', 'views', 'views_bulk_operations',
     /* Aegir actual contrib */
     'hosting_platform_pathauto',
   );
@@ -193,20 +193,6 @@ function hostmaster_task_finalize() {
 
   // @TODO - seriously need to simplify this, but in our own code i think, not install profile api
   $items = install_menu_get_items('hosting/servers');
-  $item = db_fetch_array(db_query("SELECT * FROM {menu_links} WHERE mlid = %d", $items[0]['mlid']));
-  $item['menu_name'] = $menu_name;
-  $item['customized'] = 1;
-  $item['options'] = unserialize($item['options']);
-  install_menu_update_menu_item($item);
-
-  $items = install_menu_get_items('hosting/sites');
-  $item = db_fetch_array(db_query("SELECT * FROM {menu_links} WHERE mlid = %d", $items[0]['mlid']));
-  $item['menu_name'] = $menu_name;
-  $item['customized'] = 1;
-  $item['options'] = unserialize($item['options']);
-  install_menu_update_menu_item($item);
-
-  $items = install_menu_get_items('hosting/platforms');
   $item = db_fetch_array(db_query("SELECT * FROM {menu_links} WHERE mlid = %d", $items[0]['mlid']));
   $item['menu_name'] = $menu_name;
   $item['customized'] = 1;
