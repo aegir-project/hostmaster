@@ -1,19 +1,10 @@
 core = 6.x
 api = 2
 
-; Contrib modules
-projects[admin_menu][version] = "1.8"
-projects[openidadmin][version] = "1.2"
-projects[install_profile_api][version] = "2.1"
-projects[jquery_ui][version] = "1.4"
-projects[modalframe][version] = "1.6"
-
-; These are contrib modules, but come under the Aegir 'umbrella' of control.
-projects[hosting_platform_pathauto][version] = "2.0-beta2"
-projects[eldir][version] = "2.0-alpha1"
-
-; Libraries
-libraries[jquery_ui][download][type] = "get"
-libraries[jquery_ui][destination] = "modules/jquery_ui"
-libraries[jquery_ui][download][url] = "http://jquery-ui.googlecode.com/files/jquery.ui-1.6.zip"
-libraries[jquery_ui][directory_name] = "jquery.ui"
+; this makefile will make sure we get the development code from the
+; contrib modules instead of the tagged releases
+includes[hostmaster] = "drupal-org.make"
+projects[hosting][download][type] = 'git'
+projects[hosting][download][url] = 'http://git.drupal.org/project/hosting.git'
+projects[eldir][download][type] = 'git'
+projects[eldir][download][url] = 'http://git.drupal.org/project/eldir.git'

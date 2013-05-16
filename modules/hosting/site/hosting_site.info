@@ -1,6 +1,0 @@
-name = Sites
-description = Allow hostmaster manage hosted sites.
-package = Hosting
-dependencies[] = hosting
-dependencies[] = hosting_client
-core = 6.x
