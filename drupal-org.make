@@ -14,7 +14,7 @@ projects[views_bulk_operations][patch][] = "http://drupal.org/files/views_row_cl
 
 ; These are contrib modules, but come under the Aegir 'umbrella' of control.
 projects[hosting_platform_pathauto][version] = "2.0-beta2"
-projects[eldir][version] = "2.0-alpha1"
+projects[eldir][version] = "2.0-alpha2"
 projects[hosting][version] = "2.0-alpha2"
 
 ; Libraries
