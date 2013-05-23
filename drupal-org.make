@@ -8,9 +8,9 @@ projects[install_profile_api][version] = "2.1"
 projects[jquery_ui][version] = "1.4"
 projects[modalframe][version] = "1.6"
 projects[views][version] = "3.0"
-projects[views_bulk_operations][version] = "1.13"
+projects[views_bulk_operations][version] = "1.14"
 ; Add support for row classes - http://drupal.org/node/1843166#comment-6743346
-projects[views_bulk_operations][patch][] = "http://drupal.org/files/views_row_classes-6.x-1.13-1843166-2.patch"
+projects[views_bulk_operations][patch][] = "http://drupal.org/files/views_row_classes-1843166-1.patch"
 
 ; These are contrib modules, but come under the Aegir 'umbrella' of control.
 projects[hosting_platform_pathauto][version] = "2.0-beta2"
