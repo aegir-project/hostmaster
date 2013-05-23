@@ -212,6 +212,12 @@ function hostmaster_task_finalize() {
 
   drupal_set_message(st('Configuring default blocks'));
   install_add_block('hosting', 'hosting_queues', $theme, 1, 5, 'right', 1);
+  install_set_block('views', 'hosting_task_list-block' , $theme, 'right', 0);
+  // TODO: Set visibility in Views on Drupal 7 
+  install_set_block('views', '-exp-hosting_site_list-page_sites' , $theme, 'content_top', 0, 1, 'hosting/sites');
+  install_set_block('views', 'hosting_site_list-block_platform' , $theme, 'content_bottom', 0, 1, 'hosting/c/platform_*');
+  install_set_block('views', 'hosting_site_list-block_profile' , $theme, 'content_bottom', 0, 2, "<?php\n\$node = menu_get_object();\nif (!empty(\$node)) {\n  return \$node->package_type == 'profile';\n}\n?>");
+  install_set_block('views', 'hosting_site_list-block_client' , $theme, 'content_bottom', 0, 2, "<?php\n\$node = menu_get_object();\nif (!empty(\$node)) {\n  return \$node->type == 'client';\n}\n?>");
 
   drupal_set_message(st('Configuring roles'));
   install_remove_permissions(install_get_rid('anonymous user'), array('access content', 'access all views'));
