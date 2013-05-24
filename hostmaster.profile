@@ -192,8 +192,8 @@ function hostmaster_task_finalize() {
   $menu_name = variable_get('menu_primary_links_source', 'primary-links');
 
   // Welcome message for anonymous users
-  variable_set('hosting_front_page_title', 'Welcome to Aegir');
-  variable_set('hosting_front_page_content', 'The Aegir hosting system allows developers and site administrators to automate many of the common tasks associated with deploying and managing large websites. Aegir makes it easy to install, upgrade, deploy, and backup an entire network of Drupal sites.');
+  variable_set('hosting_welcome_title', 'Welcome to Aegir');
+  variable_set('hosting_welcome_content', 'The Aegir hosting system allows developers and site administrators to automate many of the common tasks associated with deploying and managing large websites. Aegir makes it easy to install, upgrade, deploy, and backup an entire network of Drupal sites.');
 
   // @TODO - seriously need to simplify this, but in our own code i think, not install profile api
   $items = install_menu_get_items('hosting/servers');
