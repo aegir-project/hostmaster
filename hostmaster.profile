@@ -226,9 +226,13 @@ function hostmaster_task_finalize() {
   install_add_permissions(install_get_rid('authenticated user'), array('access disabled sites'));
   install_add_role('aegir client');
   // @todo we may need to have a hook here to consider plugins
-  install_add_permissions(install_get_rid('aegir client'), array('access content', 'access all views', 'edit own client', 'view client', 'create site', 'delete site', 'view site', 'create backup task', 'create delete task', 'create disable task', 'create enable task', 'create restore task', 'view own tasks', 'view task', 'cancel own tasks'));
+  install_add_permissions(install_get_rid('aegir client'), array('access content', 'edit own client', 'view client', 'create site', 'delete site', 'view site', 'create backup task', 'create delete task', 'create disable task', 'create enable task', 'create restore task', 'view own tasks', 'view task', 'cancel own tasks'));
   install_add_role('aegir account manager');
   install_add_permissions(install_get_rid('aegir account manager'), array('create client', 'edit client users', 'view client'));
+  install_add_role('aegir platform manager');
+  install_add_permissions(install_get_rid('aegir platform manager'), array('create clone task', 'create migrate task', 'create platform', 'delete platform', 'edit platform', 'view locked platforms', 'view platform', 'create site', 'delete site', 'edit site', 'view site', 'access task logs', 'create lock task', 'create unlock task', 'view revisions', 'search content', 'use advanced search'));
+  install_add_role('aegir administrator');
+  install_add_permissions(install_get_rid('aegir administrator'), array('access disabled sites', 'access hosting wizard', 'administer hosting', 'administer hosting features', 'administer hosting queues', 'administer hosting settings', 'administer hosting aliases', 'create site aliases', 'administer clients', 'create client', 'delete own client', 'edit client uname', 'edit client users', 'edit own client', 'view client', 'create clone task', 'create migrate task', 'create package', 'delete package', 'edit package', 'view package', 'create platform', 'delete platform', 'edit platform', 'view locked platforms', 'view platform', 'edit all quotas', 'view all quotas', 'view own quota', 'create server', 'delete server', 'edit server', 'view server', 'access hosting signup form', 'administer sites', 'create site', 'delete site', 'edit site', 'view site', 'administer ssl', 'access task logs', 'administer tasks', 'cancel own tasks', 'create backup task', 'create backup-delete task', 'create delete task', 'create disable task', 'create enable task', 'create lock task', 'create login-reset task', 'create restore task', 'create unlock task', 'create verify task', 'retry failed tasks', 'view own tasks', 'view task'));
 
   node_access_rebuild();
 }
