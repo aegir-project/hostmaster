@@ -218,7 +218,7 @@ function hostmaster_task_finalize() {
   install_add_block('views', 'hosting_site_list-block_1' , $theme, 1, 0, 'content_bottom', 1, 'hosting/c/platform_*');
   install_add_block('views', 'hosting_site_list-block_profile' , $theme, 1, 0, 'content_bottom', 2, "<?php\n\$node = menu_get_object();\nif (!empty(\$node)) {\n  return \$node->package_type == 'profile';\n}\n?>");
   install_add_block('views', 'hosting_site_list-block_client' , $theme, 1, 0, 'content_bottom', 2, "<?php\n\$node = menu_get_object();\n\$menu_item = menu_get_item();\nif (!empty(\$node) && \$menu_item['number_parts'] == 2) {\n  return \$node->type == 'client';\n}\n?>");
-  install_add_block('views', 'hosting_package_list-block_1' , $theme, 1, 0, 'content_bottom', 2, "<?php\n\$node = menu_get_object();\nif (!empty(\$node)) {\n  return \$node->type == 'package';\n}\n?>");
+  install_add_block('views', 'hosting_package_list-block_1' , $theme, 1, 0, 'content_bottom', 2, "<?php\n\$node = menu_get_object();\nif (!empty(\$node)) {\n  return \$node->type == 'package' && \$node->package_type != 'profile';\n}\n?>");
 
   drupal_set_message(st('Configuring roles'));
   install_remove_permissions(install_get_rid('anonymous user'), array('access content', 'access all views'));
