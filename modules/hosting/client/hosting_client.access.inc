@@ -172,11 +172,14 @@ function hosting_node_grants($account, $op) {
   $account->client_id = hosting_get_client_from_user($account->uid);
   $types = array_merge(hosting_feature_node_types(), array('site', 'task', 'package', 'client'));
   foreach ($types as $type) {
-    if (user_access("administer {$type}s")) {
+    if (user_access("administer {$type}s", $account)) {
       $grants["hosting {$type}"] = array(1);
     }
-    elseif (user_access("$op $type")) {
+    elseif (user_access("$op $type", $account)) {
       // TODO: restrict access to certain op-type based on the user relationship to this client - see content of $client_relations
+      $grants['hosting ' . $type] = array_keys($account->client_id);
+    }
+    elseif ($op == 'update' && user_access('edit ' . $type, $account)) {
       $grants['hosting ' . $type] = array_keys($account->client_id);
     }
   }

@@ -242,6 +242,11 @@ function hosting_task_node_info() {
  * Implementation of hook_access()
  */
 function hosting_task_access($op, $node, $account) {
+  if (hosting_feature('client')) {
+    // we rely on hosting_node_grants() instead of global configuration
+    return NULL;
+  }
+
   if(user_access('administer tasks', $account)) {
     return TRUE;
   }

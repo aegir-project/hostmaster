@@ -94,6 +94,11 @@ function hosting_package_perm() {
  * Implementation of hook_access().
  */
 function hosting_package_access($op, $node, $account) {
+  if (hosting_feature('client')) {
+    // we rely on hosting_node_grants() instead of global configuration
+    return NULL;
+  }
+
   switch ($op) {
   case 'create':
     return user_access('create package', $account);
