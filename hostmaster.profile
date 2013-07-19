@@ -214,10 +214,10 @@ function hostmaster_task_finalize() {
   install_add_block('hosting', 'hosting_queues', $theme, 1, 5, 'right', 1);
   install_add_block('views', 'hosting_task_list-block' , $theme, 1, 0, 'right', 0);
   // TODO: Set visibility in Views on Drupal 7 
-  install_add_block('views', '-exp-hosting_site_list-page_1' , $theme, 1, 0, 'content_top', 1, 'hosting/sites');
   install_add_block('views', 'hosting_site_list-block_1' , $theme, 1, 0, 'content_bottom', 1, 'hosting/c/platform_*');
   install_add_block('views', 'hosting_site_list-block_profile' , $theme, 1, 0, 'content_bottom', 2, "<?php\n\$node = menu_get_object();\nif (!empty(\$node)) {\n  return \$node->package_type == 'profile';\n}\n?>");
   install_add_block('views', 'hosting_site_list-block_client' , $theme, 1, 0, 'content_bottom', 2, "<?php\n\$node = menu_get_object();\n\$menu_item = menu_get_item();\nif (!empty(\$node) && \$menu_item['number_parts'] == 2) {\n  return \$node->type == 'client';\n}\n?>");
+  install_add_block('views', 'hosting_site_list-block_client2', $theme, 1, 0, 'content_bottom', 2, "<?php\nglobal \$user;\$node = menu_get_object();\n\$menu_item = menu_get_item();\nif (!empty(\$node)) && \$menu_item['number_parts'] == 2) {\n  return \$node->type == 'client' && $user->uid != 1;\n}\n?>");
   install_add_block('views', 'hosting_package_list-block_1' , $theme, 1, 0, 'content_bottom', 2, "<?php\n\$node = menu_get_object();\nif (!empty(\$node)) {\n  return \$node->type == 'package' && \$node->package_type != 'profile';\n}\n?>");
 
   drupal_set_message(st('Configuring roles'));
