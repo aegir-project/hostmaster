@@ -11,7 +11,7 @@ function hostmaster_profile_modules() {
   return array(
     /* core */ 'block', 'color', 'filter', 'help', 'menu', 'node', 'system', 'user',
     /* aegir contrib */ 'hosting', 'hosting_task', 'hosting_client', 'hosting_db_server', 'hosting_package', 'hosting_platform', 'hosting_site', 'hosting_web_server', 'hosting_server', 'hosting_clone', 'hosting_cron', 'hosting_migrate',
-    /* other contrib */ 'install_profile_api' /* needs >= 2.1 */, 'jquery_ui', 'jquery_update', 'modalframe', 'admin_menu', 'views', 'views_bulk_operations', 'actions_permissions',
+    /* other contrib */ 'install_profile_api', 'jquery_ui', 'jquery_update', 'modalframe', 'admin_menu', 'views', 'views_bulk_operations', 'actions_permissions',
     /* Aegir actual contrib */
     'hosting_platform_pathauto',
   );
@@ -211,6 +211,8 @@ function hostmaster_task_finalize() {
   db_query("DELETE FROM {cache}");
 
   drupal_set_message(st('Configuring default blocks'));
+  install_add_block('user', 0, $theme, 1, -1, 'right', 1);
+  install_add_block('user', 1, $theme, 1, 1, 'right', 1);
   install_add_block('hosting', 'hosting_queues', $theme, 1, 5, 'right', 1);
   install_add_block('views', 'hosting_task_list-block' , $theme, 1, 0, 'right', 0);
   // TODO: Set visibility in Views on Drupal 7 
