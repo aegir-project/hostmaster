@@ -9,6 +9,7 @@ dependencies[] = filter
 dependencies[] = help
 dependencies[] = menu
 dependencies[] = node
+dependencies[] = overlay
 dependencies[] = system
 dependencies[] = user
 
