@@ -29,6 +29,9 @@ dependencies[] = hosting_server
 ;; Drupal contrib ;;
 dependencies[] = admin_menu
 dependencies[] = overlay_paths
+dependencies[] = views
+dependencies[] = views_bulk_operations
+dependencies[] = actions_permissions
 
 ;; Aegir contrib ;;
 ;dependencies[] = hosting_platform_pathauto

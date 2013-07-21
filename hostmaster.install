@@ -180,8 +180,6 @@ function hostmaster_task_finalize() {
   drupal_set_message(st('Configuring menu items'));
   $menu_paths = array(
     'Servers' => 'hosting/servers',
-    'Sites' => 'hosting/sites',
-    'Platforms' => 'hosting/platforms',
   );
   foreach ($menu_paths as $title => $menu_path) {
     $item = $existing_item = menu_get_item($menu_path);
@@ -198,28 +196,135 @@ function hostmaster_task_finalize() {
   // Disable the default Bartik theme
   theme_disable(array('bartik'));
 
-  // Enable the Hosting queues block.
   drupal_set_message(st('Configuring default blocks'));
+  hostmaster_place_blocks('eldir');
+
+  drupal_set_message(st('Configuring roles'));
+  hostmaster_create_roles();
+
+}
+
+/**
+ * Helper function to place block.
+ */
+function hostmaster_place_blocks($theme) {
   $blocks = array(
     array(
       'module' => 'hosting',
       'delta' => 'hosting_queues',
-      'theme' => 'eldir',
+      'theme' => $theme,
       'status' => 1,
       'weight' => -1,
       'region' => 'sidebar_first',
       'pages' => '',
       'cache' => -1,
     ),
+    array(
+      'module' => 'user',
+      'delta' => '0',
+      'theme' => $theme,
+      'status' => 1,
+      'weight' => -1,
+      'region' => 'sidebar_first',
+      'pages' => '',
+      'cache' => -1,
+    ),
+    array(
+      'module' => 'user',
+      'delta' => '1',
+      'theme' => $theme,
+      'status' => 1,
+      'weight' => -1,
+      'region' => 'sidebar_first',
+      'pages' => '',
+      'cache' => -1,
+    ),
+    array(
+      'module' => 'views',
+      'delta' => 'hosting_task_list-block',
+      'theme' => $theme,
+      'status' => 1,
+      'weight' => 0,
+      'region' => 'sidebar_first',
+      'pages' => '',
+      'cache' => -1,
+    ),
+    // TODO: Set visibility in Views on Drupal 7
+    array(
+      'module' => 'views',
+      'delta' => 'hosting_site_list-block_1',
+      'theme' => $theme,
+      'status' => 1,
+      'weight' => 0,
+      'region' => 'content_bottom',
+      'pages' => 'hosting/c/platform_*',
+      'cache' => -1,
+    ),
+    array(
+      'module' => 'views',
+      'delta' => 'hosting_site_list-block_profile',
+      'theme' => $theme,
+      'status' => 1,
+      'weight' => 0,
+      'region' => 'content_bottom',
+      'pages' => '',
+      //"<?php\n\$node = menu_get_object();\nif (!empty(\$node)) {\n  return \$node->package_type == 'profile';\n}\n
+      'cache' => -1,
+    ),
+    array(
+      'module' => 'views',
+      'delta' => 'hosting_site_list-block_client',
+      'theme' => $theme,
+      'status' => 1,
+      'weight' => 0,
+      'region' => 'content_bottom',
+      'pages' => '',
+      //"<?php\n\$node = menu_get_object();\n\$menu_item = menu_get_item();\nif (!empty(\$node) && \$menu_item['number_parts'] == 2) {\n  return \$node->type == 'client';\n}\n
+      'cache' => -1,
+    ),
+    array(
+      'module' => 'views',
+      'delta' => 'hosting_site_list-block_client2',
+      'theme' => $theme,
+      'status' => 1,
+      'weight' => 0,
+      'region' => 'content_bottom',
+      'pages' => '',
+      //"<?php\nglobal \$user;\$node = menu_get_object();\n\$menu_item = menu_get_item();\nif (!empty(\$node)) && \$menu_item['number_parts'] == 2) {\n  return \$node->type == 'client' && $user->uid != 1;\n}\n
+      'cache' => -1,
+    ),
+    array(
+      'module' => 'views',
+      'delta' => 'hosting_package_list-block_1',
+      'theme' => $theme,
+      'status' => 1,
+      'weight' => -1,
+      'region' => 'content_bottom',
+      'pages' => '',
+      //"<?php\n\$node = menu_get_object();\nif (!empty(\$node)) {\n  return \$node->type == 'package' && \$node->package_type != 'profile';\n}\n
+      'cache' => -1,
+    ),
   );
+
   $query = db_insert('block')->fields(array('module', 'delta', 'theme', 'status', 'weight', 'region', 'pages', 'cache'));
   foreach ($blocks as $block) {
     $query->values($block);
   }
   $query->execute();
 
+}
+
+
+/**
+ * Helper function to create our roles
+ */
+function hostmaster_create_roles() {
+
+  // Only allow access to our splash pages for anyone without a specific role
+  user_role_grant_permissions(DRUPAL_ANONYMOUS_RID, array('access disabled sites'));
+  user_role_grant_permissions(DRUPAL_AUTHENTICATED_RID, array('access disabled sites'));
+
   // Create a default role for site administrators, with all available permissions assigned.
-  drupal_set_message(st('Configuring roles'));
   $admin_role = new stdClass();
   $admin_role->name = 'administrator';
   $admin_role->weight = 2;
@@ -233,6 +338,39 @@ function hostmaster_task_finalize() {
     ->fields(array('uid' => 1, 'rid' => $admin_role->rid))
     ->execute();
 
+  // Create a default role for Aegir administrators.
+  $aegir_admin_role = new stdClass();
+  $aegir_admin_role->name = 'aegir administrator';
+  $aegir_admin_role->weight = 2;
+  user_role_save($aegir_admin_role);
+  $aegir_admin_perms = array(
+    'access administration menu',
+    'access content',
+    'view revisions',
+    'access user profiles',
+  );
+
+  // List all modules
+  $modules = system_rebuild_module_data();
+  foreach ($modules as $filename => $module) {
+    // We only care about visible Aegir modules.
+    if ($module->info['package'] != 'Hosting' || !empty($module->info['hidden'])) {
+      continue;
+    }
+    // Gather all declared permissions.
+    if (function_exists($module . '_permission')) {
+      array_merge($aegir_admin_perms, call_user_func($module . '_permission'));
+    }
+    // Add permissions generated by actions_permissions for our VBO tasks.
+    if (function_exists($module . '_node_operations')) {
+      $ops = call_user_func($module . '_node_operations');
+      foreach ($ops as $op) {
+        $aegir_admin_perms[] = 'execute ' . $op['label'] . ' (' . $op['callback'] . ')';
+      }
+    }
+  }
+  user_role_grant_permissions($aegir_admin_role->rid, $aegir_admin_perms);
+
   // Create a default role for Aegir clients.
   $client_role = new stdClass();
   $client_role->name = 'aegir client';
@@ -242,7 +380,7 @@ function hostmaster_task_finalize() {
   user_role_grant_permissions($client_role->rid, array(
     // Drupal core
     'access content',
-    //'access all views',
+    'view revisions',
     // Clients
     'edit own client',
     'view client',
@@ -250,15 +388,37 @@ function hostmaster_task_finalize() {
     'create site',
     'delete site',
     'view site',
+    'edit site',
+    // Platforms
+    'view platform',
     // Tasks
     'create backup task',
     'create delete task',
     'create disable task',
     'create enable task',
     'create restore task',
+    'create verify task',
+    'create clone task',
+    'create migrate task',
+    'access task logs',
     'view own tasks',
     'view task',
     'cancel own tasks',
+    // Packages
+    'view package',
+    // Quotas
+    'view own quota',
+    // Aliases
+    'create site aliases',
+    // SSL
+    'create ssl certificate',
+    // VBO operations
+    'execute Site: Backup (hosting_site_op_backup)',
+    'execute Site: Delete (hosting_site_op_delete)',
+    'execute Site: Disable (hosting_site_op_disable)',
+    'execute Site: Enable (hosting_site_op_enable)',
+    'execute Site: Reset password (hosting_site_op_login_reset)',
+    'execute Site: Verify (hosting_site_op_verify)',
   ));
 
   // Create a default role for Aegir account managers.
@@ -267,12 +427,75 @@ function hostmaster_task_finalize() {
   $acct_mgr_role->weight = 2;
   user_role_save($acct_mgr_role);
   user_role_grant_permissions($acct_mgr_role->rid, array(
+    // Drupal core
+    'access content',
+    'access user profiles',
+    // Clients
+    'administer clients',
     'create client',
     'edit client users',
-    'view client'));
+    'view client',
+    'edit client uname',
+    // Quotas
+    'edit all quotas',
+    'view all quotas',
+    'view own quota',
+    // Sites
+    'view_site',
+  ));
 
-  user_role_grant_permissions(DRUPAL_ANONYMOUS_RID, array('access disabled sites'));
-  user_role_grant_permissions(DRUPAL_AUTHENTICATED_RID, array('access disabled sites'));
+  // Create a default role for Aegir platform managers.
+  $plat_mgr_role = new stdClass();
+  $plat_mgr_role->name = 'aegir platform manager';
+  $plat_mgr_role->weight = 2;
+  user_role_save($plat_mgr_role);
+  user_role_grant_permissions($plat_mgr_role->rid, array(
+    // Drupal core
+    'access content',
+    'search content',
+    'use advanced search',
+    'view revisions',
+    // Tasks
+    'administer tasks',
+    'create clone task',
+    'create migrate task',
+    'create lock task',
+    'create unlock task',
+    'create verify task',
+    'access task logs',
+    'cancel own tasks',
+    'view own tasks',
+    'retry failed tasks',
+    'view task',
+    // Platforms
+    'administer platforms',
+    'create platform',
+    'delete platform',
+    'edit platform',
+    'view locked platforms',
+    'view platform',
+    'create sites on locked platforms',
+    // Sites
+    'administer sites',
+    'create site',
+    'delete site',
+    'edit site',
+    'view site',
+    // Packages
+    'view package',
+    // Clients
+    'administer clients',
+    // VBO operations
+    'execute Site: Delete (hosting_site_op_delete)',
+    'execute Site: Disable (hosting_site_op_disable)',
+    'execute Site: Enable (hosting_site_op_enable)',
+    'execute Site: Verify (hosting_site_op_verify)',
+    'execute Platform: Delete (hosting_platform_op_delete)',
+    'execute Platform: Lock (hosting_platform_op_lock)',
+    'execute Platform: Unlock (hosting_platform_op_unlock)',
+    'execute Platform: Verify (hosting_platform_op_verify)',
+  ));
 
   node_access_rebuild();
 }
+

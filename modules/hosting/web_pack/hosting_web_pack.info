@@ -1,8 +1,0 @@
-name = Web Pack
-description = Allow hostmaster to configure web "packs", which have masters and slaves.
-package = Hosting
-dependencies[] = hosting_web_server
-
-core = 7.x
-
-files[] = hosting_web_pack.service.inc
