@@ -131,10 +131,10 @@ function hostmaster_bootstrap() {
   $instance->schema_version = 0;
   $instance->package_id = $package_id;
   $instance->status = 0;
-  $instance->platform = $node->nid; // @todo is this the correct nid?
+  $instance->platform = $platform_id;
   hosting_package_instance_save($instance);
 
-  // Create the hostmaster profile node
+  // Create the hostmaster profile package node
   $node = new stdClass();
   $node->uid = 1;
   $node->title = 'hostmaster';
@@ -145,10 +145,19 @@ function hostmaster_bootstrap() {
   $node->short_name = 'hostmaster';
   $node->status = 1;
   node_save($node);
-
   $profile_id = $node->nid;
 
-  // Is another instance req'd here? for the profile?
+  $instance = new stdClass();
+  $instance->rid = $node->nid;
+  $instance->version = VERSION;
+  $instance->filename = '';
+  $instance->version_code = 1;
+  //$instance->schema_version = drupal_get_installed_schema_version('system');
+  $instance->schema_version = 0;
+  $instance->package_id = $profile_id;
+  $instance->status = 0;
+  $instance->platform = $platform_id;
+  hosting_package_instance_save($instance);
 
   // Create the main Aegir site node
   $node = new stdClass();
