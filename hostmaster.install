@@ -131,6 +131,7 @@ function hostmaster_bootstrap() {
   $instance->schema_version = 0;
   $instance->package_id = $package_id;
   $instance->status = 0;
+  $instance->platform = $node->nid; // @todo is this the correct nid?
   hosting_package_instance_save($instance);
 
   // Create the hostmaster profile node
@@ -146,6 +147,8 @@ function hostmaster_bootstrap() {
   node_save($node);
 
   $profile_id = $node->nid;
+
+  // Is another instance req'd here? for the profile?
 
   // Create the main Aegir site node
   $node = new stdClass();
