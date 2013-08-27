@@ -103,7 +103,7 @@ function hostmaster_bootstrap() {
     'db_type' => $master_db['scheme'],
     'db_user' => urldecode($master_db['user']),
     'db_passwd' => urldecode($master_db['pass']),
-    'port' => 3306,
+    'port' => urldecode($master_db['port']),
     'available' => 1,
   ));
 
