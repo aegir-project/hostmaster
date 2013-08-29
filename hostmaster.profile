@@ -79,7 +79,7 @@ function hostmaster_bootstrap() {
   $master_server = d()->platform->server;
   hosting_services_add($node, 'http', $master_server->http_service_type, array(
    'restart_cmd' => $master_server->http_restart_cmd,
-   'port' => urldecode($master_server->http_port),
+   'port' => $master_server->http_port,
    'available' => 1,
   ));
 
