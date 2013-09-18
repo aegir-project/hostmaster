@@ -1,9 +1,9 @@
-core = 6.x
+core = 7.x
 api = 2
 
 ; Contrib modules
 projects[admin_menu][version] = "3.0-rc4"
-projects[openidadmin][version] = "1.2"
+projects[openidadmin][version] = "1.0"
 projects[overlay_paths][version] = "1.2"
 projects[views][version] = "3.7"
 projects[ctools][version] = "1.3"
