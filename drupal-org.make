@@ -12,6 +12,6 @@ projects[entity][version] = "1.2"
 
 ; These are contrib modules, but come under the Aegir 'umbrella' of control.
 ;projects[hosting_platform_pathauto][version] = "2.0-beta2"
-projects[eldir][version] = "7.x-3.x"
-projects[hosting][version] = "7.x-3.x"
+projects[eldir][version] = "3.x"
+projects[hosting][version] = "3.x"
 
