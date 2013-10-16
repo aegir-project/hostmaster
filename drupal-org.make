@@ -7,7 +7,7 @@ api = 2
 ; do *not* pin version number for Aegir core modules to make sure
 ; we fetch the latest release for those
 projects[hosting][type] = "module"
-projects[eldir][type] = "module"
+projects[eldir][type] = "theme"
 
 ; contrib aegir modules
 projects[hosting_platform_pathauto][version] = "2.0-beta2"
