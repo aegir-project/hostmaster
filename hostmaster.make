@@ -2,7 +2,7 @@ core = 6.x
 api = 2
 
 ; this makefile will make sure we get the development code from the
-; contrib modules instead of the tagged releases
+; aegir modules instead of the tagged releases
 includes[hostmaster] = "drupal-org.make"
 projects[hosting][download][type] = 'git'
 projects[hosting][download][url] = 'http://git.drupal.org/project/hosting.git'
