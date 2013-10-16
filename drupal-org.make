@@ -13,8 +13,6 @@ projects[views_bulk_operations][version] = "1.16"
 
 ; These are contrib modules, but come under the Aegir 'umbrella' of control.
 projects[hosting_platform_pathauto][version] = "2.0-beta2"
-projects[eldir][version] = "2.0-rc2"
-projects[hosting][version] = "2.0-rc4"
 
 ; Libraries
 libraries[jquery_ui][download][type] = "get"
