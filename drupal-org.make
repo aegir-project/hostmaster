@@ -1,6 +1,14 @@
 core = 6.x
 api = 2
 
+; this makefile will fetch the Aegir distribution from drupal.org
+;
+; core aegir modules
+; do *not* pin version number for Aegir core modules to make sure
+; we fetch the latest release for those
+projects[] = hosting
+projects[] = eldir
+
 ; Contrib modules
 projects[admin_menu][version] = "1.8"
 projects[openidadmin][version] = "1.2"
