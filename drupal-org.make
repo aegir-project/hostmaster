@@ -9,6 +9,9 @@ api = 2
 projects[] = hosting
 projects[] = eldir
 
+; contrib aegir modules
+projects[hosting_platform_pathauto][version] = "2.0-beta2"
+
 ; Contrib modules
 projects[admin_menu][version] = "1.8"
 projects[openidadmin][version] = "1.2"
@@ -18,9 +21,6 @@ projects[jquery_update][version] = "2.0-alpha1"
 projects[modalframe][version] = "1.7"
 projects[views][version] = "3.0"
 projects[views_bulk_operations][version] = "1.16"
-
-; These are contrib modules, but come under the Aegir 'umbrella' of control.
-projects[hosting_platform_pathauto][version] = "2.0-beta2"
 
 ; Libraries
 libraries[jquery_ui][download][type] = "get"
