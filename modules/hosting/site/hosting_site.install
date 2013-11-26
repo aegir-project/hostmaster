@@ -269,3 +269,15 @@ function hosting_site_update_6008() {
   return $ret;
 }
 
+/**
+ * Force a re-verification of all enabled sites,
+ * to re-generate their Apache virtualhost configurations to use
+ * correct handlers in the 'files' or 'private' subdirectories
+ */
+function hosting_site_update_6009() {
+  $result = db_query("SELECT nid FROM {hosting_site} WHERE status=1");
+  while ($site = db_fetch_object($result)) {
+    hosting_add_task($site->nid, 'verify');
+  }
+  return $ret;
+}
