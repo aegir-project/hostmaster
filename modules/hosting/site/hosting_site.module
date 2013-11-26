@@ -103,7 +103,7 @@ function hosting_sites() {
  */
 function _hosting_site_goto_link($node) {
   $cache = cache_get("hosting:site:" . $node->nid . ":login_link");
-  if (!is_null($cache) && (time() < $cache->data['expire'])) {
+  if (user_access('create login-reset task') && !is_null($cache) && (time() < $cache->data['expire'])) {
     $title = t("Log in to !url" , array('!url' => $node->title));
   }
   else {
@@ -123,7 +123,7 @@ function _hosting_site_goto_link($node) {
 function hosting_site_goto($node) {
   $cid = "hosting:site:" . $node->nid . ":login_link";
   $cache = cache_get($cid);
-  if (!is_null($cache) && (time() < $cache->data['expire'])) {
+  if (user_access('create login-reset task') && !is_null($cache) && (time() < $cache->data['expire'])) {
     $theurl = $cache->data['link'];
     cache_clear_all($cid, 'cache');
   }
