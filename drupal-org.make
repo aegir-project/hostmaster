@@ -10,7 +10,7 @@ projects[hosting][type] = "module"
 projects[eldir][type] = "theme"
 
 ; contrib aegir modules
-projects[hosting_platform_pathauto][version] = "2.0"
+projects[hosting_platform_pathauto][version] = "2.1"
 
 ; Contrib modules
 projects[admin_menu][version] = "1.8"
