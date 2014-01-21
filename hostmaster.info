@@ -37,3 +37,7 @@ dependencies[] = actions_permissions
 ;; Aegir contrib ;;
 ;dependencies[] = hosting_platform_pathauto
 
+;; Enable some dev modules during the 7.x-3.x dev cycle.
+dependencies[] = views_ui
+dependencies[] = devel
+dependencies[] = dblog
