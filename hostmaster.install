@@ -17,7 +17,7 @@ function hostmaster_install() {
   // Bootstrap and create all the initial nodes
   hostmaster_bootstrap();
 
-  // Finalize and setup themes, menus, optional modules etc
+  // Finalize and setup themes, optional modules etc
   hostmaster_task_finalize();
 
 }
@@ -187,19 +187,6 @@ function hostmaster_bootstrap() {
 
 function hostmaster_task_finalize() {
   variable_set('install_profile', 'hostmaster');
-
-  // Create some main menu links.
-  drupal_set_message(st('Configuring menu items'));
-  $menu_paths = array(
-    'Servers' => 'hosting/servers',
-  );
-  foreach ($menu_paths as $title => $menu_path) {
-    $item = $existing_item = menu_get_item($menu_path);
-    $item['menu_name'] = 'main-menu';
-    $item['link_title'] = $title;
-    $item['link_path'] = drupal_get_normal_path($menu_path);
-    menu_link_save($item, $existing_item);
-  }
 
   // Enable Eldir, and set is as default theme
   theme_enable(array('eldir'));
