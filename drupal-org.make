@@ -18,7 +18,7 @@ projects[openidadmin][version] = "1.2"
 projects[install_profile_api][version] = "2.2"
 projects[jquery_ui][version] = "1.5"
 projects[jquery_update][version] = "2.0-alpha1"
-projects[modalframe][version] = "1.7"
+projects[modalframe][version] = "1.9"
 projects[views][version] = "3.0"
 projects[views_bulk_operations][version] = "1.16"
 
