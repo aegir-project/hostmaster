@@ -258,6 +258,16 @@ function hostmaster_place_blocks($theme) {
     ),
     array(
       'module' => 'views',
+      'delta' => 'hosting_platform_list-block_server',
+      'theme' => $theme,
+      'status' => 1,
+      'weight' => 0,
+      'region' => 'content_bottom',
+      'pages' => 'hosting/c/server_*',
+      'cache' => -1,
+    ),
+    array(
+      'module' => 'views',
       'delta' => 'hosting_site_list-block_profile',
       'theme' => $theme,
       'status' => 1,
