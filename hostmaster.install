@@ -212,6 +212,7 @@ function hostmaster_place_blocks($theme) {
       'status' => 1,
       'weight' => -2,
       'region' => 'sidebar_first',
+      'visibility' => 0,
       'pages' => '',
       'cache' => -1,
     ),
@@ -222,6 +223,7 @@ function hostmaster_place_blocks($theme) {
       'status' => 1,
       'weight' => -1,
       'region' => 'sidebar_first',
+      'visibility' => 0,
       'pages' => '',
       'cache' => -1,
     ),
@@ -232,6 +234,7 @@ function hostmaster_place_blocks($theme) {
       'status' => 1,
       'weight' => 0,
       'region' => 'sidebar_first',
+      'visibility' => 0,
       'pages' => '',
       'cache' => -1,
     ),
@@ -245,14 +248,14 @@ function hostmaster_place_blocks($theme) {
       'pages' => '',
       'cache' => -1,
     ),
-    // TODO: Set visibility in Views on Drupal 7
     array(
       'module' => 'views',
-      'delta' => 'hosting_site_list-block_1',
+      'delta' => 'hosting_site_list-block_sites',
       'theme' => $theme,
       'status' => 1,
       'weight' => 0,
       'region' => 'content_bottom',
+      'visibility' => 1,
       'pages' => 'hosting/c/platform_*',
       'cache' => -1,
     ),
@@ -263,6 +266,7 @@ function hostmaster_place_blocks($theme) {
       'status' => 1,
       'weight' => 0,
       'region' => 'content_bottom',
+      'visibility' => 1,
       'pages' => 'hosting/c/server_*',
       'cache' => -1,
     ),
@@ -273,6 +277,7 @@ function hostmaster_place_blocks($theme) {
       'status' => 1,
       'weight' => 0,
       'region' => 'content_bottom',
+      'visibility' => 0,
       'pages' => '',
       //"<?php\n\$node = menu_get_object();\nif (!empty(\$node)) {\n  return \$node->package_type == 'profile';\n}\n
       'cache' => -1,
@@ -284,6 +289,7 @@ function hostmaster_place_blocks($theme) {
       'status' => 1,
       'weight' => 0,
       'region' => 'content_bottom',
+      'visibility' => 0,
       'pages' => '',
       //"<?php\n\$node = menu_get_object();\n\$menu_item = menu_get_item();\nif (!empty(\$node) && \$menu_item['number_parts'] == 2) {\n  return \$node->type == 'client';\n}\n
       'cache' => -1,
@@ -295,6 +301,7 @@ function hostmaster_place_blocks($theme) {
       'status' => 1,
       'weight' => 0,
       'region' => 'content_bottom',
+      'visibility' => 0,
       'pages' => '',
       //"<?php\nglobal \$user;\$node = menu_get_object();\n\$menu_item = menu_get_item();\nif (!empty(\$node)) && \$menu_item['number_parts'] == 2) {\n  return \$node->type == 'client' && $user->uid != 1;\n}\n
       'cache' => -1,
@@ -306,13 +313,15 @@ function hostmaster_place_blocks($theme) {
       'status' => 1,
       'weight' => 0,
       'region' => 'content_bottom',
+      'visibility' => 0,
       'pages' => '',
       //"<?php\n\$node = menu_get_object();\nif (!empty(\$node)) {\n  return \$node->type == 'package' && \$node->package_type != 'profile';\n}\n
       'cache' => -1,
     ),
   );
 
-  $query = db_insert('block')->fields(array('module', 'delta', 'theme', 'status', 'weight', 'region', 'pages', 'cache'));
+  $query = db_insert('block')->fields(array('module', 'delta', 'theme', 'status', 'weight', 'region', 'visibility', 'pages', 'cache'));
+
   foreach ($blocks as $block) {
     $query->values($block);
   }
