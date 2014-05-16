@@ -245,6 +245,7 @@ function hostmaster_place_blocks($theme) {
       'status' => 1,
       'weight' => -2,
       'region' => 'sidebar_first',
+      'visibility' => 0,
       'pages' => '',
       'cache' => -1,
     ),
