@@ -29,6 +29,7 @@ dependencies[] = hosting_server
 
 ;; Drupal contrib ;;
 dependencies[] = admin_menu
+dependencies[] = betterlogin
 dependencies[] = overlay_paths
 dependencies[] = views
 dependencies[] = views_bulk_operations

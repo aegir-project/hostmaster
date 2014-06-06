@@ -181,6 +181,9 @@ function hostmaster_bootstrap() {
   // do not allow user registration: the signup form will do that
   variable_set('user_register', 0);
 
+  // enable the betterlogin private site functionality
+  variable_set('betterlogin_private', 1);
+
   // This is saved because the config generation script is running via drush, and does not have access to this value
   variable_set('install_url' , $GLOBALS['base_url']);
 }
@@ -211,17 +214,6 @@ function hostmaster_place_blocks($theme) {
       'theme' => $theme,
       'status' => 1,
       'weight' => -2,
-      'region' => 'sidebar_first',
-      'visibility' => 0,
-      'pages' => '',
-      'cache' => -1,
-    ),
-    array(
-      'module' => 'user',
-      'delta' => 'login',
-      'theme' => $theme,
-      'status' => 1,
-      'weight' => -1,
       'region' => 'sidebar_first',
       'visibility' => 0,
       'pages' => '',

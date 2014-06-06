@@ -9,11 +9,9 @@ api = 2
 projects[hosting][type] = "module"
 projects[eldir][type] = "theme"
 
-; contrib aegir modules
-;projects[hosting_platform_pathauto][version] = "2.1"
-
 ; Contrib modules
 projects[admin_menu][version] = "3.0-rc4"
+projects[betterlogin][version] = "1.2"
 projects[openidadmin][version] = "1.0"
 projects[overlay_paths][version] = "1.3"
 projects[views][version] = "3.8"
