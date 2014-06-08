@@ -13,6 +13,12 @@ projects[hosting][download][type] = 'git'
 projects[hosting][download][url] = 'http://git.drupal.org/project/hosting.git'
 projects[hosting][download][branch] = '7.x-3.x'
 
+projects[aegir_tour][download][type] = 'git'
+projects[aegir_tour][download][url] = 'http://git.drupal.org/project/aegir_tour.git'
+projects[aegir_tour][download][branch] = '7.x-3.x'
+
+
+
 ; Add devel while we're in the 7.x-3.x dev cycle;
 ; enabled in hostmaster.info.
 projects[] = devel
