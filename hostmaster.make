@@ -17,6 +17,9 @@ projects[hosting][download][branch] = '7.x-3.x'
 ;projects[aegir_tour][download][url] = 'http://git.drupal.org/project/aegir_tour.git'
 ;projects[aegir_tour][download][branch] = '7.x-3.x'
 
+projects[hosting_platform_pathauto][download][type] = 'git'
+projects[hosting_platform_pathauto][download][url] = 'http://git.drupal.org/project/hosting_platform_pathauto.git'
+projects[hosting_platform_pathauto][download][branch] = '7.x-2.x'
 
 
 ; Add devel while we're in the 7.x-3.x dev cycle;
