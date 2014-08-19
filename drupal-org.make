@@ -12,7 +12,7 @@ projects[eldir][type] = "theme"
 projects[eldir][version] = "3.x"
 
 ; Aegir "golden" contrib modules
-;projects[hosting_platform_pathauto][version] = "2.1"
+projects[hosting_platform_pathauto][version] = "2.x"
 ;projects[aegir_tour][version] = "3.x"
 ;projects[hosting_git][version] = "3.x"
 ;projects[hosting_site_backup_manager][version] = "3.x"
