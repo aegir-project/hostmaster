@@ -201,6 +201,12 @@ function hostmaster_task_finalize() {
   drupal_set_message(st('Configuring default blocks'));
   hostmaster_place_blocks('eldir');
 
+  // Save "menu_options" for our content types, so they don't offer to be put in menus.
+  variable_set('menu_options_client', array());
+  variable_set('menu_options_platform', array());
+  variable_set('menu_options_server', array());
+  variable_set('menu_options_site', array());
+
 }
 
 /**
