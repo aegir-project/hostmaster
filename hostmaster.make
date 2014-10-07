@@ -29,3 +29,4 @@ projects[hosting_git][download][branch] = '7.x-3.x'
 ; Add devel while we're in the 7.x-3.x dev cycle;
 ; enabled in hostmaster.info.
 projects[] = devel
+projects[] = devel_debug_log
