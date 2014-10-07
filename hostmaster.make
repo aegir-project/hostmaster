@@ -21,6 +21,10 @@ projects[hosting_platform_pathauto][download][type] = 'git'
 projects[hosting_platform_pathauto][download][url] = 'http://git.drupal.org/project/hosting_platform_pathauto.git'
 projects[hosting_platform_pathauto][download][branch] = '7.x-2.x'
 
+projects[hosting_git][download][type] = 'git'
+projects[hosting_git][download][url] = 'http://git.drupal.org/project/hosting_git.git'
+projects[hosting_git][download][branch] = '7.x-3.x'
+
 
 ; Add devel while we're in the 7.x-3.x dev cycle;
 ; enabled in hostmaster.info.
