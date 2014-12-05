@@ -21,6 +21,7 @@ projects[jquery_update][version] = "2.0-alpha1"
 projects[modalframe][version] = "1.9"
 projects[views][version] = "3.0"
 projects[views_bulk_operations][version] = "1.16"
+projects[ctools][version] = "1.11"
 
 ; Libraries
 libraries[jquery_ui][download][type] = "get"
