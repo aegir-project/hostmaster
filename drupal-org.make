@@ -47,10 +47,10 @@ projects[hosting_platform_pathauto][version] = 2.x
 
 ; Modules - contrib
 
-projects[admin_menu][version] = 3.0-rc4
-projects[betterlogin][version] = 1.2
+projects[admin_menu][version] = 3.0-rc5
+projects[betterlogin][version] = 1.3
 projects[bootstrap_tour][version] = 1.0-beta8
-projects[ctools][version] = 1.4
+projects[ctools][version] = 1.6
 projects[entity][version] = 1.5
 projects[openidadmin][version] = 1.0
 projects[overlay_paths][version] = 1.3
