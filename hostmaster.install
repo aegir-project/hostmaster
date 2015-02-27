@@ -176,6 +176,22 @@ function hostmaster_bootstrap() {
   $node->status = 1;
   node_save($node);
 
+  // Enable the hosting features of modules that we enable by default.
+  // The module will already be enabled,
+  // this makes sure we also set the default permissions.
+  $default_hosting_features = array(
+    'hosting_web_server' => 'web_server',
+    'hosting_db_server' => 'db_server',
+    'hosting_platform' => 'platform',
+    'hosting_client' => 'client',
+    'hosting_task' => 'task',
+    'hosting_server' => 'server',
+    'hosting_package' => 'package',
+    'hosting_site' => 'site',
+    'hosting' => 'hosting',
+  );
+  hosting_features_enable($default_hosting_features, $rebuild = TRUE, $enable = FALSE);
+
   variable_set('site_frontpage', 'hosting/sites');
 
   // do not allow user registration: the signup form will do that
