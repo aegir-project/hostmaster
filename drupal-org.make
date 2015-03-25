@@ -13,15 +13,15 @@ projects[eldir][type] = "theme"
 projects[hosting_platform_pathauto][version] = "2.1"
 
 ; Contrib modules
-projects[admin_menu][version] = "1.8"
+projects[admin_menu][version] = "1.9"
 projects[openidadmin][version] = "1.2"
 projects[install_profile_api][version] = "2.2"
 projects[jquery_ui][version] = "1.5"
 projects[jquery_update][version] = "2.0-alpha1"
 projects[modalframe][version] = "1.9"
-projects[views][version] = "3.0"
+projects[views][version] = "3.2"
 projects[views_bulk_operations][version] = "1.16"
-projects[ctools][version] = "1.11"
+projects[ctools][version] = "1.12"
 
 ; Libraries
 libraries[jquery_ui][download][type] = "get"
