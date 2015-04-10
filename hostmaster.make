@@ -29,10 +29,6 @@ projects[hosting][download][branch] = 7.x-3.x
 projects[hosting_git][download][type] = git
 projects[hosting_git][download][branch] = 7.x-3.x
 
-projects[hosting_platform_pathauto][download][type] = git
-projects[hosting_platform_pathauto][download][branch] = 7.x-2.x
-
-
 
 ; Modules - Temporary
 

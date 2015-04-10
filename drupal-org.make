@@ -31,9 +31,6 @@ projects[hosting][version] = 3.x
 projects[hosting_git][subdir] = aegir
 projects[hosting_git][version] = 3.x
 
-projects[hosting_platform_pathauto][subdir] = aegir
-projects[hosting_platform_pathauto][version] = 2.x
-
 ;projects[hosting_remote_import][subdir] = aegir
 ;projects[hosting_remote_import][version] = 3.x
 

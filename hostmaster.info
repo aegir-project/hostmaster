@@ -37,7 +37,6 @@ dependencies[] = actions_permissions
 dependencies[] = r4032login
 
 ;; Aegir contrib ;;
-;dependencies[] = hosting_platform_pathauto
 ;dependencies[] = aegir_tour
 
 ;; Enable some dev modules during the 7.x-3.x dev cycle.
