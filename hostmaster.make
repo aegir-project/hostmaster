@@ -29,6 +29,8 @@ projects[hosting][download][branch] = 7.x-3.x
 projects[hosting_git][download][type] = git
 projects[hosting_git][download][branch] = 7.x-3.x
 
+projects[hosting_remote_import][download][type] = git
+projects[hosting_remote_import][download][branch] = 7.x-3.x
 
 ; Modules - Temporary
 
