@@ -53,4 +53,4 @@ projects[openidadmin][version] = 1.0
 projects[overlay_paths][version] = 1.3
 projects[r4032login][version] = 1.8
 projects[views][version] = 3.11
-projects[views_bulk_operations][version] = 3.2
+projects[views_bulk_operations][version] = 3.3
