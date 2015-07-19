@@ -23,18 +23,20 @@ projects[hosting][download][branch] = 7.x-3.x
 
 ; Modules - Aegir "golden"
 
-;projects[aegir_tour][download][type] = git
-;projects[aegir_tour][download][branch] = 7.x-3.x
-
 projects[hosting_git][download][type] = git
 projects[hosting_git][download][branch] = 7.x-3.x
 
 projects[hosting_remote_import][download][type] = git
 projects[hosting_remote_import][download][branch] = 7.x-3.x
 
-; Modules - Temporary
+projects[hosting_site_backup_manager][download][type] = git
+projects[hosting_site_backup_manager][download][branch] = 7.x-3.x
 
-; Add devel while we're in the 7.x-3.x dev cycle;
-; enabled in hostmaster.info.
+projects[hosting_tasks_extra][download][type] = git
+projects[hosting_tasks_extra][download][branch] = 7.x-3.x
+
+
+; Modules - Dev
+
 projects[devel][subdir] = developer
 projects[devel_debug_log][subdir] = developer

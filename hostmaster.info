@@ -35,12 +35,3 @@ dependencies[] = views
 dependencies[] = views_bulk_operations
 dependencies[] = actions_permissions
 dependencies[] = r4032login
-
-;; Aegir contrib ;;
-;dependencies[] = aegir_tour
-
-;; Enable some dev modules during the 7.x-3.x dev cycle.
-dependencies[] = views_ui
-dependencies[] = dblog
-dependencies[] = devel
-dependencies[] = devel_debug_log
