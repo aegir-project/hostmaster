@@ -54,7 +54,7 @@ function hostmaster_bootstrap() {
   $master_server = d()->platform->server;
   hosting_services_add($node, 'http', $master_server->http_service_type, array(
    'restart_cmd' => $master_server->http_restart_cmd,
-   'port' => 80,
+   'port' => $master_server->http_port,
    'available' => 1,
   ));
 
@@ -78,7 +78,7 @@ function hostmaster_bootstrap() {
     'db_type' => $master_db['scheme'],
     'db_user' => urldecode($master_db['user']),
     'db_passwd' => isset($master_db['pass']) ? urldecode($master_db['pass']) : '',
-    'port' => 3306,
+    'port' => $db_server->db_port,
     'available' => 1,
   ));
 
