@@ -35,6 +35,9 @@ projects[hosting_site_backup_manager][download][branch] = 7.x-3.x
 projects[hosting_tasks_extra][download][type] = git
 projects[hosting_tasks_extra][download][branch] = 7.x-3.x
 
+projects[hosting_civicrm][download][type] = git
+projects[hosting_civicrm][download][branch] = 7.x-3.x
+
 
 ; Modules - Dev
 

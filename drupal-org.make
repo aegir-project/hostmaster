@@ -28,6 +28,7 @@ projects[hosting_site_backup_manager][subdir] = aegir
 
 projects[hosting_tasks_extra][subdir] = aegir
 
+projects[hosting_civicrm][subdir] = aegir
 
 
 ; Modules - contrib
