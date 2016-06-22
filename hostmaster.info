@@ -2,6 +2,10 @@ name = Hostmaster
 description = Select this profile to manage the installation and maintenance of hosted Drupal sites.
 core = 7.x
 
+distribution_name = "Hostmaster (Aegir)"
+exclusive = TRUE
+
+
 ;; Drupal core ;;
 dependencies[] = block
 dependencies[] = color
