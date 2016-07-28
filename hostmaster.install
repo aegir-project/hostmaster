@@ -223,6 +223,8 @@ function hostmaster_task_finalize() {
   variable_set('menu_options_server', array());
   variable_set('menu_options_site', array());
 
+  // Rebuild node access permissions.
+  node_access_rebuild();
 }
 
 /**
