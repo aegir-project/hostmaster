@@ -27,13 +27,7 @@ before_install:
 
   # Get test scripts
   - git clone http://github.com/aegir-project/tests.git
-  - cd tests
-
-  #  Build a makefile for this hostmaster clone.
-  - echo projects[hostmaster][download][type] = "copy" >> build-hostmaster.make
-  - echo projects[hostmaster][download][url] = "$TRAVIS_BUILD_DIR" >> build-hostmaster.make
-  - cat build-hostmaster.make
-  - cd ..
+  - cd tests/travis
 
   # list docker-engine versions
   - apt-cache madison docker-engine
@@ -56,5 +50,4 @@ before_install:
 script:
 
   # Tests are included in the docker-compose.yml file in the tests repo.
-  - cd tests
   - sudo docker-compose run hostmaster --rm
