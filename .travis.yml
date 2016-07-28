@@ -24,6 +24,8 @@ services:
   - docker
 
 before_install:
+  # Show travis build dir variable.
+  - echo $TRAVIS_BUILD_DIR
 
   # Get test scripts
   - git clone http://github.com/aegir-project/tests.git
@@ -43,10 +45,9 @@ before_install:
   - docker --version
   - docker-compose --version
 
-  # Get aegir/hostmaster image.
+  # Get aegir/hostmaster and database images.
   - sudo docker pull aegir/hostmaster
   - sudo docker pull mariadb
-  - echo $TRAVIS_BUILD_DIR
 
 script:
 
