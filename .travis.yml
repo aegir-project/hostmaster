@@ -45,6 +45,7 @@ before_install:
 
   # Get aegir/hostmaster image.
   - sudo docker pull aegir/hostmaster
+  - sudo docker pull mariadb
   - echo $TRAVIS_BUILD_DIR
 
 script:
