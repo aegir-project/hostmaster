@@ -45,7 +45,6 @@ before_install:
 
   # Get aegir/hostmaster image.
   - sudo docker pull aegir/hostmaster
-
   - echo $TRAVIS_BUILD_DIR
 
 script:
