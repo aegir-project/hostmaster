@@ -14,6 +14,9 @@ defaults[projects][type] = "module"
 projects[eldir][type] = theme
 projects[eldir][subdir] = aegir
 
+projects[bootstraps][type] = theme
+projects[bootstraps][subdir] = aegir
+
 projects[hosting][subdir] = aegir
 
 
