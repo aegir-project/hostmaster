@@ -6,7 +6,8 @@ env:
   globaL:
     - DOCKER_VERSION=1.11.2-0~trusty
     - DOCKER_COMPOSE_VERSION=1.7.1
-    - AEGIR_TESTS_VERSION
+    - AEGIR_HOSTING_VERSION=7.x-3.x
+    - AEGIR_TESTS_VERSION=master
 
 #env:
 #  - test: Ubuntu 14.04 Apache
@@ -25,9 +26,15 @@ services:
 
 before_install:
 
+  # Get Hosting
+  - git clone http://git.drupal.org/project/hosting.git /home/travis/build/aegir-project/hosting
+  - cd /home/travis/build/aegir-project/hosting
+  - git checkout $AEGIR_HOSTING_VERSION
+
   # Get test scripts
-  - git clone http://github.com/aegir-project/tests.git
-  - cd tests/travis
+  - git clone http://github.com/aegir-project/tests.git /home/travis/build/aegir-project/tests
+  - cd /home/travis/build/aegir-project/tests
+  - git checkout $AEGIR_TESTS_VERSION
 
   # list docker-engine versions
   - apt-cache madison docker-engine
