@@ -25,6 +25,8 @@ services:
   - docker
 
 before_install:
+  # Show travis build dir variable.
+  - echo $TRAVIS_BUILD_DIR
 
   # Get Hosting
   - git clone http://git.drupal.org/project/hosting.git /home/travis/build/aegir-project/hosting
@@ -40,7 +42,7 @@ before_install:
   - apt-cache madison docker-engine
 
   # upgrade docker-engine to specific version
-  - sudo apt-get -o Dpkg::Options::="--force-confnew" install -y docker-engine=${DOCKER_VERSION}
+  - sudo apt-get -qq -o Dpkg::Options::="--force-confnew" install -y docker-engine=${DOCKER_VERSION}
 
   # reinstall docker-compose at specific version
   - sudo rm /usr/local/bin/docker-compose
@@ -50,9 +52,9 @@ before_install:
   - docker --version
   - docker-compose --version
 
-  # Get aegir/hostmaster image.
+  # Get aegir/hostmaster and database images.
   - sudo docker pull aegir/hostmaster
-
+  - sudo docker pull mariadb
 
 script:
 
