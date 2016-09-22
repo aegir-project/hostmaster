@@ -47,4 +47,4 @@ before_install:
 script:
 
   # Tests are included in the docker-compose.yml file in the tests repo.
-  - sudo docker-compose run hostmaster --rm
+  - sudo docker-compose -f docker-compose-hostmaster.yml run hostmaster
