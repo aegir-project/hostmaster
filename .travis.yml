@@ -9,8 +9,6 @@ branches:
 
 env:
   global:
-    - DOCKER_VERSION=1.11.2-0~trusty
-    - DOCKER_COMPOSE_VERSION=1.7.1
     - AEGIR_HOSTING_VERSION=7.x-3.x
     - AEGIR_TESTS_VERSION=master
 
