@@ -1,41 +1,44 @@
-name = Hostmaster
-description = Select this profile to manage the installation and maintenance of hosted Drupal sites.
-core = 7.x
+name: Hostmaster
+type: profile
+description: 'Select this profile to manage the installation and maintenance of hosted Drupal sites.'
 
-distribution_name = "Hostmaster (Aegir)"
-exclusive = TRUE
+distribution:
+  name: Hostmaster (Aegir)
 
+# version: VERSION
+# core: 8.x
+# exclusive = TRUE
 
-;; Drupal core ;;
-dependencies[] = block
-dependencies[] = color
-dependencies[] = filter
-dependencies[] = help
-dependencies[] = menu
-dependencies[] = node
-dependencies[] = overlay
-dependencies[] = system
-dependencies[] = user
+dependencies:
+  # Drupal core
+  - block
+  - color
+  - filter
+  - help
+  - menu
+  - node
+  - toolbar
+  - views
 
-;; Aegir core ;;
-dependencies[] = hosting
-dependencies[] = hosting_task
-dependencies[] = hosting_client
-dependencies[] = hosting_db_server
-dependencies[] = hosting_package
-dependencies[] = hosting_platform
-dependencies[] = hosting_site
-dependencies[] = hosting_web_server
-dependencies[] = hosting_server
-;dependencies[] = hosting_clone
-;dependencies[] = hosting_cron
-;dependencies[] = hosting_migrate
-
-;; Drupal contrib ;;
-dependencies[] = admin_menu
-dependencies[] = betterlogin
-dependencies[] = overlay_paths
-dependencies[] = views
-dependencies[] = views_bulk_operations
-dependencies[] = actions_permissions
-dependencies[] = r4032login
+#;; Aegir core ;;
+#dependencies[] = hosting
+#dependencies[] = hosting_task
+#dependencies[] = hosting_client
+#dependencies[] = hosting_db_server
+#dependencies[] = hosting_package
+#dependencies[] = hosting_platform
+#dependencies[] = hosting_site
+#dependencies[] = hosting_web_server
+#dependencies[] = hosting_server
+#;dependencies[] = hosting_clone
+#;dependencies[] = hosting_cron
+#;dependencies[] = hosting_migrate
+#
+#;; Drupal contrib ;;
+#dependencies[] = admin_menu
+#dependencies[] = betterlogin
+#dependencies[] = overlay_paths
+#dependencies[] = views
+#dependencies[] = views_bulk_operations
+#dependencies[] = actions_permissions
+#dependencies[] = r4032login
