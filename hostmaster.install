@@ -1,347 +1,347 @@
 <?php
 
-/**
- * Implement hook_install().
- *
- * Perform actions to set up the site for this profile.
- */
-function hostmaster_install() {
-
-  variable_set('install_profile', 'hostmaster');
-
-// add support for nginx
-  if (d()->platform->server->http_service_type === 'nginx') {
-    module_enable(array('hosting_nginx'));
-  }
-
-  // Bootstrap and create all the initial nodes
-  hostmaster_bootstrap();
-
-  // Finalize and setup themes, optional modules etc
-  hostmaster_task_finalize();
-
-}
-
-function hostmaster_bootstrap() {
-  /* Default node types and default node */
-  $types =  node_types_rebuild();
-
-  // Initialize the hosting defines
-  hosting_init();
-
-  /* Default client */
-  $node = new stdClass();
-  $node->uid = 1;
-  $node->type = 'client';
-  $node->title = drush_get_option('client_name', 'admin');
-  $node->status = 1;
-  node_save($node);
-  variable_set('hosting_default_client', $node->nid);
-  variable_set('hosting_admin_client', $node->nid);
-
-  $client_id = $node->nid;
-
-  /* Default server */
-  $node = new stdClass();
-  $node->uid = 1;
-  $node->type = 'server';
-  $node->title = php_uname('n');
-  $node->status = 1;
-  $node->hosting_name = 'server_master';
-  $node->services = array();
-
-  /* Make it compatible with more than apache and nginx */
-  $master_server = d()->platform->server;
-  hosting_services_add($node, 'http', $master_server->http_service_type, array(
-   'restart_cmd' => $master_server->http_restart_cmd,
-   'port' => $master_server->http_port,
-   'available' => 1,
-  ));
-
-  /* examine the db server associated with the hostmaster site */
-  $db_server = d()->db_server;
-  $master_db = parse_url($db_server->master_db);
-  /* if it's not the same server as the master server, create a new node
-   * for it */
-  if ($db_server->remote_host == $master_server->remote_host) {
-    $db_node = $node;
-  } else {
-    $db_node = new stdClass();
-    $db_node->uid = 1;
-    $db_node->type = 'server';
-    $db_node->title = $master_db['host'];
-    $db_node->status = 1;
-    $db_node->hosting_name = 'server_' . $db_server->remote_host;
-    $db_node->services = array();
-  }
-  hosting_services_add($db_node, 'db', $db_server->db_service_type, array(
-    'db_type' => $master_db['scheme'],
-    'db_user' => urldecode($master_db['user']),
-    'db_passwd' => isset($master_db['pass']) ? urldecode($master_db['pass']) : '',
-    'port' => $db_server->db_port,
-    'available' => 1,
-  ));
-
-  drupal_set_message(st('Creating master server node'));
-  node_save($node);
-  if ($db_server->remote_host != $master_server->remote_host) {
-    drupal_set_message(st('Creating db server node'));
-    node_save($db_node);
-  }
-  variable_set('hosting_default_web_server', $node->nid);
-  variable_set('hosting_own_web_server', $node->nid);
-
-  variable_set('hosting_default_db_server', $db_node->nid);
-  variable_set('hosting_own_db_server', $db_node->nid);
-
-  // Create the hostmaster platform & packages
-  $node = new stdClass();
-  $node->uid = 1;
-  $node->title = 'Drupal';
-  $node->type = 'package';
-  $node->package_type = 'platform';
-  $node->short_name = 'drupal';
-  $node->old_short_name = 'drupal';
-  $node->description = 'Drupal code-base.';
-  $node->status = 1;
-  node_save($node);
-  $package_id = $node->nid;
-
-  $node = new stdClass();
-  $node->uid = 1;
-  $node->type = 'platform';
-  $node->title = 'hostmaster';
-  $node->publish_path = d()->root;
-  $node->makefile = '';
-  $node->verified = 1;
-  $node->web_server = variable_get('hosting_default_web_server', 2);
-  $node->platform_status = 1;
-  $node->status = 1;
-  $node->make_working_copy = 0;
-  node_save($node);
-  $platform_id = $node->nid;
-  variable_set('hosting_own_platform', $node->nid);
-
-  $instance = new stdClass();
-  $instance->rid = $node->nid;
-  $instance->version = VERSION;
-  $instance->filename = '';
-  $instance->version_code = 1;
-  //$instance->schema_version = drupal_get_installed_schema_version('system');
-  $instance->schema_version = 0;
-  $instance->package_id = $package_id;
-  $instance->status = 0;
-  $instance->platform = $platform_id;
-  hosting_package_instance_save($instance);
-
-  // Create the hostmaster profile package node
-  $node = new stdClass();
-  $node->uid = 1;
-  $node->title = 'hostmaster';
-  $node->type = 'package';
-  $node->old_short_name = 'hostmaster';
-  $node->description = 'The Hostmaster profile.';
-  $node->package_type = 'profile';
-  $node->short_name = 'hostmaster';
-  $node->status = 1;
-  node_save($node);
-  $profile_id = $node->nid;
-
-  $instance = new stdClass();
-  $instance->rid = $node->nid;
-  $instance->version = VERSION;
-  $instance->filename = '';
-  $instance->version_code = 1;
-  //$instance->schema_version = drupal_get_installed_schema_version('system');
-  $instance->schema_version = 0;
-  $instance->package_id = $profile_id;
-  $instance->status = 0;
-  $instance->platform = $platform_id;
-  hosting_package_instance_save($instance);
-
-  // Create the main Aegir site node
-  $node = new stdClass();
-  $node->uid = 1;
-  $node->type = 'site';
-  $node->title = d()->uri;
-  $node->platform = $platform_id;
-  $node->client = $client_id;
-  $node->db_name = '';
-  $node->db_server = $db_node->nid;
-  $node->profile = $profile_id;
-  $node->import = true;
-  $node->hosting_name = 'hostmaster';
-  $node->site_status = 1;
-  $node->verified = 1;
-  $node->status = 1;
-  node_save($node);
-
-  // Save the hostmaster site nid.
-  variable_set('aegir_hostmaster_site_nid', $node->nid);
-
-  // Enable the hosting features of modules that we enable by default.
-  // The module will already be enabled,
-  // this makes sure we also set the default permissions.
-  $default_hosting_features = array(
-    'hosting_web_server' => 'web_server',
-    'hosting_db_server' => 'db_server',
-    'hosting_platform' => 'platform',
-    'hosting_client' => 'client',
-    'hosting_task' => 'task',
-    'hosting_server' => 'server',
-    'hosting_package' => 'package',
-    'hosting_site' => 'site',
-    'hosting' => 'hosting',
-  );
-  hosting_features_enable($default_hosting_features, $rebuild = TRUE, $enable = FALSE);
-
-  variable_set('site_frontpage', 'hosting/sites');
-
-  // do not allow user registration: the signup form will do that
-  variable_set('user_register', 0);
-
-  // This is saved because the config generation script is running via drush, and does not have access to this value
-  variable_set('install_url' , $GLOBALS['base_url']);
-}
-
-function hostmaster_task_finalize() {
-  variable_set('install_profile', 'hostmaster');
-
-  // Enable Eldir, and set is as default theme
-  theme_enable(array('eldir'));
-  variable_set('theme_default', 'eldir');
-
-  // Disable the default Bartik theme
-  theme_disable(array('bartik'));
-
-  drupal_set_message(st('Configuring default blocks'));
-  hostmaster_place_blocks('eldir');
-
-  // Save "menu_options" for our content types, so they don't offer to be put in menus.
-  variable_set('menu_options_client', array());
-  variable_set('menu_options_platform', array());
-  variable_set('menu_options_server', array());
-  variable_set('menu_options_site', array());
-
-  // Rebuild node access permissions.
-  node_access_rebuild();
-}
-
-/**
- * Helper function to place block.
- */
-function hostmaster_place_blocks($theme) {
-  $blocks = array(
-    array(
-      'module' => 'hosting',
-      'delta' => 'hosting_queues',
-      'theme' => $theme,
-      'status' => 1,
-      'weight' => -2,
-      'region' => 'sidebar_first',
-      'visibility' => 0,
-      'pages' => '',
-      'cache' => -1,
-    ),
-    array(
-      'module' => 'system',
-      'delta' => 'navigation',
-      'theme' => $theme,
-      'status' => 1,
-      'weight' => 0,
-      'region' => 'sidebar_first',
-      'visibility' => 0,
-      'pages' => '',
-      'cache' => -1,
-    ),
-    array(
-      'module' => 'views',
-      'delta' => 'hosting_task_list-block',
-      'theme' => $theme,
-      'status' => 1,
-      'weight' => -2,
-      'region' => 'sidebar_first',
-      'visibility' => 0,
-      'pages' => '',
-      'cache' => -1,
-    ),
-    array(
-      'module' => 'views',
-      'delta' => 'hosting_site_list-block_sites',
-      'theme' => $theme,
-      'status' => 1,
-      'weight' => 0,
-      'region' => 'content_bottom',
-      'visibility' => 1,
-      'pages' => 'hosting/c/platform_*',
-      'cache' => -1,
-    ),
-    array(
-      'module' => 'views',
-      'delta' => 'hosting_platform_list-block_1',
-      'theme' => $theme,
-      'status' => 1,
-      'weight' => 0,
-      'region' => 'content_bottom',
-      'visibility' => 1,
-      'pages' => 'hosting/c/server_*',
-      'cache' => -1,
-    ),
-    array(
-      'module' => 'views',
-      'delta' => 'hosting_site_list-block_profile',
-      'theme' => $theme,
-      'status' => 1,
-      'weight' => 0,
-      'region' => 'content_bottom',
-      'visibility' => 0,
-      'pages' => '',
-      //"<?php\n\$node = menu_get_object();\nif (!empty(\$node)) {\n  return \$node->package_type == 'profile';\n}\n
-      'cache' => -1,
-    ),
-    array(
-      'module' => 'views',
-      'delta' => 'hosting_site_list-block_client',
-      'theme' => $theme,
-      'status' => 1,
-      'weight' => 0,
-      'region' => 'content_bottom',
-      'visibility' => 0,
-      'pages' => '',
-      //"<?php\n\$node = menu_get_object();\n\$menu_item = menu_get_item();\nif (!empty(\$node) && \$menu_item['number_parts'] == 2) {\n  return \$node->type == 'client';\n}\n
-      'cache' => -1,
-    ),
-    array(
-      'module' => 'views',
-      'delta' => 'hosting_site_list-block_client2',
-      'theme' => $theme,
-      'status' => 1,
-      'weight' => 0,
-      'region' => 'content_bottom',
-      'visibility' => 0,
-      'pages' => '',
-      //"<?php\nglobal \$user;\$node = menu_get_object();\n\$menu_item = menu_get_item();\nif (!empty(\$node)) && \$menu_item['number_parts'] == 2) {\n  return \$node->type == 'client' && $user->uid != 1;\n}\n
-      'cache' => -1,
-    ),
-    array(
-      'module' => 'views',
-      'delta' => 'hosting_package_list-block_1',
-      'theme' => $theme,
-      'status' => 1,
-      'weight' => 0,
-      'region' => 'content_bottom',
-      'visibility' => 0,
-      'pages' => '',
-      //"<?php\n\$node = menu_get_object();\nif (!empty(\$node)) {\n  return \$node->type == 'package' && \$node->package_type != 'profile';\n}\n
-      'cache' => -1,
-    ),
-  );
-
-  $query = db_insert('block')->fields(array('module', 'delta', 'theme', 'status', 'weight', 'region', 'visibility', 'pages', 'cache'));
-
-  foreach ($blocks as $block) {
-    $query->values($block);
-  }
-  $query->execute();
-
-}
+///**
+// * Implement hook_install().
+// *
+// * Perform actions to set up the site for this profile.
+// */
+//function hostmaster_install() {
+//
+//  variable_set('install_profile', 'hostmaster');
+//
+//// add support for nginx
+//  if (d()->platform->server->http_service_type === 'nginx') {
+//    module_enable(array('hosting_nginx'));
+//  }
+//
+//  // Bootstrap and create all the initial nodes
+//  hostmaster_bootstrap();
+//
+//  // Finalize and setup themes, optional modules etc
+//  hostmaster_task_finalize();
+//
+//}
+//
+//function hostmaster_bootstrap() {
+//  /* Default node types and default node */
+//  $types =  node_types_rebuild();
+//
+//  // Initialize the hosting defines
+//  hosting_init();
+//
+//  /* Default client */
+//  $node = new stdClass();
+//  $node->uid = 1;
+//  $node->type = 'client';
+//  $node->title = drush_get_option('client_name', 'admin');
+//  $node->status = 1;
+//  node_save($node);
+//  variable_set('hosting_default_client', $node->nid);
+//  variable_set('hosting_admin_client', $node->nid);
+//
+//  $client_id = $node->nid;
+//
+//  /* Default server */
+//  $node = new stdClass();
+//  $node->uid = 1;
+//  $node->type = 'server';
+//  $node->title = php_uname('n');
+//  $node->status = 1;
+//  $node->hosting_name = 'server_master';
+//  $node->services = array();
+//
+//  /* Make it compatible with more than apache and nginx */
+//  $master_server = d()->platform->server;
+//  hosting_services_add($node, 'http', $master_server->http_service_type, array(
+//   'restart_cmd' => $master_server->http_restart_cmd,
+//   'port' => $master_server->http_port,
+//   'available' => 1,
+//  ));
+//
+//  /* examine the db server associated with the hostmaster site */
+//  $db_server = d()->db_server;
+//  $master_db = parse_url($db_server->master_db);
+//  /* if it's not the same server as the master server, create a new node
+//   * for it */
+//  if ($db_server->remote_host == $master_server->remote_host) {
+//    $db_node = $node;
+//  } else {
+//    $db_node = new stdClass();
+//    $db_node->uid = 1;
+//    $db_node->type = 'server';
+//    $db_node->title = $master_db['host'];
+//    $db_node->status = 1;
+//    $db_node->hosting_name = 'server_' . $db_server->remote_host;
+//    $db_node->services = array();
+//  }
+//  hosting_services_add($db_node, 'db', $db_server->db_service_type, array(
+//    'db_type' => $master_db['scheme'],
+//    'db_user' => urldecode($master_db['user']),
+//    'db_passwd' => isset($master_db['pass']) ? urldecode($master_db['pass']) : '',
+//    'port' => $db_server->db_port,
+//    'available' => 1,
+//  ));
+//
+//  drupal_set_message(st('Creating master server node'));
+//  node_save($node);
+//  if ($db_server->remote_host != $master_server->remote_host) {
+//    drupal_set_message(st('Creating db server node'));
+//    node_save($db_node);
+//  }
+//  variable_set('hosting_default_web_server', $node->nid);
+//  variable_set('hosting_own_web_server', $node->nid);
+//
+//  variable_set('hosting_default_db_server', $db_node->nid);
+//  variable_set('hosting_own_db_server', $db_node->nid);
+//
+//  // Create the hostmaster platform & packages
+//  $node = new stdClass();
+//  $node->uid = 1;
+//  $node->title = 'Drupal';
+//  $node->type = 'package';
+//  $node->package_type = 'platform';
+//  $node->short_name = 'drupal';
+//  $node->old_short_name = 'drupal';
+//  $node->description = 'Drupal code-base.';
+//  $node->status = 1;
+//  node_save($node);
+//  $package_id = $node->nid;
+//
+//  $node = new stdClass();
+//  $node->uid = 1;
+//  $node->type = 'platform';
+//  $node->title = 'hostmaster';
+//  $node->publish_path = d()->root;
+//  $node->makefile = '';
+//  $node->verified = 1;
+//  $node->web_server = variable_get('hosting_default_web_server', 2);
+//  $node->platform_status = 1;
+//  $node->status = 1;
+//  $node->make_working_copy = 0;
+//  node_save($node);
+//  $platform_id = $node->nid;
+//  variable_set('hosting_own_platform', $node->nid);
+//
+//  $instance = new stdClass();
+//  $instance->rid = $node->nid;
+//  $instance->version = VERSION;
+//  $instance->filename = '';
+//  $instance->version_code = 1;
+//  //$instance->schema_version = drupal_get_installed_schema_version('system');
+//  $instance->schema_version = 0;
+//  $instance->package_id = $package_id;
+//  $instance->status = 0;
+//  $instance->platform = $platform_id;
+//  hosting_package_instance_save($instance);
+//
+//  // Create the hostmaster profile package node
+//  $node = new stdClass();
+//  $node->uid = 1;
+//  $node->title = 'hostmaster';
+//  $node->type = 'package';
+//  $node->old_short_name = 'hostmaster';
+//  $node->description = 'The Hostmaster profile.';
+//  $node->package_type = 'profile';
+//  $node->short_name = 'hostmaster';
+//  $node->status = 1;
+//  node_save($node);
+//  $profile_id = $node->nid;
+//
+//  $instance = new stdClass();
+//  $instance->rid = $node->nid;
+//  $instance->version = VERSION;
+//  $instance->filename = '';
+//  $instance->version_code = 1;
+//  //$instance->schema_version = drupal_get_installed_schema_version('system');
+//  $instance->schema_version = 0;
+//  $instance->package_id = $profile_id;
+//  $instance->status = 0;
+//  $instance->platform = $platform_id;
+//  hosting_package_instance_save($instance);
+//
+//  // Create the main Aegir site node
+//  $node = new stdClass();
+//  $node->uid = 1;
+//  $node->type = 'site';
+//  $node->title = d()->uri;
+//  $node->platform = $platform_id;
+//  $node->client = $client_id;
+//  $node->db_name = '';
+//  $node->db_server = $db_node->nid;
+//  $node->profile = $profile_id;
+//  $node->import = true;
+//  $node->hosting_name = 'hostmaster';
+//  $node->site_status = 1;
+//  $node->verified = 1;
+//  $node->status = 1;
+//  node_save($node);
+//
+//  // Save the hostmaster site nid.
+//  variable_set('aegir_hostmaster_site_nid', $node->nid);
+//
+//  // Enable the hosting features of modules that we enable by default.
+//  // The module will already be enabled,
+//  // this makes sure we also set the default permissions.
+//  $default_hosting_features = array(
+//    'hosting_web_server' => 'web_server',
+//    'hosting_db_server' => 'db_server',
+//    'hosting_platform' => 'platform',
+//    'hosting_client' => 'client',
+//    'hosting_task' => 'task',
+//    'hosting_server' => 'server',
+//    'hosting_package' => 'package',
+//    'hosting_site' => 'site',
+//    'hosting' => 'hosting',
+//  );
+//  hosting_features_enable($default_hosting_features, $rebuild = TRUE, $enable = FALSE);
+//
+//  variable_set('site_frontpage', 'hosting/sites');
+//
+//  // do not allow user registration: the signup form will do that
+//  variable_set('user_register', 0);
+//
+//  // This is saved because the config generation script is running via drush, and does not have access to this value
+//  variable_set('install_url' , $GLOBALS['base_url']);
+//}
+//
+//function hostmaster_task_finalize() {
+//  variable_set('install_profile', 'hostmaster');
+//
+//  // Enable Eldir, and set is as default theme
+//  theme_enable(array('eldir'));
+//  variable_set('theme_default', 'eldir');
+//
+//  // Disable the default Bartik theme
+//  theme_disable(array('bartik'));
+//
+//  drupal_set_message(st('Configuring default blocks'));
+//  hostmaster_place_blocks('eldir');
+//
+//  // Save "menu_options" for our content types, so they don't offer to be put in menus.
+//  variable_set('menu_options_client', array());
+//  variable_set('menu_options_platform', array());
+//  variable_set('menu_options_server', array());
+//  variable_set('menu_options_site', array());
+//
+//  // Rebuild node access permissions.
+//  node_access_rebuild();
+//}
+//
+///**
+// * Helper function to place block.
+// */
+//function hostmaster_place_blocks($theme) {
+//  $blocks = array(
+//    array(
+//      'module' => 'hosting',
+//      'delta' => 'hosting_queues',
+//      'theme' => $theme,
+//      'status' => 1,
+//      'weight' => -2,
+//      'region' => 'sidebar_first',
+//      'visibility' => 0,
+//      'pages' => '',
+//      'cache' => -1,
+//    ),
+//    array(
+//      'module' => 'system',
+//      'delta' => 'navigation',
+//      'theme' => $theme,
+//      'status' => 1,
+//      'weight' => 0,
+//      'region' => 'sidebar_first',
+//      'visibility' => 0,
+//      'pages' => '',
+//      'cache' => -1,
+//    ),
+//    array(
+//      'module' => 'views',
+//      'delta' => 'hosting_task_list-block',
+//      'theme' => $theme,
+//      'status' => 1,
+//      'weight' => -2,
+//      'region' => 'sidebar_first',
+//      'visibility' => 0,
+//      'pages' => '',
+//      'cache' => -1,
+//    ),
+//    array(
+//      'module' => 'views',
+//      'delta' => 'hosting_site_list-block_sites',
+//      'theme' => $theme,
+//      'status' => 1,
+//      'weight' => 0,
+//      'region' => 'content_bottom',
+//      'visibility' => 1,
+//      'pages' => 'hosting/c/platform_*',
+//      'cache' => -1,
+//    ),
+//    array(
+//      'module' => 'views',
+//      'delta' => 'hosting_platform_list-block_1',
+//      'theme' => $theme,
+//      'status' => 1,
+//      'weight' => 0,
+//      'region' => 'content_bottom',
+//      'visibility' => 1,
+//      'pages' => 'hosting/c/server_*',
+//      'cache' => -1,
+//    ),
+//    array(
+//      'module' => 'views',
+//      'delta' => 'hosting_site_list-block_profile',
+//      'theme' => $theme,
+//      'status' => 1,
+//      'weight' => 0,
+//      'region' => 'content_bottom',
+//      'visibility' => 0,
+//      'pages' => '',
+//      //"<?php\n\$node = menu_get_object();\nif (!empty(\$node)) {\n  return \$node->package_type == 'profile';\n}\n
+//      'cache' => -1,
+//    ),
+//    array(
+//      'module' => 'views',
+//      'delta' => 'hosting_site_list-block_client',
+//      'theme' => $theme,
+//      'status' => 1,
+//      'weight' => 0,
+//      'region' => 'content_bottom',
+//      'visibility' => 0,
+//      'pages' => '',
+//      //"<?php\n\$node = menu_get_object();\n\$menu_item = menu_get_item();\nif (!empty(\$node) && \$menu_item['number_parts'] == 2) {\n  return \$node->type == 'client';\n}\n
+//      'cache' => -1,
+//    ),
+//    array(
+//      'module' => 'views',
+//      'delta' => 'hosting_site_list-block_client2',
+//      'theme' => $theme,
+//      'status' => 1,
+//      'weight' => 0,
+//      'region' => 'content_bottom',
+//      'visibility' => 0,
+//      'pages' => '',
+//      //"<?php\nglobal \$user;\$node = menu_get_object();\n\$menu_item = menu_get_item();\nif (!empty(\$node)) && \$menu_item['number_parts'] == 2) {\n  return \$node->type == 'client' && $user->uid != 1;\n}\n
+//      'cache' => -1,
+//    ),
+//    array(
+//      'module' => 'views',
+//      'delta' => 'hosting_package_list-block_1',
+//      'theme' => $theme,
+//      'status' => 1,
+//      'weight' => 0,
+//      'region' => 'content_bottom',
+//      'visibility' => 0,
+//      'pages' => '',
+//      //"<?php\n\$node = menu_get_object();\nif (!empty(\$node)) {\n  return \$node->type == 'package' && \$node->package_type != 'profile';\n}\n
+//      'cache' => -1,
+//    ),
+//  );
+//
+//  $query = db_insert('block')->fields(array('module', 'delta', 'theme', 'status', 'weight', 'region', 'visibility', 'pages', 'cache'));
+//
+//  foreach ($blocks as $block) {
+//    $query->values($block);
+//  }
+//  $query->execute();
+//
+//}
