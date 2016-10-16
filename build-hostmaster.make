@@ -1,4 +1,4 @@
-core = 7.x
+core = 8.x
 api = 2
 
 
