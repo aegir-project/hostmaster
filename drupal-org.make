@@ -35,8 +35,8 @@ projects[hosting_civicrm][subdir] = aegir
 
 projects[admin_menu][version] = 3.0-rc5
 projects[betterlogin][version] = 1.4
-projects[ctools][version] = 1.10
-projects[entity][version] = 1.7
+projects[ctools][version] = 1.11
+projects[entity][version] = 1.8
 projects[openidadmin][version] = 1.0
 projects[overlay_paths][version] = 1.3
 projects[r4032login][version] = 1.8
