@@ -42,3 +42,13 @@ projects[overlay_paths][version] = 1.3
 projects[r4032login][version] = 1.8
 projects[views][version] = 3.14
 projects[views_bulk_operations][version] = 3.3
+
+; Two factor authentication
+projects[libraries][version] = 2.3
+projects[tfa][version] = 2.0
+projects[tfa_basic][version] = 1.0-beta3
+projects[tfa_basic][patch][] = "https://www.drupal.org/files/issues/use_libraries_module-2807953-8.patch"
+
+libraries[qrcodejs][download][type] = git
+libraries[qrcodejs][download][url] = https://github.com/davidshimjs/qrcodejs.git
+libraries[qrcodejs][download][revision] = 04f46c6a0708418cb7b96fc563eacae0fbf77674
