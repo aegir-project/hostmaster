@@ -52,3 +52,9 @@ projects[tfa_basic][patch][] = "https://www.drupal.org/files/issues/use_librarie
 libraries[qrcodejs][download][type] = git
 libraries[qrcodejs][download][url] = https://github.com/davidshimjs/qrcodejs.git
 libraries[qrcodejs][download][revision] = 04f46c6a0708418cb7b96fc563eacae0fbf77674
+
+; JQuery TimeAgo plugin
+projects[timeago][version] = 2.3
+ibraries[jquery.timeago][download][type] = get
+libraries[jquery.timeago][download][url] = https://raw.githubusercontent.com/rmm5t/jquery-timeago/v1.5.3/jquery.timeago.js
+libraries[jquery.timeago][destination] = libraries
