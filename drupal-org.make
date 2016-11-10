@@ -30,6 +30,7 @@ projects[hosting_tasks_extra][subdir] = aegir
 
 projects[hosting_civicrm][subdir] = aegir
 
+projects[hosting_dns][subdir] = aegir
 
 ; Modules - contrib
 
