@@ -41,7 +41,7 @@ projects[hosting_dns][version] = 1.x
 
 projects[admin_menu][version] = 3.0-rc5
 projects[betterlogin][version] = 1.4
-projects[ctools][version] = 1.11
+projects[ctools][version] = 1.12
 projects[entity][version] = 1.8
 projects[openidadmin][version] = 1.0
 projects[overlay_paths][version] = 1.3
@@ -52,7 +52,7 @@ projects[views_bulk_operations][version] = 3.3
 ; Two factor authentication
 projects[libraries][version] = 2.3
 projects[tfa][version] = 2.0
-projects[tfa_basic][version] = 1.0-beta3
+projects[tfa_basic][version] = 1.0
 projects[tfa_basic][patch][] = "https://www.drupal.org/files/issues/use_libraries_module-2807953-8.patch"
 
 libraries[qrcodejs][download][type] = git
