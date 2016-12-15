@@ -35,6 +35,7 @@ projects[hosting_civicrm][subdir] = aegir
 projects[hosting_civicrm][version] = 3.8
 
 projects[hosting_dns][subdir] = aegir
+projects[hosting_dns][version] = 1.x
 
 ; Modules - contrib
 
