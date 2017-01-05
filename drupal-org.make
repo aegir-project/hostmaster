@@ -10,29 +10,29 @@ defaults[projects][type] = "module"
 
 projects[eldir][type] = theme
 projects[eldir][subdir] = aegir
-projects[eldir][version] = 3.8
+projects[eldir][version] = 3.9
 
 projects[hosting][subdir] = aegir
-projects[hosting][version] = 3.9-beta1
+projects[hosting][version] = 3.9
 
 
 
 ; Modules - Aegir "golden"
 
 projects[hosting_git][subdir] = aegir
-projects[hosting_git][version] = 3.8
+projects[hosting_git][version] = 3.9
 
 projects[hosting_remote_import][subdir] = aegir
-projects[hosting_remote_import][version] = 3.8
+projects[hosting_remote_import][version] = 3.9
 
 projects[hosting_site_backup_manager][subdir] = aegir
-projects[hosting_site_backup_manager][version] = 3.8
+projects[hosting_site_backup_manager][version] = 3.9
 
 projects[hosting_tasks_extra][subdir] = aegir
-projects[hosting_tasks_extra][version] = 3.8
+projects[hosting_tasks_extra][version] = 3.9
 
 projects[hosting_civicrm][subdir] = aegir
-projects[hosting_civicrm][version] = 3.8
+projects[hosting_civicrm][version] = 3.9
 
 projects[hosting_dns][subdir] = aegir
 projects[hosting_dns][version] = 3.x
