@@ -39,7 +39,7 @@ projects[hosting_civicrm][download][type] = git
 projects[hosting_civicrm][download][branch] = 7.x-3.x
 
 projects[hosting_dns][download][type] = git
-projects[hosting_dns][download][branch] = 7.x-1.x
+projects[hosting_dns][download][branch] = 7.x-3.x
 
 ; Modules - Dev
 
