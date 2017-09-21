@@ -34,6 +34,9 @@ projects[hosting_tasks_extra][version] = 3.11
 projects[hosting_civicrm][subdir] = aegir
 projects[hosting_civicrm][version] = 3.11
 
+projects[hosting_logs][subdir] = aegir
+projects[hosting_logs][version] = 3.x
+
 projects[hosting_dns][subdir] = aegir
 projects[hosting_dns][version] = 3.x
 
