@@ -58,3 +58,8 @@ projects[timeago][version] = 2.3
 libraries[jquery.timeago][download][type] = get
 libraries[jquery.timeago][download][url] = https://raw.githubusercontent.com/rmm5t/jquery-timeago/v1.5.3/jquery.timeago.js
 libraries[jquery.timeago][destination] = libraries
+
+; Vue.js
+libraries[vuejs][download][type] = get
+libraries[vuejs][download][url] = https://github.com/vuejs/vue/raw/v2.4.4/dist/vue.min.js
+libraries[vuejs][destination] = libraries
