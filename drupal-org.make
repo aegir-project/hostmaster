@@ -12,6 +12,9 @@ projects[eldir][type] = theme
 projects[eldir][subdir] = aegir
 projects[eldir][version] = 3.11
 
+projects[bootstrap][type] = theme
+projects[bootstrap][subdir] = aegir
+
 projects[hosting][subdir] = aegir
 projects[hosting][version] = 3.11
 
