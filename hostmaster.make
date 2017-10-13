@@ -17,7 +17,8 @@ projects[eldir][download][type] = git
 projects[eldir][download][branch] = 7.x-3.x
 
 projects[hosting][download][type] = git
-projects[hosting][download][branch] = 7.x-3.x
+projects[hosting][download][url] = https://github.com/aegir-project/hosting.git
+projects[hosting][download][branch] = feature/quick-review
 
 
 
