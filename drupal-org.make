@@ -47,7 +47,7 @@ projects[hosting_logs][download][tag] = 7.x-3.120
 
 projects[hosting_dns][download][type] = git
 projects[hosting_dns][subdir] = aegir
-projects[hosting_dns][download][tag] = 7.x-3.x
+projects[hosting_dns][download][branch] = 7.x-3.x
 
 ; Modules - contrib
 
