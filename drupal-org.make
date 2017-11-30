@@ -11,11 +11,11 @@ defaults[projects][type] = "module"
 projects[eldir][type] = theme
 projects[eldir][download][type] = git
 projects[eldir][subdir] = aegir
-projects[eldir][download][tag] = 7.x-3.120
+projects[eldir][download][tag] = 7.x-3.130
 
 projects[hosting][download][type] = git
 projects[hosting][subdir] = aegir
-projects[hosting][download][tag] = 7.x-3.120
+projects[hosting][download][tag] = 7.x-3.130
 
 
 
@@ -23,27 +23,27 @@ projects[hosting][download][tag] = 7.x-3.120
 
 projects[hosting_git][download][type] = git
 projects[hosting_git][subdir] = aegir
-projects[hosting_git][download][tag] = 7.x-3.120
+projects[hosting_git][download][tag] = 7.x-3.130
 
 projects[hosting_remote_import][download][type] = git
 projects[hosting_remote_import][subdir] = aegir
-projects[hosting_remote_import][download][tag] = 7.x-3.120
+projects[hosting_remote_import][download][tag] = 7.x-3.130
 
 projects[hosting_site_backup_manager][download][type] = git
 projects[hosting_site_backup_manager][subdir] = aegir
-projects[hosting_site_backup_manager][download][tag] = 7.x-3.120
+projects[hosting_site_backup_manager][download][tag] = 7.x-3.130
 
 projects[hosting_tasks_extra][download][type] = git
 projects[hosting_tasks_extra][subdir] = aegir
-projects[hosting_tasks_extra][download][tag] = 7.x-3.120
+projects[hosting_tasks_extra][download][tag] = 7.x-3.130
 
 projects[hosting_civicrm][download][type] = git
 projects[hosting_civicrm][subdir] = aegir
-projects[hosting_civicrm][download][tag] = 7.x-3.120
+projects[hosting_civicrm][download][tag] = 7.x-3.130
 
 projects[hosting_logs][download][type] = git
 projects[hosting_logs][subdir] = aegir
-projects[hosting_logs][download][tag] = 7.x-3.120
+projects[hosting_logs][download][tag] = 7.x-3.130
 
 projects[hosting_dns][download][type] = git
 projects[hosting_dns][subdir] = aegir
