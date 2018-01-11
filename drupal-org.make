@@ -49,6 +49,10 @@ projects[hosting_dns][download][type] = git
 projects[hosting_dns][subdir] = aegir
 projects[hosting_dns][download][branch] = 7.x-3.x
 
+projects[hosting_https][download][type] = git
+projects[hosting_https][subdir] = aegir
+projects[hosting_https][download][tag] = 7.x-3.130
+
 ; Modules - contrib
 
 projects[admin_menu][version] = 3.0-rc5

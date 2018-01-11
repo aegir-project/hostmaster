@@ -44,6 +44,10 @@ projects[hosting_logs][download][branch] = 7.x-3.x
 projects[hosting_dns][download][type] = git
 projects[hosting_dns][download][branch] = 7.x-3.x
 
+projects[hosting_https][download][type] = git
+projects[hosting_https][download][branch] = 7.x-3.x
+
+
 ; Modules - Dev
 
 projects[devel][subdir] = developer
