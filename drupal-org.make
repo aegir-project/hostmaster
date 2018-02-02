@@ -79,7 +79,7 @@ libraries[qrcodejs][download][revision] = 04f46c6a0708418cb7b96fc563eacae0fbf776
 ; JQuery TimeAgo plugin
 projects[timeago][version] = 2.3
 libraries[timeago][download][type] = get
-libraries[timeago][download][url] = https://raw.githubusercontent.com/rmm5t/jquery-timeago/v1.5.3/jquery.timeago.js
+libraries[timeago][download][url] = https://raw.githubusercontent.com/rmm5t/jquery-timeago/v1.6.1/jquery.timeago.js
 libraries[timeago][destination] = libraries
 
 ; Vue.js
