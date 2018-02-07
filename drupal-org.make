@@ -57,7 +57,7 @@ projects[hosting_https][download][tag] = 7.x-3.140
 
 projects[admin_menu][version] = 3.0-rc5
 projects[betterlogin][version] = 1.4
-projects[ctools][version] = 1.12
+projects[ctools][version] = 1.13
 projects[entity][version] = 1.8
 projects[module_filter][version] = 2.1
 projects[openidadmin][version] = 1.0
