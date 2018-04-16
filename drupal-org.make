@@ -57,13 +57,13 @@ projects[hosting_https][download][tag] = 7.x-3.140
 
 projects[admin_menu][version] = 3.0-rc5
 projects[betterlogin][version] = 1.4
-projects[ctools][version] = 1.13
+projects[ctools][version] = 1.14
 projects[entity][version] = 1.9
 projects[module_filter][version] = 2.1
 projects[openidadmin][version] = 1.0
 projects[overlay_paths][version] = 1.3
 projects[r4032login][version] = 1.8
-projects[views][version] = 3.18
+projects[views][version] = 3.20
 projects[views_bulk_operations][version] = 3.4
 
 ; Two factor authentication
