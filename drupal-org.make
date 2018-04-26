@@ -15,7 +15,7 @@ projects[eldir][download][tag] = 7.x-3.140
 
 projects[hosting][download][type] = git
 projects[hosting][subdir] = aegir
-projects[hosting][download][tag] = 7.x-3.141
+projects[hosting][download][tag] = 7.x-3.142
 
 
 
