@@ -68,7 +68,7 @@ projects[views_bulk_operations][version] = 3.4
 ; Two factor authentication
 projects[libraries][version] = 2.3
 projects[tfa][version] = 2.0
-projects[tfa_basic][version] = 1.0
+projects[tfa_basic][version] = 1.1
 projects[tfa_basic][patch][] = "https://www.drupal.org/files/issues/use_libraries_module-2807953-8.patch"
 
 libraries[qrcodejs][download][type] = git
