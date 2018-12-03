@@ -66,7 +66,7 @@ projects[views][version] = 3.20
 projects[views_bulk_operations][version] = 3.5
 
 ; Two factor authentication
-projects[libraries][version] = 2.4
+projects[libraries][version] = 2.5
 projects[tfa][version] = 2.0
 projects[tfa_basic][version] = 1.1
 projects[tfa_basic][patch][] = "https://www.drupal.org/files/issues/use_libraries_module-2807953-8.patch"
