@@ -54,7 +54,7 @@ projects[hosting_https][download][tag] = 7.x-3.160
 
 ; Modules - contrib
 
-projects[admin_menu][version] = 3.0-rc5
+projects[admin_menu][version] = 3.0-rc6
 projects[betterlogin][version] = 1.5
 projects[ctools][version] = 1.14
 projects[entity][version] = 1.9
