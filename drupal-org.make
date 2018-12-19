@@ -14,7 +14,7 @@ projects[eldir][download][tag] = 7.x-3.160
 
 projects[hosting][download][type] = git
 projects[hosting][subdir] = aegir
-projects[hosting][download][tag] = 7.x-3.160
+projects[hosting][download][tag] = 7.x-3.161
 
 
 
@@ -22,7 +22,7 @@ projects[hosting][download][tag] = 7.x-3.160
 
 projects[hosting_git][download][type] = git
 projects[hosting_git][subdir] = aegir
-projects[hosting_git][download][tag] = 7.x-3.160
+projects[hosting_git][download][tag] = 7.x-3.162
 
 projects[hosting_remote_import][download][type] = git
 projects[hosting_remote_import][subdir] = aegir
