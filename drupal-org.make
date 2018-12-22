@@ -50,7 +50,7 @@ projects[hosting_dns][download][branch] = 7.x-3.x
 
 projects[hosting_https][download][type] = git
 projects[hosting_https][subdir] = aegir
-projects[hosting_https][download][tag] = 7.x-3.170
+projects[hosting_https][download][tag] = 7.x-3.171
 
 ; Modules - contrib
 
