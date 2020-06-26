@@ -2,10 +2,13 @@ language: generic
 
 sudo: required
 
+# Only run test when committing to a master branch.
+branches:
+  only:
+    - 7.x-3.x
+
 env:
-  globaL:
-    - DOCKER_VERSION=1.11.2-0~trusty
-    - DOCKER_COMPOSE_VERSION=1.7.1
+  global:
     - AEGIR_HOSTING_VERSION=7.x-3.x
     - AEGIR_TESTS_VERSION=master
 
